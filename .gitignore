@@ -7,3 +7,7 @@ server/bin
 server/.classpath
 server/.project
 server/.settings
+mjnetworkingapi/bin
+mjnetworkingapi/.classpath
+mjnetworkingapi/.project
+mjnetworkingapi/.settings
