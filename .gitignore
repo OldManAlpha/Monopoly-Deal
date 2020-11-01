@@ -1,0 +1,9 @@
+client/bin
+client/.classpath
+client/.project
+client/.settings
+client/settings.dat
+server/bin
+server/.classpath
+server/.project
+server/.settings
