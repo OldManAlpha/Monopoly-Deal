@@ -1,16 +1,20 @@
 package oldmana.md.server.card;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardData;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
-import oldmana.md.server.card.action.CardActionDoubleTheRent;
-import oldmana.md.server.card.action.CardActionJustSayNo;
 import oldmana.md.server.card.collection.CardCollection;
 import oldmana.md.server.util.IDCounter;
 
 public class Card
 {
+	public static List<Card> cards = new ArrayList<Card>();
+	
+	
 	private int id;
 	
 	private CardCollection collection;
@@ -28,7 +32,7 @@ public class Card
 	public Card(int value, String name)
 	{
 		id = IDCounter.nextCardID();
-		CardRegistry.registerCard(this);
+		Card.registerCard(this);
 		
 		this.value = value;
 		this.name = name;
@@ -126,6 +130,11 @@ public class Card
 		}
 	}
 	
+	public CardType getType()
+	{
+		return CardType.MONEY;
+	}
+	
 	public MDServer getServer()
 	{
 		return MDServer.getInstance();
@@ -133,13 +142,13 @@ public class Card
 	
 	public Packet getCardDataPacket()
 	{
-		return new PacketCardData(id, name, value, CardType.getTypeOf(this).getID(), revocable, marksPreviousCardsUnrevocable, displayName, (byte) fontSize, 
+		return new PacketCardData(id, name, value, getType().getID(), revocable, marksPreviousCardsUnrevocable, displayName, (byte) fontSize, 
 				(byte) displayOffsetY);
 	}
 	
 	public static enum CardType
 	{
-		MONEY(0), PROPERTY(1), ACTION(2), JUST_SAY_NO(3), DOUBLE_THE_RENT(4), SPECIAL(5);
+		MONEY(0), PROPERTY(1), ACTION(2), JUST_SAY_NO(3), DOUBLE_THE_RENT(4), SPECIAL(5), RENT_COUNTER(6);
 		
 		private int id;
 		
@@ -152,36 +161,44 @@ public class Card
 		{
 			return id;
 		}
-		
-		public static CardType getTypeOf(Card card)
-		{
-			if (card instanceof CardProperty)
-			{
-				return PROPERTY;
-			}
-			else if (card instanceof CardActionJustSayNo)
-			{
-				return JUST_SAY_NO;
-			}
-			else if (card instanceof CardActionDoubleTheRent)
-			{
-				return DOUBLE_THE_RENT;
-			}
-			else if (card instanceof CardAction)
-			{
-				return ACTION;
-			}
-			else if (card instanceof CardSpecial)
-			{
-				return SPECIAL;
-			}
-			return MONEY;
-		}
 	}
 	
 	@Override
 	public String toString()
 	{
 		return new String(getName() + " (" + getValue() + "M)");
+	}
+	
+
+	public static List<Card> getRegisteredCards()
+	{
+		return cards;
+	}
+
+	public static void registerCard(Card card)
+	{
+		cards.add(card);
+	}
+
+	public static List<Card> getCards(int[] ids)
+	{
+		List<Card> cards = new ArrayList<Card>();
+		for (int id : ids)
+		{
+			cards.add(getCard(id));
+		}
+		return cards;
+	}
+
+	public static Card getCard(int id)
+	{
+		for (Card card : cards)
+		{
+			if (card.getID() == id)
+			{
+				return card;
+			}
+		}
+		return null;
 	}
 }

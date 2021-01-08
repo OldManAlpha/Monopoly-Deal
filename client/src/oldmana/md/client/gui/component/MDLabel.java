@@ -1,6 +1,7 @@
 package oldmana.md.client.gui.component;
 
 import java.awt.Color;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -13,6 +14,7 @@ import oldmana.md.client.gui.util.TextPainter.Alignment;
 public class MDLabel extends MDComponent
 {
 	private String text;
+	private int size;
 	
 	public MDLabel(String text)
 	{
@@ -22,6 +24,27 @@ public class MDLabel extends MDComponent
 	public void setText(String text)
 	{
 		this.text = text;
+		sizeLabel();
+	}
+	
+	public void sizeLabel()
+	{
+		if (size > 0)
+		{
+			setSize(getAppropriateWidth(size), size);
+		}
+	}
+	
+	public int getAppropriateWidth(int height)
+	{
+		FontMetrics m = getFontMetrics(GraphicsUtils.getBoldMDFont(height - scale(8)));
+		return m.stringWidth(text) + scale(20);
+	}
+	
+	public void setSize(int size)
+	{
+		this.size = size;
+		sizeLabel();
 	}
 	
 	@Override

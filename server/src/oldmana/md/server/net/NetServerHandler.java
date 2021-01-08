@@ -9,6 +9,7 @@ import oldmana.md.net.packet.client.PacketLogin;
 import oldmana.md.net.packet.client.action.*;
 import oldmana.md.net.packet.server.*;
 import oldmana.md.net.packet.server.actionstate.*;
+import oldmana.md.net.packet.universal.PacketChat;
 import oldmana.md.server.Client;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
@@ -16,23 +17,23 @@ import oldmana.md.server.PlayerRegistry;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardProperty;
-import oldmana.md.server.card.CardRegistry;
 import oldmana.md.server.card.CardProperty.PropertyColor;
+import oldmana.md.server.card.CardSpecial;
 import oldmana.md.server.card.action.CardActionDoubleTheRent;
-import oldmana.md.server.card.action.CardActionJustSayNo;
 import oldmana.md.server.card.action.CardActionRent;
-import oldmana.md.server.card.collection.CardCollectionRegistry;
+import oldmana.md.server.card.collection.CardCollection;
 import oldmana.md.server.card.collection.Hand;
 import oldmana.md.server.card.collection.PropertySet;
+import oldmana.md.server.event.PostCardBankedEvent;
+import oldmana.md.server.event.PreCardBankedEvent;
 import oldmana.md.server.state.ActionState;
 import oldmana.md.server.state.ActionStateRent;
 import oldmana.md.server.state.ActionStateStealMonopoly;
-import oldmana.md.server.state.ActionStateStealProperty;
+import oldmana.md.server.state.ActionStateTargetAnyProperty;
 import oldmana.md.server.state.ActionStateTargetPlayer;
 import oldmana.md.server.state.ActionStateTargetPlayerMonopoly;
 import oldmana.md.server.state.ActionStateTargetPlayerProperty;
 import oldmana.md.server.state.ActionStateTargetSelfPlayerProperty;
-import oldmana.md.server.state.ActionStateTradeProperties;
 import oldmana.md.server.state.GameState;
 
 public class NetServerHandler
@@ -88,19 +89,20 @@ public class NetServerHandler
 		Packet.registerPacket(PacketActionPlayMultiCardAction.class);
 		Packet.registerPacket(PacketActionDiscard.class);
 		Packet.registerPacket(PacketActionSelectPlayer.class);
-		Packet.registerPacket(PacketActionSelectPlayerProperty.class);
-		Packet.registerPacket(PacketActionSelectSelfPlayerProperty.class);
+		Packet.registerPacket(PacketActionSelectProperties.class);
 		Packet.registerPacket(PacketActionSelectPlayerMonopoly.class);
 		Packet.registerPacket(PacketActionUndoCard.class);
 		
 		Packet.registerPacket(PacketActionStateBasic.class);
 		Packet.registerPacket(PacketActionStateRent.class);
-		Packet.registerPacket(PacketActionStateStealProperty.class);
-		Packet.registerPacket(PacketActionStateTradeProperties.class);
+		Packet.registerPacket(PacketActionStatePropertiesSelected.class);
 		Packet.registerPacket(PacketActionStateStealMonopoly.class);
 		Packet.registerPacket(PacketUpdateActionStateAccepted.class);
 		Packet.registerPacket(PacketUpdateActionStateRefusal.class);
 		Packet.registerPacket(PacketUpdateActionStateTarget.class);
+		
+		// Client <-> Server
+		Packet.registerPacket(PacketChat.class);
 		
 		// Find Packet Handlers
 		for (Method m : getClass().getDeclaredMethods())
@@ -151,7 +153,7 @@ public class NetServerHandler
 		{
 			PlayerRegistry registry = server.getPlayerRegistry();
 			int uid = packet.getUID();
-			if (registry.containsID(uid))
+			if (registry.isUIDRegistered(uid))
 			{
 				server.removeClient(client);
 				if (server.isPlayerWithUIDLoggedIn(uid))
@@ -166,7 +168,7 @@ public class NetServerHandler
 				}
 				else
 				{
-					Player player = new Player(server, uid, client.getNet(), registry.getNameOf(packet.getUID()));
+					Player player = new Player(server, uid, client.getNet(), registry.getNameOf(packet.getUID()), registry.getRegisteredPlayerByUID(uid).op);
 					player.sendPacket(new PacketHandshake(player.getID(), player.getName()));
 					server.addPlayer(player);
 					//server.broadcastPacket(new PacketPlayerInfo(player.getID(), player.getName()), player);
@@ -199,25 +201,35 @@ public class NetServerHandler
 	
 	public void handlePlayCardBank(Player player, PacketActionPlayCardBank packet)
 	{
-		Card card = CardRegistry.getCard(packet.id);
+		Card card = Card.getCard(packet.id);
 		if (checkIntegrity(player, card, true))
 		{
-			player.getHand().transferCard(card, player.getBank());
-			player.addRevokableCard(card);
-			
-			if (player.getHand().getCardCount() == 0)
+			PreCardBankedEvent preEvent = new PreCardBankedEvent(player, card);
+			server.getEventManager().callEvent(preEvent);
+			if (!preEvent.isCanceled())
 			{
-				player.clearRevokableCards();
-				server.getDeck().drawCards(player, 5, 1.2);
+				player.getHand().transferCard(card, player.getBank());
+				player.addRevokableCard(card);
+				PostCardBankedEvent postEvent = new PostCardBankedEvent(player, card);
+				server.getEventManager().callEvent(postEvent);
+				if (player.getHand().getCardCount() == 0)
+				{
+					player.clearRevokableCards();
+					server.getDeck().drawCards(player, 5, 1.2);
+				}
+				
+				server.getGameState().decrementTurn();
 			}
-			
-			server.getGameState().decrementTurn();
+			else
+			{
+				server.getGameState().resendActionState(player);
+			}
 		}
 	}
 	
 	public void handlePlayCardProperty(Player player, PacketActionPlayCardProperty packet)
 	{
-		Card card = CardRegistry.getCard(packet.id);
+		Card card = Card.getCard(packet.id);
 		CardProperty property = (CardProperty) card;
 		if (checkIntegrity(player, card, true))
 		{
@@ -254,13 +266,12 @@ public class NetServerHandler
 	
 	public void handlePlayCardAction(Player player, PacketActionPlayCardAction packet)
 	{
-		CardAction card = (CardAction) CardRegistry.getCard(packet.id);
+		CardAction card = (CardAction) Card.getCard(packet.id);
 		GameState gs = server.getGameState();
 		if (gs.getActivePlayer() == player && gs.getTurnsRemaining() > 0)
 		{
 			if (card.canPlayCard(player))
 			{
-				// Play card
 				card.transfer(server.getDiscardPile());
 				if (card.marksPreviousUnrevocable())
 				{
@@ -288,30 +299,10 @@ public class NetServerHandler
 	
 	public void handlePlayCardSpecial(Player player, PacketActionPlayCardSpecial packet)
 	{
-		Card card = CardRegistry.getCard(packet.id);
-		ActionState state = server.getGameState().getCurrentActionState();
-		if (card instanceof CardActionJustSayNo)
+		Card card = Card.getCard(packet.id);
+		if (card instanceof CardSpecial)
 		{
-			Player target = server.getPlayerByID(packet.data);
-			if (state.getActionOwner() == player && state.isTarget(target) && state.getActionTarget(target).isRefused())
-			{
-				state.setRefused(target, false);
-				card.transfer(server.getDiscardPile());
-			}
-			else if (state.isTarget(player) && !state.getActionTarget(player).isRefused())
-			{
-				state.setRefused(player, true);
-				card.transfer(server.getDiscardPile());
-			}
-			if (player.getHand().getCardCount() == 0)
-			{
-				player.clearRevokableCards();
-				server.getDeck().drawCards(player, 5, 1.2);
-			}
-			if (state.isFinished())
-			{
-				server.getGameState().nextNaturalActionState();
-			}
+			((CardSpecial) card).playCard(player, packet.data);
 		}
 	}
 	
@@ -319,23 +310,28 @@ public class NetServerHandler
 	{
 		if (packet.ids.length == 2)
 		{
-			Card c1 = CardRegistry.getCard(packet.ids[0]);
-			Card c2 = CardRegistry.getCard(packet.ids[1]);
+			Card c1 = Card.getCard(packet.ids[0]);
+			Card c2 = Card.getCard(packet.ids[1]);
 			if (c1 instanceof CardActionRent && c2 instanceof CardActionDoubleTheRent)
 			{
 				CardActionRent rentCard = (CardActionRent) c1;
-				c1.transfer(server.getDiscardPile());
-				c2.transfer(server.getDiscardPile());
-				server.getGameState().decrementTurn();
-				server.getGameState().decrementTurn();
-				rentCard.playCard(player, 2);
-				//server.getGameState().setCurrentActionState(new ActionStateRent(player, server.getPlayersExcluding(player), 
-				//		player.getHighestValueRent(rentCard.getRentColors()) * 2));
-				player.clearRevokableCards();
-				
-				if (player.getHand().getCardCount() == 0)
+				if (rentCard.canPlayCard(player))
 				{
-					server.getDeck().drawCards(player, 5, 1.2);
+					c1.transfer(server.getDiscardPile());
+					c2.transfer(server.getDiscardPile());
+					server.getGameState().decrementTurn();
+					server.getGameState().decrementTurn();
+					rentCard.playCard(player, 2);
+					player.clearRevokableCards();
+					
+					if (player.getHand().getCardCount() == 0)
+					{
+						server.getDeck().drawCards(player, 5, 1.2);
+					}
+				}
+				else
+				{
+					server.getGameState().resendActionState(player);
 				}
 			}
 		}
@@ -343,7 +339,7 @@ public class NetServerHandler
 	
 	public void handleActionDiscard(Player player, PacketActionDiscard packet)
 	{
-		Card card = CardRegistry.getCard(packet.card);
+		Card card = Card.getCard(packet.card);
 		card.transfer(server.getDiscardPile());
 		server.getGameState().nextNaturalActionState();
 	}
@@ -353,7 +349,7 @@ public class NetServerHandler
 		if (server.getGameState().getCurrentActionState() instanceof ActionStateRent)
 		{
 			ActionStateRent rent = (ActionStateRent) server.getGameState().getCurrentActionState();
-			rent.playerPaid(player, CardRegistry.getCards(packet.ids));
+			rent.playerPaid(player, Card.getCards(packet.ids));
 		}
 	}
 	
@@ -372,7 +368,7 @@ public class NetServerHandler
 	
 	public void handleActionMoveProperty(Player player, PacketActionMoveProperty packet)
 	{
-		Card card = CardRegistry.getCard(packet.id);
+		Card card = Card.getCard(packet.id);
 		CardProperty property = (CardProperty) card;
 		if (packet.setId > -1)
 		{
@@ -389,7 +385,7 @@ public class NetServerHandler
 	
 	public void handleActionChangeSetColor(Player player, PacketActionChangeSetColor packet)
 	{
-		PropertySet set = (PropertySet) CardCollectionRegistry.getCardCollection(packet.setId);
+		PropertySet set = (PropertySet) CardCollection.getCardCollection(packet.setId);
 		set.setEffectiveColor(PropertyColor.fromID(packet.color));
 		server.getGameState().resendActionState(player);
 		server.getGameState().checkWin();
@@ -408,28 +404,21 @@ public class NetServerHandler
 		}
 	}
 	
-	public void handleActionSelectSelfPlayerProperty(Player player, PacketActionSelectSelfPlayerProperty packet)
-	{
-		ActionState state = server.getGameState().getCurrentActionState();
-		if (state instanceof ActionStateTargetSelfPlayerProperty)
-		{
-			player.clearRevokableCards();
-			server.getGameState().setCurrentActionState(new ActionStateTradeProperties((CardProperty) CardRegistry.getCard(packet.selfCard), 
-					(CardProperty) CardRegistry.getCard(packet.otherCard)));
-		}
-		else
-		{
-			server.getGameState().resendActionState(player);
-		}
-	}
-	
-	public void handleActionSelectPlayerProperty(Player player, PacketActionSelectPlayerProperty packet)
+	public void handleActionSelectProperties(Player player, PacketActionSelectProperties packet)
 	{
 		ActionState state = server.getGameState().getCurrentActionState();
 		if (state instanceof ActionStateTargetPlayerProperty)
 		{
-			player.clearRevokableCards();
-			server.getGameState().setCurrentActionState(new ActionStateStealProperty(player, (CardProperty) CardRegistry.getCard(packet.id)));
+			((ActionStateTargetPlayerProperty) state).onCardSelected((CardProperty) Card.getCard(packet.ids[0]));
+		}
+		else if (state instanceof ActionStateTargetSelfPlayerProperty)
+		{
+			((ActionStateTargetSelfPlayerProperty) state).onCardsSelected((CardProperty) Card.getCard(packet.ids[0]), 
+					(CardProperty) Card.getCard(packet.ids[1]));
+		}
+		else if (state instanceof ActionStateTargetAnyProperty)
+		{
+			((ActionStateTargetAnyProperty) state).onCardSelected((CardProperty) Card.getCard(packet.ids[0]));
 		}
 		else
 		{
@@ -443,7 +432,7 @@ public class NetServerHandler
 		if (state instanceof ActionStateTargetPlayerMonopoly)
 		{
 			player.clearRevokableCards();
-			server.getGameState().setCurrentActionState(new ActionStateStealMonopoly(player, (PropertySet) CardCollectionRegistry.getCardCollection(packet.id)));
+			server.getGameState().setCurrentActionState(new ActionStateStealMonopoly(player, (PropertySet) CardCollection.getCardCollection(packet.id)));
 		}
 		else
 		{
@@ -475,19 +464,33 @@ public class NetServerHandler
 		}
 	}
 	
+	public void handleChat(Player player, PacketChat packet)
+	{
+		String msg = packet.message;
+		if (msg.startsWith("/"))
+		{
+			server.getCommandHandler().executeCommand(player, msg.substring(1));
+		}
+		else
+		{
+			System.out.println(player.getName() + ": " + msg);
+			server.broadcastPacket(new PacketChat(player.getName() + ": " + msg));
+		}
+	}
+	
 	public boolean checkIntegrity(Player player, Card card, boolean checkHand)
 	{
 		if (card == null)
 		{
 			player.sendPacket(new PacketKick("Invalid card ID"));
-			server.disconnectPlayer(player);
+			server.kickPlayer(player);
 			return false;
 		}
 		Hand hand = player.getHand();
 		if (!hand.hasCard(card))
 		{
 			player.sendPacket(new PacketKick("Tried to play a card not in your hand!"));
-			server.disconnectPlayer(player);
+			server.kickPlayer(player);
 			return false;
 		}
 		return true;

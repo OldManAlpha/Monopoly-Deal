@@ -19,8 +19,8 @@ import oldmana.md.client.card.collection.Bank;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDCardSelection;
-import oldmana.md.client.gui.component.MDLabel;
 import oldmana.md.client.gui.component.MDCardSelection.CardSelectListener;
+import oldmana.md.client.gui.component.MDLabel;
 import oldmana.md.client.state.ActionStateRent;
 
 public class ActionScreenRent extends ActionScreen
@@ -28,16 +28,14 @@ public class ActionScreenRent extends ActionScreen
 	private Player player;
 	private int rent;
 	
-	private ActionStateRent state;
-	
 	private JScrollPane scrollPane;
 	private CardSelectUI cardSelect;
 	
 	private MDButton viewTable;
 	
 	private MDButton pay;
-	private MDButton jsn;
 	
+	private MDLabel rentLabel;
 	private MDLabel selectedLabel;
 	
 	public ActionScreenRent(Player player, ActionStateRent state)
@@ -45,16 +43,14 @@ public class ActionScreenRent extends ActionScreen
 		super();
 		this.player = player;
 		this.rent = state.getRent();
-		this.state = state;
-		cardSelect = new CardSelectUI();
 		//cardSelect.setPreferredSize(new Dimension(1350, 2000));
-		scrollPane = new JScrollPane(cardSelect);
+		scrollPane = new JScrollPane();
 		scrollPane.setOpaque(false);
 		scrollPane.getViewport().setOpaque(false);
 		scrollPane.getVerticalScrollBar().setUnitIncrement(10);
 		add(scrollPane);
-		scrollPane.setSize(1400, 700);
-		scrollPane.setLocation(100, 100);
+		cardSelect = new CardSelectUI();
+		scrollPane.setViewportView(cardSelect);
 		viewTable = new MDButton("View Table");
 		viewTable.setLocation(10, 840);
 		viewTable.setSize(180, 50);
@@ -69,14 +65,10 @@ public class ActionScreenRent extends ActionScreen
 		});
 		add(viewTable);
 		
-		MDLabel rentLabel = new MDLabel("Rent: " + rent + "M");
-		rentLabel.setLocation(300, 30);
-		rentLabel.setSize(160, 40);
+		rentLabel = new MDLabel("Rent: " + rent + "M");
 		add(rentLabel);
 		
 		selectedLabel = new MDLabel("");
-		selectedLabel.setLocation(1100 - 50, 30);
-		selectedLabel.setSize(260, 40);
 		add(selectedLabel);
 		
 		pay = new MDButton("Pay");
@@ -104,11 +96,7 @@ public class ActionScreenRent extends ActionScreen
 			}
 		});
 		
-		//jsn = new MDButton("Just Say No!");
-		//jsn.setLocation(820, 825);
-		//jsn.setSize(180, 50);
-		//jsn.setFontSize(24);
-		//add(jsn);
+		setLayout(new RentLayout());
 		
 		checkSelected();
 	}
@@ -143,20 +131,13 @@ public class ActionScreenRent extends ActionScreen
 	
 	public boolean isRequiredAmountSelected()
 	{
-		int selectedValue = 0;
-		for (MDCardSelection select : cardSelect.getSelects())
-		{
-			if (select.isSelected())
-			{
-				selectedValue += select.getCard().getValue();
-			}
-		}
-		return selectedValue >= rent || player.getTotalMonetaryAssets() <= rent;
+		return getAmountSelected() >= rent || player.getTotalMonetaryAssets() <= rent;
 	}
 	
 	public class CardSelectUI extends JComponent
 	{
-		private List<MDCardSelection> selects = new ArrayList<MDCardSelection>();
+		private MDLabel bankLabel;
+		private MDLabel propLabel;
 		
 		private List<MDCardSelection> bankSelects = new ArrayList<MDCardSelection>();
 		private List<MDCardSelection> propSelects = new ArrayList<MDCardSelection>();
@@ -164,39 +145,29 @@ public class ActionScreenRent extends ActionScreen
 		public CardSelectUI()
 		{
 			super();
-			positionCards();
+			constructComponents();
+			setLayout(new CardSelectLayout());
 		}
 		
 		public void constructComponents()
 		{
 			boolean mustPayEverything = player.getTotalMonetaryAssets() <= rent;
 			
+			bankLabel = new MDLabel("Bank");
+			propLabel = new MDLabel("Properties");
+			
+			add(bankLabel);
+			add(propLabel);
+			
+			// Bank
 			Bank bank = player.getBank();
 			List<Card> cards = bank.getCards();
 			for (int i = 0 ; i < cards.size() ; i++)
 			{
-				int value = cards.get(i).getValue();
-				
-				MDCardSelection cs = new MDCardSelection(cards.get(i), mustPayEverything && value > 0);
-				cs.setListener(new CardSelectListener()
-				{
-					@Override
-					public boolean preSelect()
-					{
-						return !isRequiredAmountSelected();
-					}
-					
-					@Override
-					public void postSelectToggle()
-					{
-						checkSelected();
-					}
-				});
-				if (mustPayEverything || value == 0)
-				{
-					cs.setDisabled(true);
-				}
+				Card card = cards.get(i);
+				MDCardSelection cs = constructSelect(card, mustPayEverything, mustPayEverything && card.getValue() > 0);
 				bankSelects.add(cs);
+				add(cs);
 			}
 			
 			// Properties
@@ -206,39 +177,24 @@ public class ActionScreenRent extends ActionScreen
 				PropertySet set = propSets.get(i);
 				for (int e = 0 ; e < set.getCardCount() ; e++)
 				{
-					int value = set.getCardAt(e).getValue();
-					MDCardSelection cs = new MDCardSelection(set.getCardAt(e), mustPayEverything && value > 0);
-					cs.setListener(new CardSelectListener()
-					{
-						@Override
-						public boolean preSelect()
-						{
-							return !isRequiredAmountSelected();
-						}
-						
-						@Override
-						public void postSelectToggle()
-						{
-							checkSelected();
-						}
-					});
-					if (mustPayEverything || value == 0)
-					{
-						cs.setDisabled(true);
-					}
+					Card card = set.getCardAt(e);
+					MDCardSelection cs = constructSelect(card, mustPayEverything, mustPayEverything && card.getValue() > 0);
 					propSelects.add(cs);
+					add(cs);
 				}
 			}
 		}
 		
-		public void positionCards()
+		public MDCardSelection constructSelect(Card card, boolean disabled, boolean selected)
 		{
-			CardSelectListener listener = new CardSelectListener()
+			MDCardSelection cs = new MDCardSelection(card, selected);
+			cs.setDisabled(disabled);
+			cs.setListener(new CardSelectListener()
 			{
 				@Override
 				public boolean preSelect()
 				{
-					return !isRequiredAmountSelected();
+					return !isRequiredAmountSelected() && card.getValue() != 0;
 				}
 				
 				@Override
@@ -246,81 +202,58 @@ public class ActionScreenRent extends ActionScreen
 				{
 					checkSelected();
 				}
-			};
+			});
+			return cs;
+		}
+		
+		public void layoutComponents()
+		{
+			int width = scrollPane.getViewport().getWidth();
+			int y = scale(10);
 			
-			MDLabel bankLabel = new MDLabel("Bank");
-			bankLabel.setLocation(10, 10);
-			bankLabel.setSize(80, 40);
-			add(bankLabel);
+			bankLabel.setLocation(scale(10), y);
+			bankLabel.setSize(scale(80), scale(40));
 			
-			int yPos = 60;
-			int xPos = 5;
-			int width = 1350;
+			y += scale(50);
 			
-			boolean mustPayEverything = player.getTotalMonetaryAssets() <= rent;
-			Bank bank = player.getBank();
-			List<Card> cards = bank.getCards();
-			for (int i = 0 ; i < cards.size() ; i++)
+			y = layoutSelects(bankSelects, width, y);
+			
+			y += scale(190 + 10);
+			
+			propLabel.setLocation(scale(10), y);
+			propLabel.setSize(scale(160), scale(40));
+			
+			y += scale(50);
+			
+			y = layoutSelects(propSelects, width, y);
+			
+			y += scale(180);
+			
+			System.out.println("VIEWPORT WIDTH: " + width);
+			setPreferredSize(new Dimension(width, y));
+		}
+		
+		public int layoutSelects(List<MDCardSelection> selects, int width, int y)
+		{
+			int x = scale(5);
+			for (MDCardSelection select : selects)
 			{
-				int value = cards.get(i).getValue();
-				if (xPos + 130 > width - 5)
+				if (x + scale(130) > width)
 				{
-					xPos = 5;
-					yPos += 190;
+					x = scale(5);
+					y += scale(190);
 				}
-				MDCardSelection cs = new MDCardSelection(cards.get(i), mustPayEverything && value > 0);
-				if (mustPayEverything || value == 0)
-				{
-					cs.setDisabled(true);
-				}
-				if (!mustPayEverything && value > 0)
-				{
-					cs.setListener(listener);
-				}
-				cs.setLocation(xPos, yPos);
-				add(cs);
-				selects.add(cs);
-				xPos += 130;
+				select.setLocation(x, y);
+				select.updateSize();
+				x += scale(130);
 			}
-			xPos = 5;
-			yPos += 200;
-			MDLabel propLabel = new MDLabel("Properties");
-			propLabel.setLocation(10, yPos);
-			propLabel.setSize(160, 40);
-			add(propLabel);
-			yPos += 50;
-			List<PropertySet> propSets = player.getPropertySets();
-			for (int i = 0 ; i < propSets.size() ; i++)
-			{
-				PropertySet set = propSets.get(i);
-				for (int e = 0 ; e < set.getCardCount() ; e++)
-				{
-					int value = set.getCardAt(e).getValue();
-					if (xPos + 130 > width - 5)
-					{
-						xPos = 5;
-						yPos += 190;
-					}
-					MDCardSelection cs = new MDCardSelection(set.getCardAt(e), mustPayEverything && value > 0);
-					if (mustPayEverything || value == 0)
-					{
-						cs.setDisabled(true);
-					}
-					if (!mustPayEverything && value > 0)
-					{
-						cs.setListener(listener);
-					}
-					cs.setLocation(xPos, yPos);
-					add(cs);
-					selects.add(cs);
-					xPos += 130;
-				}
-			}
-			setPreferredSize(new Dimension(1350, yPos + 190));
+			return y;
 		}
 		
 		public List<MDCardSelection> getSelects()
 		{
+			List<MDCardSelection> selects = new ArrayList<MDCardSelection>(bankSelects);
+			selects.addAll(propSelects);
 			return selects;
 		}
 		
@@ -328,119 +261,46 @@ public class ActionScreenRent extends ActionScreen
 		public void paintComponent(Graphics gr)
 		{
 			super.paintComponent(gr);
-			/*
-			Graphics2D g = (Graphics2D) gr;
-			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-			g.drawRect(0, 0, getWidth() - 5, getHeight() - 5);
-			g.setFont(GraphicsUtils.getBoldMDFont(30));
-			g.setColor(Color.LIGHT_GRAY);
-			g.fillRect(10, 10, 75, 35);
-			g.setColor(Color.DARK_GRAY);
-			TextPainter tp = new TextPainter("Bank", g.getFont(), new Rectangle(15, 10, 80, 40));
-			tp.setVerticalAlignment(Alignment.CENTER);
-			tp.paint(g);
-			*/
-			/*
-			Graphics2D gBank = (Graphics2D) g.create();
-			gBank.translate(5, 50);
-			Bank bank = player.getBank();
-			if (bank != null)
-			{
-				for (Card card : bank.getCards())
-				{
-					gBank.drawImage(card.getGraphics(4), 0, 0, MDCard.CARD_SIZE.width * 2, MDCard.CARD_SIZE.height * 2, null);
-					gBank.translate(130, 0);
-				}
-			}
-			Graphics2D gPropSets = (Graphics2D) g.create();
-			gPropSets.translate(5, 50 + 180 + 50);
-			List<PropertySet> propSets = player.getPropertySets();
-			for (int i = 0 ; i < propSets.size() ; i++)
-			{
-				Graphics2D gProps = (Graphics2D) gPropSets.create();
-				for (Card card : propSets.get(i).getCards())
-				{
-					gProps.drawImage(card.getGraphics(4), 0, 0, MDCard.CARD_SIZE.width * 2, MDCard.CARD_SIZE.height * 2, null);
-					gProps.translate(130, 0);
-				}
-				gPropSets.translate(0, 185);
-			}
-			*/
 		}
 		
 		public class CardSelectLayout implements LayoutManager2
 		{
 
 			@Override
-			public void addLayoutComponent(String name, Component comp)
-			{
-				// TODO Auto-generated method stub
-				
-			}
+			public void addLayoutComponent(String name, Component comp) {}
 
 			@Override
 			public void layoutContainer(Container parent)
 			{
-				
+				layoutComponents();
 			}
 
 			@Override
-			public Dimension minimumLayoutSize(Container parent)
-			{
-				// TODO Auto-generated method stub
-				return null;
-			}
+			public Dimension minimumLayoutSize(Container parent) {return null;}
 
 			@Override
-			public Dimension preferredLayoutSize(Container parent)
-			{
-				// TODO Auto-generated method stub
-				return null;
-			}
+			public Dimension preferredLayoutSize(Container parent) {return null;}
 
 			@Override
-			public void removeLayoutComponent(Component comp)
-			{
-				// TODO Auto-generated method stub
-				
-			}
+			public void removeLayoutComponent(Component comp) {}
 
 			@Override
-			public void addLayoutComponent(Component comp, Object constraints)
-			{
-				// TODO Auto-generated method stub
-				
-			}
+			public void addLayoutComponent(Component comp, Object constraints) {}
 
 			@Override
-			public float getLayoutAlignmentX(Container target)
-			{
-				// TODO Auto-generated method stub
-				return 0;
-			}
+			public float getLayoutAlignmentX(Container target) {return 0;}
 
 			@Override
-			public float getLayoutAlignmentY(Container target)
-			{
-				// TODO Auto-generated method stub
-				return 0;
-			}
+			public float getLayoutAlignmentY(Container target) {return 0;}
 
 			@Override
 			public void invalidateLayout(Container target)
 			{
-				// TODO Auto-generated method stub
-				
+				layoutContainer(target);
 			}
 
 			@Override
-			public Dimension maximumLayoutSize(Container target)
-			{
-				// TODO Auto-generated method stub
-				return null;
-			}
+			public Dimension maximumLayoutSize(Container target) {return null;}
 			
 		}
 	}
@@ -449,74 +309,53 @@ public class ActionScreenRent extends ActionScreen
 	{
 
 		@Override
-		public void addLayoutComponent(String arg0, Component arg1)
-		{
-			// TODO Auto-generated method stub
-			
-		}
+		public void addLayoutComponent(String arg0, Component arg1) {}
 
 		@Override
 		public void layoutContainer(Container arg0)
 		{
-			// TODO Auto-generated method stub
+			rentLabel.setSize(scale(40));
+			rentLabel.setLocationCentered((int) (getWidth() * 0.4), scale(50));
 			
-		}
-
-		@Override
-		public Dimension minimumLayoutSize(Container arg0)
-		{
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Dimension preferredLayoutSize(Container arg0)
-		{
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void removeLayoutComponent(Component arg0)
-		{
-			// TODO Auto-generated method stub
+			selectedLabel.setSize(scale(40));
+			selectedLabel.setLocationCentered((int) (getWidth() * 0.6), scale(50));
 			
-		}
-
-		@Override
-		public void addLayoutComponent(Component comp, Object constraints)
-		{
-			// TODO Auto-generated method stub
+			pay.setSize(scale(180), scale(50));
+			pay.setLocationCentered(getWidth() / 2, getHeight() - scale(35));
 			
+			viewTable.setSize(scale(180), scale(50));
+			viewTable.setLocationCentered(scale(100), getHeight() - scale(35));
+			
+			scrollPane.setSize((int) (getWidth() * 0.9), getHeight() - rentLabel.getMaxY() - pay.getHeight() - scale(30));
+			scrollPane.setLocation((int) (getWidth() * 0.05), rentLabel.getMaxY() + scale(10));
 		}
 
 		@Override
-		public float getLayoutAlignmentX(Container target)
-		{
-			// TODO Auto-generated method stub
-			return 0;
-		}
+		public Dimension minimumLayoutSize(Container arg0) {return null;}
 
 		@Override
-		public float getLayoutAlignmentY(Container target)
-		{
-			// TODO Auto-generated method stub
-			return 0;
-		}
+		public Dimension preferredLayoutSize(Container arg0) {return null;}
+
+		@Override
+		public void removeLayoutComponent(Component arg0) {}
+
+		@Override
+		public void addLayoutComponent(Component comp, Object constraints) {}
+
+		@Override
+		public float getLayoutAlignmentX(Container target) {return 0;}
+
+		@Override
+		public float getLayoutAlignmentY(Container target) {return 0;}
 
 		@Override
 		public void invalidateLayout(Container target)
 		{
-			// TODO Auto-generated method stub
-			
+			layoutContainer(target);
 		}
 
 		@Override
-		public Dimension maximumLayoutSize(Container target)
-		{
-			// TODO Auto-generated method stub
-			return null;
-		}
+		public Dimension maximumLayoutSize(Container target) {return null;}
 		
 	}
 }

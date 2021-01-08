@@ -1,8 +1,9 @@
 package oldmana.md.server.state;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.PacketStatus;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateTradeProperties;
+import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
+import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
+import oldmana.md.net.packet.server.actionstate.PacketActionStatePropertiesSelected;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardProperty;
 
@@ -16,7 +17,7 @@ public class ActionStateTradeProperties extends ActionState
 		super(ownerCard.getOwner(), targetCard.getOwner());
 		this.ownerCard = ownerCard;
 		this.targetCard = targetCard;
-		getServer().broadcastPacket(new PacketStatus(getActionOwner().getName() + " used Forced Deal against " + getActionTarget().getTarget().getName()));
+		getServer().getGameState().setStatus(getActionOwner().getName() + " used Forced Deal against " + getTargetPlayer().getName());
 	}
 	
 	@Override
@@ -24,6 +25,7 @@ public class ActionStateTradeProperties extends ActionState
 	{
 		if (accepted)
 		{
+			getServer().broadcastPacket(new PacketActionStateBasic(-1, BasicActionState.DO_NOTHING, 0)); // Bandaid Fix For Glitched Cards
 			getActionOwner().safelyGrantProperty(targetCard);
 			player.safelyGrantProperty(ownerCard);
 		}
@@ -33,6 +35,6 @@ public class ActionStateTradeProperties extends ActionState
 	@Override
 	public Packet constructPacket()
 	{
-		return new PacketActionStateTradeProperties(ownerCard.getID(), targetCard.getID());
+		return new PacketActionStatePropertiesSelected(getActionOwner().getID(), getTargetPlayer().getID(), new int[] {ownerCard.getID(), targetCard.getID()});
 	}
 }

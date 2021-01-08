@@ -7,6 +7,8 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -27,6 +29,8 @@ public class MDDeck extends MDCardCollectionUnknown
 	private boolean hovered;
 	private MDTask animTask;
 	private int animStage;
+	
+	private MDSelection notifySelect;
 	
 	public MDDeck(Deck deck)
 	{
@@ -78,6 +82,14 @@ public class MDDeck extends MDCardCollectionUnknown
 			}
 		};
 		getClient().getScheduler().scheduleTask(animTask);
+		this.addComponentListener(new ComponentAdapter()
+		{
+			@Override
+			public void componentResized(ComponentEvent event)
+			{
+				
+			}
+		});
 		update();
 	}
 	
@@ -135,36 +147,14 @@ public class MDDeck extends MDCardCollectionUnknown
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		if (getCollection() != null)
 		{
-			if (getCollection().getCardCount() > 0)
+			int cardCount = getCollection().getCardCount();
+			if (cardCount > 0 && !(cardCount == 1 && animStage > 0))
 			{
-				g.setColor(Color.DARK_GRAY);
-				g.fillRoundRect(scale(60), scale(10), scale(60) + (int) Math.ceil(getCollection().getCardCount() * (0.33 * GraphicsUtils.SCALE)), scale(180), scale(20), scale(20));
 				g.translate(0, scale(10));
+				g.setColor(Color.DARK_GRAY);
+				g.fillRoundRect(scale(60), 0, scale(60) + (int) Math.floor(cardCount * (0.3 * GraphicsUtils.SCALE)), 
+						scale(180), scale(20), scale(20));
 				g.drawImage(Card.getBackGraphics(GraphicsUtils.SCALE * 2), 0, 0, null);
-				if (animStage > 0)
-				{
-					BufferedImage img = GraphicsUtils.createImage(GraphicsUtils.getCardWidth(2) + scale(16), GraphicsUtils.getCardHeight(2) + scale(24));
-					Graphics2D g2 = img.createGraphics();
-					g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-					g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-					g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-					g2.rotate(Math.toRadians(animStage * 0.35), 0, GraphicsUtils.getCardHeight(2) + scale(10));
-					g2.translate(0, scale(10));
-					//CardPainter cp = new CardPainter(null, 2);
-					//cp.paint(g2);
-					g2.drawImage(Card.getBackGraphics(GraphicsUtils.SCALE * 2), 0, 0, null);
-					//g2.rotate(10, MDCard.CARD_SIZE.width, MDCard.CARD_SIZE.height);
-					//g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-					//g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-					//g.rotate(Math.toRadians(5), MDCard.CARD_SIZE.width, MDCard.CARD_SIZE.height);
-					g.translate(0, scale(-10));
-					g.drawImage(img, 0, 0, null);
-				}
-				else if (getClient().canDraw())
-				{
-					//g.setColor(Color.YELLOW);
-					//g.drawRoundRect(0, 0, MDCard.CARD_SIZE.width * 2, MDCard.CARD_SIZE.height * 2, 20, 20);
-				}
 			}
 			else
 			{
@@ -175,6 +165,37 @@ public class MDDeck extends MDCardCollectionUnknown
 				Font font = GraphicsUtils.getThinMDFont(Font.PLAIN, scale(18));
 				g.setFont(font);
 				TextPainter tp = new TextPainter("Deck Empty", font, new Rectangle(0, 0, GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2)));
+				tp.setHorizontalAlignment(Alignment.CENTER);
+				tp.setVerticalAlignment(Alignment.CENTER);
+				tp.paint(g);
+			}
+			
+			if (animStage > 0)
+			{
+				BufferedImage img = GraphicsUtils.createImage(GraphicsUtils.getCardWidth(2) + scale(16), GraphicsUtils.getCardHeight(2) + scale(24));
+				Graphics2D g2 = img.createGraphics();
+				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+				g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+				g2.rotate(Math.toRadians(animStage * 0.35), 0, GraphicsUtils.getCardHeight(2) + scale(10));
+				g2.translate(0, scale(10));
+				CardPainter cp = new CardPainter(null, GraphicsUtils.SCALE * 2);
+				cp.paint(g2);
+				//g2.drawImage(Card.getBackGraphics(GraphicsUtils.SCALE * 2), 0, 0, null);
+				g.translate(0, scale(-10));
+				g.drawImage(img, 0, 0, null);
+			}
+			else if (cardCount <= 8 && cardCount > 0)
+			{
+				g.setColor(new Color(240, 240, 240));
+				g.fillRoundRect(GraphicsUtils.getCardWidth(0.4), GraphicsUtils.getCardHeight(1) - scale(10), GraphicsUtils.getCardWidth(1.2), scale(20), scale(8), scale(8));
+				g.setColor(Color.BLACK);
+				g.drawRoundRect(GraphicsUtils.getCardWidth(0.4), GraphicsUtils.getCardHeight(1) - scale(10), GraphicsUtils.getCardWidth(1.2), scale(20), scale(8), scale(8));
+				
+				Font font = GraphicsUtils.getBoldMDFont(Font.PLAIN, scale(20));
+				g.setFont(font);
+				TextPainter tp = new TextPainter(getCollection().getCardCount() + " Card" + (cardCount != 1 ? "s" : ""), font, new Rectangle(0, scale(2), GraphicsUtils.getCardWidth(2), 
+						GraphicsUtils.getCardHeight(2)));
 				tp.setHorizontalAlignment(Alignment.CENTER);
 				tp.setVerticalAlignment(Alignment.CENTER);
 				tp.paint(g);
@@ -230,23 +251,6 @@ public class MDDeck extends MDCardCollectionUnknown
 		@Override
 		public void mousePressed(MouseEvent event)
 		{
-			//MDMovingCard mc = new MDMovingCard(null, new Point(40, 60), 2, new CardMoney(501, new Random().nextInt(5) + 1), new Point(300, /*(int) (Math.random() * 800)*/750), 2);
-			//getParent().add(mc, 1);
-			/*
-			for (int i = 0 ; i < 5 ; i++)
-			{
-				for (Player player : getClient().getAllPlayers())
-				{
-					getClient().moveQueue.addMove(new CardMove(new CardMoney(501, new Random().nextInt(5) + 1), getCollection(), player.getHand(), 0));
-				}
-			}
-			*/
-			//getClient().moveQueue.addMove(new CardMove(getClient().getThePlayer().getHand().getCardAt(0), getClient().getThePlayer().getHand(), getClient().getDiscardPile(), -1));
-			//getClient().moveQueue.addMove(new CardMove(new CardMoney(501, new Random().nextInt(5) + 1), getCollection(), /*getClient().getOtherPlayers().get(1).getHand()*/getClient().getThePlayer().getHand(), 1));
-			//getClient().getEventQueue().addTask(new CardMove(new CardProperty(501, PropertyColor.LIGHT_BLUE, new Random().nextInt(5) + 1, "Property"), getCollection(), getClient().getThePlayer().getPropertySets().get(0), -1));
-			
-			//getClient().getEventQueue().addTask(new CardMove(new CardActionRent(501, 3, "RENT", PropertyColor.values()), getCollection(), getClient().getThePlayer().getHand(), 0));
-			
 			if (getClient().canDraw() && !getClient().isInputBlocked())
 			{
 				getClient().draw();

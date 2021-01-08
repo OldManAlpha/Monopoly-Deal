@@ -10,6 +10,7 @@ import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketDestroyCardCollection;
 import oldmana.md.net.packet.server.PacketPlayerInfo;
 import oldmana.md.net.packet.server.PacketUndoCardStatus;
+import oldmana.md.net.packet.universal.PacketChat;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.CardProperty.PropertyColor;
@@ -17,6 +18,7 @@ import oldmana.md.server.card.collection.Bank;
 import oldmana.md.server.card.collection.Hand;
 import oldmana.md.server.card.collection.PropertySet;
 import oldmana.md.server.net.ConnectionThread;
+import oldmana.md.server.status.StatusEffect;
 import oldmana.md.server.util.IDCounter;
 
 public class Player extends Client implements CommandSender
@@ -26,6 +28,8 @@ public class Player extends Client implements CommandSender
 	private int uid;
 	
 	private int id;
+	
+	private boolean op;
 	
 	private String name;
 	
@@ -37,14 +41,17 @@ public class Player extends Client implements CommandSender
 	
 	private List<Card> revokableCards = new ArrayList<Card>();
 	
+	private List<StatusEffect> statusEffects = new ArrayList<StatusEffect>();
+	
 	private boolean loggedIn = false;
 	
-	public Player(MDServer server, int uid, ConnectionThread net, String name)
+	public Player(MDServer server, int uid, ConnectionThread net, String name, boolean op)
 	{
 		super(net);
 		this.server = server;
 		this.uid = uid;
 		this.name = name;
+		this.op = op;
 		id = IDCounter.nextPlayerID();
 		
 		server.broadcastPacket(new PacketPlayerInfo(getID(), getName(), true), this);
@@ -88,6 +95,12 @@ public class Player extends Client implements CommandSender
 	{
 		Card card = getLastRevokableCard();
 		revokableCards.remove(card);
+		sendUndoStatus();
+		return card;
+	}
+	
+	public void sendUndoStatus()
+	{
 		if (canRevokeCard())
 		{
 			sendPacket(new PacketUndoCardStatus(getLastRevokableCard().getID()));
@@ -96,7 +109,6 @@ public class Player extends Client implements CommandSender
 		{
 			sendPacket(new PacketUndoCardStatus(-1));
 		}
-		return card;
 	}
 	
 	public void undoCard()
@@ -168,23 +180,24 @@ public class Player extends Client implements CommandSender
 		return null;
 	}
 	
+	public List<CardProperty> getAllPropertyCards()
+	{
+		List<CardProperty> cards = new ArrayList<CardProperty>();
+		for (PropertySet set : getPropertySets())
+		{
+			cards.addAll(set.getPropertyCards());
+		}
+		return cards;
+	}
+	
 	public List<Card> getAllCards()
 	{
 		List<Card> cards = new ArrayList<Card>();
-		for (Card card : getBank().getCards())
-		{
-			cards.add(card);
-		}
+		cards.addAll(getHand().getCards());
+		cards.addAll(getBank().getCards());
 		for (PropertySet set : getPropertySets())
 		{
-			for (Card card : set.getCards())
-			{
-				cards.add(card);
-			}
-		}
-		for (Card card : getHand().getCards())
-		{
-			cards.add(card);
+			cards.addAll(set.getCards());
 		}
 		return cards;
 	}
@@ -427,6 +440,16 @@ public class Player extends Client implements CommandSender
 		return wealth;
 	}
 	
+	public int getTotalPropertyValue()
+	{
+		int propValue = 0;
+		for (CardProperty prop : getAllPropertyCards())
+		{
+			propValue += prop.getValue();
+		}
+		return propValue;
+	}
+	
 	public int getMonopolyCount()
 	{
 		int monopolyCount = 0;
@@ -491,6 +514,41 @@ public class Player extends Client implements CommandSender
 		}
 	}
 	
+	public List<StatusEffect> getStatusEffects()
+	{
+		return new ArrayList<StatusEffect>(statusEffects);
+	}
+	
+	public void addStatusEffect(StatusEffect effect)
+	{
+		server.getEventManager().registerEvents(effect);
+		statusEffects.add(effect);
+	}
+	
+	public void removeStatusEffect(StatusEffect effect)
+	{
+		server.getEventManager().unregisterEvents(effect);
+		statusEffects.remove(effect);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <T extends StatusEffect> T getStatusEffect(Class<T> clazz)
+	{
+		for (StatusEffect effect : statusEffects)
+		{
+			if (effect.getClass() == clazz)
+			{
+				return (T) effect;
+			}
+		}
+		return null;
+	}
+	
+	public boolean hasStatusEffect(Class<? extends StatusEffect> clazz)
+	{
+		return getStatusEffect(clazz) != null;
+	}
+	
 	public Packet[] getPropertySetPackets()
 	{
 		Packet[] packets = new Packet[propertySets.size()];
@@ -509,13 +567,12 @@ public class Player extends Client implements CommandSender
 	@Override
 	public void sendMessage(String message)
 	{
-		// TODO Auto-generated method stub
+		sendPacket(new PacketChat(message));
 	}
 	
 	@Override
-	public void sendMessage(String message, boolean printConsole)
+	public boolean isOp()
 	{
-		// TODO Auto-generated method stub
-		System.out.println(message);
+		return op;
 	}
 }

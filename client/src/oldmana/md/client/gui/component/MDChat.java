@@ -25,6 +25,7 @@ import oldmana.md.client.MDScheduler.MDTask;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
+import oldmana.md.net.packet.universal.PacketChat;
 
 public class MDChat extends MDComponent
 {
@@ -97,7 +98,7 @@ public class MDChat extends MDComponent
 				{
 					if (typed.length() > 0)
 					{
-						addMessage(typed.toString());
+						getClient().sendPacket(new PacketChat(typed.toString()));
 						typed = new StringBuilder();
 					}
 					typeOffset = 0;
@@ -210,7 +211,6 @@ public class MDChat extends MDComponent
 			int typedOffsetWidth = metrics.stringWidth(typed.substring(0, typed.length() - typeDisplayOffset));
 			int posOffsetWidth = metrics.stringWidth(typed.substring(0, typed.length() - typeOffset));
 			g.setColor(new Color(0, 0, 0));
-			System.out.println(typedWidth);
 			if (typedOffsetWidth - getWidth() > 0)
 			{
 				g.translate(getWidth() - scale(4) - typedOffsetWidth, 0);

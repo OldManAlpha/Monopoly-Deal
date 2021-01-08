@@ -1,5 +1,9 @@
 package oldmana.md.client.gui.action;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.LayoutManager2;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -10,6 +14,7 @@ import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.component.MDLabel;
+import oldmana.md.client.gui.util.GraphicsUtils;
 
 public class ActionScreenSelectProperty extends ActionScreen
 {
@@ -18,17 +23,19 @@ public class ActionScreenSelectProperty extends ActionScreen
 	
 	private PropertySelectListener listener;
 	
+	private MDLabel propLabel;
+	
+	private MDButton cancel;
+	
 	public ActionScreenSelectProperty(PropertySet set, boolean canTargetNonBase)
 	{
 		this.set = set;
 		this.canTargetNonBase = canTargetNonBase;
 		
-		MDLabel prop = new MDLabel("Select Property");
-		prop.setSize(300, 40);
-		prop.setLocation(650, 50);
-		add(prop);
+		propLabel = new MDLabel("Select Property");
+		add(propLabel);
 		
-		MDButton cancel = new MDButton("Cancel");
+		cancel = new MDButton("Cancel");
 		cancel.setSize(180, 50);
 		cancel.setLocation(800 - 90, 900 - 50 - 10);
 		cancel.setFontSize(24);
@@ -86,5 +93,55 @@ public class ActionScreenSelectProperty extends ActionScreen
 		public void propertySelected(CardProperty prop);
 		
 		public void cancel();
+	}
+	
+	public class SelectPropertyLayout implements LayoutManager2
+	{
+		@Override
+		public void addLayoutComponent(String arg0, Component arg1) {}
+
+		@Override
+		public void layoutContainer(Container arg0)
+		{
+			propLabel.setSize(scale(40));
+			propLabel.setLocationCentered(getWidth() * 0.5, getHeight() * 0.1);
+			
+			//colorLabel.setSize(scale(40));
+			//colorLabel.setLocationCentered(getWidth() * 0.5, getHeight() * 0.4);
+			
+//			int offset = ((cards.size() - 1) * (GraphicsUtils.getCardWidth() + scale(25))) + GraphicsUtils.getCardWidth();
+//			for (int i = 0 ; i < cards.size() ; i++)
+//			{
+//				MDCard ui = cards.get(i);
+//				ui.setLocation((int) (getWidth() * 0.5) - offset + (i * (GraphicsUtils.getCardWidth() * 2 + 50)), propLabel.getMaxY() + scale(10));
+//			}
+		}
+
+		@Override
+		public Dimension minimumLayoutSize(Container arg0) {return null;}
+
+		@Override
+		public Dimension preferredLayoutSize(Container arg0) {return null;}
+
+		@Override
+		public void removeLayoutComponent(Component arg0) {}
+
+		@Override
+		public void addLayoutComponent(Component comp, Object constraints) {}
+
+		@Override
+		public float getLayoutAlignmentX(Container target) {return 0;}
+
+		@Override
+		public float getLayoutAlignmentY(Container target) {return 0;}
+
+		@Override
+		public void invalidateLayout(Container target)
+		{
+			layoutContainer(target);
+		}
+
+		@Override
+		public Dimension maximumLayoutSize(Container target) {return null;}
 	}
 }

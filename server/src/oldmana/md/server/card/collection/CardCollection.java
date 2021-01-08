@@ -16,6 +16,9 @@ import oldmana.md.server.util.IDCounter;
 
 public abstract class CardCollection
 {
+	public static List<CardCollection> collections = new ArrayList<CardCollection>();
+	
+	
 	private int id;
 	
 	private List<Card> cards;
@@ -27,7 +30,7 @@ public abstract class CardCollection
 		cards = new ArrayList<Card>();
 		
 		id = IDCounter.nextCollectionID();
-		CardCollectionRegistry.registerCardCollection(this);
+		registerCardCollection(this);
 	}
 	
 	public CardCollection(Player owner, List<Card> cards)
@@ -40,7 +43,7 @@ public abstract class CardCollection
 		}
 		
 		id = IDCounter.nextCollectionID();
-		CardCollectionRegistry.registerCardCollection(this);
+		registerCardCollection(this);
 	}
 	
 	public int getID()
@@ -191,4 +194,27 @@ public abstract class CardCollection
 	public abstract boolean isVisibleTo(Player player);
 	
 	public abstract Packet getCollectionDataPacket();
+	
+	
+	public static void registerCardCollection(CardCollection collection)
+	{
+		collections.add(collection);
+	}
+
+	public static List<CardCollection> getRegisteredCardCollections()
+	{
+		return collections;
+	}
+
+	public static CardCollection getCardCollection(int id)
+	{
+		for (CardCollection collection : collections)
+		{
+			if (collection.getID() == id)
+			{
+				return collection;
+			}
+		}
+		return null;
+	}
 }

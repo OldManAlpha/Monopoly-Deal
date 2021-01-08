@@ -40,7 +40,7 @@ public class MDDiscardPile extends MDCardCollection
 			if (getCollection().getCardCount() - (isCardIncoming() ? 1 : 0) > 0)
 			{
 				g.setColor(Color.DARK_GRAY);
-				g.fillRoundRect(scale(60), 0, scale(60) + (int) Math.ceil((getCollection().getCardCount() - (isCardIncoming() ? 1 : 0)) * (0.33 * GraphicsUtils.SCALE)), scale(180), scale(20), scale(20));
+				g.fillRoundRect(scale(60), 0, scale(60) + (int) Math.floor((getCollection().getCardCount() - (isCardIncoming() ? 1 : 0)) * (0.3 * GraphicsUtils.SCALE)), scale(180), scale(20), scale(20));
 				g.drawImage(getCollection().getCardAt(getCollection().getCardCount() - 1 - (isCardIncoming() ? 1 : 0)).getGraphics(getScale() * 2), 0, 0, GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2), null);
 			}
 			else

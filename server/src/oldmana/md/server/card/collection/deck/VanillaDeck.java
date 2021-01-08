@@ -3,15 +3,7 @@ package oldmana.md.server.card.collection.deck;
 import oldmana.md.server.card.CardMoney;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.CardProperty.PropertyColor;
-import oldmana.md.server.card.action.CardActionBirthday;
-import oldmana.md.server.card.action.CardActionDealBreaker;
-import oldmana.md.server.card.action.CardActionDebtCollector;
-import oldmana.md.server.card.action.CardActionDoubleTheRent;
-import oldmana.md.server.card.action.CardActionForcedDeal;
-import oldmana.md.server.card.action.CardActionGo;
-import oldmana.md.server.card.action.CardActionJustSayNo;
-import oldmana.md.server.card.action.CardActionRent;
-import oldmana.md.server.card.action.CardActionSlyDeal;
+import oldmana.md.server.card.action.*;
 
 public class VanillaDeck extends DeckStack
 {
@@ -84,7 +76,7 @@ public class VanillaDeck extends DeckStack
 		}
 		for (int i = 0 ; i < 3 ; i++)
 		{
-			addCard(new CardActionBirthday());
+			addCard(new CardActionItsMyBirthday());
 		}
 		for (int i = 0 ; i < 2 ; i++)
 		{
@@ -132,7 +124,7 @@ public class VanillaDeck extends DeckStack
 		{
 			addCard(new CardMoney(3));
 		}
-		for (int i = 0 ; i < 3 + 3 ; i++) // +3 to compensate for hotels
+		for (int i = 0 ; i < 3 + 2 ; i++) // +2 to compensate for hotels
 		{
 			addCard(new CardMoney(4));
 		}

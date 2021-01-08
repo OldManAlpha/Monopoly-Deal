@@ -67,14 +67,14 @@ public class MDMovingCard extends MDComponent
 		Graphics2D cardGr = img.createGraphics();
 		cardGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		cardGr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		cardGr.drawImage(start != null ? start.getGraphics(4) : Card.getBackGraphics(2), 0, 0, largestWidth, largestHeight, null);
+		cardGr.drawImage(start != null ? start.getGraphics(largestScale * getScale()) : Card.getBackGraphics(largestScale * getScale()), 0, 0, largestWidth, largestHeight, null);
 		cardCache[0] = img;
 		
 		img = GraphicsUtils.createImage(largestWidth, largestHeight);
 		cardGr = img.createGraphics();
 		cardGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		cardGr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		cardGr.drawImage(end != null ? end.getGraphics(4) : Card.getBackGraphics(2), 0, 0, largestWidth, largestHeight, null);
+		cardGr.drawImage(end != null ? end.getGraphics(largestScale * getScale()) : Card.getBackGraphics(largestScale * getScale()), 0, 0, largestWidth, largestHeight, null);
 		cardCache[1] = img;
 		
 		int size = 0;
@@ -289,7 +289,7 @@ public class MDMovingCard extends MDComponent
 		}
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		g.drawImage(result, 5, 5, getWidth() - 10, getHeight() - 10, null); // Why tf does -2 look best?
+		g.drawImage(result, 5, 5, getWidth() - 10, getHeight() - 10, null);
 		// TODO: Fix weird rendering cutoff issue
 		//System.out.println("WIDTH: " + getWidth() + " | IMG WIDTH: " + result.getWidth());
 		//System.out.println("Painted: " + pos);

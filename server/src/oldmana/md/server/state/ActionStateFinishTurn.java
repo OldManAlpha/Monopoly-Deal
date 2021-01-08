@@ -1,7 +1,6 @@
 package oldmana.md.server.state;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.PacketStatus;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
 import oldmana.md.server.Player;
@@ -11,7 +10,7 @@ public class ActionStateFinishTurn extends ActionState
 	public ActionStateFinishTurn(Player player)
 	{
 		super(player);
-		getServer().broadcastPacket(new PacketStatus("Waiting for " + player.getName() + " to finish their turn"));
+		getServer().getGameState().setStatus("Waiting for " + player.getName() + " to finish their turn");
 	}
 	
 	@Override

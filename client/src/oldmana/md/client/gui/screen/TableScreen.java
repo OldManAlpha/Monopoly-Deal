@@ -39,6 +39,8 @@ import oldmana.md.client.gui.component.large.MDHand;
 import oldmana.md.client.gui.component.large.MDPlayer;
 import oldmana.md.client.gui.component.large.MDTopbar;
 import oldmana.md.client.gui.util.GraphicsUtils;
+import oldmana.md.client.state.ActionState;
+import oldmana.md.client.state.client.ActionStateClient;
 
 public class TableScreen extends JLayeredPane
 {
@@ -58,6 +60,9 @@ public class TableScreen extends JLayeredPane
 	private MDButton debug;
 	
 	private JLabel version;
+	
+	private MDButton enlargeUI;
+	private MDButton shrinkUI;
 	
 	public TableScreen()
 	{
@@ -121,12 +126,42 @@ public class TableScreen extends JLayeredPane
 		});
 		add(debug, new Integer(1));
 		
-		//add(glass, new Integer(1000));
-		
 		chat = new MDChat();
 		chat.setSize(500, 400);
 		chat.setLocation(50, 300);
 		add(chat, new Integer(150));
+		
+		
+		enlargeUI = new MDButton("+");
+		enlargeUI.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseReleased(MouseEvent event)
+			{
+				GraphicsUtils.SCALE = ((GraphicsUtils.SCALE * 10) + 1) / 10.0;
+				revalidate();
+				repaint();
+				
+				getClient().getGameState().updateUI();
+			}
+		});
+		add(enlargeUI, new Integer(1));
+		
+		shrinkUI = new MDButton("-");
+		shrinkUI.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseReleased(MouseEvent event)
+			{
+				GraphicsUtils.SCALE = Math.max(0.5, ((GraphicsUtils.SCALE * 10) - 1) / 10.0);
+				revalidate();
+				repaint();
+				
+				getClient().getGameState().updateUI();
+			}
+		});
+		add(shrinkUI, new Integer(1));
+		
 		/*
 		MDClient.getInstance().getScheduler().scheduleTask(new MDTask(100, true)
 		{
@@ -172,8 +207,6 @@ public class TableScreen extends JLayeredPane
 		
 		int space = (getHeight() - hand.getHeight() - topbar.getHeight() - scale(15)) - scale((162 + 5) * 2);
 		int padding = ordered.size() > 1 ? (space - (scale(162) * (ordered.size() - 2))) / (ordered.size() - 1) : 0;
-		System.out.println("Space: " + space);
-		System.out.println("Padding: " + padding);
 		
 		for (int i = 0 ; i < ordered.size() ; i++)
 		{
@@ -219,8 +252,20 @@ public class TableScreen extends JLayeredPane
 	
 	public void setActionScreen(ActionScreen screen)
 	{
+		removeActionScreen();
 		actionScreen = screen;
+		actionScreen.setSize(getSize());
 		add(screen, new Integer(110));
+	}
+	
+	public void removeActionScreen()
+	{
+		if (actionScreen != null)
+		{
+			remove(actionScreen);
+			actionScreen = null;
+			repaint();
+		}
 	}
 	
 	public MDChat getChat()
@@ -303,123 +348,6 @@ public class TableScreen extends JLayeredPane
 		return undoButton;
 	}
 	
-	public void test()
-	{
-		//setLayout(null);
-		
-		//MDMovingCard mc = new MDMovingCard(null, new CardMoney(501, 10), new Point(50, 80), new Point(300, 700));
-		//add(mc);
-		
-		/*
-		Timer t = new Timer(1000, new ActionListener()
-		{
-
-			@Override
-			public void actionPerformed(ActionEvent arg0)
-			{
-				deck.addUnknownCard();
-				deck.getUI().repaint();
-			}
-			
-		});
-		t.setRepeats(true);
-		t.start();
-		*/
-		//deck.addUnknownCard();
-		
-		//discard.addCard(new CardProperty(2, PropertyColor.BROWN, 3, "Brown Card"));
-		
-		/*
-		MDSelection sel = new MDSelection();
-		sel.setSize(400, 400);
-		add(sel, 3);
-		MDCreateSet cs = new MDCreateSet();
-		add(cs, new Integer(1));
-		*/
-		
-		/*
-		PropertySet set = new PropertySet(1, null, new CardProperty(1, PropertyColor.BROWN, 1, "Brown Card"), PropertyColor.BROWN);
-		set.addCard(new CardProperty(2, PropertyColor.BROWN, 3, "Brown Card"));
-		set.addCard(new CardProperty(2, PropertyColor.BROWN, 4, "Brown Card"));
-		set.addCard(new CardProperty(2, PropertyColor.BROWN, 5, "Brown Card"));
-		PropertySet set2 = new PropertySet(1, null, new CardProperty(1, PropertyColor.ORANGE, 1, "Brown Card"), PropertyColor.BROWN);
-		set2.addCard(new CardProperty(2, PropertyColor.ORANGE, 3, "Brown Card"));
-		set2.addCard(new CardProperty(2, PropertyColor.ORANGE, 4, "Brown Card"));
-		set2.addCard(new CardProperty(2, Arrays.asList(PropertyColor.values()), true, 4, "Property Wild Card"));*/
-		//add(set.getUI(), 0);
-		
-		/*
-		Player player = new ThePlayer(MDClient.getInstance(), 0, "Oldmana");
-		add(player.getUI());
-		player.addPropertySet(set);
-		player.addPropertySet(set2);*/
-		/*
-		Player player2 = new Player(MDClient.getInstance(), 1, "Zyga - The Ruler Of The 20 MDs");
-		add(player2.getUI());
-		Player player3 = new Player(MDClient.getInstance(), 2, "[Aether]<mine_diver>");
-		add(player3.getUI());
-		Player player4 = new Player(MDClient.getInstance(), 3, "AndrewKart");
-		add(player4.getUI());
-		*/
-		/*
-		Hand hand = new Hand(0, player);
-		hand.addCard(new CardProperty(2, PropertyColor.BROWN, 10, "Mediterranean Avenue"));
-		hand.addCard(new CardProperty(2, PropertyColor.DARK_BLUE, 5, "Brown Card"));
-		//hand.addCard(new CardProperty(2, PropertyColor.BROWN, 5, "Brown Card"));
-		//hand.addCard(new CardProperty(2, PropertyColor.BROWN, 5, "Brown Card"));
-		//hand.addCard(new CardProperty(2, PropertyColor.BROWN, 5, "Brown Card"));
-		//hand.addCard(new CardProperty(2, PropertyColor.BROWN, 5, "Brown Card"));
-		//hand.addCard(new CardProperty(2, PropertyColor.BROWN, 0, "Brown Card"));
-		//hand.addCard(new CardProperty(2, PropertyColor.BROWN, 5, "Brown Card"));
-		hand.addCard(new CardAction(2, 4, "JUST SAY NO!"));
-		hand.addCard(new CardAction(2, 3, "SLY DEAL"));
-		hand.addCard(new CardMoney(2, 5));
-		hand.addCard(new CardMoney(2, 10));
-		hand.addCard(new CardProperty(2, PropertyColor.RAILROAD, 0, "Railroad"));
-		hand.addCard(new CardProperty(2, Arrays.asList(PropertyColor.values()), true, 0, "Property Wild Card"));
-		this.hand = (MDHand) hand.getUI();
-		add(hand.getUI());
-		MouseAdapter listener = new MouseAdapter()
-		{
-			@Override
-			public void mouseClicked(MouseEvent event)
-			{
-				System.out.println(event.getComponent());
-			}
-		};
-		hand.getUI().addMouseListener(listener);
-		hand.getUI().getMDCards().get(0).addMouseListener(listener);
-		
-		Timer t = new Timer(1000, new ActionListener()
-		{
-
-			@Override
-			public void actionPerformed(ActionEvent arg0)
-			{
-				//player.getHand().addUnknownCard();
-				//player.getBank().addCard(new Card(2, 1, "A Card"));
-			}
-			
-		});
-		t.setRepeats(true);
-		t.start();
-		*/
-		/*
-		for (int i = 0 ; i < 7 ; i++)
-		{
-			player.getHand().addUnknownCard();
-		}
-		for (int i = 0 ; i < 3 ; i++)
-		{
-			player2.getHand().addUnknownCard();
-		}
-		for (int i = 0 ; i < 20 ; i++)
-		{
-			player.getBank().addCard(new CardAction(2, 4, "JUST SAY NO!"));
-		}
-		*/
-	}
-	
 	public MDClient getClient()
 	{
 		return MDClient.getInstance();
@@ -457,16 +385,21 @@ public class TableScreen extends JLayeredPane
 		@Override
 		public void layoutContainer(Container container)
 		{
-			System.out.println("layout");
-			
 			topbar.setSize(getWidth(), scale(35));
 			
 			debug.setLocation(getWidth() - scale(45), scale(5));
 			debug.setSize(scale(40), scale(25));
 			debug.setFontSize(16);
 			
+			enlargeUI.setLocation(scale(5), scale(5));
+			enlargeUI.setSize(scale(25), scale(25));
+			
+			shrinkUI.setLocation(enlargeUI.getMaxX() + scale(5), scale(5));
+			shrinkUI.setSize(scale(25), scale(25));
+			
 			version.setLocation(scale(5), getHeight() - scale(20));
 			version.setSize(scale(200), scale(15));
+			//version.setFont(GraphicsUtils.getThinMDFont(Font.PLAIN, scale(16)));
 			
 			if (deck != null && discard != null)
 			{

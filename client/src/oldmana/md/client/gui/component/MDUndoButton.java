@@ -3,7 +3,6 @@ package oldmana.md.client.gui.component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import oldmana.md.client.MDClient;
 import oldmana.md.client.card.Card;
 import oldmana.md.net.packet.client.action.PacketActionUndoCard;
 
@@ -23,14 +22,14 @@ public class MDUndoButton extends MDButton
 			{
 				if (view != null)
 				{
-					MDClient.getInstance().getTableScreen().remove(view);
-					MDClient.getInstance().getTableScreen().repaint();
+					getClient().removeTableComponent(view);
+					getClient().getTableScreen().repaint();
 				}
 				if (card != null)
 				{
 					view = new MDCardView(card);
-					view.setLocation(getX() + 24, getY() + 54);
-					MDClient.getInstance().addTableComponent(view, 10);
+					view.setLocation(getX() + (getWidth() / 2) - (view.getWidth() / 2), getMaxY() + scale(10));
+					getClient().addTableComponent(view, 10);
 				}
 			}
 			
@@ -39,8 +38,8 @@ public class MDUndoButton extends MDButton
 			{
 				if (view != null)
 				{
-					MDClient.getInstance().getTableScreen().remove(view);
-					MDClient.getInstance().getTableScreen().repaint();
+					getClient().removeTableComponent(view);
+					getClient().getTableScreen().repaint();
 				}
 			}
 			
@@ -49,12 +48,12 @@ public class MDUndoButton extends MDButton
 			{
 				if (isEnabled())
 				{
-					MDClient.getInstance().sendPacket(new PacketActionUndoCard());
+					getClient().sendPacket(new PacketActionUndoCard());
 					setEnabled(false);
 					if (view != null)
 					{
-						MDClient.getInstance().getTableScreen().remove(view);
-						MDClient.getInstance().getTableScreen().repaint();
+						getClient().removeTableComponent(view);
+						getClient().getTableScreen().repaint();
 					}
 				}
 			}

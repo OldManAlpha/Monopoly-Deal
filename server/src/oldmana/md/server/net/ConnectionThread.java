@@ -85,8 +85,6 @@ public class ConnectionThread extends Thread
 		{
 			try
 			{
-				//if (connection.getSocket().getInetAddress().toString().equals("/127.0.0.1")) // TEMP
-				//{
 				for (Packet p : getOutPackets())
 				{
 					connection.sendPacket(p);
@@ -97,39 +95,6 @@ public class ConnectionThread extends Thread
 					Packet p = connection.receivePackets(10000);
 					addInPacket(p);
 				}
-				/*
-				}
-				else
-				{
-					connection.getSocket().setSoTimeout(0);
-					//connection.getSocket().getOutputStream().write("Fuck off".getBytes());
-					List<Integer> data = new ArrayList<Integer>();
-					int b;
-					try
-					{
-					while ((b = connection.getSocket().getInputStream().read()) != -1)
-					{
-						data.add(b);
-					}
-					}
-					catch (Exception e) {}
-					String s = "Data: ";
-					for (int by : data)
-					{
-						if (by < 10)
-						{
-							s += "0";
-						}
-						if (by < 100)
-						{
-							s += "0";
-						}
-						s += by + " ";
-					}
-					System.out.println(s);
-					break;
-				}
-				*/
 			}
 			catch (Exception e)
 			{

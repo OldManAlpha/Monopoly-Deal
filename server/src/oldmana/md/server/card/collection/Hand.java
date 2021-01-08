@@ -30,18 +30,6 @@ public class Hand extends CardCollection
 		super.transferCard(card, to, index, speed);
 	}
 	
-	/*
-	@Override
-	public void transferCard(Card card, CardCollection to)
-	{
-		super.transferCard(card, to);
-		PacketMoveRevealCard packet = new PacketMoveRevealCard(card.getID(), getID(), to.getID(), to.getIndexOf(card));
-		getServer().broadcastPacket(packet, card.getOwner());
-		PacketMoveCard packet2 = new PacketMoveCard(card.getID(), to.getID(), to.getIndexOf(card));
-		card.getOwner().sendPacket(packet2);
-	}
-	*/
-	
 	@Override
 	public boolean isVisibleTo(Player player)
 	{

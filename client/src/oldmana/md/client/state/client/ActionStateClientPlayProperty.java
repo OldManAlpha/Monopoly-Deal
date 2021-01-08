@@ -14,6 +14,7 @@ import oldmana.md.client.gui.component.MDCreateSet;
 import oldmana.md.client.gui.component.MDPropertySet;
 import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.component.large.MDHand;
+import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.net.packet.client.action.PacketActionPlayCardProperty;
 
 public class ActionStateClientPlayProperty extends ActionStateClient
@@ -59,6 +60,7 @@ public class ActionStateClientPlayProperty extends ActionStateClient
 		}
 		
 		createSet = new MDCreateSet(getClient().getThePlayer());
+		createSet.setSize(GraphicsUtils.getCardWidth(), GraphicsUtils.getCardHeight());
 		getClient().getTableScreen().add(createSet, new Integer(90));
 		createSet.addMouseListener(new MouseAdapter()
 		{

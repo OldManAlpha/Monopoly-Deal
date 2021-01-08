@@ -35,7 +35,7 @@ public class MDClient
 {
 	private static MDClient instance;
 	
-	public static final String VERSION = "0.6 DEV";
+	public static final String VERSION = "0.6 PR2";
 	
 	private MDFrame window;
 	
@@ -73,9 +73,9 @@ public class MDClient
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		try
 		{
-			Font f = Font.createFont(Font.TRUETYPE_FONT, MDClient.class.getResourceAsStream("/oldmana/general/md/client/gui/font/ITCKabelStd-Bold.otf"));
+			Font f = Font.createFont(Font.TRUETYPE_FONT, MDClient.class.getResourceAsStream("/oldmana/md/client/gui/font/ITCKabelStd-Bold.otf"));
 			ge.registerFont(f);
-			Font f2 = Font.createFont(Font.TRUETYPE_FONT, MDClient.class.getResourceAsStream("/oldmana/general/md/client/gui/font/ITCKabelStd-Book.otf"));
+			Font f2 = Font.createFont(Font.TRUETYPE_FONT, MDClient.class.getResourceAsStream("/oldmana/md/client/gui/font/ITCKabelStd-Book.otf"));
 			ge.registerFont(f2);
 		}
 		catch (Exception e)
@@ -137,17 +137,6 @@ public class MDClient
 		window = new MDFrame();
 		//window.setVisible(true);
 		
-		/*
-		MDClient.getInstance().getScheduler().scheduleTask(new MDTask(60)
-		{
-			@Override
-			public void run()
-			{
-				RentSelector rs = new RentSelector(getThePlayer(), 1);
-				getWindow().getTableScreen().add(rs, new Integer(100));
-			}
-		});
-		*/
 		
 		Timer timer = new Timer(50, new ActionListener()
 		{
@@ -159,17 +148,6 @@ public class MDClient
 		});
 		timer.setRepeats(true);
 		timer.start();
-		/*
-		try
-		{
-			connectToServer("localhost", 7777);
-			connection.addOutPacket(new PacketLogin(1, 1));
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-		*/
 	}
 	
 	// RUNS ON SWING THREAD

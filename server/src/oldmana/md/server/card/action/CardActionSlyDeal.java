@@ -3,7 +3,7 @@ package oldmana.md.server.card.action;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.collection.PropertySet;
-import oldmana.md.server.state.ActionStateTargetPlayerProperty;
+import oldmana.md.server.state.ActionStateTargetSlyDeal;
 
 public class CardActionSlyDeal extends CardAction
 {
@@ -18,7 +18,7 @@ public class CardActionSlyDeal extends CardAction
 	@Override
 	public void playCard(Player player)
 	{
-		getServer().getGameState().setCurrentActionState(new ActionStateTargetPlayerProperty(player));
+		getServer().getGameState().setCurrentActionState(new ActionStateTargetSlyDeal(player));
 	}
 	
 	@Override

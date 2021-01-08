@@ -2,9 +2,6 @@ package oldmana.md.client.gui.component;
 
 import java.awt.Point;
 
-import javax.swing.JLayeredPane;
-
-import oldmana.md.client.MDClient;
 import oldmana.md.client.card.collection.CardCollection;
 
 public abstract class MDCardCollectionBase extends MDComponent
@@ -59,9 +56,4 @@ public abstract class MDCardCollectionBase extends MDComponent
 	public abstract void update();
 	
 	public abstract Point getLocationOf(int cardIndex);
-	
-	public MDClient getClient()
-	{
-		return MDClient.getInstance();
-	}
 }

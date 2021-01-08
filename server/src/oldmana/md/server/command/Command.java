@@ -1,6 +1,7 @@
 package oldmana.md.server.command;
 
 import oldmana.md.server.CommandSender;
+import oldmana.md.server.MDServer;
 
 public abstract class Command
 {
@@ -83,6 +84,24 @@ public abstract class Command
 			return false;
 		}
 		return true;
+	}
+	
+	protected String getFullStringArgument(String[] args, int start)
+	{
+		String str = args[start];
+		if (args.length > start)
+		{
+			for (int i = start + 1 ; i < args.length ; i++)
+			{
+				str += " " + args[i];
+			}
+		}
+		return str;
+	}
+	
+	protected MDServer getServer()
+	{
+		return MDServer.getInstance();
 	}
 	
 	public abstract void executeCommand(CommandSender sender, String[] args);

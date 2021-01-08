@@ -13,7 +13,7 @@ import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.component.MDPropertySet;
 import oldmana.md.client.gui.component.MDSelection;
-import oldmana.md.net.packet.client.action.PacketActionSelectSelfPlayerProperty;
+import oldmana.md.net.packet.client.action.PacketActionSelectProperties;
 
 public class ActionStateTargetSelfPlayerProperty extends ActionState
 {
@@ -55,18 +55,16 @@ public class ActionStateTargetSelfPlayerProperty extends ActionState
 										public void propertySelected(CardProperty prop)
 										{
 											propertySelectedOther(prop);
-											getClient().getTableScreen().remove(screen);
-											getClient().getTableScreen().repaint();
+											getClient().getTableScreen().removeActionScreen();
 										}
 										
 										@Override
 										public void cancel()
 										{
-											getClient().getTableScreen().remove(screen);
-											getClient().getTableScreen().repaint();
+											getClient().getTableScreen().removeActionScreen();
 										}
 									});
-									getClient().addTableComponent(screen, 110);
+									getClient().getTableScreen().setActionScreen(screen);
 								}
 								else
 								{
@@ -96,18 +94,16 @@ public class ActionStateTargetSelfPlayerProperty extends ActionState
 									public void propertySelected(CardProperty prop)
 									{
 										propertySelectedSelf(prop);
-										getClient().getTableScreen().remove(screen);
-										getClient().getTableScreen().repaint();
+										getClient().getTableScreen().removeActionScreen();
 									}
 									
 									@Override
 									public void cancel()
 									{
-										getClient().getTableScreen().remove(screen);
-										getClient().getTableScreen().repaint();
+										getClient().getTableScreen().removeActionScreen();
 									}
 								});
-								getClient().addTableComponent(screen, 110);
+								getClient().getTableScreen().setActionScreen(screen);
 							}
 							else
 							{
@@ -172,7 +168,7 @@ public class ActionStateTargetSelfPlayerProperty extends ActionState
 					@Override
 					public void mouseReleased(MouseEvent event)
 					{
-						getClient().sendPacket(new PacketActionSelectSelfPlayerProperty(cardViewSelf.getCard().getID(), cardViewOther.getCard().getID()));
+						getClient().sendPacket(new PacketActionSelectProperties(new int[] {cardViewSelf.getCard().getID(), cardViewOther.getCard().getID()}));
 						cleanup();
 						getClient().setAwaitingResponse(true);
 						button.setEnabled(false);

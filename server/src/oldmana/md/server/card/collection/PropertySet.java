@@ -255,17 +255,6 @@ public class PropertySet extends CardCollection
 		}
 	}
 	
-	/*
-	@Override
-	public void transferCard(Card card, CardCollection to)
-	{
-		super.transferCard(card, to);
-		
-		PacketMoveCard packet = new PacketMoveCard(card.getID(), to.getID(), -1);
-		getServer().broadcastPacket(packet);
-	}
-	*/
-	
 	@Override
 	public boolean isVisibleTo(Player player)
 	{

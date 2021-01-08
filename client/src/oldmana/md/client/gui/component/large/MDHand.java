@@ -22,6 +22,7 @@ import oldmana.md.client.Player;
 import oldmana.md.client.MDScheduler.MDTask;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardActionJustSayNo;
+import oldmana.md.client.card.CardActionRentCounter;
 import oldmana.md.client.card.CardMoney;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.collection.CardCollection;
@@ -34,6 +35,7 @@ import oldmana.md.client.gui.util.CardPainter;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.ActionStateDiscard;
+import oldmana.md.client.state.ActionStateRent;
 
 public class MDHand extends MDCardCollection
 {
@@ -240,9 +242,11 @@ public class MDHand extends MDCardCollection
 				boolean canPlayJSN = curHover instanceof CardActionJustSayNo && state != null && ((state.isTarget(player) && 
 						!state.isRefused(player) && !state.isAccepted(player)) || (state.getActionOwner() == player && state.getNumberOfRefused() > 0)) 
 						&& !state.isUsingJustSayNo();
+				boolean canPlayRentCounter = curHover instanceof CardActionRentCounter && state != null && state instanceof ActionStateRent && 
+						state.isTarget(player) && !state.isRefused(player) && !state.isAccepted(player);
 				boolean discard = state instanceof ActionStateDiscard;
 				boolean property = curHover instanceof CardProperty;
-				if (!getClient().isInputBlocked() && (getClient().canPlayCard() || canPlayJSN || (discard && state.getActionOwner() == player && 
+				if (!getClient().isInputBlocked() && (getClient().canPlayCard() || canPlayJSN || canPlayRentCounter || (discard && state.getActionOwner() == player && 
 						(!property || player.hasAllPropertiesInHand()))))
 				{
 					if ((curHover == null && hovered != null) || (hovered != null && curHover != hovered))

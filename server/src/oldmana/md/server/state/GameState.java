@@ -8,8 +8,11 @@ import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateAccepted;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
-import oldmana.md.server.card.action.CardActionCorruptedGame;
-import oldmana.md.server.card.action.CardActionPoliticalFavor;
+import oldmana.md.server.event.ActionStateChangedEvent;
+import oldmana.md.server.event.ActionStateChangingEvent;
+import oldmana.md.server.event.PlayersWonEvent;
+import oldmana.md.server.event.TurnEndEvent;
+import oldmana.md.server.event.TurnStartEvent;
 
 public class GameState
 {
@@ -20,6 +23,10 @@ public class GameState
 	private boolean waitingDraw;
 	
 	private ActionState state;
+	
+	private String status = "";
+	
+	private boolean winningEnabled = true;
 	
 	private int deferredWinTurns;
 	private Player deferredWinPlayer;
@@ -67,15 +74,25 @@ public class GameState
 		int numPlayers = server.getPlayers().size();
 		if (deferredWinPlayer == playerTurn)
 		{
+			if (deferredWinTurns == 1)
+			{
+				server.broadcastMessage("Winning is now possible.");
+			}
 			deferredWinTurns -= 1;
 			if (deferredWinTurns < 1)
 			{
 				deferredWinPlayer = null;
 			}
+			else
+			{
+				server.broadcastMessage("Winning is deferred for " + deferredWinTurns + " turn(s). (After " + deferredWinPlayer.getName() + "'s turn)");
+			}
 		}
 		if (playerTurn != null)
 		{
 			playerTurn.clearRevokableCards();
+			
+			server.getEventManager().callEvent(new TurnEndEvent(playerTurn));
 		}
 		if (playerTurn == null)
 		{
@@ -85,11 +102,14 @@ public class GameState
 		{
 			playerTurn = server.getPlayers().get((server.getPlayers().indexOf(playerTurn) + 1) % numPlayers);
 		}
+		
+		server.getEventManager().callEvent(new TurnStartEvent(playerTurn));
+		
 		turns = 3;
 		waitingDraw = true;
 		if (deferredWinTurns > 0)
 		{
-			System.out.println("Win deferred: " + deferredWinTurns + " (" + playerTurn.getName() + ")");
+			System.out.println("Win deferred: " + deferredWinTurns + " (" + deferredWinPlayer.getName() + ")");
 		}
 		System.out.println("ACTIVE PLAYER: " + playerTurn.getID() + " (" + playerTurn.getName() + ")");
 	}
@@ -128,26 +148,23 @@ public class GameState
 	
 	public void setCurrentActionState(ActionState state)
 	{
-		if (!checkWin() && !state.isFinished())
+		if (!checkWin())
 		{
-			this.state = state;
-			server.broadcastPacket(this.state.constructPacket());
-			for (Player player : state.getAccepted())
+			ActionStateChangingEvent changingEvent = new ActionStateChangingEvent(this.state, state);
+			server.getEventManager().callEvent(changingEvent);
+			if (!state.isFinished())
 			{
-				server.broadcastPacket(new PacketUpdateActionStateAccepted(player.getID(), true));
-			}
-			// Political favor
-			for (ActionTarget target : state.getActionTargets())
-			{
-				Player player = target.getTarget();
-				for (Card card : player.getBank().getCards(true))
+				if (!changingEvent.isCanceled())
 				{
-					if (card instanceof CardActionPoliticalFavor)
+					ActionState lastState = this.state;
+					this.state = state;
+					server.broadcastPacket(this.state.constructPacket());
+					for (Player player : state.getAccepted())
 					{
-						state.setRefused(player, true);
-						card.transfer(state.getActionOwner().getBank());
-						break;
+						server.broadcastPacket(new PacketUpdateActionStateAccepted(player.getID(), true));
 					}
+					ActionStateChangedEvent changedEvent = new ActionStateChangedEvent(lastState, state);
+					server.getEventManager().callEvent(changedEvent);
 				}
 			}
 		}
@@ -160,27 +177,20 @@ public class GameState
 	public boolean checkWin()
 	{
 		List<Player> winners = server.findWinners();
-		if (!winners.isEmpty() && deferredWinTurns < 1)
+		if (!winners.isEmpty() && deferredWinTurns < 1 && isWinningEnabled())
 		{
-			// Corrupted Game Check
-			for (Player player : server.getPlayersExcluding(winners))
+			PlayersWonEvent event = new PlayersWonEvent(winners);
+			server.getEventManager().callEvent(event);
+			deferWinBy(event.getWinDeferredTurns());
+			if (event.isCanceled()) // Probably a bad idea to cancel a win, for now
 			{
-				for (Card card : player.getHand().getCards(true))
-				{
-					if (card instanceof CardActionCorruptedGame)
-					{
-						card.transfer(server.getDiscardPile());
-						if (player.getHand().getCardCount() == 0)
-						{
-							server.getDeck().drawCards(player, 5, 1.2);
-						}
-						deferWinBy(2);
-					}
-				}
+				setWinningEnabled(false);
 			}
 		}
-		if (!winners.isEmpty() && deferredWinTurns < 1)
+		
+		if (!winners.isEmpty() && deferredWinTurns < 1 && isWinningEnabled())
 		{
+			playerTurn.clearRevokableCards();
 			playerTurn = null;
 			this.state = new ActionStateDoNothing();
 			server.broadcastPacket(this.state.constructPacket());
@@ -245,6 +255,32 @@ public class GameState
 				}
 			}
 		}
+	}
+	
+	public void setStatus(String status)
+	{
+		this.status = status == null ? "" : status;
+		server.broadcastPacket(new PacketStatus(this.status));
+	}
+	
+	public void broadcastStatus()
+	{
+		server.broadcastPacket(new PacketStatus(status));
+	}
+	
+	public void sendStatus(Player player)
+	{
+		player.sendPacket(new PacketStatus(status));
+	}
+	
+	public void setWinningEnabled(boolean winningEnabled)
+	{
+		this.winningEnabled = winningEnabled;
+	}
+	
+	public boolean isWinningEnabled()
+	{
+		return winningEnabled;
 	}
 	
 	public void deferWinBy(int turns)

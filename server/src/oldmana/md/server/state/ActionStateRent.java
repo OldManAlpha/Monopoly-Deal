@@ -3,13 +3,12 @@ package oldmana.md.server.state;
 import java.util.List;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.PacketStatus;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateRent;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardProperty;
-import oldmana.md.server.card.CardRegistry;
 import oldmana.md.server.card.collection.PropertySet;
+import oldmana.md.server.event.RentPaymentEvent;
 
 public class ActionStateRent extends ActionState
 {
@@ -40,14 +39,14 @@ public class ActionStateRent extends ActionState
 			{
 				if (status == null)
 				{
-					status = getActionOwner().getName() + " charges " + amount + "M against " + target.getTarget().getName();
+					status = getActionOwner().getName() + " charges " + amount + "M against " + target.getPlayer().getName();
 				}
 				else
 				{
-					status += ", " + target.getTarget().getName();
+					status += ", " + target.getPlayer().getName();
 				}
 			}
-			getServer().broadcastPacket(new PacketStatus(status));
+			getServer().getGameState().setStatus(status);
 		}
 	}
 	
@@ -55,7 +54,7 @@ public class ActionStateRent extends ActionState
 	{
 		for (ActionTarget target : getActionTargets())
 		{
-			if (!target.getTarget().hasAnyMonetaryAssets())
+			if (!target.getPlayer().hasAnyMonetaryAssets())
 			{
 				target.setAccepted(true);
 			}
@@ -70,6 +69,11 @@ public class ActionStateRent extends ActionState
 	public void playerPaid(Player player, List<Card> cards)
 	{
 		Player renter = getActionOwner();
+		
+		RentPaymentEvent event = new RentPaymentEvent(getActionOwner(), player, cards);
+		getServer().getEventManager().callEvent(event);
+		cards = event.getPayment();
+		
 		for (Card card : cards)
 		{
 			if (card instanceof CardProperty)
@@ -110,7 +114,7 @@ public class ActionStateRent extends ActionState
 		int[] refused = new int[refusedPlayers.size()];
 		for (int i = 0 ; i < rented.length ; i ++)
 		{
-			rented[i] = targets.get(i).getTarget().getID();
+			rented[i] = targets.get(i).getPlayer().getID();
 		}
 		for (int i = 0 ; i < paid.length ; i++)
 		{
