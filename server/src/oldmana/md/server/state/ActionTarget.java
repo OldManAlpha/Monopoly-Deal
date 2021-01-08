@@ -13,7 +13,7 @@ public class ActionTarget
 		this.target = target;
 	}
 	
-	public Player getTarget()
+	public Player getPlayer()
 	{
 		return target;
 	}

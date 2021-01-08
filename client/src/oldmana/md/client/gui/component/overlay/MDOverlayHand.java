@@ -14,6 +14,7 @@ import oldmana.md.client.card.CardAction;
 import oldmana.md.client.card.CardActionDoubleTheRent;
 import oldmana.md.client.card.CardActionJustSayNo;
 import oldmana.md.client.card.CardActionRent;
+import oldmana.md.client.card.CardActionRentCounter;
 import oldmana.md.client.card.CardMoney;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.gui.component.MDButton;
@@ -23,11 +24,13 @@ import oldmana.md.client.gui.component.large.MDHand;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.ActionStateDiscard;
+import oldmana.md.client.state.ActionStateRent;
 import oldmana.md.client.state.client.ActionStateClientPlayProperty;
 import oldmana.md.net.packet.client.action.PacketActionDiscard;
 import oldmana.md.net.packet.client.action.PacketActionPlayCardAction;
 import oldmana.md.net.packet.client.action.PacketActionPlayCardBank;
 import oldmana.md.net.packet.client.action.PacketActionPlayCardProperty;
+import oldmana.md.net.packet.client.action.PacketActionPlayCardSpecial;
 import oldmana.md.net.packet.client.action.PacketActionPlayMultiCardAction;
 
 public class MDOverlayHand extends MDComponent
@@ -73,6 +76,11 @@ public class MDOverlayHand extends MDComponent
 					{
 						ActionState state = client.getGameState().getCurrentActionState();
 						state.onJustSayNo((CardActionJustSayNo) card);
+					}
+					else if (card instanceof CardActionRentCounter)
+					{
+						client.sendPacket(new PacketActionPlayCardSpecial(card.getID(), -1));
+						client.setAwaitingResponse(true);
 					}
 					else if (card instanceof CardAction)
 					{
@@ -142,7 +150,9 @@ public class MDOverlayHand extends MDComponent
 				}
 			});
 			if (!(card instanceof CardMoney || card instanceof CardActionJustSayNo || card instanceof CardActionDoubleTheRent) 
-					|| (card instanceof CardActionJustSayNo && !client.canActFreely()))
+					|| (card instanceof CardActionJustSayNo && !client.canActFreely()) || (card instanceof CardActionRentCounter && 
+							state instanceof ActionStateRent && state.isTarget(client.getThePlayer()) && !state.isAccepted(client.getThePlayer()) && 
+							!state.isRefused(client.getThePlayer())))
 			{
 				add(playButton);
 			}

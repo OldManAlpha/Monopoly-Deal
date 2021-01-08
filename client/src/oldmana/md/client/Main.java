@@ -20,13 +20,5 @@ public class Main
 				new MDClient().startClient();
 			}
 		});
-		
-		/*
-		MJConnection test = new MJConnection();
-		test.connect("localhost", 7777, 5000);
-		
-		test.sendPacket(new PacketLogin(1, 1));
-		System.out.println("Sent packet");
-		*/
 	}
 }

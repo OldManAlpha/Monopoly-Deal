@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
+import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -71,15 +72,16 @@ public class MDCardSelection extends MDCard
 		super.paintComponent(gr);
 		Graphics2D g = (Graphics2D) gr;
 		//g.drawImage(card.getGraphics(4), 0, 0, getWidth(), getHeight(), null);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		if (selected)
 		{
 			Polygon check = new Polygon();
-			check.addPoint(58, 127);
-			check.addPoint(102, 71);
-			check.addPoint(92, 66);
-			check.addPoint(59, 112);
-			check.addPoint(25, 90);
-			check.addPoint(18, 99);
+			check.addPoint(scale(58), scale(127));
+			check.addPoint(scale(102), scale(71));
+			check.addPoint(scale(92), scale(66));
+			check.addPoint(scale(59), scale(112));
+			check.addPoint(scale(25), scale(90));
+			check.addPoint(scale(18), scale(99));
 			g.setColor(Color.GREEN);
 			g.fillPolygon(check);
 			g.setColor(Color.BLACK);

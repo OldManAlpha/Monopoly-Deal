@@ -51,6 +51,8 @@ public class CardPainter
 		return new Font("ITCKabelStd-Bold", Font.PLAIN, scale(4));
 	}
 	
+	
+	// TODO: The card scaling is a bit of a failure and needs rethinking or just needs to be removed. This only supports 8x scaled cards unless it's a card back.
 	public void paint(Graphics gr)
 	{
 		boolean money = card instanceof CardMoney;
@@ -214,12 +216,36 @@ public class CardPainter
 			}
 			else
 			{
-				Font font = new Font(getFont().getFontName(), Font.BOLD, scale(5));
-				g.setFont(font);
-				TextPainter tp = new TextPainter(property ? card.getName().toUpperCase() : "ACTION CARD", font, new Rectangle(scale(4), scale(property ? 24 : 16), getWidth() - scale(8), scale(20)));
-				tp.setHorizontalAlignment(Alignment.CENTER);
-				tp.setVerticalAlignment(Alignment.TOP);
-				tp.paint(g);
+				// Special name drawing for 10-Color Property Wild Cards, disabled for now
+				/*
+				if (property && ((CardProperty) card).isPropertyWildCard())
+				{
+					g.setColor(Color.WHITE);
+					g.fillRect(scale(6), scale(6 + 5), getWidth() - scale(12), scale(17 - 10));
+					g.setColor(Color.BLACK);
+					g.fillRect(scale(6), scale(6 + 5), getWidth() - scale(12), scale(0.5));
+					g.fillRect(scale(6), scale(17.5), getWidth() - scale(12), scale(0.5));
+					g.fillRect(scale(6), scale(12), getWidth() - scale(12), scale(5));
+					g.setColor(Color.WHITE);
+					g.fillRect(scale(6.5), scale(12.5), getWidth() - scale(13), scale(4));
+					g.setColor(Color.BLACK);
+					Font font = new Font(getFont().getFontName(), Font.BOLD, scale(4.6));
+					g.setFont(font);
+					TextPainter tp = new TextPainter(card.getName().toUpperCase(), font, new Rectangle(scale(6.5), scale(12.5), getWidth() - scale(13), scale(4)));
+					tp.setHorizontalAlignment(Alignment.CENTER);
+					tp.setVerticalAlignment(Alignment.TOP);
+					tp.paint(g);
+				}
+				else
+				*/
+				{
+					Font font = new Font(getFont().getFontName(), Font.BOLD, scale(property ? 4.6 : 5));
+					g.setFont(font);
+					TextPainter tp = new TextPainter(property ? card.getName().toUpperCase() : "ACTION CARD", font, new Rectangle(scale(6), scale(property ? 24 : 16), getWidth() - scale(12), scale(20)));
+					tp.setHorizontalAlignment(Alignment.CENTER);
+					tp.setVerticalAlignment(Alignment.TOP);
+					tp.paint(g);
+				}
 				
 				if (!property)
 				{
@@ -240,9 +266,9 @@ public class CardPainter
 						g.setColor(Color.WHITE);
 						g.fillOval(scale(18), scale(33), scale(24), scale(24));
 						g.setColor(new Color(30, 30, 30));
-						font = GraphicsUtils.getBoldMDFont(scale(9));
+						Font font = GraphicsUtils.getBoldMDFont(scale(9));
 						g.setFont(font);
-						tp = new TextPainter(card.getName(), font, new Rectangle(scale(14) - 1, scale(33) - 1, scale(32) + 1, scale(24) + 1));
+						TextPainter tp = new TextPainter(card.getName(), font, new Rectangle(scale(14) - 1, scale(33) - 1, scale(32) + 1, scale(24) + 1));
 						tp.setHorizontalAlignment(Alignment.CENTER);
 						tp.setVerticalAlignment(Alignment.CENTER);
 						tp.paint(g);
@@ -253,9 +279,10 @@ public class CardPainter
 						g.fillOval(scale(12.5), scale(27.5), scale(35), scale(35));
 						g.setColor(new Color(30, 30, 30));
 						//font = new Font(getFont().getFontName(), Font.BOLD, scale(8));
-						font = new Font(getFont().getFontName(), Font.BOLD, scale(card.getFontSize()));
+						Font font = new Font(getFont().getFontName(), Font.BOLD, scale(card.getFontSize()));
 						g.setFont(font);
 						//tp = new TextPainter(Arrays.asList(new String[] {"JUST", "SAY NO!"}), font, new Rectangle(scale(14), scale(28), scale(32), scale(30)), false, true);
+						TextPainter tp = null;
 						if (card.getDisplayName() != null)
 						{
 							tp = new TextPainter(Arrays.asList(card.getDisplayName()), font, new Rectangle(scale(12) - 1, scale(28) - 1 + scale(card.getDisplayOffsetY()), scale(36) + 1, scale(30) + 1), false, false);

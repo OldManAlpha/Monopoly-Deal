@@ -16,8 +16,6 @@ public abstract class ActionState
 	private Player actionOwner;
 	private List<ActionTarget> targets;
 	
-	private ActionStateListener listener;
-	
 	public ActionState(Player actionOwner)
 	{
 		this.actionOwner = actionOwner;
@@ -61,7 +59,7 @@ public abstract class ActionState
 	{
 		for (ActionTarget target : targets)
 		{
-			if (target.getTarget() == player)
+			if (target.getPlayer() == player)
 			{
 				return target;
 			}
@@ -74,9 +72,24 @@ public abstract class ActionState
 		return targets.get(0);
 	}
 	
+	public Player getTargetPlayer()
+	{
+		return targets.get(0).getPlayer();
+	}
+	
 	public List<ActionTarget> getActionTargets()
 	{
 		return targets;
+	}
+	
+	public List<Player> getTargetPlayers()
+	{
+		List<Player> players = new ArrayList<Player>(targets.size());
+		for (ActionTarget target : targets)
+		{
+			players.add(target.getPlayer());
+		}
+		return players;
 	}
 	
 	public void setRefused(Player player, boolean refused)
@@ -97,7 +110,7 @@ public abstract class ActionState
 		{
 			if (target.isRefused())
 			{
-				refused.add(target.getTarget());
+				refused.add(target.getPlayer());
 			}
 		}
 		return refused;
@@ -121,7 +134,7 @@ public abstract class ActionState
 		{
 			if (target.isAccepted())
 			{
-				accepted.add(target.getTarget());
+				accepted.add(target.getPlayer());
 			}
 		}
 		return accepted;
@@ -163,22 +176,9 @@ public abstract class ActionState
 		return getNumberOfAccepted() == getNumberOfTargets();
 	}
 	
-	public void setListener(ActionStateListener listener)
-	{
-		this.listener = listener;
-	}
-	
 	public MDServer getServer()
 	{
 		return MDServer.getInstance();
-	}
-	
-	public void markUpdate()
-	{
-		if (listener != null)
-		{
-			listener.onActionStateUpdate();
-		}
 	}
 	
 	public abstract Packet constructPacket();

@@ -1,7 +1,6 @@
 package oldmana.md.server.card.collection;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -11,23 +10,14 @@ import oldmana.md.net.packet.server.PacketUnknownCardCollectionData;
 import oldmana.md.net.packet.server.PacketCardCollectionData.CardCollectionType;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
-import oldmana.md.server.card.CardMoney;
-import oldmana.md.server.card.CardProperty;
-import oldmana.md.server.card.CardProperty.PropertyColor;
-import oldmana.md.server.card.action.CardActionBirthday;
-import oldmana.md.server.card.action.CardActionDealBreaker;
-import oldmana.md.server.card.action.CardActionDebtCollector;
-import oldmana.md.server.card.action.CardActionDoubleTheRent;
-import oldmana.md.server.card.action.CardActionForcedDeal;
-import oldmana.md.server.card.action.CardActionGo;
-import oldmana.md.server.card.action.CardActionJustSayNo;
-import oldmana.md.server.card.action.CardActionRent;
-import oldmana.md.server.card.action.CardActionSlyDeal;
 import oldmana.md.server.card.collection.deck.DeckStack;
+import oldmana.md.server.event.DeckReshuffledEvent;
 
 public class Deck extends CardCollection
 {
 	private DeckStack stack;
+	
+	private Random rand = new Random();
 	
 	public Deck(DeckStack stack)
 	{
@@ -41,13 +31,13 @@ public class Deck extends CardCollection
 		{
 			for (Card card : this.stack.getCards())
 			{
-				card.transfer(getServer().getVoidCollection(), -1, 12);
+				card.transfer(getServer().getVoidCollection(), -1, 15);
 			}
 		}
 		this.stack = stack;
 		for (Card card : stack.getCards())
 		{
-			card.transfer(this, -1, 12);
+			card.transfer(this, -1, 15);
 		}
 		shuffle();
 	}
@@ -72,15 +62,15 @@ public class Deck extends CardCollection
 		}
 		else
 		{
-			//int size = getServer().getDiscardPile().getCardCount();
 			List<Card> cards = new ArrayList<Card>(getServer().getDiscardPile().getCards());
 			Collections.reverse(cards);
 			for (Card card : cards)
 			{
-				card.transfer(this, 0, 3);
+				card.transfer(this, 0, 4);
 			}
 			shuffle();
-			if (getCardCount() == 0)
+			getServer().getEventManager().callEvent(new DeckReshuffledEvent(this));
+			if (getCardCount() == 0) // That'd be kinda bad..
 			{
 				return null;
 			}
@@ -101,34 +91,15 @@ public class Deck extends CardCollection
 		}
 	}
 	
-	public Card peek(int index)
+	public void insertCardRandomly(Card card)
 	{
-		if (getCardCount() > index)
-		{
-			return getCards().get(index);
-		}
-		return null;
+		insertCardRandomly(card, 1);
 	}
 	
-	/*
-	@Override
-	public void transferCard(Card card, CardCollection to)
+	public void insertCardRandomly(Card card, double speed)
 	{
-		super.transferCard(card, to, 0);
-		PacketMoveUnknownCard packet = new PacketMoveUnknownCard(getID(), to.getID());
-		
-		if (to.getOwner() != null)
-		{
-			getServer().broadcastPacket(packet, to.getOwner());
-			PacketMoveRevealCard packet2 = new PacketMoveRevealCard(card.getID(), getID(), to.getID(), to.getIndexOf(card));
-			to.getOwner().sendPacket(packet2);
-		}
-		else
-		{
-			getServer().broadcastPacket(packet);
-		}
+		card.transfer(this, rand.nextInt(getCardCount()), speed);
 	}
-	*/
 	
 	@Override
 	public boolean isVisibleTo(Player player)

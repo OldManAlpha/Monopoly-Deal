@@ -20,7 +20,7 @@ public class PacketActionStateBasic extends Packet
 	public static enum BasicActionState
 	{
 		DO_NOTHING(-1), DRAW(0), PLAY(1), DISCARD(2), FINISH_TURN(3), TARGET_PLAYER(4), TARGET_PLAYER_PROPERTY(5), TARGET_SELF_PLAYER_PROPERTY(6), 
-		TARGET_PLAYER_MONOPOLY(7);
+		TARGET_ANY_PROPERTY(7), TARGET_PLAYER_MONOPOLY(8), PLAYER_TARGETED(9);
 		
 		int id;
 		

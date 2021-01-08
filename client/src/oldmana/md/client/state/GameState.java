@@ -78,4 +78,16 @@ public class GameState
 			clientState.setup();
 		}
 	}
+	
+	public void updateUI()
+	{
+		if (state != null)
+		{
+			state.updateUI();
+		}
+		if (clientState != null)
+		{
+			clientState.updateUI();
+		}
+	}
 }

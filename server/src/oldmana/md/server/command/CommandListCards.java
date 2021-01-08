@@ -3,7 +3,6 @@ package oldmana.md.server.command;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.collection.CardCollection;
-import oldmana.md.server.card.collection.CardCollectionRegistry;
 
 public class CommandListCards extends Command
 {
@@ -19,7 +18,7 @@ public class CommandListCards extends Command
 		{
 			if (verifyInt(args[0]))
 			{
-				CardCollection collection = CardCollectionRegistry.getCardCollection(Integer.parseInt(args[0]));
+				CardCollection collection = CardCollection.getCardCollection(Integer.parseInt(args[0]));
 				sender.sendMessage("List of cards in collection ID " + collection.getID() + "(Count: " + collection.getCardCount() + ")");
 				for (Card card : collection.getCards())
 				{

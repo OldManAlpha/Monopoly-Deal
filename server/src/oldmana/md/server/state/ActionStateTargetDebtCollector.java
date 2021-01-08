@@ -1,6 +1,5 @@
 package oldmana.md.server.state;
 
-import oldmana.md.net.packet.server.PacketStatus;
 import oldmana.md.server.Player;
 
 public class ActionStateTargetDebtCollector extends ActionStateTargetPlayer
@@ -8,7 +7,7 @@ public class ActionStateTargetDebtCollector extends ActionStateTargetPlayer
 	public ActionStateTargetDebtCollector(Player player)
 	{
 		super(player);
-		getServer().broadcastPacket(new PacketStatus(player.getName() + " used Debt Collector"));
+		getServer().getGameState().setStatus(player.getName() + " used Debt Collector");
 	}
 	
 	@Override

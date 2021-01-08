@@ -5,15 +5,12 @@ import oldmana.md.net.packet.server.PacketCardActionRentData;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardProperty.PropertyColor;
-import oldmana.md.server.state.ActionStateListener;
 import oldmana.md.server.state.ActionStateRent;
 import oldmana.md.server.state.ActionStateTargetRent;
 
-public class CardActionRent extends CardAction implements ActionStateListener
+public class CardActionRent extends CardAction
 {
 	private PropertyColor[] colors;
-	
-	private ActionStateRent rent;
 	
 	public CardActionRent(int value, PropertyColor... colors)
 	{
@@ -39,7 +36,7 @@ public class CardActionRent extends CardAction implements ActionStateListener
 	public void playCard(Player player, double multiplier)
 	{
 		int rent = (int) (player.getHighestValueRent(colors) * multiplier);
-		if (getServer().doesRentChargeAll() || getServer().getPlayers().size() == 2)
+		if (getServer().getGameRules().doesRentChargeAll() || getServer().getPlayers().size() == 2)
 		{
 			getServer().getGameState().setCurrentActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player), rent));
 		}
@@ -53,16 +50,6 @@ public class CardActionRent extends CardAction implements ActionStateListener
 	public boolean canPlayCard(Player player)
 	{
 		return player.hasRentableProperties(colors);
-	}
-	
-	@Override
-	public boolean onActionStateUpdate()
-	{
-		if (rent.getNumberOfTargets() == rent.getNumberOfAccepted())
-		{
-			getServer().getGameState().nextNaturalActionState();
-		}
-		return true;
 	}
 	
 	@Override

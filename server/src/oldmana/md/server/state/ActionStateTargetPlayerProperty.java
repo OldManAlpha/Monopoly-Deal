@@ -1,31 +1,19 @@
 package oldmana.md.server.state;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.PacketStatus;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
 import oldmana.md.server.Player;
-import oldmana.md.server.card.Card;
+import oldmana.md.server.card.CardProperty;
 
-public class ActionStateTargetPlayerProperty extends ActionState
+public abstract class ActionStateTargetPlayerProperty extends ActionState
 {
-	private Card targetCard;
-	
 	public ActionStateTargetPlayerProperty(Player player)
 	{
 		super(player);
-		getServer().broadcastPacket(new PacketStatus(player.getName() + " used Sly Deal"));
 	}
 	
-	public void setTargetCard(Card card)
-	{
-		targetCard = card;
-	}
-	
-	public Card getTargetCard()
-	{
-		return targetCard;
-	}
+	public abstract void onCardSelected(CardProperty card);
 	
 	@Override
 	public boolean isFinished()

@@ -9,20 +9,17 @@ public class CardAction extends Card
 		super(value, name);
 	}
 	
-	/*
-	public CardAction(int value, String name, boolean playable)
-	{
-		super(value, name);
-		
-		this.playable = playable;
-	}
-	*/
-	
 	public void playCard(Player player) {}
 	
 	public boolean canPlayCard(Player player)
 	{
 		return true;
+	}
+	
+	@Override
+	public CardType getType()
+	{
+		return CardType.ACTION;
 	}
 	
 	@Override

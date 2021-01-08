@@ -9,6 +9,8 @@ public abstract class ActionStateClient
 	
 	public abstract void cleanup();
 	
+	public void updateUI() {};
+	
 	public void removeState()
 	{
 		getClient().getGameState().setCurrentClientActionState(null);

@@ -140,13 +140,15 @@ public class MDEventQueue
 					to.getUI().getComponentScale(), speed);
 			MDClient.getInstance().addTableComponent(anim, 99);
 			
+			// Update the rent screen if money is added/removed from their bank
+			// TODO: Probably should do that for properties too...
 			Player player = MDClient.getInstance().getThePlayer();
 			if ((from != null && from instanceof Bank && from.getOwner() == player) || (to != null && to instanceof Bank && to.getOwner() == player))
 			{
 				ActionState state = MDClient.getInstance().getGameState().getCurrentActionState();
 				if (state instanceof ActionStateRent && state.isTarget(player))
 				{
-					((ActionStateRent) state).rebuildRentScreen();
+					state.updateUI();
 				}
 			}
 		}

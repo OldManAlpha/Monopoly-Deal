@@ -1,23 +1,20 @@
 package oldmana.md.server.state;
 
-import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.PacketStatus;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateStealMonopoly;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateStealProperty;
+import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
+import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
 import oldmana.md.server.Player;
-import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.collection.PropertySet;
 
-public class ActionStateStealMonopoly extends ActionState
+public class ActionStateStealMonopoly extends ActionStatePropertySetTargeted
 {
 	private PropertySet targetSet;
 	
 	public ActionStateStealMonopoly(Player player, PropertySet targetSet)
 	{
-		super(player, targetSet.getOwner());
+		super(player, targetSet);
 		this.targetSet = targetSet;
-		getServer().broadcastPacket(new PacketStatus(player.getName() + " used Deal Breaker against " + getActionTarget().getTarget().getName()));
+		getServer().getGameState().setStatus(player.getName() + " used Deal Breaker against " + getActionTarget().getPlayer().getName());
 	}
 	
 	@Override
@@ -25,6 +22,7 @@ public class ActionStateStealMonopoly extends ActionState
 	{
 		if (accepted)
 		{
+			getServer().broadcastPacket(new PacketActionStateBasic(-1, BasicActionState.DO_NOTHING, 0)); // Bandaid Fix For Glitched Cards
 			if (getServer().getGameRules().doDealBreakersDiscardSets())
 			{
 				for (CardProperty prop : targetSet.getPropertyCards())
@@ -41,11 +39,5 @@ public class ActionStateStealMonopoly extends ActionState
 			}
 		}
 		super.setAccepted(player, accepted);
-	}
-	
-	@Override
-	public Packet constructPacket()
-	{
-		return new PacketActionStateStealMonopoly(getActionOwner().getID(), targetSet.getID());
 	}
 }

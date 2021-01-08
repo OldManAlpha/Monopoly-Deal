@@ -14,7 +14,7 @@ import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.component.MDPropertySet;
 import oldmana.md.client.gui.component.MDSelection;
-import oldmana.md.net.packet.client.action.PacketActionSelectPlayerProperty;
+import oldmana.md.net.packet.client.action.PacketActionSelectProperties;
 
 public class ActionStateTargetPlayerProperty extends ActionState
 {
@@ -121,7 +121,7 @@ public class ActionStateTargetPlayerProperty extends ActionState
 					@Override
 					public void mouseReleased(MouseEvent event)
 					{
-						getClient().sendPacket(new PacketActionSelectPlayerProperty(cardViewOther.getCard().getID()));
+						getClient().sendPacket(new PacketActionSelectProperties(cardViewOther.getCard().getID()));
 						cleanup();
 						getClient().setAwaitingResponse(true);
 						button.setEnabled(false);

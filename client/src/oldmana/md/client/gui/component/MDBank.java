@@ -92,7 +92,7 @@ public class MDBank extends MDCardCollection
 		if (getClient().isDebugEnabled())
 		{
 			g.setColor(Color.GREEN);
-			GraphicsUtils.drawDebug(g, "ID: " + getCollection().getID(), 20, getWidth(), getHeight());
+			GraphicsUtils.drawDebug(g, "ID: " + getCollection().getID(), scale(20), getWidth(), getHeight());
 		}
 	}
 	

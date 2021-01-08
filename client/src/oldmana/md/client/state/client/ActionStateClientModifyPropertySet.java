@@ -15,6 +15,7 @@ import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.component.MDCreateSet;
 import oldmana.md.client.gui.component.MDPropertySet;
 import oldmana.md.client.gui.component.MDSelection;
+import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.net.packet.client.action.PacketActionChangeSetColor;
 import oldmana.md.net.packet.client.action.PacketActionMoveProperty;
 
@@ -37,7 +38,7 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 	
 	public void propertySelected(Card card)
 	{
-		getClient().removeTableComponent(screen);
+		getClient().getTableScreen().removeActionScreen();
 		getClient().getTableScreen().repaint();
 		CardProperty property = (CardProperty) card;
 		
@@ -72,8 +73,8 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 				setSelects.add(set);
 			}
 		}
-		
 		createSet = new MDCreateSet(getClient().getThePlayer());
+		createSet.setSize(GraphicsUtils.getCardWidth(), GraphicsUtils.getCardHeight());
 		getClient().addTableComponent(createSet, 90);
 		createSet.addMouseListener(new MouseAdapter()
 		{
@@ -92,14 +93,14 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 	{
 		getClient().sendPacket(new PacketActionChangeSetColor(set.getID(), color.getID()));
 		getClient().setAwaitingResponse(true);
-		getClient().removeTableComponent(screen);
+		getClient().getTableScreen().removeActionScreen();
 		getClient().getTableScreen().repaint();
 		removeState();
 	}
 	
 	public void cancel()
 	{
-		getClient().removeTableComponent(screen);
+		getClient().getTableScreen().removeActionScreen();
 		getClient().getTableScreen().repaint();
 		removeState();
 	}
@@ -108,7 +109,7 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 	public void setup()
 	{
 		screen = new ActionScreenModifyPropertySet(this, set);
-		getClient().addTableComponent(screen, 200);
+		getClient().getTableScreen().setActionScreen(screen);
 	}
 	
 	@Override
@@ -127,5 +128,11 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 			getClient().removeTableComponent(cardView);
 			getClient().removeTableComponent(cardSelection);
 		}
+	}
+	
+	@Override
+	public void updateUI()
+	{
+		createSet.setSize(GraphicsUtils.getCardWidth(), GraphicsUtils.getCardHeight());
 	}
 }

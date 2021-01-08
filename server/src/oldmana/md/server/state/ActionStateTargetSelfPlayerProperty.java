@@ -1,29 +1,19 @@
 package oldmana.md.server.state;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.PacketStatus;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
 import oldmana.md.server.Player;
-import oldmana.md.server.card.Card;
-import oldmana.md.server.card.action.CardActionForcedDeal;
+import oldmana.md.server.card.CardProperty;
 
-public class ActionStateTargetSelfPlayerProperty extends ActionState
+public abstract class ActionStateTargetSelfPlayerProperty extends ActionState
 {
-	private CardActionForcedDeal card;
-	
-	public ActionStateTargetSelfPlayerProperty(Player player, CardActionForcedDeal card)
+	public ActionStateTargetSelfPlayerProperty(Player player)
 	{
 		super(player);
-		this.card = card;
-		getServer().broadcastPacket(new PacketStatus(player.getName() + " used Forced Deal"));
 	}
 	
-	@Override
-	public void onCardUndo(Card card)
-	{
-		super.onCardUndo(card);
-	}
+	public abstract void onCardsSelected(CardProperty self, CardProperty other);
 	
 	@Override
 	public boolean isFinished()

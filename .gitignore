@@ -4,6 +4,9 @@ client/.project
 client/.settings
 client/settings.dat
 server/bin
+server/mods
+server/config.txt
+server/players.dat
 server/.classpath
 server/.project
 server/.settings

@@ -6,10 +6,8 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
-import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 
 public class MDCreateSet extends MDComponent
@@ -17,10 +15,8 @@ public class MDCreateSet extends MDComponent
 	public MDCreateSet(Player player)
 	{
 		super();
-		setSize(60, 90);
-		MDClient client = MDClient.getInstance();
 		setLocation(SwingUtilities.convertPoint(player.getUI().getPropertySets(), new Point(player.getUI().getPropertySets().getNextPropertySetLocX(), 0), 
-				client.getTableScreen()));
+				getClient().getTableScreen()));
 	}
 	
 	@Override

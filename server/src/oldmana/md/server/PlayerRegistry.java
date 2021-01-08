@@ -1,30 +1,110 @@
 package oldmana.md.server;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 public class PlayerRegistry
 {
-	private Map<Integer, String> players = new HashMap<Integer, String>();
+	private List<RegisteredPlayer> players = new ArrayList<RegisteredPlayer>();
 	
-	public PlayerRegistry()
+	public void loadPlayers()
 	{
-		players.put(1, "Player 1");
-		players.put(2, "Player 2");
-		players.put(3, "Player 3");
-		players.put(4, "Player 4");
-		players.put(5, "Player 5");
-		players.put(6, "Player 6");
-		players.put(7, "Player 7");
+		try
+		{
+			File f = new File("players.dat");
+			if (!f.exists())
+			{
+				System.out.println("Player data doesn't exist, generating file.");
+				f.createNewFile();
+			}
+			Scanner s = new Scanner(new FileInputStream(f));
+			while (s.hasNextLine())
+			{
+				String line = s.nextLine();
+				String[] data = line.split(",");
+				registerPlayer(new RegisteredPlayer(Integer.parseInt(data[0]), data[1], Boolean.parseBoolean(data[2])));
+			}
+			s.close();
+		}
+		catch (Exception e)
+		{
+			System.out.println("Error while loading players!");
+			e.printStackTrace();
+		}
 	}
 	
-	public boolean containsID(int id)
+	public void savePlayers()
 	{
-		return players.containsKey(id);
+		try
+		{
+			File f = new File("players.dat");
+			PrintWriter pw = new PrintWriter(new FileOutputStream(f));
+			for (RegisteredPlayer player : players)
+			{
+				pw.println(player.uid + "," + player.name + "," + player.op);
+			}
+			pw.close();
+		}
+		catch (Exception e)
+		{
+			System.out.println("Error while saving players!");
+			e.printStackTrace();
+		}
 	}
 	
-	public String getNameOf(int id)
+	public void registerPlayer(RegisteredPlayer player)
 	{
-		return players.get(id);
+		players.add(player);
+	}
+	
+	public void unregisterPlayer(RegisteredPlayer player)
+	{
+		players.remove(player);
+	}
+	
+	public RegisteredPlayer getRegisteredPlayerByUID(int uid)
+	{
+		for (RegisteredPlayer rp : players)
+		{
+			if (rp.uid == uid)
+			{
+				return rp;
+			}
+		}
+		return null;
+	}
+	
+	public boolean isUIDRegistered(int uid)
+	{
+		return getRegisteredPlayerByUID(uid) != null;
+	}
+	
+	public String getNameOf(int uid)
+	{
+		return getRegisteredPlayerByUID(uid).name;
+	}
+	
+	public List<RegisteredPlayer> getRegisteredPlayers()
+	{
+		return players;
+	}
+	
+	public static class RegisteredPlayer
+	{
+		public int uid;
+		public String name;
+		public boolean op;
+		
+		public RegisteredPlayer(int uid, String name, boolean op)
+		{
+			this.uid = uid;
+			this.name = name;
+			this.op = op;
+		}
 	}
 }

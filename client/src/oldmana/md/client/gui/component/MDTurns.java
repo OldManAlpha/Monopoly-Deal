@@ -15,6 +15,7 @@ import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
 import oldmana.md.client.state.ActionStateDraw;
+import oldmana.md.client.state.GameState;
 
 public class MDTurns extends MDComponent
 {
@@ -46,8 +47,9 @@ public class MDTurns extends MDComponent
 		t3.addPoint(scale(170), scale(30));
 		t3.addPoint(scale(115), scale(30));
 		
-		int turns = MDClient.getInstance().getGameState().getTurns();
-		boolean drawing = MDClient.getInstance().getGameState().getCurrentActionState() instanceof ActionStateDraw;
+		GameState gs = MDClient.getInstance().getGameState();
+		int turns = gs.getTurns();
+		boolean drawing = gs.getCurrentActionState() instanceof ActionStateDraw;
 		
 		g.setColor(turns >= 3 || drawing ? Color.GRAY : PropertyColor.GREEN.getColor());
 		g.fillPolygon(t1);

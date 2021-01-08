@@ -6,7 +6,6 @@ import java.util.List;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardPropertyData;
-import oldmana.md.server.card.CardProperty.PropertyColor;
 
 public class CardProperty extends Card
 {
@@ -82,6 +81,12 @@ public class CardProperty extends Card
 	}
 	
 	@Override
+	public CardType getType()
+	{
+		return CardType.PROPERTY;
+	}
+	
+	@Override
 	public String toString()
 	{
 		String str = "CardProperty (" + colors.size() + " Colors: ";
@@ -96,6 +101,18 @@ public class CardProperty extends Card
 		return str;
 	}
 	
+	
+	public static List<CardProperty> getPropertyCards(int[] ids)
+	{
+		List<CardProperty> props = new ArrayList<CardProperty>();
+		List<Card> cards = Card.getCards(ids);
+		for (Card card : cards)
+		{
+			props.add((CardProperty) card);
+		}
+		return props;
+	}
+
 	public static enum PropertyColor
 	{
 		BROWN(0, "B", 1, 2),

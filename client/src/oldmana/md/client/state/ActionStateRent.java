@@ -92,7 +92,7 @@ public class ActionStateRent extends ActionState
 		{
 			rentScreen = new ActionScreenRent(getClient().getThePlayer(), this);
 			rentScreen.setVisible(false);
-			getClient().addTableComponent(rentScreen, 110);
+			getClient().getTableScreen().setActionScreen(rentScreen);
 			MDButton button = getClient().getTableScreen().getMultiButton();
 			button.setEnabled(true);
 			button.setText("View Rent");
@@ -120,12 +120,23 @@ public class ActionStateRent extends ActionState
 	public void cleanup()
 	{
 		super.cleanup();
+		getClient().getTableScreen().removeActionScreen();
+		/*
 		if (rentScreen != null)
 		{
 			getClient().removeTableComponent(rentScreen);
 			getClient().getTableScreen().repaint();
 			rentScreen = null;
 		}
+		*/
+	}
+	
+	@Override
+	public void updateUI()
+	{
+		rentScreen = new ActionScreenRent(getClient().getThePlayer(), this);
+		rentScreen.setVisible(false);
+		getClient().getTableScreen().setActionScreen(rentScreen);
 	}
 	
 	public void payRent(List<Card> cards)
@@ -137,17 +148,6 @@ public class ActionStateRent extends ActionState
 		}
 		getClient().sendPacket(new PacketActionPay(ids));
 		cleanup();
-	}
-	
-	public void rebuildRentScreen()
-	{
-		if (rentScreen != null)
-		{
-			getClient().removeTableComponent(rentScreen);
-		}
-		rentScreen = new ActionScreenRent(getClient().getThePlayer(), this);
-		rentScreen.setVisible(false);
-		getClient().addTableComponent(rentScreen, 110);
 	}
 	
 	public int getRent()

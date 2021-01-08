@@ -194,7 +194,7 @@ public class Card
 	
 	public static enum CardType
 	{
-		MONEY(0), PROPERTY(1), ACTION(2), JUST_SAY_NO(3), DOUBLE_THE_RENT(4), SPECIAL(5);
+		MONEY(0), PROPERTY(1), ACTION(2), JUST_SAY_NO(3), DOUBLE_THE_RENT(4), SPECIAL(5), RENT_COUNTER(6);
 		
 		private int id;
 		

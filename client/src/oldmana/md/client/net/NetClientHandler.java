@@ -15,6 +15,7 @@ import oldmana.md.client.card.CardAction;
 import oldmana.md.client.card.CardActionDoubleTheRent;
 import oldmana.md.client.card.CardActionJustSayNo;
 import oldmana.md.client.card.CardActionRent;
+import oldmana.md.client.card.CardActionRentCounter;
 import oldmana.md.client.card.CardMoney;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.CardRegistry;
@@ -36,62 +37,24 @@ import oldmana.md.client.state.ActionStateDoNothing;
 import oldmana.md.client.state.ActionStateDraw;
 import oldmana.md.client.state.ActionStateFinishTurn;
 import oldmana.md.client.state.ActionStatePlay;
+import oldmana.md.client.state.ActionStatePlayerTargeted;
+import oldmana.md.client.state.ActionStatePropertiesSelected;
 import oldmana.md.client.state.ActionStateRent;
 import oldmana.md.client.state.ActionStateStealMonopoly;
 import oldmana.md.client.state.ActionStateStealProperty;
+import oldmana.md.client.state.ActionStateTargetAnyProperty;
 import oldmana.md.client.state.ActionStateTargetPlayer;
 import oldmana.md.client.state.ActionStateTargetPlayerMonopoly;
 import oldmana.md.client.state.ActionStateTargetPlayerProperty;
 import oldmana.md.client.state.ActionStateTargetSelfPlayerProperty;
 import oldmana.md.client.state.ActionStateTradeProperties;
 import oldmana.md.net.packet.client.PacketLogin;
-import oldmana.md.net.packet.client.action.PacketActionAccept;
-import oldmana.md.net.packet.client.action.PacketActionChangeSetColor;
-import oldmana.md.net.packet.client.action.PacketActionDiscard;
-import oldmana.md.net.packet.client.action.PacketActionDraw;
-import oldmana.md.net.packet.client.action.PacketActionEndTurn;
-import oldmana.md.net.packet.client.action.PacketActionMoveProperty;
-import oldmana.md.net.packet.client.action.PacketActionPay;
-import oldmana.md.net.packet.client.action.PacketActionPlayCardAction;
-import oldmana.md.net.packet.client.action.PacketActionPlayCardBank;
-import oldmana.md.net.packet.client.action.PacketActionPlayCardProperty;
-import oldmana.md.net.packet.client.action.PacketActionPlayCardSpecial;
-import oldmana.md.net.packet.client.action.PacketActionPlayMultiCardAction;
-import oldmana.md.net.packet.client.action.PacketActionSelectPlayer;
-import oldmana.md.net.packet.client.action.PacketActionSelectPlayerMonopoly;
-import oldmana.md.net.packet.client.action.PacketActionSelectPlayerProperty;
-import oldmana.md.net.packet.client.action.PacketActionSelectSelfPlayerProperty;
-import oldmana.md.net.packet.client.action.PacketActionUndoCard;
-import oldmana.md.net.packet.server.PacketCardActionRentData;
-import oldmana.md.net.packet.server.PacketCardCollectionData;
-import oldmana.md.net.packet.server.PacketCardData;
-import oldmana.md.net.packet.server.PacketCardPropertyData;
-import oldmana.md.net.packet.server.PacketDestroyCardCollection;
-import oldmana.md.net.packet.server.PacketDestroyPlayer;
-import oldmana.md.net.packet.server.PacketHandshake;
-import oldmana.md.net.packet.server.PacketKick;
-import oldmana.md.net.packet.server.PacketMoveCard;
-import oldmana.md.net.packet.server.PacketMovePropertySet;
-import oldmana.md.net.packet.server.PacketMoveRevealCard;
-import oldmana.md.net.packet.server.PacketMoveUnknownCard;
-import oldmana.md.net.packet.server.PacketPlayerInfo;
-import oldmana.md.net.packet.server.PacketPlayerStatus;
-import oldmana.md.net.packet.server.PacketPropertySetColor;
-import oldmana.md.net.packet.server.PacketPropertySetData;
-import oldmana.md.net.packet.server.PacketRefresh;
-import oldmana.md.net.packet.server.PacketStatus;
-import oldmana.md.net.packet.server.PacketUndoCardStatus;
-import oldmana.md.net.packet.server.PacketUnknownCardCollectionData;
+import oldmana.md.net.packet.client.action.*;
+import oldmana.md.net.packet.server.*;
 import oldmana.md.net.packet.server.PacketCardCollectionData.CardCollectionType;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateRent;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateStealMonopoly;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateStealProperty;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateTradeProperties;
-import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateAccepted;
-import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateRefusal;
-import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateTarget;
+import oldmana.md.net.packet.server.actionstate.*;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
+import oldmana.md.net.packet.universal.PacketChat;
 
 public class NetClientHandler
 {
@@ -148,20 +111,21 @@ public class NetClientHandler
 		Packet.registerPacket(PacketActionPlayMultiCardAction.class);
 		Packet.registerPacket(PacketActionDiscard.class);
 		Packet.registerPacket(PacketActionSelectPlayer.class);
-		Packet.registerPacket(PacketActionSelectPlayerProperty.class);
-		Packet.registerPacket(PacketActionSelectSelfPlayerProperty.class);
+		Packet.registerPacket(PacketActionSelectProperties.class);
 		Packet.registerPacket(PacketActionSelectPlayerMonopoly.class);
 		Packet.registerPacket(PacketActionUndoCard.class);
 		
 		// Server -> Client
 		Packet.registerPacket(PacketActionStateBasic.class);
 		Packet.registerPacket(PacketActionStateRent.class);
-		Packet.registerPacket(PacketActionStateStealProperty.class);
-		Packet.registerPacket(PacketActionStateTradeProperties.class);
+		Packet.registerPacket(PacketActionStatePropertiesSelected.class);
 		Packet.registerPacket(PacketActionStateStealMonopoly.class);
 		Packet.registerPacket(PacketUpdateActionStateAccepted.class);
 		Packet.registerPacket(PacketUpdateActionStateRefusal.class);
 		Packet.registerPacket(PacketUpdateActionStateTarget.class);
+		
+		// Client <-> Server
+		Packet.registerPacket(PacketChat.class);
 		
 		// Find Packet Handlers
 		for (Method m : getClass().getDeclaredMethods())
@@ -215,11 +179,14 @@ public class NetClientHandler
 		else if (packet.type == CardType.DOUBLE_THE_RENT.getID())
 		{
 			card = new CardActionDoubleTheRent(packet.id, packet.value, packet.name);
-			System.out.println("DOUBLE THE RENT");
 		}
 		else if (packet.type == CardType.SPECIAL.getID())
 		{
 			card = new CardSpecial(packet.id, packet.value, packet.name);
+		}
+		else if (packet.type == CardType.RENT_COUNTER.getID())
+		{
+			card = new CardActionRentCounter(packet.id, packet.value, packet.name);
 		}
 		else
 		{
@@ -401,9 +368,17 @@ public class NetClientHandler
 				{
 					client.getGameState().setCurrentActionState(new ActionStateTargetSelfPlayerProperty(player));
 				}
+				else if (packet.type == BasicActionState.TARGET_ANY_PROPERTY.getID())
+				{
+					client.getGameState().setCurrentActionState(new ActionStateTargetAnyProperty(player));
+				}
 				else if (packet.type == BasicActionState.TARGET_PLAYER_MONOPOLY.getID())
 				{
 					client.getGameState().setCurrentActionState(new ActionStateTargetPlayerMonopoly(player));
+				}
+				else if (packet.type == BasicActionState.PLAYER_TARGETED.getID())
+				{
+					client.getGameState().setCurrentActionState(new ActionStatePlayerTargeted(player, client.getPlayerByID(packet.data)));
 				}
 				client.setAwaitingResponse(false);
 				client.getTableScreen().repaint();
@@ -457,7 +432,7 @@ public class NetClientHandler
 		});
 	}
 	
-	public void handleActionStateTradeProperties(PacketActionStateTradeProperties packet)
+	public void handleActionStatePropertiesSelected(PacketActionStatePropertiesSelected packet)
 	{
 		client.getEventQueue().addTask(new EventTask()
 		{
@@ -465,23 +440,8 @@ public class NetClientHandler
 			public void start()
 			{
 				client.setAwaitingResponse(false);
-				client.getGameState().setCurrentActionState(new ActionStateTradeProperties((CardProperty) CardRegistry.getCard(packet.selfCard), 
-						(CardProperty) CardRegistry.getCard(packet.otherCard)));
-				client.getTableScreen().repaint();
-			}
-		});
-	}
-	
-	public void handleActionStateStealProperty(PacketActionStateStealProperty packet)
-	{
-		client.getEventQueue().addTask(new EventTask()
-		{
-			@Override
-			public void start()
-			{
-				client.setAwaitingResponse(false);
-				client.getGameState().setCurrentActionState(new ActionStateStealProperty(client.getPlayerByID(packet.thief), 
-						(CardProperty) CardRegistry.getCard(packet.card)));
+				client.getGameState().setCurrentActionState(new ActionStatePropertiesSelected(client.getPlayerByID(packet.owner), 
+						client.getPlayerByID(packet.target), CardRegistry.getPropertyCards(packet.cards)));
 				client.getTableScreen().repaint();
 			}
 		});
@@ -584,5 +544,10 @@ public class NetClientHandler
 		{
 			undoButton.removeUndoCard();
 		}
+	}
+	
+	public void handleChat(PacketChat packet)
+	{
+		client.getTableScreen().getChat().addMessage(packet.message);
 	}
 }
