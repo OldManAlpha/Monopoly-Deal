@@ -1,14 +1,17 @@
 package oldmana.md.server;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -71,8 +74,9 @@ public class MDServer
 	private Console consoleSender = new Console();
 	private CommandHandler cmdHandler = new CommandHandler();
 	
+	private List<String> cmdQueue = Collections.synchronizedList(new ArrayList<String>());
+	
 	private boolean shutdown = false;
-	private Scanner console = new Scanner(System.in);
 	
 	private GameRules rules;
 	
@@ -102,6 +106,29 @@ public class MDServer
 		registerDefaultActionCards();
 		System.out.println("Loading Mods");
 		loadMods();
+		new Thread()
+		{
+			@Override
+			public void run()
+			{
+				BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+				while (true)
+				{
+					try
+					{
+						String line = reader.readLine();
+						synchronized (cmdQueue)
+						{
+							cmdQueue.add(line);
+						}
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
+					}
+				}
+			}
+		}.start();
 		System.out.println("Finished initialization");
 		while (!shutdown)
 		{
@@ -109,7 +136,6 @@ public class MDServer
 			Thread.sleep(50);
 		}
 		System.out.println("Server has shut down");
-		console.close();
 	}
 	
 	public void tickServer()
@@ -140,19 +166,14 @@ public class MDServer
 			}
 		}
 		
-		// Process console commands
-		try
+		// Process commands
+		synchronized (cmdQueue)
 		{
-			if (System.in.available() > 0)
+			for (String line : cmdQueue)
 			{
-				String line = console.nextLine();
-				
 				getCommandHandler().executeCommand(consoleSender, line);
 			}
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
+			cmdQueue.clear();
 		}
 		
 		tickCount++;
