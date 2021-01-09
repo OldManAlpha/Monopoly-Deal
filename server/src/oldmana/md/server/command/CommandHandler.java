@@ -37,6 +37,7 @@ public class CommandHandler
 		registerCommand(new CommandSetTurns());
 		registerCommand(new CommandNextTurn());
 		registerCommand(new CommandGameRule());
+		registerCommand(new CommandKickPlayer());
 	}
 	
 	public void registerCommand(Command cmd)
