@@ -13,7 +13,7 @@ public class Settings
 	private Map<String, String> defaults = new HashMap<String, String>();
 	{
 		defaults.put("Settings-Version", "1");
-		defaults.put("Last-IP", "localhost:7777");
+		defaults.put("Last-IP", "localhost:27599");
 		defaults.put("Last-ID", "1");
 	}
 	
