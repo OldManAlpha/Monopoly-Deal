@@ -33,7 +33,7 @@ Additional undocumented commands may be seen by using the `help` command.
 1. [Download the latest client jar file](https://github.com/OldManAlpha/Monopoly-Deal/releases) and put it in its own folder(it will generate a file inside the same folder it's in).
 2. Open the command line and navigate to the folder where the client jar is([or create an batch file to automate the process](https://www.windowscentral.com/how-create-and-run-batch-file-windows-10)).
 3. Run `java -jar MDClient.jar`
-4. Input to the host's server with [their IPv4 address](https://whatismyipaddress.com/) and forwarded port(Example: `192.168.0.1:27599` or if you're the host, `localhost:27599`).
+4. Connect to the host's server with [their IPv4 address](https://whatismyipaddress.com/) and forwarded port(Example: `192.168.0.1:27599` or if you're the host, `localhost:27599`).
 5. Input the User ID the host has assigned to you.
 6. Connect and play.
 
