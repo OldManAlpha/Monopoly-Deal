@@ -60,8 +60,11 @@ public class GameState
 	
 	public void endGame()
 	{
-		playerTurn.clearRevokableCards();
-		playerTurn = null;
+		if (playerTurn != null)
+		{
+			playerTurn.clearRevokableCards();
+			playerTurn = null;
+		}
 		setCurrentActionState(new ActionStateDoNothing());
 	}
 	
