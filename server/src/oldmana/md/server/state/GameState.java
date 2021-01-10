@@ -60,6 +60,7 @@ public class GameState
 	
 	public void endGame()
 	{
+		playerTurn.clearRevokableCards();
 		playerTurn = null;
 		setCurrentActionState(new ActionStateDoNothing());
 	}
@@ -190,8 +191,11 @@ public class GameState
 		
 		if (!winners.isEmpty() && deferredWinTurns < 1 && isWinningEnabled())
 		{
-			playerTurn.clearRevokableCards();
-			playerTurn = null;
+			if (playerTurn != null)
+			{
+				playerTurn.clearRevokableCards();
+				playerTurn = null;
+			}
 			this.state = new ActionStateDoNothing();
 			server.broadcastPacket(this.state.constructPacket());
 			if (winners.size() > 1)
