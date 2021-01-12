@@ -38,8 +38,8 @@ import oldmana.md.server.state.GameState;
 
 public class NetServerHandler
 {
-	public static int PROTOCOL_VERSION = 2;
-	public static int PROTOCOL_MINIMUM = 2;
+	public static int PROTOCOL_VERSION = 3;
+	public static int PROTOCOL_MINIMUM = 3;
 	
 	private MDServer server;
 	
