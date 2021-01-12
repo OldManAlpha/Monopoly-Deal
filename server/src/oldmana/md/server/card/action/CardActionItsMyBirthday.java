@@ -13,6 +13,7 @@ public class CardActionItsMyBirthday extends CardAction
 		setFontSize(7);
 		setRevocable(false);
 		setMarksPreviousUnrevocable(true);
+		setDescription("Charges all other players 2M.");
 	}
 	
 	@Override

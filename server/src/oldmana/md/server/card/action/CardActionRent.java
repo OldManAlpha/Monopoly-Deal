@@ -20,6 +20,8 @@ public class CardActionRent extends CardAction
 		
 		setRevocable(false);
 		setMarksPreviousUnrevocable(true);
+		setDescription("Charge rent to all players on the properties that match the colors on the card. "
+				+ "Only properties put down on your table are valid to rent on. Highest rent possible is automatically calculated.");
 	}
 	
 	public PropertyColor[] getRentColors()
@@ -60,7 +62,7 @@ public class CardActionRent extends CardAction
 		{
 			types[i] = colors[i].getID();
 		}
-		return new PacketCardActionRentData(getID(), getValue(), types);
+		return new PacketCardActionRentData(getID(), getValue(), types, getDescription());
 	}
 	
 	@Override

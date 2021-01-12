@@ -26,7 +26,7 @@ import oldmana.md.server.card.action.CardActionDealBreaker;
 import oldmana.md.server.card.action.CardActionDebtCollector;
 import oldmana.md.server.card.action.CardActionDoubleTheRent;
 import oldmana.md.server.card.action.CardActionForcedDeal;
-import oldmana.md.server.card.action.CardActionGo;
+import oldmana.md.server.card.action.CardActionPassGo;
 import oldmana.md.server.card.action.CardActionJustSayNo;
 import oldmana.md.server.card.action.CardActionSlyDeal;
 import oldmana.md.server.card.collection.Deck;
@@ -46,7 +46,7 @@ public class MDServer
 {
 	private static MDServer instance;
 	
-	public static final String VERSION = "0.6 PR3";
+	public static final String VERSION = "0.6 PR4";
 	
 	private List<MDMod> mods = new ArrayList<MDMod>();
 	
@@ -243,7 +243,7 @@ public class MDServer
 	private void registerDefaultActionCards()
 	{
 		registerActionCard("DealBreaker", CardActionDealBreaker.class);
-		registerActionCard("Go", CardActionGo.class);
+		registerActionCard("Go", CardActionPassGo.class);
 		registerActionCard("ForcedDeal", CardActionForcedDeal.class);
 		registerActionCard("SlyDeal", CardActionSlyDeal.class);
 		registerActionCard("JustSayNo", CardActionJustSayNo.class);

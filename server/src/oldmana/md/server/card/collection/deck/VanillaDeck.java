@@ -84,7 +84,7 @@ public class VanillaDeck extends DeckStack
 		}
 		for (int i = 0 ; i < 10 ; i++)
 		{
-			addCard(new CardActionGo());
+			addCard(new CardActionPassGo());
 		}
 		
 		for (int i = 0 ; i < 2 ; i++)

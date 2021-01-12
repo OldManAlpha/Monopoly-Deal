@@ -6,10 +6,11 @@ public class CardActionRent extends CardAction
 {
 	private PropertyColor[] colors;
 	
-	public CardActionRent(int id, int value, PropertyColor... colors)
+	public CardActionRent(int id, int value, PropertyColor[] colors, String[] description)
 	{
 		super(id, value, "RENT");
 		this.colors = colors;
+		setDescription(description);
 	}
 	
 	public PropertyColor[] getRentColors()

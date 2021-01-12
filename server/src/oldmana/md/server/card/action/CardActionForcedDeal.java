@@ -13,6 +13,8 @@ public class CardActionForcedDeal extends CardAction
 		setDisplayName("FORCED", "DEAL");
 		setFontSize(8);
 		setDisplayOffsetY(2);
+		setDescription("Trade one of your properties for one of another player's properties that is not part of a full set. "
+				+ "10-Color property wild cards cannot be stolen with this card.");
 	}
 	
 	@Override

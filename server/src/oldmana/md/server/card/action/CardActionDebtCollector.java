@@ -13,6 +13,7 @@ public class CardActionDebtCollector extends CardAction
 		setDisplayName("DEBT", "COLLECTOR");
 		setFontSize(6);
 		setDisplayOffsetY(1);
+		setDescription("Select a player and charge 5M against them.");
 	}
 	
 	@Override

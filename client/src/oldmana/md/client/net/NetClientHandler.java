@@ -195,16 +195,17 @@ public class NetClientHandler
 		card.setDisplayName(packet.displayName);
 		card.setFontSize(packet.fontSize);
 		card.setDisplayOffsetY(packet.displayOffsetY);
+		card.setDescription(packet.description);
 	}
 	
 	public void handleCardActionRentData(PacketCardActionRentData packet)
 	{
-		new CardActionRent(packet.id, packet.value, PropertyColor.fromIDs(packet.colors).toArray(new PropertyColor[packet.colors.length]));
+		new CardActionRent(packet.id, packet.value, PropertyColor.fromIDs(packet.colors).toArray(new PropertyColor[packet.colors.length]), packet.description);
 	}
 	
 	public void handleCardPropertyData(PacketCardPropertyData packet)
 	{
-		new CardProperty(packet.id, PropertyColor.fromIDs(packet.colors), packet.base, packet.value, packet.name);
+		new CardProperty(packet.id, PropertyColor.fromIDs(packet.colors), packet.base, packet.value, packet.name, packet.description);
 	}
 	
 	public void handlePlayerInfo(PacketPlayerInfo packet)

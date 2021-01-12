@@ -8,9 +8,10 @@ public class CardActionJustSayNo extends CardSpecial
 {
 	public CardActionJustSayNo()
 	{
-		super(4, "JUST SAY NO!");
+		super(4, "Just Say No!");
 		setDisplayName("JUST", "SAY NO!");
 		setDisplayOffsetY(1);
+		setDescription("Use to stop an action played against you. Can be played against another Just Say No to cancel it.");
 	}
 	
 	@Override

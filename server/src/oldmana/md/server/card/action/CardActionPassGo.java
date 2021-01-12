@@ -4,15 +4,16 @@ import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.collection.Deck;
 
-public class CardActionGo extends CardAction
+public class CardActionPassGo extends CardAction
 {
-	public CardActionGo()
+	public CardActionPassGo()
 	{
-		super(1, "Go");
+		super(1, "Pass Go");
 		setDisplayName("PASS", "GO");
 		setFontSize(9);
 		setDisplayOffsetY(2);
 		setRevocable(false);
+		setDescription("Draw two cards.");
 	}
 	
 	@Override

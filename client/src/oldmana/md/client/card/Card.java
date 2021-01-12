@@ -27,6 +27,7 @@ public class Card
 	private String[] displayName;
 	private int fontSize = 8;
 	private int displayOffsetY;
+	private String[] description;
 	
 	private boolean revocable = true;
 	private boolean marksPreviousCardsUnrevocable = false;
@@ -43,12 +44,13 @@ public class Card
 		CardRegistry.registerCard(this);
 	}
 	
-	public Card(int id, int value, String name, String[] displayName, int fontSize, int displayOffsetY)
+	public Card(int id, int value, String name, String[] displayName, int fontSize, int displayOffsetY, String[] description)
 	{
 		this(id, value, name);
 		this.displayName = displayName;
 		this.fontSize = fontSize;
 		this.displayOffsetY = displayOffsetY;
+		this.description = description;
 	}
 	
 	public int getID()
@@ -124,6 +126,16 @@ public class Card
 	public void setDisplayOffsetY(int offset)
 	{
 		displayOffsetY = offset;
+	}
+	
+	public void setDescription(String... description)
+	{
+		this.description = description;
+	}
+	
+	public String[] getDescription()
+	{
+		return description;
 	}
 	
 	public Image getGraphics(double scale)

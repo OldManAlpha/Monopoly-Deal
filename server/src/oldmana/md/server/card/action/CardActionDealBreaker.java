@@ -14,6 +14,7 @@ public class CardActionDealBreaker extends CardAction
 		setDisplayOffsetY(2);
 		setRevocable(false);
 		setMarksPreviousUnrevocable(true);
+		setDescription("Steal an entire full property set from another player. Cannot be used to steal partial sets.");
 	}
 	
 	@Override
