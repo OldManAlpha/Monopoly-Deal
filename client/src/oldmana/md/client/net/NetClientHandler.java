@@ -1,6 +1,5 @@
 package oldmana.md.client.net;
 
-import java.awt.Frame;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +8,6 @@ import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.MDEventQueue.EventTask;
-import oldmana.md.client.MDScheduler.MDTask;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardAction;
 import oldmana.md.client.card.CardActionDoubleTheRent;
@@ -41,13 +39,11 @@ import oldmana.md.client.state.ActionStatePlayerTargeted;
 import oldmana.md.client.state.ActionStatePropertiesSelected;
 import oldmana.md.client.state.ActionStateRent;
 import oldmana.md.client.state.ActionStateStealMonopoly;
-import oldmana.md.client.state.ActionStateStealProperty;
 import oldmana.md.client.state.ActionStateTargetAnyProperty;
 import oldmana.md.client.state.ActionStateTargetPlayer;
 import oldmana.md.client.state.ActionStateTargetPlayerMonopoly;
 import oldmana.md.client.state.ActionStateTargetPlayerProperty;
 import oldmana.md.client.state.ActionStateTargetSelfPlayerProperty;
-import oldmana.md.client.state.ActionStateTradeProperties;
 import oldmana.md.net.packet.client.PacketLogin;
 import oldmana.md.net.packet.client.action.*;
 import oldmana.md.net.packet.server.*;
@@ -58,7 +54,7 @@ import oldmana.md.net.packet.universal.PacketChat;
 
 public class NetClientHandler
 {
-	public static int PROTOCOL_VERSION = 2;
+	public static int PROTOCOL_VERSION = 3;
 	
 	private MDClient client;
 	
