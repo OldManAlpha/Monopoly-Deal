@@ -18,6 +18,7 @@ public class CardProperty extends Card
 		colors = new ArrayList<PropertyColor>();
 		colors.add(color);
 		base = true;
+		setDefaultDescription();
 	}
 	
 	public CardProperty(List<PropertyColor> colors, int value, String name, boolean base)
@@ -25,6 +26,7 @@ public class CardProperty extends Card
 		super(value, name);
 		this.colors = colors;
 		this.base = base;
+		setDefaultDescription();
 	}
 	
 	public CardProperty(PropertyColor[] colors, int value, String name, boolean base)
@@ -32,6 +34,13 @@ public class CardProperty extends Card
 		super(value, name);
 		this.colors = Arrays.asList(colors);
 		this.base = base;
+		setDefaultDescription();
+	}
+	
+	private void setDefaultDescription()
+	{
+		setDescription("Property cards can be played on your table. They are used to rent on and contribute towards winning the game. "
+				+ "They can be used to pay rent, either by choice or forcibly if you do not have the money to pay the rent.");
 	}
 	
 	public boolean isSingleColor()
@@ -77,7 +86,7 @@ public class CardProperty extends Card
 		{
 			types[i] = colors.get(i).getID();
 		}
-		return new PacketCardPropertyData(getID(), getName(), getValue(), types, isBase());
+		return new PacketCardPropertyData(getID(), getName(), getValue(), types, isBase(), getDescription());
 	}
 	
 	@Override

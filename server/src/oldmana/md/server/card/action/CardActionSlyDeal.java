@@ -13,6 +13,7 @@ public class CardActionSlyDeal extends CardAction
 		setDisplayName("SLY", "DEAL");
 		setFontSize(9);
 		setDisplayOffsetY(2);
+		setDescription("Steal a property from another player that is not part of a full set. 10-Color property wild cards cannot be stolen with this card.");
 	}
 	
 	@Override

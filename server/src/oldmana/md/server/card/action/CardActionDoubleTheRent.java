@@ -13,6 +13,7 @@ public class CardActionDoubleTheRent extends CardAction
 		setDisplayOffsetY(2);
 		setRevocable(false);
 		setMarksPreviousUnrevocable(true);
+		setDescription("Can be played with a Rent card to double the charge against players. Counts as a turn.");
 	}
 	
 	@Override

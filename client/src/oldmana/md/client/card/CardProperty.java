@@ -17,11 +17,12 @@ public class CardProperty extends Card
 		base = true;
 	}
 	
-	public CardProperty(int id, List<PropertyColor> colors, boolean base, int value, String name)
+	public CardProperty(int id, List<PropertyColor> colors, boolean base, int value, String name, String[] description)
 	{
 		super(id, value, name);
 		this.colors = colors;
 		this.base = base;
+		setDescription(description);
 	}
 	
 	public boolean isSingleColor()

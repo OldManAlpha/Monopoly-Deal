@@ -17,11 +17,8 @@ import oldmana.md.client.MDScheduler.MDTask;
 import oldmana.md.client.card.collection.Deck;
 import oldmana.md.client.card.collection.DiscardPile;
 import oldmana.md.client.gui.MDFrame;
-import oldmana.md.client.gui.component.MDDeck;
-import oldmana.md.client.gui.component.MDDiscardPile;
 import oldmana.md.client.gui.component.large.MDHand;
 import oldmana.md.client.gui.screen.TableScreen;
-import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.net.ConnectionThread;
 import oldmana.md.client.net.NetClientHandler;
 import oldmana.md.client.state.ActionState;
@@ -35,7 +32,7 @@ public class MDClient
 {
 	private static MDClient instance;
 	
-	public static final String VERSION = "0.6 PR3";
+	public static final String VERSION = "0.6 PR4";
 	
 	private MDFrame window;
 	

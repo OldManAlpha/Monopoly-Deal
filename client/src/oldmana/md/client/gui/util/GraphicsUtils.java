@@ -141,18 +141,65 @@ public class GraphicsUtils
 	
 	public static List<String> splitString(String str, FontMetrics metrics, int lineWidth)
 	{
+		return splitString(str, metrics, lineWidth, true);
+	}
+	
+	public static List<String> splitString(String str, FontMetrics metrics, int lineWidth, boolean wrap)
+	{
 		List<String> lines = new ArrayList<String>();
 		String line = "";
-		for (char c : str.toCharArray())
+		char[] chars = str.toCharArray();
+		for (int i = 0 ; i < chars.length ; i++)
 		{
+			char c = chars[i];
 			if (metrics.stringWidth(line + c) > lineWidth)
 			{
-				lines.add(line);
-				line = "";
+				if (wrap)
+				{
+					char[] lineChars = line.toCharArray();
+					boolean foundSpace = false;
+					for (int e = lineChars.length - 1 ; e >= 0 ; e--)
+					{
+						if (lineChars[e] == ' ')
+						{
+							lines.add(line.substring(0, e));
+							line = line.substring(e + 1);
+							if (line.startsWith(" "))
+							{
+								line = line.substring(1);
+							}
+							foundSpace = true;
+							break;
+						}
+					}
+					if (!foundSpace)
+					{
+						lines.add(line);
+						line = "";
+					}
+				}
+				else
+				{
+					lines.add(line);
+					line = "";
+				}
 			}
 			line += c;
 		}
-		lines.add(line);
+		if (!line.equals(""))
+		{
+			lines.add(line);
+		}
+		return lines;
+	}
+	
+	public static List<String> splitStrings(List<String> strs, FontMetrics metrics, int lineWidth, boolean wrap)
+	{
+		List<String> lines = new ArrayList<String>();
+		for (String str : strs)
+		{
+			lines.addAll(splitString(str, metrics, lineWidth, wrap));
+		}
 		return lines;
 	}
 }

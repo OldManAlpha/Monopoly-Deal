@@ -25,6 +25,7 @@ public class Card
 	private String[] displayName;
 	private int fontSize;
 	private int displayOffsetY;
+	private String[] description;
 	
 	private boolean revocable = true;
 	private boolean marksPreviousCardsUnrevocable = false;
@@ -40,6 +41,7 @@ public class Card
 		displayName = new String[] {name};
 		fontSize = 8;
 		displayOffsetY = 0;
+		description = new String[] {"Missing card description"};
 	}
 	
 	public int getID()
@@ -102,6 +104,11 @@ public class Card
 		this.displayName = displayName;
 	}
 	
+	public String[] getDisplayName()
+	{
+		return displayName;
+	}
+	
 	public void setFontSize(int fontSize)
 	{
 		this.fontSize = fontSize;
@@ -110,6 +117,16 @@ public class Card
 	public void setDisplayOffsetY(int offset)
 	{
 		this.displayOffsetY = offset;
+	}
+	
+	public void setDescription(String... description)
+	{
+		this.description = description;
+	}
+	
+	public String[] getDescription()
+	{
+		return description;
 	}
 	
 	public void transfer(CardCollection to)
@@ -143,7 +160,7 @@ public class Card
 	public Packet getCardDataPacket()
 	{
 		return new PacketCardData(id, name, value, getType().getID(), revocable, marksPreviousCardsUnrevocable, displayName, (byte) fontSize, 
-				(byte) displayOffsetY);
+				(byte) displayOffsetY, description);
 	}
 	
 	public static enum CardType

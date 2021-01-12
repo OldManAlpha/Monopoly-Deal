@@ -80,6 +80,8 @@ public class TextPainter
 		{
 			for (String str : text)
 			{
+				lines.addAll(GraphicsUtils.splitString(str, g.getFontMetrics(), (int) bounds.getWidth(), attachWords));
+				/*
 				char[] chars = str.toCharArray();
 				String line = "";
 				for (char c : chars)
@@ -127,6 +129,7 @@ public class TextPainter
 				{
 					lines.add(line);
 				}
+				*/
 			}
 			
 			int verticalAddition = 0;

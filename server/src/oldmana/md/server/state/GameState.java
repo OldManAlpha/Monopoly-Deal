@@ -152,6 +152,13 @@ public class GameState
 	
 	public void setCurrentActionState(ActionState state)
 	{
+		if (state instanceof ActionStateDoNothing)
+		{
+			this.state = state;
+			server.broadcastPacket(this.state.constructPacket());
+			return;
+		}
+		
 		if (!checkWin())
 		{
 			ActionStateChangingEvent changingEvent = new ActionStateChangingEvent(this.state, state);
@@ -194,13 +201,7 @@ public class GameState
 		
 		if (!winners.isEmpty() && deferredWinTurns < 1 && isWinningEnabled())
 		{
-			if (playerTurn != null)
-			{
-				playerTurn.clearRevokableCards();
-				playerTurn = null;
-			}
-			this.state = new ActionStateDoNothing();
-			server.broadcastPacket(this.state.constructPacket());
+			endGame();
 			if (winners.size() > 1)
 			{
 				String statusText = null;
@@ -216,11 +217,11 @@ public class GameState
 					}
 				}
 				statusText += "!";
-				server.broadcastPacket(new PacketStatus(statusText));
+				setStatus(statusText);
 			}
 			else
 			{
-				server.broadcastPacket(new PacketStatus(winners.get(0).getName() + " has won!"));
+				setStatus(winners.get(0).getName() + " has won!");
 			}
 			return true;
 		}
