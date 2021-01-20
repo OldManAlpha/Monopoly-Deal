@@ -24,7 +24,7 @@ Operating the server will require a little bit of technical knowhow. If you are 
 4. The server will generate a few files on its first run, including the config.txt, which you can edit to change the server port.
 5. Add users in the console by typing `registerplayer [Player Name]`. A randomly generated ID will be given and that is what the user will use to login with. View all your registered players with `listregisteredplayers`.
 6. After all the desired players have connected, you start the game with the `start` command.
-7. When the game finishes, you can type the 'reset' command to put all the cards back in the deck.
+7. When the game finishes, you can type the `reset` command to put all the cards back in the deck.
 
 Additional undocumented commands may be seen by using the `help` command.
 
