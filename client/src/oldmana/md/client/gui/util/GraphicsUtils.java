@@ -202,4 +202,28 @@ public class GraphicsUtils
 		}
 		return lines;
 	}
+	
+	public static Color getLighterColor(Color color, double lightFactor)
+	{
+		int[] origRgb = new int[] {color.getRed(), color.getGreen(), color.getBlue()};
+		int[] rgb = new int[3];
+		for (int i = 0 ; i < origRgb.length ; i++)
+		{
+			rgb[i] = (int) ((origRgb[i] + (255 * lightFactor)) / (lightFactor + 1));
+		}
+		
+		return new Color(rgb[0], rgb[1], rgb[2]);
+	}
+	
+	public static Color getDarkerColor(Color color, double darkFactor)
+	{
+		int[] origRgb = new int[] {color.getRed(), color.getGreen(), color.getBlue()};
+		int[] rgb = new int[3];
+		for (int i = 0 ; i < origRgb.length ; i++)
+		{
+			//rgb[i] = (int) ((origRgb[i] + (255 * lightFactor)) / (lightFactor + 1));
+		}
+		
+		return new Color(rgb[0], rgb[1], rgb[2]);
+	}
 }

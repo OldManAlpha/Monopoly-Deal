@@ -27,7 +27,7 @@ public class Card
 	private String[] displayName;
 	private int fontSize = 8;
 	private int displayOffsetY;
-	private String[] description;
+	private CardDescription description;
 	
 	private boolean revocable = true;
 	private boolean marksPreviousCardsUnrevocable = false;
@@ -44,7 +44,7 @@ public class Card
 		CardRegistry.registerCard(this);
 	}
 	
-	public Card(int id, int value, String name, String[] displayName, int fontSize, int displayOffsetY, String[] description)
+	public Card(int id, int value, String name, String[] displayName, int fontSize, int displayOffsetY, CardDescription description)
 	{
 		this(id, value, name);
 		this.displayName = displayName;
@@ -128,12 +128,12 @@ public class Card
 		displayOffsetY = offset;
 	}
 	
-	public void setDescription(String... description)
+	public void setDescription(CardDescription description)
 	{
 		this.description = description;
 	}
 	
-	public String[] getDescription()
+	public CardDescription getDescription()
 	{
 		return description;
 	}
@@ -202,6 +202,35 @@ public class Card
 	public MDClient getClient()
 	{
 		return MDClient.getInstance();
+	}
+	
+	public static class CardDescription
+	{
+		private static Map<Integer, CardDescription> descriptionMap = new HashMap<Integer, CardDescription>();
+		
+		private int id;
+		private String[] description;
+		
+		public CardDescription(int id, String... description)
+		{
+			this.description = description;
+			descriptionMap.put(id, this);
+		}
+		
+		public int getID()
+		{
+			return id;
+		}
+		
+		public String[] getText()
+		{
+			return description;
+		}
+		
+		public static CardDescription getDescriptionByID(int id)
+		{
+			return descriptionMap.get(id);
+		}
 	}
 	
 	public static enum CardType

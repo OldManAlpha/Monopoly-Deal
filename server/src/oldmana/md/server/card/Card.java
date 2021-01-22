@@ -1,18 +1,26 @@
 package oldmana.md.server.card;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardData;
+import oldmana.md.net.packet.server.PacketCardDescription;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.collection.CardCollection;
-import oldmana.md.server.util.IDCounter;
 
 public class Card
 {
 	public static List<Card> cards = new ArrayList<Card>();
+	
+	private static int nextID;
+	
+	private static CardDescription defaultDescription = new CardDescription("Missing card description");
 	
 	
 	private int id;
@@ -25,15 +33,15 @@ public class Card
 	private String[] displayName;
 	private int fontSize;
 	private int displayOffsetY;
-	private String[] description;
+	private CardDescription description;
 	
 	private boolean revocable = true;
 	private boolean marksPreviousCardsUnrevocable = false;
 	
 	public Card(int value, String name)
 	{
-		id = IDCounter.nextCardID();
-		Card.registerCard(this);
+		id = nextID++;
+		registerCard(this);
 		
 		this.value = value;
 		this.name = name;
@@ -41,7 +49,7 @@ public class Card
 		displayName = new String[] {name};
 		fontSize = 8;
 		displayOffsetY = 0;
-		description = new String[] {"Missing card description"};
+		description = defaultDescription;
 	}
 	
 	public int getID()
@@ -119,12 +127,26 @@ public class Card
 		this.displayOffsetY = offset;
 	}
 	
+	/**Might be removed in the future in favor of setDescription(CardDescription)
+	 * 
+	 * @param description
+	 */
 	public void setDescription(String... description)
+	{
+		CardDescription desc = CardDescription.getDescriptionByText(description);
+		if (desc == null)
+		{
+			desc = new CardDescription(description);
+		}
+		this.description = desc;
+	}
+	
+	public void setDescription(CardDescription description)
 	{
 		this.description = description;
 	}
 	
-	public String[] getDescription()
+	public CardDescription getDescription()
 	{
 		return description;
 	}
@@ -160,7 +182,7 @@ public class Card
 	public Packet getCardDataPacket()
 	{
 		return new PacketCardData(id, name, value, getType().getID(), revocable, marksPreviousCardsUnrevocable, displayName, (byte) fontSize, 
-				(byte) displayOffsetY, description);
+				(byte) displayOffsetY, description.getID());
 	}
 	
 	public static enum CardType
@@ -180,10 +202,69 @@ public class Card
 		}
 	}
 	
+	public static class CardDescription
+	{
+		private static int nextID;
+		private static Map<Integer, CardDescription> descriptionMap = new HashMap<Integer, CardDescription>();
+		
+		private int id;
+		private String[] description;
+		
+		public CardDescription(String... description)
+		{
+			id = nextID++;
+			this.description = description;
+			descriptionMap.put(id, this);
+			MDServer.getInstance().broadcastPacket(new PacketCardDescription(id, description));
+		}
+		
+		public int getID()
+		{
+			return id;
+		}
+		
+		public String[] getText()
+		{
+			return description;
+		}
+		
+		public static Collection<CardDescription> getAllDescriptions()
+		{
+			return descriptionMap.values();
+		}
+		
+		public static CardDescription getDescriptionByID(int id)
+		{
+			return descriptionMap.get(id);
+		}
+		
+		public static CardDescription getDescriptionByText(String[] text)
+		{
+			MapIter:
+			for (Entry<Integer, CardDescription> entry : descriptionMap.entrySet())
+			{
+				CardDescription desc = entry.getValue();
+				String[] descText = desc.getText();
+				if (descText.length == text.length)
+				{
+					for (int i = 0 ; i < text.length ; i++)
+					{
+						if (!descText[i].equals(text[i]))
+						{
+							continue MapIter;
+						}
+					}
+					return desc;
+				}
+			}
+			return null;
+		}
+	}
+	
 	@Override
 	public String toString()
 	{
-		return new String(getName() + " (" + getValue() + "M)");
+		return getName() + " (" + getValue() + "M)";
 	}
 	
 

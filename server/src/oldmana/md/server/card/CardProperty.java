@@ -86,7 +86,7 @@ public class CardProperty extends Card
 		{
 			types[i] = colors.get(i).getID();
 		}
-		return new PacketCardPropertyData(getID(), getName(), getValue(), types, isBase(), getDescription());
+		return new PacketCardPropertyData(getID(), getName(), getValue(), types, isBase(), getDescription().getID());
 	}
 	
 	@Override

@@ -14,12 +14,12 @@ public class PacketCardData extends Packet
 	public String[] displayName;
 	public byte fontSize;
 	public byte displayOffsetY;
-	public String[] description;
+	public short description;
 	
 	public PacketCardData() {}
 	
 	public PacketCardData(int id, String name, int value, int type, boolean revocable, boolean marksPreviousUnrevocable, String[] displayName, 
-			byte fontSize, byte displayOffsetY, String[] description)
+			int fontSize, int displayOffsetY, int description)
 	{
 		this.id = id;
 		this.name = name;
@@ -29,8 +29,8 @@ public class PacketCardData extends Packet
 		this.marksPreviousUnrevocable = marksPreviousUnrevocable;
 		
 		this.displayName = displayName;
-		this.fontSize = fontSize;
-		this.displayOffsetY = displayOffsetY;
-		this.description = description;
+		this.fontSize = (byte) fontSize;
+		this.displayOffsetY = (byte) displayOffsetY;
+		this.description = (short) description;
 	}
 }

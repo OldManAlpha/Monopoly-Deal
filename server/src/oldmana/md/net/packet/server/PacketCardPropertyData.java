@@ -10,11 +10,11 @@ public class PacketCardPropertyData extends Packet
 	public byte[] colors;
 	public boolean base; // Whether or not the card can be rented with on its own
 	
-	public String[] description;
+	public short description;
 	
 	public PacketCardPropertyData() {}
 	
-	public PacketCardPropertyData(int id, String name, int value, byte[] colors, boolean base, String[] description)
+	public PacketCardPropertyData(int id, String name, int value, byte[] colors, boolean base, int description)
 	{
 		this.id = id;
 		this.name = name;
@@ -22,6 +22,6 @@ public class PacketCardPropertyData extends Packet
 		this.colors = colors;
 		this.base = base;
 		
-		this.description = description;
+		this.description = (short) description;
 	}
 }

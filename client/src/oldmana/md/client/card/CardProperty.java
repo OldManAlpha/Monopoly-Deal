@@ -17,7 +17,7 @@ public class CardProperty extends Card
 		base = true;
 	}
 	
-	public CardProperty(int id, List<PropertyColor> colors, boolean base, int value, String name, String[] description)
+	public CardProperty(int id, List<PropertyColor> colors, boolean base, int value, String name, CardDescription description)
 	{
 		super(id, value, name);
 		this.colors = colors;

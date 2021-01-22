@@ -161,26 +161,6 @@ public class TableScreen extends JLayeredPane
 			}
 		});
 		add(shrinkUI, new Integer(1));
-		
-		/*
-		MDClient.getInstance().getScheduler().scheduleTask(new MDTask(100, true)
-		{
-			@Override
-			public void run()
-			{
-				chat.addMessage("Back in alpha, we had dirt and it worked. Because you know, alpha dirt is just that great.");
-				//chat.requestFocus();
-				//chat.requestFocusInWindow();
-			}
-		});
-		*/
-		
-		
-		//MDCard card = new MDCard(new CardProperty(500, PropertyColor.GREEN, 5, "A Property"), 3);
-		//MDCard card = new MDCard(new CardActionRent(500, 3, PropertyColor.values()), 1.5);
-		//card.setLocation(100, 100);
-		//add(card, new Integer(200));
-		this.requestFocusInWindow();
 	}
 	
 	public void positionPlayers()
@@ -396,6 +376,9 @@ public class TableScreen extends JLayeredPane
 			
 			shrinkUI.setLocation(enlargeUI.getMaxX() + scale(5), scale(5));
 			shrinkUI.setSize(scale(25), scale(25));
+			
+			chat.setSize(scale(500), scale(400));
+			chat.setLocation(scale(50), getHeight() - scale(600));
 			
 			version.setLocation(scale(5), getHeight() - scale(20));
 			version.setSize(scale(200), scale(15));

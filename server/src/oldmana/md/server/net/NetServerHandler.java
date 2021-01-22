@@ -59,6 +59,7 @@ public class NetServerHandler
 		Packet.registerPacket(PacketCardCollectionData.class);
 		Packet.registerPacket(PacketCardData.class);
 		Packet.registerPacket(PacketCardActionRentData.class);
+		Packet.registerPacket(PacketCardDescription.class);
 		Packet.registerPacket(PacketCardPropertyData.class);
 		Packet.registerPacket(PacketDestroyCardCollection.class);
 		Packet.registerPacket(PacketPropertySetColor.class);

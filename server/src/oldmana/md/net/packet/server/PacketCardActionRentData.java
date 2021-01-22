@@ -8,16 +8,16 @@ public class PacketCardActionRentData extends Packet
 	public byte value;
 	public byte[] colors;
 	
-	public String[] description;
+	public short description;
 	
 	public PacketCardActionRentData() {}
 	
-	public PacketCardActionRentData(int id, int value, byte[] colors, String[] description)
+	public PacketCardActionRentData(int id, int value, byte[] colors, int description)
 	{
 		this.id = id;
 		this.value = (byte) value;
 		this.colors = colors;
 		
-		this.description = description;
+		this.description = (short) description;
 	}
 }

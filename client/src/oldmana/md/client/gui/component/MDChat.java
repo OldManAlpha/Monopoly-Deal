@@ -16,6 +16,8 @@ import java.awt.event.AWTEventListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -114,6 +116,14 @@ public class MDChat extends MDComponent
 				{
 					typeOffset = Math.max(typeOffset - 1, 0);
 				}
+				else if (event.getKeyCode() == KeyEvent.VK_UP)
+				{
+					scroll = Math.min(Math.max(messages.size() - 12, 0), scroll + 1);
+				}
+				else if (event.getKeyCode() == KeyEvent.VK_DOWN)
+				{
+					scroll = Math.max(0, scroll - 1);
+				}
 				else if (event.getKeyCode() == KeyEvent.VK_ESCAPE)
 				{
 					chatOpen = false;
@@ -140,6 +150,24 @@ public class MDChat extends MDComponent
 				
 			}
 		});
+		/*
+		addMouseWheelListener(new MouseWheelListener()
+		{
+			@Override
+			public void mouseWheelMoved(MouseWheelEvent event)
+			{
+				int amt = event.getUnitsToScroll();
+				if (amt < 0)
+				{
+					scroll = Math.min(Math.max(messages.size() - 12, 0), scroll + 1);
+				}
+				else if (amt > 0)
+				{
+					scroll = Math.max(0, scroll - 1);
+				}
+			}
+		});
+		*/
 	}
 	
 	public void addMessage(String text)
@@ -181,13 +209,19 @@ public class MDChat extends MDComponent
 					{
 						int pos = -(i - 11) - lines.size() + l;
 						String line = lines.get(l - 1);
+						
+						// Draw Transparent Text Area
 						g.setColor(new Color(0, 0, 0, (int) (60 * opacity)));
 						g.fillRect(xOffset, interval * pos, offsetWidth, interval);
-						g.setColor(new Color(220, 220, 220, (int) (255 * opacity)));
+						
+						// Draw Text Shadow
+						g.setColor(new Color(20, 20, 20, (int) (255 * opacity)));
 						TextPainter tp = new TextPainter(line, f, new Rectangle(xOffset + scale(2), interval * pos + scale(2), offsetWidth, interval));
 						tp.setVerticalAlignment(Alignment.CENTER);
 						tp.paint(g);
-						g.setColor(new Color(20, 20, 20, (int) (255 * opacity)));
+						
+						// Draw Text
+						g.setColor(new Color(255, 255, 255, (int) (255 * opacity)));
 						tp = new TextPainter(line, f, new Rectangle(xOffset, interval * pos, offsetWidth, interval));
 						tp.setVerticalAlignment(Alignment.CENTER);
 						tp.paint(g);

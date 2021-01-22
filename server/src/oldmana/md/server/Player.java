@@ -549,6 +549,11 @@ public class Player extends Client implements CommandSender
 		return getStatusEffect(clazz) != null;
 	}
 	
+	public void clearStatusEffects()
+	{
+		statusEffects.clear();
+	}
+	
 	public Packet[] getPropertySetPackets()
 	{
 		Packet[] packets = new Packet[propertySets.size()];
