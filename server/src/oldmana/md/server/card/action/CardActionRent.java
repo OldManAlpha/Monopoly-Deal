@@ -62,13 +62,13 @@ public class CardActionRent extends CardAction
 		{
 			types[i] = colors[i].getID();
 		}
-		return new PacketCardActionRentData(getID(), getValue(), types, getDescription());
+		return new PacketCardActionRentData(getID(), getValue(), types, getDescription().getID());
 	}
 	
 	@Override
 	public String toString()
 	{
-		String str = "CardActionRent (" + colors.length + " Colors: ";
+		String str = "CardActionRent (" + colors.length + " Color" + (colors.length != 1 ? "s" : "") + ": ";
 		for (PropertyColor color : colors)
 		{
 			str += color.getLabel() + "/";

@@ -9,6 +9,7 @@ import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.MDEventQueue.EventTask;
 import oldmana.md.client.card.Card;
+import oldmana.md.client.card.Card.CardDescription;
 import oldmana.md.client.card.CardAction;
 import oldmana.md.client.card.CardActionDoubleTheRent;
 import oldmana.md.client.card.CardActionJustSayNo;
@@ -76,6 +77,7 @@ public class NetClientHandler
 		Packet.registerPacket(PacketCardCollectionData.class);
 		Packet.registerPacket(PacketCardData.class);
 		Packet.registerPacket(PacketCardActionRentData.class);
+		Packet.registerPacket(PacketCardDescription.class);
 		Packet.registerPacket(PacketCardPropertyData.class);
 		Packet.registerPacket(PacketDestroyCardCollection.class);
 		Packet.registerPacket(PacketPropertySetColor.class);
@@ -161,6 +163,11 @@ public class NetClientHandler
 		client.createThePlayer(packet.id, packet.name);
 	}
 	
+	public void handleCardDescription(PacketCardDescription packet)
+	{
+		new CardDescription(packet.id, packet.description);
+	}
+	
 	public void handleCardData(PacketCardData packet)
 	{
 		Card card = null;
@@ -191,17 +198,19 @@ public class NetClientHandler
 		card.setDisplayName(packet.displayName);
 		card.setFontSize(packet.fontSize);
 		card.setDisplayOffsetY(packet.displayOffsetY);
-		card.setDescription(packet.description);
+		card.setDescription(CardDescription.getDescriptionByID(packet.description));
 	}
 	
 	public void handleCardActionRentData(PacketCardActionRentData packet)
 	{
-		new CardActionRent(packet.id, packet.value, PropertyColor.fromIDs(packet.colors).toArray(new PropertyColor[packet.colors.length]), packet.description);
+		new CardActionRent(packet.id, packet.value, PropertyColor.fromIDs(packet.colors).toArray(new PropertyColor[packet.colors.length]), 
+				CardDescription.getDescriptionByID(packet.description));
 	}
 	
 	public void handleCardPropertyData(PacketCardPropertyData packet)
 	{
-		new CardProperty(packet.id, PropertyColor.fromIDs(packet.colors), packet.base, packet.value, packet.name, packet.description);
+		new CardProperty(packet.id, PropertyColor.fromIDs(packet.colors), packet.base, packet.value, packet.name, 
+				CardDescription.getDescriptionByID(packet.description));
 	}
 	
 	public void handlePlayerInfo(PacketPlayerInfo packet)

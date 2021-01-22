@@ -16,11 +16,13 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.net.packet.server.PacketCardDescription;
 import oldmana.md.net.packet.server.PacketPlayerStatus;
 import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateAccepted;
 import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateRefusal;
 import oldmana.md.net.packet.universal.PacketChat;
 import oldmana.md.server.card.Card;
+import oldmana.md.server.card.Card.CardDescription;
 import oldmana.md.server.card.action.CardActionItsMyBirthday;
 import oldmana.md.server.card.action.CardActionDealBreaker;
 import oldmana.md.server.card.action.CardActionDebtCollector;
@@ -417,6 +419,13 @@ public class MDServer
 		{
 			player.sendPacket(other.getInfoPacket());
 		}
+		
+		// Send card descriptions
+		for (CardDescription desc : CardDescription.getAllDescriptions())
+		{
+			player.sendPacket(new PacketCardDescription(desc.getID(), desc.getText()));
+		}
+		
 		// Send all card data
 		for (Card card : Card.getRegisteredCards())
 		{

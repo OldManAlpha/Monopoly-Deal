@@ -2,6 +2,7 @@ package oldmana.md.client.gui.component;
 
 import java.awt.Color;
 import java.awt.FontMetrics;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -27,7 +28,7 @@ public class MDCardInfo extends MDComponent
 		this.card = card;
 		
 		FontMetrics metrics = getFontMetrics(GraphicsUtils.getThinMDFont(scale(20)));
-		List<String> desc = GraphicsUtils.splitStrings(Arrays.asList(card.getDescription()), metrics, scale(342), true);
+		List<String> desc = GraphicsUtils.splitStrings(Arrays.asList(card.getDescription().getText()), metrics, scale(342), true);
 		setSize(scale(350), scale(60) + (metrics.getHeight() * desc.size()));
 	}
 	
@@ -65,13 +66,14 @@ public class MDCardInfo extends MDComponent
 		
 		// Draw card description
 		g.setFont(GraphicsUtils.getThinMDFont(scale(20)));
-		tp = new TextPainter(Arrays.asList(card.getDescription()), g.getFont(), new Rectangle(scale(4), scale(32), getWidth() - scale(8), getHeight() - scale(32)), 
-				true, true);
+		tp = new TextPainter(Arrays.asList(card.getDescription().getText()), g.getFont(), new Rectangle(scale(4), scale(32), getWidth() - scale(8), 
+				getHeight() - scale(32)), true, true);
 		tp.paint(g);
 		
 		// Draw card type
-		Color brighter = new Color((255 + cc.getRed()) / 2, (255 + cc.getGreen()) / 2, (255 + cc.getBlue()) / 2);
-		g.setColor(brighter);
+		Color brighter = GraphicsUtils.getLighterColor(cc, 1);
+		GradientPaint paint = new GradientPaint(0, getHeight() - scale(24), brighter, 0, getHeight(), cc);
+		g.setPaint(paint);
 		g.fillRoundRect(getWidth() / 2 - scale(65), getHeight() - scale(24), scale(130), scale(24), scale(10), scale(10));
 		g.setColor(Color.BLACK);
 		g.drawRoundRect(getWidth() / 2 - scale(65), getHeight() - scale(24), scale(130), scale(24), scale(10), scale(10));
