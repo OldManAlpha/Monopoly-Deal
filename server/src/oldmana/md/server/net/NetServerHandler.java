@@ -24,8 +24,11 @@ import oldmana.md.server.card.action.CardActionRent;
 import oldmana.md.server.card.collection.CardCollection;
 import oldmana.md.server.card.collection.Hand;
 import oldmana.md.server.card.collection.PropertySet;
+import oldmana.md.server.event.CardDiscardEvent;
+import oldmana.md.server.event.DeckDrawEvent;
 import oldmana.md.server.event.PostCardBankedEvent;
 import oldmana.md.server.event.PreCardBankedEvent;
+import oldmana.md.server.event.UndoCardEvent;
 import oldmana.md.server.state.ActionState;
 import oldmana.md.server.state.ActionStateRent;
 import oldmana.md.server.state.ActionStateStealMonopoly;
@@ -76,6 +79,8 @@ public class NetServerHandler
 		Packet.registerPacket(PacketRefresh.class);
 		Packet.registerPacket(PacketUnknownCardCollectionData.class);
 		Packet.registerPacket(PacketUndoCardStatus.class);
+		Packet.registerPacket(PacketSoundData.class);
+		Packet.registerPacket(PacketPlaySound.class);
 		
 		Packet.registerPacket(PacketActionAccept.class);
 		Packet.registerPacket(PacketActionDraw.class);
@@ -213,11 +218,7 @@ public class NetServerHandler
 				player.addRevokableCard(card);
 				PostCardBankedEvent postEvent = new PostCardBankedEvent(player, card);
 				server.getEventManager().callEvent(postEvent);
-				if (player.getHand().getCardCount() == 0)
-				{
-					player.clearRevokableCards();
-					server.getDeck().drawCards(player, 5, 1.2);
-				}
+				player.checkEmptyHand();
 				
 				server.getGameState().decrementTurn();
 			}
@@ -255,11 +256,7 @@ public class NetServerHandler
 			}
 			player.addRevokableCard(card);
 			
-			if (player.getHand().getCardCount() == 0)
-			{
-				player.clearRevokableCards();
-				server.getDeck().drawCards(player, 5, 1.2);
-			}
+			player.checkEmptyHand();
 			
 			server.getGameState().decrementTurn();
 		}
@@ -285,11 +282,7 @@ public class NetServerHandler
 				server.getGameState().decrementTurn();
 				card.playCard(player);
 				
-				if (player.getHand().getCardCount() == 0)
-				{
-					player.clearRevokableCards();
-					server.getDeck().drawCards(player, 5, 1.2);
-				}
+				player.checkEmptyHand();
 			}
 			else
 			{
@@ -325,10 +318,7 @@ public class NetServerHandler
 					rentCard.playCard(player, 2);
 					player.clearRevokableCards();
 					
-					if (player.getHand().getCardCount() == 0)
-					{
-						server.getDeck().drawCards(player, 5, 1.2);
-					}
+					player.checkEmptyHand();
 				}
 				else
 				{
@@ -343,6 +333,7 @@ public class NetServerHandler
 		Card card = Card.getCard(packet.card);
 		card.transfer(server.getDiscardPile());
 		server.getGameState().nextNaturalActionState();
+		server.getEventManager().callEvent(new CardDiscardEvent(player, card));
 	}
 	
 	public void handlePay(Player player, PacketActionPay packet)
@@ -359,12 +350,12 @@ public class NetServerHandler
 		server.getDeck().drawCards(player, 2);
 		server.getGameState().markDrawn();
 		server.getGameState().nextNaturalActionState();
+		server.getEventManager().callEvent(new DeckDrawEvent(player));
 	}
 	
 	public void handleActionEndTurn(Player player, PacketActionEndTurn packet)
 	{
 		server.getGameState().nextTurn();
-		server.getGameState().nextNaturalActionState();
 	}
 	
 	public void handleActionMoveProperty(Player player, PacketActionMoveProperty packet)
@@ -443,8 +434,13 @@ public class NetServerHandler
 	
 	public void handleActionUndoCard(Player player, PacketActionUndoCard packet)
 	{
-		server.getGameState().undoCard(player.getLastRevokableCard());
-		player.undoCard();
+		UndoCardEvent event = new UndoCardEvent(player, player.getLastRevokableCard());
+		server.getEventManager().callEvent(event);
+		if (!event.isCanceled())
+		{
+			server.getGameState().undoCard(player.getLastRevokableCard());
+			player.undoCard();
+		}
 	}
 	
 	public void handleActionAccept(Player player, PacketActionAccept packet)

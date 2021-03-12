@@ -8,6 +8,7 @@ import oldmana.md.server.CommandSender;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.event.CommandExecutedEvent;
+import oldmana.md.server.event.PreCommandExecuteEvent;
 
 public class CommandHandler
 {
@@ -38,6 +39,7 @@ public class CommandHandler
 		registerCommand(new CommandNextTurn());
 		registerCommand(new CommandGameRule());
 		registerCommand(new CommandKickPlayer());
+		registerCommand(new CommandPlaySound());
 	}
 	
 	public void registerCommand(Command cmd)
@@ -67,8 +69,13 @@ public class CommandHandler
 		String[] args = Arrays.copyOfRange(split, 1, split.length);
 		try
 		{
-			cmd.executeCommand(sender, args);
-			MDServer.getInstance().getEventManager().callEvent(new CommandExecutedEvent(cmd, sender, fullCmd, args));
+			PreCommandExecuteEvent event = new PreCommandExecuteEvent(cmd, sender, fullCmd, args);
+			MDServer.getInstance().getEventManager().callEvent(event);
+			if (!event.isCanceled())
+			{
+				cmd.executeCommand(sender, args);
+				MDServer.getInstance().getEventManager().callEvent(new CommandExecutedEvent(cmd, sender, fullCmd, args));
+			}
 		}
 		catch (Exception e)
 		{

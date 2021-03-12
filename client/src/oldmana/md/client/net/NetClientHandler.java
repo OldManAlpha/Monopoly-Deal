@@ -8,6 +8,7 @@ import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.MDEventQueue.EventTask;
+import oldmana.md.client.MDSound;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.Card.CardDescription;
 import oldmana.md.client.card.CardAction;
@@ -94,6 +95,8 @@ public class NetClientHandler
 		Packet.registerPacket(PacketRefresh.class);
 		Packet.registerPacket(PacketUnknownCardCollectionData.class);
 		Packet.registerPacket(PacketUndoCardStatus.class);
+		Packet.registerPacket(PacketSoundData.class);
+		Packet.registerPacket(PacketPlaySound.class);
 		
 		// Client -> Server
 		Packet.registerPacket(PacketActionAccept.class);
@@ -555,5 +558,15 @@ public class NetClientHandler
 	public void handleChat(PacketChat packet)
 	{
 		client.getTableScreen().getChat().addMessage(packet.message);
+	}
+	
+	public void handleSoundData(PacketSoundData packet)
+	{
+		MDSound.addSound(packet.name, packet.data);
+	}
+	
+	public void handlePlaySound(PacketPlaySound packet)
+	{
+		MDSound.playSound(packet.name);
 	}
 }

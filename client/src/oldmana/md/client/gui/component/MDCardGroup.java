@@ -12,6 +12,32 @@ public class MDCardGroup extends MDComponent
 {
 	private List<MDCard> cards;
 	
+	private double cardScale;
+	
+	public MDCardGroup()
+	{
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/*
+	private List<MDCard> cards;
+	
 	private Dimension size;
 	
 	private double cardScale = 1;
@@ -112,4 +138,5 @@ public class MDCardGroup extends MDComponent
 	{
 		LIST, LIST_CENTERED, PROPERTY_SET
 	}
+	*/
 }

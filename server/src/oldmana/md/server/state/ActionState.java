@@ -16,6 +16,8 @@ public abstract class ActionState
 	private Player actionOwner;
 	private List<ActionTarget> targets;
 	
+	private ActionStateListener listener;
+	
 	public ActionState(Player actionOwner)
 	{
 		this.actionOwner = actionOwner;
@@ -35,6 +37,16 @@ public abstract class ActionState
 		{
 			targets.add(new ActionTarget(player));
 		}
+	}
+	
+	public void setListener(ActionStateListener listener)
+	{
+		this.listener = listener;
+	}
+	
+	public ActionStateListener getListener()
+	{
+		return listener;
 	}
 	
 	public void onCardUndo(Card card) {}

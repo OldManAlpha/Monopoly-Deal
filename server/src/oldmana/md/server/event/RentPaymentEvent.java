@@ -11,6 +11,7 @@ public class RentPaymentEvent extends Event
 	private Player renter;
 	private Player target;
 	
+	private List<Card> originalPayment;
 	private List<Card> payment;
 	
 	public RentPaymentEvent(Player renter, Player target, List<Card> payment)
@@ -18,6 +19,7 @@ public class RentPaymentEvent extends Event
 		this.renter = renter;
 		this.target = target;
 		
+		this.originalPayment = new ArrayList<Card>(payment);
 		this.payment = new ArrayList<Card>(payment);
 	}
 	
@@ -29,6 +31,11 @@ public class RentPaymentEvent extends Event
 	public Player getTarget()
 	{
 		return target;
+	}
+	
+	public List<Card> getOriginalPayment()
+	{
+		return new ArrayList<Card>(originalPayment);
 	}
 	
 	public List<Card> getPayment()

@@ -4,6 +4,7 @@ import oldmana.md.server.card.CardMoney;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.CardProperty.PropertyColor;
 import oldmana.md.server.card.action.*;
+import oldmana.md.server.card.property.CardPropertyRainbowWildCard;
 
 public class VanillaDeck extends DeckStack
 {
@@ -51,7 +52,8 @@ public class VanillaDeck extends DeckStack
 		addCard(new CardProperty(new PropertyColor[] {PropertyColor.RAILROAD, PropertyColor.UTILITY}, 2, "Property Wild Card", true));
 		for (int i = 0 ; i < 2 ; i++)
 		{
-			addCard(new CardProperty(PropertyColor.values(), 0, "Property Wild Card", false));
+			//addCard(new CardProperty(PropertyColor.values(), 0, "Property Wild Card", false));
+			addCard(new CardPropertyRainbowWildCard());
 		}
 		
 		for (int i = 0 ; i < 2 ; i++)

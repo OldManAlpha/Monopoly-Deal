@@ -216,7 +216,7 @@ public class MDChat extends MDComponent
 						
 						// Draw Text Shadow
 						g.setColor(new Color(20, 20, 20, (int) (255 * opacity)));
-						TextPainter tp = new TextPainter(line, f, new Rectangle(xOffset + scale(2), interval * pos + scale(2), offsetWidth, interval));
+						TextPainter tp = new TextPainter(line, f, new Rectangle(xOffset + Math.max(scale(1.5), 1), interval * pos + Math.max(scale(1.5), 1), offsetWidth, interval));
 						tp.setVerticalAlignment(Alignment.CENTER);
 						tp.paint(g);
 						
@@ -252,10 +252,21 @@ public class MDChat extends MDComponent
 			int y = getHeight();// - (chatHeight / 2) - (metrics.getHeight() / 2);
 			//g.setFont(f);
 			//g.drawString(typed.toString(), 0, y);
-			TextPainter tp = new TextPainter(typed.toString(), f, new Rectangle(0, getHeight() - chatHeight, getWidth() - scale(4), chatHeight), false, false);
+			
+			// Draw Typed Text Shadow
+			g.setColor(new Color(20, 20, 20));
+			TextPainter tp = new TextPainter(typed.toString(), f, new Rectangle(Math.max(scale(1.5), 1), getHeight() - chatHeight + Math.max(scale(1.5), 1), 
+					getWidth() - scale(4), chatHeight), false, false);
+			tp.setVerticalAlignment(Alignment.CENTER);
+			tp.paint(g);
+			
+			// Draw Typed Text
+			g.setColor(Color.WHITE);
+			tp = new TextPainter(typed.toString(), f, new Rectangle(0, getHeight() - chatHeight, getWidth() - scale(4), chatHeight), false, false);
 			tp.setVerticalAlignment(Alignment.CENTER);
 			tp.paint(g);
 			int cursorPos = posOffsetWidth;
+			g.setColor(Color.BLACK);
 			if (System.currentTimeMillis() % 1000 >= 500)
 			{
 				g.fillRect(cursorPos, getHeight() - chatHeight + scale(3), scale(3), chatHeight - scale(6));

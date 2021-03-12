@@ -5,8 +5,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
+
 import oldmana.general.mjnetworkingapi.MJConnection;
 import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.client.MDClient;
+import oldmana.md.client.gui.screen.TableScreen;
 
 public class ConnectionThread extends Thread
 {
@@ -94,6 +98,14 @@ public class ConnectionThread extends Thread
 			catch (Exception e)
 			{
 				e.printStackTrace();
+				try
+				{
+					connection.close();
+				}
+				catch (IOException e1)
+				{
+					e1.printStackTrace();
+				}
 			}
 			try
 			{
@@ -101,5 +113,15 @@ public class ConnectionThread extends Thread
 			}
 			catch (InterruptedException e) {}
 		}
+		SwingUtilities.invokeLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				TableScreen ts = MDClient.getInstance().getTableScreen();
+				ts.getTopbar().setText("Lost Connection");
+				ts.repaint();
+			}
+		});
 	}
 }

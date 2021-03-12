@@ -65,6 +65,10 @@ public class GameState
 			playerTurn.clearRevokableCards();
 			playerTurn = null;
 		}
+		for (Player player : server.getPlayers())
+		{
+			player.clearStatusEffects();
+		}
 		setCurrentActionState(new ActionStateDoNothing());
 	}
 	
@@ -89,7 +93,8 @@ public class GameState
 			}
 			else
 			{
-				server.broadcastMessage("Winning is deferred for " + deferredWinTurns + " turn(s). (After " + deferredWinPlayer.getName() + "'s turn)");
+				server.broadcastMessage("Winning is deferred for " + deferredWinTurns + " turn" + (deferredWinTurns != 1 ? "s" : "") 
+						+ ". (After " + deferredWinPlayer.getName() + "'s turn)");
 			}
 		}
 		if (playerTurn != null)
@@ -107,8 +112,6 @@ public class GameState
 			playerTurn = server.getPlayers().get((server.getPlayers().indexOf(playerTurn) + 1) % numPlayers);
 		}
 		
-		server.getEventManager().callEvent(new TurnStartEvent(playerTurn));
-		
 		turns = 3;
 		waitingDraw = true;
 		if (deferredWinTurns > 0)
@@ -116,6 +119,8 @@ public class GameState
 			System.out.println("Win deferred: " + deferredWinTurns + " (" + deferredWinPlayer.getName() + ")");
 		}
 		System.out.println("ACTIVE PLAYER: " + playerTurn.getID() + " (" + playerTurn.getName() + ")");
+		nextNaturalActionState();
+		server.getEventManager().callEvent(new TurnStartEvent(playerTurn));
 	}
 	
 	public void setTurn(Player player, boolean draw)
