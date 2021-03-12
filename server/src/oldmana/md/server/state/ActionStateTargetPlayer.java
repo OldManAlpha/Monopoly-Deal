@@ -5,14 +5,17 @@ import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
 import oldmana.md.server.Player;
 
-public abstract class ActionStateTargetPlayer extends ActionState
+public class ActionStateTargetPlayer extends ActionState
 {
 	public ActionStateTargetPlayer(Player player)
 	{
 		super(player);
 	}
 	
-	public abstract void playerSelected(Player player);
+	public void playerSelected(Player player)
+	{
+		((TargetPlayerListener) getListener()).playerSelected(getActionOwner(), player);
+	}
 	
 	@Override
 	public boolean isFinished()
@@ -24,5 +27,10 @@ public abstract class ActionStateTargetPlayer extends ActionState
 	public Packet constructPacket()
 	{
 		return new PacketActionStateBasic(getActionOwner().getID(), BasicActionState.TARGET_PLAYER, 0);
+	}
+	
+	public static interface TargetPlayerListener extends ActionStateListener
+	{
+		public void playerSelected(Player player, Player target);
 	}
 }

@@ -13,6 +13,5 @@ public class CommandNextTurn extends Command
 	public void executeCommand(CommandSender sender, String[] args)
 	{
 		getServer().getGameState().nextTurn();
-		getServer().getGameState().nextNaturalActionState();
 	}
 }

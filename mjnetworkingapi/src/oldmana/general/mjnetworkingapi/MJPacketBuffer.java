@@ -12,7 +12,7 @@ public class MJPacketBuffer
 	
 	public MJPacketBuffer()
 	{
-		bb = ByteBuffer.allocate(128);
+		bb = ByteBuffer.allocate(256);
 	}
 	
 	public MJPacketBuffer(int id, int size)
@@ -53,7 +53,7 @@ public class MJPacketBuffer
 		}
 		catch (BufferOverflowException e)
 		{
-			resize(bb.capacity() + 1);
+			resize(bb.capacity() + 512);
 			addByte(b);
 		}
 	}
@@ -303,11 +303,15 @@ public class MJPacketBuffer
 	{
 		try
 		{
+			if (bb.capacity() > bb.position() + bytes.length)
+			{
+				resize(bb.position() + bytes.length);
+			}
 			bb.put(bytes);
 		}
 		catch (BufferOverflowException e)
 		{
-			resize(bb.capacity() + 1);
+			resize(bb.capacity() + 512);
 			append(bytes);
 		}
 	}

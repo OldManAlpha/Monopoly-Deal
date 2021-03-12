@@ -63,6 +63,11 @@ public class GraphicsUtils
 		return (int) (SCALE * size);
 	}
 	
+	public static int scale(double size)
+	{
+		return (int) (SCALE * size);
+	}
+	
 	public static int getCardWidth(double scale)
 	{
 		return (int) (SCALE * scale * 60);

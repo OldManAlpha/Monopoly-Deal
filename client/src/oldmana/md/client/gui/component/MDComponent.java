@@ -14,6 +14,11 @@ public class MDComponent extends JComponent
 		return GraphicsUtils.scale(size);
 	}
 	
+	public int scale(double size)
+	{
+		return GraphicsUtils.scale(size);
+	}
+	
 	public double getScale()
 	{
 		return GraphicsUtils.SCALE;

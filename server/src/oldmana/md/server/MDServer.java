@@ -1,7 +1,9 @@
 package oldmana.md.server;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -12,12 +14,15 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardDescription;
+import oldmana.md.net.packet.server.PacketPlaySound;
 import oldmana.md.net.packet.server.PacketPlayerStatus;
+import oldmana.md.net.packet.server.PacketSoundData;
 import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateAccepted;
 import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateRefusal;
 import oldmana.md.net.packet.universal.PacketChat;
@@ -84,6 +89,8 @@ public class MDServer
 	
 	private int tickCount;
 	
+	private Map<String, byte[]> soundMap = new HashMap<String, byte[]>();
+	
 	public MDServer()
 	{
 		instance = this;
@@ -106,8 +113,12 @@ public class MDServer
 		cmdHandler.registerDefaultCommands();
 		playerRegistry.loadPlayers();
 		registerDefaultActionCards();
+		
+		loadSounds();
+		
 		System.out.println("Loading Mods");
 		loadMods();
+		
 		new Thread()
 		{
 			@Override
@@ -161,6 +172,7 @@ public class MDServer
 				if (player.getNet().isClosed())
 				{
 					player.setNet(null);
+					player.setLoggedIn(false);
 					broadcastPacket(new PacketPlayerStatus(player.getID(), false));
 					continue;
 				}
@@ -411,9 +423,48 @@ public class MDServer
 		return tickCount;
 	}
 	
+	public void loadSounds()
+	{
+		File soundsFolder = new File("sounds");
+		if (!soundsFolder.exists())
+		{
+			soundsFolder.mkdir();
+		}
+		for (File f : soundsFolder.listFiles())
+		{
+			if (!f.isDirectory() && f.getName().endsWith(".wav"))
+			{
+				try
+				{
+					BufferedInputStream is = new BufferedInputStream(new FileInputStream(f));
+					byte[] data = new byte[is.available()];
+					is.read(data);
+					soundMap.put(f.getName().substring(0, f.getName().length() - 4), data);
+					is.close();
+					System.out.println("Loaded sound file: " + f.getName());
+				}
+				catch (Exception e)
+				{
+					System.out.println("Error loading sound file: " + f.getName());
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	public void playSound(String name)
+	{
+		broadcastPacket(new PacketPlaySound(name));
+	}
+	
 	public void refreshPlayer(Player player)
 	{
 		//player.sendPacket(new PacketRefresh());
+		
+		for (Entry<String, byte[]> sound : soundMap.entrySet())
+		{
+			player.sendPacket(new PacketSoundData(sound.getKey(), sound.getValue()));
+		}
 		
 		for (Player other : getPlayersExcluding(player))
 		{

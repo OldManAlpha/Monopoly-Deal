@@ -28,7 +28,6 @@ public class CommandKickPlayer extends Command
 		if (gs.getActivePlayer() == player)
 		{
 			gs.nextTurn();
-			gs.nextNaturalActionState();
 		}
 		getServer().kickPlayer(player);
 		getServer().broadcastPacket(new PacketDestroyPlayer(player.getID()));

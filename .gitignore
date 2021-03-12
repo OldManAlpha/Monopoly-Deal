@@ -5,6 +5,7 @@ client/.settings
 client/settings.dat
 server/bin
 server/mods
+server/sounds
 server/config.txt
 server/players.dat
 server/.classpath

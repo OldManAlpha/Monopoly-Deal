@@ -2,6 +2,7 @@ package oldmana.md.server;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,7 +38,7 @@ public class Player extends Client implements CommandSender
 	private Bank bank;
 	private List<PropertySet> propertySets;
 	
-	private List<Card> turnHistory = new ArrayList<Card>();
+	//private List<Card> turnHistory = new ArrayList<Card>();
 	
 	private List<Card> revokableCards = new ArrayList<Card>();
 	
@@ -463,6 +464,22 @@ public class Player extends Client implements CommandSender
 		return monopolyCount;
 	}
 	
+	/**Checks if the hand is empty and draws 5 cards if it is.
+	 * 
+	 * @return True if hand was empty
+	 */
+	public boolean checkEmptyHand()
+	{
+		if (getHand().getCardCount() == 0)
+		{
+			clearRevokableCards();
+			server.getDeck().drawCards(this, 5, 1.2);
+			return true;
+		}
+		return false;
+	}
+	
+	/*
 	public boolean canRevokeCard(Card card)
 	{
 		for (Card turn : turnHistory)
@@ -513,6 +530,7 @@ public class Player extends Client implements CommandSender
 			//turns++;
 		}
 	}
+	*/
 	
 	public List<StatusEffect> getStatusEffects()
 	{
@@ -529,6 +547,20 @@ public class Player extends Client implements CommandSender
 	{
 		server.getEventManager().unregisterEvents(effect);
 		statusEffects.remove(effect);
+	}
+	
+	public void removeStatusEffect(Class<? extends StatusEffect> clazz)
+	{
+		Iterator<StatusEffect> it = statusEffects.iterator();
+		while (it.hasNext())
+		{
+			StatusEffect effect = it.next();
+			if (effect.getClass() == clazz)
+			{
+				server.getEventManager().unregisterEvents(effect);
+				it.remove();
+			}
+		}
 	}
 	
 	@SuppressWarnings("unchecked")

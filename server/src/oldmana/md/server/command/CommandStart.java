@@ -31,6 +31,5 @@ public class CommandStart extends Command
 		}
 		GameState gs = server.getGameState();
 		gs.nextTurn();
-		gs.nextNaturalActionState();
 	}
 }
