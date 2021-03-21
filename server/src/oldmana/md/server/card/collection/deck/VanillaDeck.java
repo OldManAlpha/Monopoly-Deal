@@ -52,7 +52,6 @@ public class VanillaDeck extends DeckStack
 		addCard(new CardProperty(new PropertyColor[] {PropertyColor.RAILROAD, PropertyColor.UTILITY}, 2, "Property Wild Card", true));
 		for (int i = 0 ; i < 2 ; i++)
 		{
-			//addCard(new CardProperty(PropertyColor.values(), 0, "Property Wild Card", false));
 			addCard(new CardPropertyRainbowWildCard());
 		}
 		

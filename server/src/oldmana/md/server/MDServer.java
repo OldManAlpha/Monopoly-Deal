@@ -434,21 +434,26 @@ public class MDServer
 		{
 			if (!f.isDirectory() && f.getName().endsWith(".wav"))
 			{
-				try
-				{
-					BufferedInputStream is = new BufferedInputStream(new FileInputStream(f));
-					byte[] data = new byte[is.available()];
-					is.read(data);
-					soundMap.put(f.getName().substring(0, f.getName().length() - 4), data);
-					is.close();
-					System.out.println("Loaded sound file: " + f.getName());
-				}
-				catch (Exception e)
-				{
-					System.out.println("Error loading sound file: " + f.getName());
-					e.printStackTrace();
-				}
+				loadSound(f);
 			}
+		}
+	}
+	
+	public void loadSound(File file)
+	{
+		try
+		{
+			BufferedInputStream is = new BufferedInputStream(new FileInputStream(file));
+			byte[] data = new byte[is.available()];
+			is.read(data);
+			soundMap.put(file.getName().substring(0, file.getName().length() - 4), data);
+			is.close();
+			System.out.println("Loaded sound file: " + file.getName());
+		}
+		catch (Exception e)
+		{
+			System.out.println("Error loading sound file: " + file.getName());
+			e.printStackTrace();
 		}
 	}
 	

@@ -20,7 +20,7 @@ public class CommandGameRule extends Command
 		{
 			if (args[0].equalsIgnoreCase("setwin"))
 			{
-				rules.setMonopoliesRequiredToWin(Integer.parseInt(args[0]));
+				rules.setMonopoliesRequiredToWin(Integer.parseInt(args[1]));
 				sender.sendMessage("Set required monopolies to win to " + rules.getMonopoliesRequiredToWin());
 			}
 			else if (args[0].equalsIgnoreCase("rentall"))
