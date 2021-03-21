@@ -40,6 +40,7 @@ public class CommandHandler
 		registerCommand(new CommandGameRule());
 		registerCommand(new CommandKickPlayer());
 		registerCommand(new CommandPlaySound());
+		registerCommand(new CommandLoadSound());
 	}
 	
 	public void registerCommand(Command cmd)

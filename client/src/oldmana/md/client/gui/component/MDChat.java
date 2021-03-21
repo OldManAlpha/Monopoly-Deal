@@ -70,7 +70,7 @@ public class MDChat extends MDComponent
 			@Override
 			public boolean dispatchKeyEvent(KeyEvent event)
 			{
-				if (event.getKeyCode() == KeyEvent.VK_T && !chatOpen)
+				if (event.getID() == KeyEvent.KEY_PRESSED && event.getKeyCode() == KeyEvent.VK_T && !chatOpen)
 				{
 					chatOpen = true;
 					requestFocus();
@@ -186,7 +186,7 @@ public class MDChat extends MDComponent
 		int chatHistoryHeight = getHeight() - (int) (getHeight() * 0.15);
 		int chatHeight = (int) (getHeight() * 0.1);
 		int xOffset = scale(8);
-		int offsetWidth = getWidth() - xOffset;
+		int offsetWidth = getWidth() - xOffset - scale(4);
 		
 		Font f = GraphicsUtils.getBoldMDFont(scale(24));
 		
@@ -216,13 +216,13 @@ public class MDChat extends MDComponent
 						
 						// Draw Text Shadow
 						g.setColor(new Color(20, 20, 20, (int) (255 * opacity)));
-						TextPainter tp = new TextPainter(line, f, new Rectangle(xOffset + Math.max(scale(1.5), 1), interval * pos + Math.max(scale(1.5), 1), offsetWidth, interval));
+						TextPainter tp = new TextPainter(line, f, new Rectangle(xOffset + scale(2) + Math.max(scale(1.5), 1), interval * pos + Math.max(scale(1.5), 1), offsetWidth, interval));
 						tp.setVerticalAlignment(Alignment.CENTER);
 						tp.paint(g);
 						
 						// Draw Text
 						g.setColor(new Color(255, 255, 255, (int) (255 * opacity)));
-						tp = new TextPainter(line, f, new Rectangle(xOffset, interval * pos, offsetWidth, interval));
+						tp = new TextPainter(line, f, new Rectangle(xOffset + scale(2), interval * pos, offsetWidth, interval));
 						tp.setVerticalAlignment(Alignment.CENTER);
 						tp.paint(g);
 					}

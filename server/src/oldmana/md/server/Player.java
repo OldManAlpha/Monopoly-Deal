@@ -583,7 +583,13 @@ public class Player extends Client implements CommandSender
 	
 	public void clearStatusEffects()
 	{
-		statusEffects.clear();
+		Iterator<StatusEffect> it = statusEffects.iterator();
+		while (it.hasNext())
+		{
+			StatusEffect effect = it.next();
+			server.getEventManager().unregisterEvents(effect);
+			it.remove();
+		}
 	}
 	
 	public Packet[] getPropertySetPackets()
