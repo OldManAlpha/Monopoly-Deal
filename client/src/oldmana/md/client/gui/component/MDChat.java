@@ -1,8 +1,6 @@
 package oldmana.md.client.gui.component;
 
-import java.awt.AWTEvent;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -11,17 +9,10 @@ import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.SwingUtilities;
 
 import oldmana.md.client.MDScheduler.MDTask;
 import oldmana.md.client.gui.util.GraphicsUtils;
@@ -39,6 +30,8 @@ public class MDChat extends MDComponent
 	private int typeDisplayOffset;
 	
 	private boolean chatOpen = false;
+	private boolean blink = false;
+	private boolean ignoreNextBlink = false;
 	
 	public MDChat()
 	{
@@ -48,10 +41,6 @@ public class MDChat extends MDComponent
 			public void run()
 			{
 				boolean update = false;
-				if (chatOpen)
-				{
-					update = true;
-				}
 				for (Message m : messages)
 				{
 					if (m.tick())
@@ -60,6 +49,23 @@ public class MDChat extends MDComponent
 					}
 				}
 				if (update)
+				{
+					repaint();
+				}
+			}
+		});
+		getClient().getScheduler().scheduleTask(new MDTask(30, true)
+		{
+			@Override
+			public void run()
+			{
+				if (ignoreNextBlink)
+				{
+					ignoreNextBlink = false;
+					return;
+				}
+				blink = !blink;
+				if (chatOpen)
 				{
 					repaint();
 				}
@@ -74,6 +80,7 @@ public class MDChat extends MDComponent
 				{
 					chatOpen = true;
 					requestFocus();
+					repaint();
 					return true;
 				}
 				return false;
@@ -106,15 +113,18 @@ public class MDChat extends MDComponent
 					typeOffset = 0;
 					scroll = 0;
 					chatOpen = false;
-					repaint();
 				}
 				else if (event.getKeyCode() == KeyEvent.VK_LEFT)
 				{
 					typeOffset = Math.min(typeOffset + 1, typed.length());
+					blink = true;
+					ignoreNextBlink = true;
 				}
 				else if (event.getKeyCode() == KeyEvent.VK_RIGHT)
 				{
 					typeOffset = Math.max(typeOffset - 1, 0);
+					blink = true;
+					ignoreNextBlink = true;
 				}
 				else if (event.getKeyCode() == KeyEvent.VK_UP)
 				{
@@ -130,12 +140,12 @@ public class MDChat extends MDComponent
 					typed = new StringBuilder();
 					typeOffset = 0;
 					scroll = 0;
-					repaint();
 				}
 				else if (event.getKeyChar() != '\uFFFF' && event.getKeyCode() != KeyEvent.VK_DELETE)
 				{
 					typed.insert(typed.length() - typeOffset, event.getKeyChar());
 				}
+				repaint();
 			}
 
 			@Override
@@ -267,7 +277,7 @@ public class MDChat extends MDComponent
 			tp.paint(g);
 			int cursorPos = posOffsetWidth;
 			g.setColor(Color.BLACK);
-			if (System.currentTimeMillis() % 1000 >= 500)
+			if (blink)
 			{
 				g.fillRect(cursorPos, getHeight() - chatHeight + scale(3), scale(3), chatHeight - scale(6));
 			}

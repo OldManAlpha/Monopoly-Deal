@@ -36,7 +36,7 @@ public class Card
 	private CardDescription description;
 	
 	private boolean revocable = true;
-	private boolean marksPreviousCardsUnrevocable = false;
+	private boolean clearsRevocableCards = false;
 	
 	public Card(int value, String name)
 	{
@@ -46,7 +46,7 @@ public class Card
 		this.value = value;
 		this.name = name;
 		
-		displayName = new String[] {name};
+		displayName = new String[] {name.toUpperCase()};
 		fontSize = 8;
 		displayOffsetY = 0;
 		description = defaultDescription;
@@ -97,14 +97,14 @@ public class Card
 		return revocable;
 	}
 	
-	public void setMarksPreviousUnrevocable(boolean marks)
+	public void setClearsRevocableCards(boolean clears)
 	{
-		marksPreviousCardsUnrevocable = marks;
+		clearsRevocableCards = clears;
 	}
 	
-	public boolean marksPreviousUnrevocable()
+	public boolean clearsRevocableCards()
 	{
-		return marksPreviousCardsUnrevocable;
+		return clearsRevocableCards;
 	}
 	
 	public void setDisplayName(String... displayName)
@@ -181,7 +181,7 @@ public class Card
 	
 	public Packet getCardDataPacket()
 	{
-		return new PacketCardData(id, name, value, getType().getID(), revocable, marksPreviousCardsUnrevocable, displayName, (byte) fontSize, 
+		return new PacketCardData(id, name, value, getType().getID(), revocable, clearsRevocableCards, displayName, (byte) fontSize, 
 				(byte) displayOffsetY, description.getID());
 	}
 	

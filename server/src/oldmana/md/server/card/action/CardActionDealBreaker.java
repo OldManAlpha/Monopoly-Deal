@@ -13,14 +13,14 @@ public class CardActionDealBreaker extends CardAction
 		setFontSize(7);
 		setDisplayOffsetY(2);
 		setRevocable(false);
-		setMarksPreviousUnrevocable(true);
+		setClearsRevocableCards(true);
 		setDescription("Steal an entire full property set from another player. Cannot be used to steal partial sets.");
 	}
 	
 	@Override
 	public void playCard(Player player)
 	{
-		getServer().getGameState().setCurrentActionState(new ActionStateTargetPlayerMonopoly(player));
+		getServer().getGameState().setActionState(new ActionStateTargetPlayerMonopoly(player));
 	}
 	
 	@Override

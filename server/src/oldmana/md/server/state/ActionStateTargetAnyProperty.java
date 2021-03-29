@@ -20,11 +20,10 @@ public abstract class ActionStateTargetAnyProperty extends ActionState
 	{
 		return false;
 	}
-
+	
 	@Override
 	public Packet constructPacket()
 	{
 		return new PacketActionStateBasic(getActionOwner().getID(), BasicActionState.TARGET_ANY_PROPERTY, 0);
 	}
-	
 }

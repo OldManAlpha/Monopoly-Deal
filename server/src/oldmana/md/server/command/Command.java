@@ -73,6 +73,11 @@ public abstract class Command
 		return true;
 	}
 	
+	protected int parseInt(String str)
+	{
+		return Integer.parseInt(str);
+	}
+	
 	protected boolean verifyBoolean(String str)
 	{
 		try
@@ -84,6 +89,11 @@ public abstract class Command
 			return false;
 		}
 		return true;
+	}
+	
+	protected boolean parseBoolean(String str)
+	{
+		return Boolean.parseBoolean(str);
 	}
 	
 	protected String getFullStringArgument(String[] args, int start)

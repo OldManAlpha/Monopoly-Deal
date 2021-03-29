@@ -65,7 +65,7 @@ public class MDInfoIcon extends MDComponent
 		
 		g.setColor(Color.DARK_GRAY);
 		g.setFont(GraphicsUtils.getBoldMDFont(scale(20)));
-		TextPainter tp = new TextPainter("i", g.getFont(), new Rectangle(0, 0, getWidth(), getHeight() + scale(2)));
+		TextPainter tp = new TextPainter("?", g.getFont(), new Rectangle(0, 0, getWidth(), getHeight() + scale(2)));
 		tp.setHorizontalAlignment(Alignment.CENTER);
 		tp.setVerticalAlignment(Alignment.CENTER);
 		tp.paint(g);

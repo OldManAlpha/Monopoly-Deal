@@ -19,7 +19,7 @@ public class CardActionRent extends CardAction
 		this.colors = colors;
 		
 		setRevocable(false);
-		setMarksPreviousUnrevocable(true);
+		setClearsRevocableCards(true);
 		setDescription("Charge rent to all players on the properties that match the colors on the card. "
 				+ "Only properties put down on your table are valid to rent on. Highest rent possible is automatically calculated.");
 	}
@@ -40,11 +40,11 @@ public class CardActionRent extends CardAction
 		int rent = (int) (player.getHighestValueRent(colors) * multiplier);
 		if (getServer().getGameRules().doesRentChargeAll() || getServer().getPlayers().size() == 2)
 		{
-			getServer().getGameState().setCurrentActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player), rent));
+			getServer().getGameState().setActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player), rent));
 		}
 		else
 		{
-			getServer().getGameState().setCurrentActionState(new ActionStateTargetRent(player, rent));
+			getServer().getGameState().setActionState(new ActionStateTargetRent(player, rent));
 		}
 	}
 	

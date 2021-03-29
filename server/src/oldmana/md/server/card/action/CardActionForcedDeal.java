@@ -20,7 +20,7 @@ public class CardActionForcedDeal extends CardAction
 	@Override
 	public void playCard(Player player)
 	{
-		getServer().getGameState().setCurrentActionState(new ActionStateTargetForcedDeal(player));
+		getServer().getGameState().setActionState(new ActionStateTargetForcedDeal(player));
 	}
 	
 	@Override

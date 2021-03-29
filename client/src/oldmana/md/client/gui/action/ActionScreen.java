@@ -5,8 +5,6 @@ import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
 
-import javax.swing.JComponent;
-
 import oldmana.md.client.gui.component.MDComponent;
 
 public class ActionScreen extends MDComponent
@@ -14,7 +12,6 @@ public class ActionScreen extends MDComponent
 	public ActionScreen()
 	{
 		super();
-		setSize(1600, 900);
 		addMouseListener(new MouseAdapter() {});
 		addMouseMotionListener(new MouseMotionAdapter() {});
 	}

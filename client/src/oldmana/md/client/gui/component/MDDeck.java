@@ -38,17 +38,9 @@ public class MDDeck extends MDCardCollectionUnknown
 		MDDeckListener listener = new MDDeckListener();
 		addMouseListener(listener);
 		addMouseMotionListener(listener);
+		constructNotifySelect();
 		animTask = new MDTask(1, true)
 		{
-			MDSelection select = new MDSelection();
-			{
-				select.setSize(scale(120), scale(180));
-				select.setLocation(0, scale(10));
-				select.setColor(Color.BLUE);
-				add(select);
-				select.setVisible(false);
-			}
-			
 			@Override
 			public void run()
 			{
@@ -56,22 +48,22 @@ public class MDDeck extends MDCardCollectionUnknown
 				if (getClient().isInputBlocked() || !getClient().canDraw())
 				{
 					animStage = 0;
-					select.setVisible(false);
+					notifySelect.setVisible(false);
 				}
 				else
 				{
 					if (hovered)
 					{
 						animStage = Math.min(animStage + 1, 16);
-						select.setVisible(false);
+						notifySelect.setVisible(false);
 					}
 					else
 					{
 						animStage = Math.max(animStage - 1, 0);
 						if (animStage == 0)
 						{
-							select.setVisible(true);
-							select.repaint();
+							notifySelect.setVisible(true);
+							notifySelect.repaint();
 						}
 					}
 				}
@@ -87,10 +79,30 @@ public class MDDeck extends MDCardCollectionUnknown
 			@Override
 			public void componentResized(ComponentEvent event)
 			{
-				
+				constructNotifySelect();
 			}
 		});
 		update();
+	}
+	
+	public void constructNotifySelect()
+	{
+		MDSelection select = new MDSelection();
+		select.setSize(scale(120), scale(180));
+		select.setLocation(0, scale(10));
+		select.setColor(Color.BLUE);
+		if (notifySelect != null)
+		{
+			select.setVisible(notifySelect.isVisible());
+			remove(notifySelect);
+		}
+		else
+		{
+			select.setVisible(false);
+		}
+		add(select);
+		notifySelect = select;
+		repaint();
 	}
 	
 	/*

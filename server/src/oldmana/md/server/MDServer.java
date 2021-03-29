@@ -53,7 +53,7 @@ public class MDServer
 {
 	private static MDServer instance;
 	
-	public static final String VERSION = "0.6 PR4";
+	public static final String VERSION = "0.6";
 	
 	private List<MDMod> mods = new ArrayList<MDMod>();
 	
@@ -109,7 +109,7 @@ public class MDServer
 		new IncomingConnectionsThread(port);
 		System.out.println("Using port " + port);
 		gameState = new GameState(this);
-		gameState.setCurrentActionState(new ActionStateDoNothing());
+		gameState.setActionState(new ActionStateDoNothing());
 		cmdHandler.registerDefaultCommands();
 		playerRegistry.loadPlayers();
 		registerDefaultActionCards();
@@ -293,7 +293,7 @@ public class MDServer
 	
 	public void setActionState(ActionState state)
 	{
-		gameState.setCurrentActionState(state);
+		gameState.setActionState(state);
 	}
 	
 	public PlayerRegistry getPlayerRegistry()
@@ -504,7 +504,7 @@ public class MDServer
 			player.sendPacket(player == other ? other.getHand().getOwnerHandDataPacket() : other.getHand().getCollectionDataPacket());
 		}
 		// Send action state
-		ActionState state = getGameState().getCurrentActionState();
+		ActionState state = getGameState().getActionState();
 		if (state != null)
 		{
 			player.sendPacket(state.constructPacket());

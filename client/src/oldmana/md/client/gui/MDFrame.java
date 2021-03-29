@@ -1,6 +1,5 @@
 package oldmana.md.client.gui;
 
-import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -10,18 +9,13 @@ import java.awt.LayoutManager;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import oldmana.md.client.gui.screen.MainMenuScreen;
@@ -37,42 +31,18 @@ public class MDFrame extends JFrame
 	private List<BufferedImage> normalIcons;
 	private List<BufferedImage> alertIcons;
 	
+	private Timer flashTimer;
+	
 	public MDFrame()
 	{
 		super("Monopoly Deal");
-		//this.setGlassPane(new GlassPane());
-		Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener()
-		{
-			@Override
-			public void eventDispatched(AWTEvent event)
-			{
-				//System.out.println("Source: " + event.getSource());
-				if (event.getSource() instanceof Component)
-				{
-					Component source = (Component) event.getSource();
-					if (SwingUtilities.getRootPane(source) == getRootPane())
-					{
-						//System.out.println("crying laughing");
-					}
-				}
-				if (event instanceof MouseEvent)
-				{
-					
-				}
-			}
-		}, AWTEvent.MOUSE_EVENT_MASK|AWTEvent.MOUSE_MOTION_EVENT_MASK|AWTEvent.MOUSE_WHEEL_EVENT_MASK);
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLayout(new LayoutManager()
 		{
-
 			@Override
-			public void addLayoutComponent(String name, Component comp)
-			{
-				// TODO Auto-generated method stub
-				
-			}
-
+			public void addLayoutComponent(String name, Component comp) {}
+			
 			@Override
 			public void layoutContainer(Container parent)
 			{
@@ -81,41 +51,28 @@ public class MDFrame extends JFrame
 					c.setSize(getContentPane().getSize());
 				}
 			}
-
+			
 			@Override
 			public Dimension minimumLayoutSize(Container parent)
 			{
 				return new Dimension(200, 200);
 			}
-
-			@Override
-			public Dimension preferredLayoutSize(Container parent)
-			{
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public void removeLayoutComponent(Component comp)
-			{
-				// TODO Auto-generated method stub
-				
-			}
 			
+			@Override
+			public Dimension preferredLayoutSize(Container parent) { return null; }
+			
+			@Override
+			public void removeLayoutComponent(Component comp) {}
 		});
 		getContentPane().setPreferredSize(new Dimension(600, 400));
-		getGlassPane().setPreferredSize(new Dimension(1600, 900));
-		getGlassPane().setVisible(true);
 		pack();
-		System.out.println(getGlassPane());
 		setLocation((int) (Toolkit.getDefaultToolkit().getScreenSize().getWidth() - getWidth()) / 2, 
 				(int) (Toolkit.getDefaultToolkit().getScreenSize().getHeight() - getHeight()) / 2);
 		tableScreen = new TableScreen();
-		//getContentPane().add(tableScreen);
 		MainMenuScreen menu = new MainMenuScreen();
 		getContentPane().add(menu);
 		setVisible(true);
-		//setResizable(false);
+		
 		normalIcons = new ArrayList<BufferedImage>();
 		alertIcons = new ArrayList<BufferedImage>();
 		
@@ -137,24 +94,7 @@ public class MDFrame extends JFrame
 			alertIcons.add(alertIcon);
 		}
 		setIconImages(normalIcons);
-		
-		
-		
-		//setMinimumSize(new Dimension(100, 100));
-		//getContentPane().setMinimumSize(new Dimension(500, 500));
-		
-		getContentPane().addComponentListener(new ComponentAdapter()
-		{
-			@Override
-			public void componentResized(ComponentEvent event)
-			{
-				System.out.println("width: " + getContentPane().getWidth());
-				System.out.println("height: " + getContentPane().getHeight());
-			}
-		});
 	}
-	
-	private Timer flashTimer;
 	
 	public void setAlert(boolean alert)
 	{

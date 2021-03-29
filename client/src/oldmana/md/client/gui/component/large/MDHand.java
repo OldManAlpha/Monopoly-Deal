@@ -237,7 +237,7 @@ public class MDHand extends MDCardCollection
 			if (getCollection() != null)
 			{
 				Player player = getClient().getThePlayer();
-				ActionState state = getClient().getGameState().getCurrentActionState();
+				ActionState state = getClient().getGameState().getActionState();
 				Card curHover = getCardAt(event.getX(), 0);
 				boolean canPlayJSN = curHover instanceof CardActionJustSayNo && state != null && ((state.isTarget(player) && 
 						!state.isRefused(player) && !state.isAccepted(player)) || (state.getActionOwner() == player && state.getNumberOfRefused() > 0)) 

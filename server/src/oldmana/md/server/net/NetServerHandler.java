@@ -41,8 +41,8 @@ import oldmana.md.server.state.GameState;
 
 public class NetServerHandler
 {
-	public static int PROTOCOL_VERSION = 3;
-	public static int PROTOCOL_MINIMUM = 3;
+	public static int PROTOCOL_VERSION = 4;
+	public static int PROTOCOL_MINIMUM = 4;
 	
 	private MDServer server;
 	
@@ -129,10 +129,10 @@ public class NetServerHandler
 	{
 		for (Packet packet : client.getNet().getInPackets())
 		{
-			System.out.println("Processing: " + packet.getClass().getName());
 			if (client instanceof Player)
 			{
 				Player player = (Player) client;
+				System.out.println("Processing: " + packet.getClass().getName() + " (" + player.getName() + ")");
 				try
 				{
 					packetHandlers.get(packet.getClass()).invoke(this, player, packet);
@@ -144,9 +144,14 @@ public class NetServerHandler
 			}
 			else
 			{
+				System.out.println("Processing: " + packet.getClass().getName() + " (Connecting Client)");
 				if (packet instanceof PacketLogin)
 				{
 					handleLogin(client, (PacketLogin) packet);
+				}
+				else
+				{
+					System.out.println("Invalid packet type received from connecting client.");
 				}
 			}
 		}
@@ -215,7 +220,7 @@ public class NetServerHandler
 			if (!preEvent.isCanceled())
 			{
 				player.getHand().transferCard(card, player.getBank());
-				player.addRevokableCard(card);
+				player.addRevocableCard(card);
 				PostCardBankedEvent postEvent = new PostCardBankedEvent(player, card);
 				server.getEventManager().callEvent(postEvent);
 				player.checkEmptyHand();
@@ -254,7 +259,7 @@ public class NetServerHandler
 					player.getHand().transferCard(card, set);
 				}
 			}
-			player.addRevokableCard(card);
+			player.addRevocableCard(card);
 			
 			player.checkEmptyHand();
 			
@@ -271,13 +276,13 @@ public class NetServerHandler
 			if (card.canPlayCard(player))
 			{
 				card.transfer(server.getDiscardPile());
-				if (card.marksPreviousUnrevocable())
+				if (card.clearsRevocableCards())
 				{
-					player.clearRevokableCards();
+					player.clearRevocableCards();
 				}
 				if (card.isRevocable())
 				{
-					player.addRevokableCard(card);
+					player.addRevocableCard(card);
 				}
 				server.getGameState().decrementTurn();
 				card.playCard(player);
@@ -316,7 +321,7 @@ public class NetServerHandler
 					server.getGameState().decrementTurn();
 					server.getGameState().decrementTurn();
 					rentCard.playCard(player, 2);
-					player.clearRevokableCards();
+					player.clearRevocableCards();
 					
 					player.checkEmptyHand();
 				}
@@ -338,9 +343,9 @@ public class NetServerHandler
 	
 	public void handlePay(Player player, PacketActionPay packet)
 	{
-		if (server.getGameState().getCurrentActionState() instanceof ActionStateRent)
+		if (server.getGameState().getActionState() instanceof ActionStateRent)
 		{
-			ActionStateRent rent = (ActionStateRent) server.getGameState().getCurrentActionState();
+			ActionStateRent rent = (ActionStateRent) server.getGameState().getActionState();
 			rent.playerPaid(player, Card.getCards(packet.ids));
 		}
 	}
@@ -385,7 +390,7 @@ public class NetServerHandler
 	
 	public void handleActionSelectPlayer(Player player, PacketActionSelectPlayer packet)
 	{
-		ActionState state = server.getGameState().getCurrentActionState();
+		ActionState state = server.getGameState().getActionState();
 		if (state instanceof ActionStateTargetPlayer)
 		{
 			((ActionStateTargetPlayer) state).playerSelected(server.getPlayerByID(packet.player));
@@ -398,7 +403,7 @@ public class NetServerHandler
 	
 	public void handleActionSelectProperties(Player player, PacketActionSelectProperties packet)
 	{
-		ActionState state = server.getGameState().getCurrentActionState();
+		ActionState state = server.getGameState().getActionState();
 		if (state instanceof ActionStateTargetPlayerProperty)
 		{
 			((ActionStateTargetPlayerProperty) state).onCardSelected((CardProperty) Card.getCard(packet.ids[0]));
@@ -420,11 +425,11 @@ public class NetServerHandler
 	
 	public void handleActionSelectPlayerMonopoly(Player player, PacketActionSelectPlayerMonopoly packet)
 	{
-		ActionState state = server.getGameState().getCurrentActionState();
+		ActionState state = server.getGameState().getActionState();
 		if (state instanceof ActionStateTargetPlayerMonopoly)
 		{
-			player.clearRevokableCards();
-			server.getGameState().setCurrentActionState(new ActionStateStealMonopoly(player, (PropertySet) CardCollection.getCardCollection(packet.id)));
+			player.clearRevocableCards();
+			server.getGameState().setActionState(new ActionStateStealMonopoly(player, (PropertySet) CardCollection.getCardCollection(packet.id)));
 		}
 		else
 		{
@@ -434,18 +439,18 @@ public class NetServerHandler
 	
 	public void handleActionUndoCard(Player player, PacketActionUndoCard packet)
 	{
-		UndoCardEvent event = new UndoCardEvent(player, player.getLastRevokableCard());
+		UndoCardEvent event = new UndoCardEvent(player, player.getLastRevocableCard());
 		server.getEventManager().callEvent(event);
 		if (!event.isCanceled())
 		{
-			server.getGameState().undoCard(player.getLastRevokableCard());
+			server.getGameState().undoCard(player.getLastRevocableCard());
 			player.undoCard();
 		}
 	}
 	
 	public void handleActionAccept(Player player, PacketActionAccept packet)
 	{
-		ActionState state = server.getGameState().getCurrentActionState();
+		ActionState state = server.getGameState().getActionState();
 		Player target = server.getPlayerByID(packet.playerId);
 		if (state.isTarget(player))
 		{
@@ -471,7 +476,7 @@ public class NetServerHandler
 		else
 		{
 			System.out.println(player.getName() + ": " + msg);
-			server.broadcastPacket(new PacketChat(player.getName() + ": " + msg));
+			server.broadcastMessage(player.getName() + ": " + msg);
 		}
 	}
 	

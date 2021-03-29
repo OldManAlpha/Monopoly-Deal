@@ -17,7 +17,7 @@ public class ActionStateTargetRent extends ActionStateTargetPlayer
 	@Override
 	public void playerSelected(Player player)
 	{
-		getServer().getGameState().setCurrentActionState(new ActionStateRent(getActionOwner(), player, rent));
-		getActionOwner().clearRevokableCards();
+		getServer().getGameState().setActionState(new ActionStateRent(getActionOwner(), player, rent));
+		getActionOwner().clearRevocableCards();
 	}
 }

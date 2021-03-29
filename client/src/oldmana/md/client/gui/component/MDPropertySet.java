@@ -171,7 +171,7 @@ public class MDPropertySet extends MDCardCollection
 			{
 				if (getCollection().getOwner() == getClient().getThePlayer())
 				{
-					getClient().getGameState().setCurrentClientActionState(new ActionStateClientModifyPropertySet((PropertySet) getCollection()));
+					getClient().getGameState().setClientActionState(new ActionStateClientModifyPropertySet((PropertySet) getCollection()));
 				}
 			}
 		}

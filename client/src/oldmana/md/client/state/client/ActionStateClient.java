@@ -13,7 +13,7 @@ public abstract class ActionStateClient
 	
 	public void removeState()
 	{
-		getClient().getGameState().setCurrentClientActionState(null);
+		getClient().getGameState().setClientActionState(null);
 	}
 	
 	public GameState getGameState()

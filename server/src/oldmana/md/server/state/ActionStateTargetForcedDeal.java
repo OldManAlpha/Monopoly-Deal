@@ -13,7 +13,7 @@ public class ActionStateTargetForcedDeal extends ActionStateTargetSelfPlayerProp
 	
 	public void onCardsSelected(CardProperty self, CardProperty other)
 	{
-		getActionOwner().clearRevokableCards();
-		getServer().getGameState().setCurrentActionState(new ActionStateTradeProperties(self, other));
+		getActionOwner().clearRevocableCards();
+		getServer().getGameState().setActionState(new ActionStateTradeProperties(self, other));
 	}
 }

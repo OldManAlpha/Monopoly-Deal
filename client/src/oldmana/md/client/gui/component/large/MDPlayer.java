@@ -116,7 +116,7 @@ public class MDPlayer extends MDComponent
 		Graphics2D g = (Graphics2D) gr;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		GameState gs = getClient().getGameState();
-		ActionState state = gs.getCurrentActionState();
+		ActionState state = gs.getActionState();
 		Color border = null;
 		Color nameplate = null;
 		if (gs.getWhoseTurn() == player)

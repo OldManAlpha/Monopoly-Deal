@@ -13,7 +13,7 @@ public class ActionStateTargetDebtCollector extends ActionStateTargetPlayer
 	@Override
 	public void playerSelected(Player player)
 	{
-		getServer().getGameState().setCurrentActionState(new ActionStateRent(getActionOwner(), player, 5));
-		getActionOwner().clearRevokableCards();
+		getServer().getGameState().setActionState(new ActionStateRent(getActionOwner(), player, 5));
+		getActionOwner().clearRevocableCards();
 	}
 }

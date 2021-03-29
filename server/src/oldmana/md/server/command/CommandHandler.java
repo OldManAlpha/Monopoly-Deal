@@ -41,6 +41,9 @@ public class CommandHandler
 		registerCommand(new CommandKickPlayer());
 		registerCommand(new CommandPlaySound());
 		registerCommand(new CommandLoadSound());
+		registerCommand(new CommandListEffects());
+		registerCommand(new CommandOp());
+		registerCommand(new CommandDeop());
 	}
 	
 	public void registerCommand(Command cmd)

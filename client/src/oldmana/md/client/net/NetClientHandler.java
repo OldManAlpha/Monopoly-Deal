@@ -56,7 +56,7 @@ import oldmana.md.net.packet.universal.PacketChat;
 
 public class NetClientHandler
 {
-	public static int PROTOCOL_VERSION = 3;
+	public static int PROTOCOL_VERSION = 4;
 	
 	private MDClient client;
 	
@@ -343,51 +343,47 @@ public class NetClientHandler
 				Player player = client.getPlayerByID(packet.player);
 				if (packet.type == BasicActionState.DO_NOTHING.getID())
 				{
-					client.getGameState().setCurrentActionState(new ActionStateDoNothing());
+					client.getGameState().setActionState(new ActionStateDoNothing());
 				}
 				else if (packet.type == BasicActionState.DRAW.getID())
 				{
-					client.getGameState().setCurrentActionState(new ActionStateDraw(player));
-					if (player == client.getThePlayer())
-					{
-						client.getWindow().setAlert(true);
-					}
+					client.getGameState().setActionState(new ActionStateDraw(player));
 				}
 				else if (packet.type == BasicActionState.PLAY.getID())
 				{
-					client.getGameState().setCurrentActionState(new ActionStatePlay(player, packet.data));
+					client.getGameState().setActionState(new ActionStatePlay(player, packet.data));
 				}
 				else if (packet.type == BasicActionState.DISCARD.getID())
 				{
-					client.getGameState().setCurrentActionState(new ActionStateDiscard(player));
+					client.getGameState().setActionState(new ActionStateDiscard(player));
 				}
 				else if (packet.type == BasicActionState.FINISH_TURN.getID())
 				{
-					client.getGameState().setCurrentActionState(new ActionStateFinishTurn(player));
+					client.getGameState().setActionState(new ActionStateFinishTurn(player));
 				}
 				else if (packet.type == BasicActionState.TARGET_PLAYER.getID())
 				{
-					client.getGameState().setCurrentActionState(new ActionStateTargetPlayer(player));
+					client.getGameState().setActionState(new ActionStateTargetPlayer(player));
 				}
 				else if (packet.type == BasicActionState.TARGET_PLAYER_PROPERTY.getID())
 				{
-					client.getGameState().setCurrentActionState(new ActionStateTargetPlayerProperty(player));
+					client.getGameState().setActionState(new ActionStateTargetPlayerProperty(player));
 				}
 				else if (packet.type == BasicActionState.TARGET_SELF_PLAYER_PROPERTY.getID())
 				{
-					client.getGameState().setCurrentActionState(new ActionStateTargetSelfPlayerProperty(player));
+					client.getGameState().setActionState(new ActionStateTargetSelfPlayerProperty(player));
 				}
 				else if (packet.type == BasicActionState.TARGET_ANY_PROPERTY.getID())
 				{
-					client.getGameState().setCurrentActionState(new ActionStateTargetAnyProperty(player));
+					client.getGameState().setActionState(new ActionStateTargetAnyProperty(player));
 				}
 				else if (packet.type == BasicActionState.TARGET_PLAYER_MONOPOLY.getID())
 				{
-					client.getGameState().setCurrentActionState(new ActionStateTargetPlayerMonopoly(player));
+					client.getGameState().setActionState(new ActionStateTargetPlayerMonopoly(player));
 				}
 				else if (packet.type == BasicActionState.PLAYER_TARGETED.getID())
 				{
-					client.getGameState().setCurrentActionState(new ActionStatePlayerTargeted(player, client.getPlayerByID(packet.data)));
+					client.getGameState().setActionState(new ActionStatePlayerTargeted(player, client.getPlayerByID(packet.data)));
 				}
 				client.setAwaitingResponse(false);
 				client.getTableScreen().repaint();
@@ -402,7 +398,7 @@ public class NetClientHandler
 			@Override
 			public void start()
 			{
-				client.getGameState().setCurrentActionState(new ActionStateRent(client.getPlayerByID(packet.renter), client.getPlayersByIDs(packet.rented), 
+				client.getGameState().setActionState(new ActionStateRent(client.getPlayerByID(packet.renter), client.getPlayersByIDs(packet.rented), 
 						packet.amount));
 				client.getTableScreen().repaint();
 			}
@@ -449,7 +445,7 @@ public class NetClientHandler
 			public void start()
 			{
 				client.setAwaitingResponse(false);
-				client.getGameState().setCurrentActionState(new ActionStatePropertiesSelected(client.getPlayerByID(packet.owner), 
+				client.getGameState().setActionState(new ActionStatePropertiesSelected(client.getPlayerByID(packet.owner), 
 						client.getPlayerByID(packet.target), CardRegistry.getPropertyCards(packet.cards)));
 				client.getTableScreen().repaint();
 			}
@@ -464,7 +460,7 @@ public class NetClientHandler
 			public void start()
 					{
 				client.setAwaitingResponse(false);
-				client.getGameState().setCurrentActionState(new ActionStateStealMonopoly(client.getPlayerByID(packet.thief), 
+				client.getGameState().setActionState(new ActionStateStealMonopoly(client.getPlayerByID(packet.thief), 
 						(PropertySet) CardCollectionRegistry.getCardCollection(packet.collection)));
 				client.getTableScreen().repaint();
 			}
@@ -478,7 +474,7 @@ public class NetClientHandler
 			@Override
 			public void start()
 			{
-				ActionState state = client.getGameState().getCurrentActionState();
+				ActionState state = client.getGameState().getActionState();
 				Player player = client.getPlayerByID(packet.target);
 				if (state != null && state.isTarget(player))
 				{
@@ -501,13 +497,17 @@ public class NetClientHandler
 			@Override
 			public void start()
 			{
-				ActionState state = client.getGameState().getCurrentActionState();
+				ActionState state = client.getGameState().getActionState();
 				Player player = client.getPlayerByID(packet.target);
 				if (state != null && state.isTarget(player))
 				{
 					client.setAwaitingResponse(false);
 					state.setRefused(player, packet.refused);
 					player.getUI().repaint();
+					if ((packet.refused && state.getActionOwner() == client.getThePlayer()) || (!packet.refused && player == client.getThePlayer()))
+					{
+						client.getWindow().setAlert(true);
+					}
 				}
 				else
 				{
@@ -524,7 +524,7 @@ public class NetClientHandler
 			@Override
 			public void start()
 			{
-				ActionState state = client.getGameState().getCurrentActionState();
+				ActionState state = client.getGameState().getActionState();
 				if (state != null)
 				{
 					client.setAwaitingResponse(false);

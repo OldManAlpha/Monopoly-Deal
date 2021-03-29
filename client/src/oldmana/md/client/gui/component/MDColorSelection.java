@@ -4,11 +4,9 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-import javax.swing.JComponent;
-
 import oldmana.md.client.card.CardProperty.PropertyColor;
 
-public class MDColorSelection extends JComponent
+public class MDColorSelection extends MDComponent
 {
 	private PropertyColor color;
 	private boolean selected;
@@ -17,7 +15,7 @@ public class MDColorSelection extends JComponent
 	{
 		this.color = color;
 		this.selected = selected;
-		setSize(80, 80);
+		setSize(scale(80), scale(80));
 	}
 	
 	public PropertyColor getColor()

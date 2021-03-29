@@ -40,7 +40,7 @@ public class Player extends Client implements CommandSender
 	
 	//private List<Card> turnHistory = new ArrayList<Card>();
 	
-	private List<Card> revokableCards = new ArrayList<Card>();
+	private List<Card> revocableCards = new ArrayList<Card>();
 	
 	private List<StatusEffect> statusEffects = new ArrayList<StatusEffect>();
 	
@@ -78,33 +78,37 @@ public class Player extends Client implements CommandSender
 	
 	public boolean canRevokeCard()
 	{
-		return !revokableCards.isEmpty();
+		return !revocableCards.isEmpty();
 	}
 	
-	public Card getLastRevokableCard()
+	public Card getLastRevocableCard()
 	{
-		return revokableCards.get(revokableCards.size() - 1);
+		return revocableCards.get(revocableCards.size() - 1);
 	}
 	
-	public void addRevokableCard(Card card)
+	public void addRevocableCard(Card card)
 	{
-		revokableCards.add(card);
+		revocableCards.add(card);
 		sendPacket(new PacketUndoCardStatus(card.getID()));
 	}
 	
-	public Card popRevokableCard()
+	public Card popRevocableCard()
 	{
-		Card card = getLastRevokableCard();
-		revokableCards.remove(card);
-		sendUndoStatus();
-		return card;
+		if (!revocableCards.isEmpty())
+		{
+			Card card = getLastRevocableCard();
+			revocableCards.remove(card);
+			sendUndoStatus();
+			return card;
+		}
+		return null;
 	}
 	
 	public void sendUndoStatus()
 	{
 		if (canRevokeCard())
 		{
-			sendPacket(new PacketUndoCardStatus(getLastRevokableCard().getID()));
+			sendPacket(new PacketUndoCardStatus(getLastRevocableCard().getID()));
 		}
 		else
 		{
@@ -114,12 +118,12 @@ public class Player extends Client implements CommandSender
 	
 	public void undoCard()
 	{
-		popRevokableCard().transfer(getHand());
+		popRevocableCard().transfer(getHand());
 	}
 	
-	public void clearRevokableCards()
+	public void clearRevocableCards()
 	{
-		revokableCards.clear();
+		revocableCards.clear();
 		sendPacket(new PacketUndoCardStatus(-1));
 	}
 	
@@ -472,7 +476,7 @@ public class Player extends Client implements CommandSender
 	{
 		if (getHand().getCardCount() == 0)
 		{
-			clearRevokableCards();
+			clearRevocableCards();
 			server.getDeck().drawCards(this, 5, 1.2);
 			return true;
 		}

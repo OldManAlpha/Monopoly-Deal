@@ -18,7 +18,7 @@ public class CardActionJustSayNo extends CardSpecial
 	public void playCard(Player player, int data)
 	{
 		Player target = getServer().getPlayerByID(data);
-		ActionState state = getServer().getGameState().getCurrentActionState();
+		ActionState state = getServer().getGameState().getActionState();
 		if (state.getActionOwner() == player && state.isTarget(target) && state.getActionTarget(target).isRefused())
 		{
 			state.setRefused(target, false);
@@ -31,7 +31,7 @@ public class CardActionJustSayNo extends CardSpecial
 		}
 		if (player.getHand().getCardCount() == 0)
 		{
-			player.clearRevokableCards();
+			player.clearRevocableCards();
 			getServer().getDeck().drawCards(player, 5, 1.2);
 		}
 		if (state.isFinished())
