@@ -65,16 +65,16 @@ public class ActionStateTargetPlayerProperty extends ActionState
 										public void propertySelected(CardProperty prop)
 										{
 											propertySelectedOther(prop);
-											getClient().getTableScreen().remove(screen);
+											getClient().getTableScreen().removeActionScreen();
 										}
 										
 										@Override
 										public void cancel()
 										{
-											getClient().getTableScreen().remove(screen);
+											getClient().getTableScreen().removeActionScreen();
 										}
 									});
-									getClient().addTableComponent(screen, 110);
+									getClient().getTableScreen().setActionScreen(screen);
 								}
 								else
 								{

@@ -21,12 +21,12 @@ public class CardActionDebtCollector extends CardAction
 	{
 		if (getServer().getPlayers().size() == 2)
 		{
-			player.clearRevokableCards();
-			getServer().getGameState().setCurrentActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player).get(0), 5));
+			player.clearRevocableCards();
+			getServer().getGameState().setActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player).get(0), 5));
 		}
 		else
 		{
-			getServer().getGameState().setCurrentActionState(new ActionStateTargetDebtCollector(player));
+			getServer().getGameState().setActionState(new ActionStateTargetDebtCollector(player));
 		}
 	}
 }

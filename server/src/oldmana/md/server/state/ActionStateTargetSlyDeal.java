@@ -14,7 +14,7 @@ public class ActionStateTargetSlyDeal extends ActionStateTargetPlayerProperty
 	@Override
 	public void onCardSelected(CardProperty card)
 	{
-		getActionOwner().clearRevokableCards();
-		getServer().getGameState().setCurrentActionState(new ActionStateStealProperty(getActionOwner(), card));
+		getActionOwner().clearRevocableCards();
+		getServer().getGameState().setActionState(new ActionStateStealProperty(getActionOwner(), card));
 	}
 }

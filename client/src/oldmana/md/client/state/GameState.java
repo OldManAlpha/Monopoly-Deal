@@ -37,12 +37,12 @@ public class GameState
 		this.turns = turns;
 	}
 	
-	public ActionState getCurrentActionState()
+	public ActionState getActionState()
 	{
 		return state;
 	}
 	
-	public void setCurrentActionState(ActionState state)
+	public void setActionState(ActionState state)
 	{
 		if (this.state != null)
 		{
@@ -50,23 +50,23 @@ public class GameState
 		}
 		this.state = state;
 		MDClient client = MDClient.getInstance();
-		if (state.isTarget(client.getThePlayer()))
+		if (state.isTarget(client.getThePlayer()) || state.getActionOwner() == client.getThePlayer())
 		{
 			client.getWindow().setAlert(true);
 		}
-		setCurrentClientActionState(null);
+		setClientActionState(null);
 		if (state != null)
 		{
 			state.setup();
 		}
 	}
 	
-	public ActionStateClient getCurrentClientActionState()
+	public ActionStateClient getClientActionState()
 	{
 		return clientState;
 	}
 	
-	public void setCurrentClientActionState(ActionStateClient state)
+	public void setClientActionState(ActionStateClient state)
 	{
 		if (clientState != null)
 		{

@@ -5,11 +5,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.KeyEventDispatcher;
-import java.awt.KeyboardFocusManager;
 import java.awt.LayoutManager2;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Comparator;
@@ -22,7 +18,6 @@ import javax.swing.JLayeredPane;
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.ThePlayer;
-import oldmana.md.client.MDScheduler.MDTask;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardRegistry;
 import oldmana.md.client.card.collection.Deck;
@@ -33,14 +28,13 @@ import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDChat;
 import oldmana.md.client.gui.component.MDDeck;
 import oldmana.md.client.gui.component.MDDiscardPile;
+import oldmana.md.client.gui.component.MDText;
 import oldmana.md.client.gui.component.MDTurns;
 import oldmana.md.client.gui.component.MDUndoButton;
 import oldmana.md.client.gui.component.large.MDHand;
 import oldmana.md.client.gui.component.large.MDPlayer;
 import oldmana.md.client.gui.component.large.MDTopbar;
 import oldmana.md.client.gui.util.GraphicsUtils;
-import oldmana.md.client.state.ActionState;
-import oldmana.md.client.state.client.ActionStateClient;
 
 public class TableScreen extends JLayeredPane
 {
@@ -59,7 +53,7 @@ public class TableScreen extends JLayeredPane
 	
 	private MDButton debug;
 	
-	private JLabel version;
+	private MDText version;
 	
 	private MDButton enlargeUI;
 	private MDButton shrinkUI;
@@ -101,10 +95,10 @@ public class TableScreen extends JLayeredPane
 		turnCount.setLocation(10, 460);
 		add(turnCount, new Integer(0));
 		
-		version = new JLabel("Version " + MDClient.VERSION);
+		version = new MDText("Version " + MDClient.VERSION);
 		version.setLocation(5, 880);
 		version.setSize(200, 15);
-		version.setFont(GraphicsUtils.getThinMDFont(Font.PLAIN, 16));
+		version.setFontSize(16);
 		add(version);
 		
 		debug = new MDButton("DB");
@@ -377,12 +371,11 @@ public class TableScreen extends JLayeredPane
 			shrinkUI.setLocation(enlargeUI.getMaxX() + scale(5), scale(5));
 			shrinkUI.setSize(scale(25), scale(25));
 			
-			chat.setSize(scale(500), scale(400));
+			chat.setSize(scale(600), scale(400));
 			chat.setLocation(scale(50), getHeight() - scale(600));
 			
 			version.setLocation(scale(5), getHeight() - scale(20));
 			version.setSize(scale(200), scale(15));
-			//version.setFont(GraphicsUtils.getThinMDFont(Font.PLAIN, scale(16)));
 			
 			if (deck != null && discard != null)
 			{

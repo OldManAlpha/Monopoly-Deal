@@ -19,7 +19,7 @@ public class CardActionSlyDeal extends CardAction
 	@Override
 	public void playCard(Player player)
 	{
-		getServer().getGameState().setCurrentActionState(new ActionStateTargetSlyDeal(player));
+		getServer().getGameState().setActionState(new ActionStateTargetSlyDeal(player));
 	}
 	
 	@Override

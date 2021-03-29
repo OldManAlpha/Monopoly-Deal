@@ -46,7 +46,7 @@ public class MDOverlayHand extends MDComponent
 		this.card = card;
 		MDClient client = MDClient.getInstance();
 		setSize(GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2));
-		ActionState state = client.getGameState().getCurrentActionState();
+		ActionState state = client.getGameState().getActionState();
 		if (state instanceof ActionStateDiscard && state.getActionOwner() == client.getThePlayer())
 		{
 			MDButton discard = new MDButton("Discard");
@@ -75,7 +75,7 @@ public class MDOverlayHand extends MDComponent
 				{
 					if (card instanceof CardActionJustSayNo)
 					{
-						ActionState state = client.getGameState().getCurrentActionState();
+						ActionState state = client.getGameState().getActionState();
 						state.onJustSayNo((CardActionJustSayNo) card);
 					}
 					else if (card instanceof CardActionRentCounter)
@@ -98,7 +98,7 @@ public class MDOverlayHand extends MDComponent
 						}
 						else if (client.getThePlayer().hasCompatiblePropertySetWithRoom(prop))
 						{
-							client.getGameState().setCurrentClientActionState(new ActionStateClientPlayProperty(prop));
+							client.getGameState().setClientActionState(new ActionStateClientPlayProperty(prop));
 						}
 						else
 						{

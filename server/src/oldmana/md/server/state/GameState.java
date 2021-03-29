@@ -62,14 +62,14 @@ public class GameState
 	{
 		if (playerTurn != null)
 		{
-			playerTurn.clearRevokableCards();
+			playerTurn.clearRevocableCards();
 			playerTurn = null;
 		}
 		for (Player player : server.getPlayers())
 		{
 			player.clearStatusEffects();
 		}
-		setCurrentActionState(new ActionStateDoNothing());
+		setActionState(new ActionStateDoNothing());
 	}
 	
 	public boolean isGameStarted()
@@ -99,7 +99,7 @@ public class GameState
 		}
 		if (playerTurn != null)
 		{
-			playerTurn.clearRevokableCards();
+			playerTurn.clearRevocableCards();
 			
 			server.getEventManager().callEvent(new TurnEndEvent(playerTurn));
 		}
@@ -114,11 +114,11 @@ public class GameState
 		
 		turns = 3;
 		waitingDraw = true;
+		System.out.println("New Turn: " + playerTurn.getName() + " (ID: " + playerTurn.getID() + ")");
 		if (deferredWinTurns > 0)
 		{
-			System.out.println("Win deferred: " + deferredWinTurns + " (" + deferredWinPlayer.getName() + ")");
+			System.out.println("Win deferred: " + deferredWinTurns + " Turns (After " + deferredWinPlayer.getName() + "'s Turn)");
 		}
-		System.out.println("ACTIVE PLAYER: " + playerTurn.getID() + " (" + playerTurn.getName() + ")");
 		nextNaturalActionState();
 		server.getEventManager().callEvent(new TurnStartEvent(playerTurn));
 	}
@@ -150,12 +150,12 @@ public class GameState
 		waitingDraw = false;
 	}
 	
-	public ActionState getCurrentActionState()
+	public ActionState getActionState()
 	{
 		return state;
 	}
 	
-	public void setCurrentActionState(ActionState state)
+	public void setActionState(ActionState state)
 	{
 		if (state instanceof ActionStateDoNothing)
 		{
@@ -250,21 +250,21 @@ public class GameState
 		{
 			if (waitingDraw)
 			{
-				setCurrentActionState(new ActionStateDraw(player));
+				setActionState(new ActionStateDraw(player));
 			}
 			else if (turns > 0)
 			{
-				setCurrentActionState(new ActionStatePlay(player));
+				setActionState(new ActionStatePlay(player));
 			}
 			else
 			{
 				if (player.getHand().getCardCount() > 7)
 				{
-					setCurrentActionState(new ActionStateDiscard(player));
+					setActionState(new ActionStateDiscard(player));
 				}
 				else
 				{
-					setCurrentActionState(new ActionStateFinishTurn(player));
+					setActionState(new ActionStateFinishTurn(player));
 				}
 			}
 		}

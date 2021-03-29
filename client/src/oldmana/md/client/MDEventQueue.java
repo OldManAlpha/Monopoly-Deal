@@ -145,7 +145,7 @@ public class MDEventQueue
 			Player player = MDClient.getInstance().getThePlayer();
 			if ((from != null && from instanceof Bank && from.getOwner() == player) || (to != null && to instanceof Bank && to.getOwner() == player))
 			{
-				ActionState state = MDClient.getInstance().getGameState().getCurrentActionState();
+				ActionState state = MDClient.getInstance().getGameState().getActionState();
 				if (state instanceof ActionStateRent && state.isTarget(player))
 				{
 					state.updateUI();

@@ -12,13 +12,13 @@ public class CardActionItsMyBirthday extends CardAction
 		setDisplayName("IT'S MY", "BIRTHDAY");
 		setFontSize(7);
 		setRevocable(false);
-		setMarksPreviousUnrevocable(true);
+		setClearsRevocableCards(true);
 		setDescription("Charges all other players 2M.");
 	}
 	
 	@Override
 	public void playCard(Player player)
 	{
-		getServer().getGameState().setCurrentActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player), 2));
+		getServer().getGameState().setActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player), 2));
 	}
 }

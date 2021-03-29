@@ -31,6 +31,8 @@ public class ActionScreenModifyPropertySet extends ActionScreen
 	private List<MDCard> cards = new ArrayList<MDCard>();
 	private List<MDColorSelection> colors = new ArrayList<MDColorSelection>();
 	
+	private MDButton cancel;
+	
 	public ActionScreenModifyPropertySet(ActionStateClientModifyPropertySet state, PropertySet set)
 	{
 		super();
@@ -76,6 +78,7 @@ public class ActionScreenModifyPropertySet extends ActionScreen
 			MDColorSelection ui = new MDColorSelection(colors.get(i), selected);
 			ui.setLocation(800 - offset + (i * (80 + 30)), 500);
 			add(ui);
+			this.colors.add(ui);
 			if (!selected)
 			{
 				ui.addMouseListener(new MouseAdapter()
@@ -88,7 +91,7 @@ public class ActionScreenModifyPropertySet extends ActionScreen
 				});
 			}
 		}
-		MDButton cancel = new MDButton("Cancel");
+		cancel = new MDButton("Cancel");
 		cancel.setSize(180, 50);
 		cancel.setLocation(800 - 90, 900 - 50 - 10);
 		cancel.setFontSize(24);
@@ -119,15 +122,27 @@ public class ActionScreenModifyPropertySet extends ActionScreen
 			propLabel.setSize(scale(40));
 			propLabel.setLocationCentered(getWidth() * 0.5, getHeight() * 0.1);
 			
-			colorLabel.setSize(scale(40));
-			colorLabel.setLocationCentered(getWidth() * 0.5, getHeight() * 0.4);
-			
 			int offset = ((cards.size() - 1) * (GraphicsUtils.getCardWidth() + scale(25))) + GraphicsUtils.getCardWidth();
 			for (int i = 0 ; i < cards.size() ; i++)
 			{
 				MDCard ui = cards.get(i);
-				ui.setLocation((int) (getWidth() * 0.5) - offset + (i * (GraphicsUtils.getCardWidth() * 2 + 50)), propLabel.getMaxY() + scale(10));
+				ui.setLocation((int) (getWidth() * 0.5) - offset + (i * (GraphicsUtils.getCardWidth() * 2 + 50)), propLabel.getMaxY() + scale(20));
 			}
+			
+			int maxCardY = propLabel.getMaxY() + scale(10) + GraphicsUtils.getCardHeight(2);
+			
+			colorLabel.setSize(scale(40));
+			colorLabel.setLocationCentered(getWidth() * 0.5, maxCardY + scale(70));
+			
+			offset = ((colors.size() - 1) * scale(40 + 15)) + scale(40);
+			for (int i = 0 ; i < colors.size() ; i++)
+			{
+				MDColorSelection ui = colors.get(i);
+				ui.setLocation((int) (getWidth() * 0.5) - offset + (i * scale(80 + 30)), colorLabel.getMaxY() + scale(20));
+			}
+			
+			cancel.setSize(scale(180), scale(50));
+			cancel.setLocationCentered(getWidth() / 2, getHeight() - scale(40));
 		}
 
 		@Override

@@ -32,7 +32,7 @@ public class MDClient
 {
 	private static MDClient instance;
 	
-	public static final String VERSION = "0.6 PR4";
+	public static final String VERSION = "0.6";
 	
 	private MDFrame window;
 	
@@ -275,12 +275,12 @@ public class MDClient
 	
 	public boolean canPlayCard()
 	{
-		return isThePlayersTurn() && getGameState().getCurrentActionState() instanceof ActionStatePlay;
+		return isThePlayersTurn() && getGameState().getActionState() instanceof ActionStatePlay;
 	}
 	
 	public boolean canActFreely()
 	{
-		ActionState state = getGameState().getCurrentActionState();
+		ActionState state = getGameState().getActionState();
 		return isThePlayersTurn() && (state instanceof ActionStatePlay || state instanceof ActionStateFinishTurn);
 	}
 	
@@ -293,7 +293,7 @@ public class MDClient
 	
 	public boolean canDraw()
 	{
-		ActionState state = getGameState().getCurrentActionState();
+		ActionState state = getGameState().getActionState();
 		if (state instanceof ActionStateDraw && state.getActionOwner() == getThePlayer())
 		{
 			return true;
@@ -333,7 +333,7 @@ public class MDClient
 	
 	public boolean isInputBlocked()
 	{
-		return eventQueue.hasTasks() || awaitingResponse || getGameState().getCurrentClientActionState() != null;
+		return eventQueue.hasTasks() || awaitingResponse || getGameState().getClientActionState() != null;
 	}
 	
 	public boolean isDebugEnabled()

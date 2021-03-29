@@ -42,6 +42,11 @@ public class Deck extends CardCollection
 		shuffle();
 	}
 	
+	public DeckStack getDeckStack()
+	{
+		return stack;
+	}
+	
 	public void shuffle()
 	{
 		Collections.shuffle(getCards());

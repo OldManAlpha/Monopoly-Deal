@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.LayoutManager2;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 import oldmana.md.client.card.Card;
@@ -24,6 +25,8 @@ public class ActionScreenSelectProperty extends ActionScreen
 	private PropertySelectListener listener;
 	
 	private MDLabel propLabel;
+	
+	private List<MDCard> cards = new ArrayList<MDCard>();
 	
 	private MDButton cancel;
 	
@@ -53,6 +56,7 @@ public class ActionScreenSelectProperty extends ActionScreen
 		add(cancel);
 		
 		setup();
+		setLayout(new SelectPropertyLayout());
 	}
 	
 	public void setListener(PropertySelectListener listener)
@@ -71,6 +75,7 @@ public class ActionScreenSelectProperty extends ActionScreen
 			MDCard ui = new MDCard(prop, 2);
 			ui.setLocation(800 - offset + (i * (MDCard.CARD_SIZE.width * 2 + 50)), 150);
 			add(ui);
+			this.cards.add(ui);
 			if (canTargetNonBase || prop.isBase())
 			{
 				ui.addMouseListener(new MouseAdapter()
@@ -105,6 +110,16 @@ public class ActionScreenSelectProperty extends ActionScreen
 		{
 			propLabel.setSize(scale(40));
 			propLabel.setLocationCentered(getWidth() * 0.5, getHeight() * 0.1);
+			
+			int offset = ((cards.size() - 1) * (GraphicsUtils.getCardWidth() + scale(25))) + GraphicsUtils.getCardWidth();
+			for (int i = 0 ; i < cards.size() ; i++)
+			{
+				MDCard ui = cards.get(i);
+				ui.setLocation((int) (getWidth() * 0.5) - offset + (i * (GraphicsUtils.getCardWidth() * 2 + 50)), propLabel.getMaxY() + scale(20));
+			}
+			
+			cancel.setSize(scale(180), scale(50));
+			cancel.setLocationCentered(getWidth() / 2, getHeight() - scale(40));
 			
 			//colorLabel.setSize(scale(40));
 			//colorLabel.setLocationCentered(getWidth() * 0.5, getHeight() * 0.4);

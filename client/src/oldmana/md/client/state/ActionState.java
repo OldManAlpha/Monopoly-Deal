@@ -494,7 +494,7 @@ public class ActionState
 	
 	public void removeState()
 	{
-		getClient().getGameState().setCurrentActionState(null);
+		getClient().getGameState().setActionState(null);
 	}
 	
 	public GameState getGameState()

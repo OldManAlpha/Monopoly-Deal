@@ -3,7 +3,6 @@ package oldmana.md.client.card.collection;
 import java.util.List;
 
 import oldmana.md.client.card.Card;
-import oldmana.md.client.gui.component.MDDiscardPile;
 
 public class DiscardPile extends CardCollection
 {
@@ -14,6 +13,5 @@ public class DiscardPile extends CardCollection
 		{
 			addCard(card);
 		}
-		//setUI(new MDDiscardPile(this));
 	}
 }

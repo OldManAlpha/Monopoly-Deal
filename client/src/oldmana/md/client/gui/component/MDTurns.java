@@ -7,8 +7,6 @@ import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.RenderingHints;
 
-import javax.swing.JComponent;
-
 import oldmana.md.client.MDClient;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.gui.util.GraphicsUtils;
@@ -49,7 +47,7 @@ public class MDTurns extends MDComponent
 		
 		GameState gs = MDClient.getInstance().getGameState();
 		int turns = gs.getTurns();
-		boolean drawing = gs.getCurrentActionState() instanceof ActionStateDraw;
+		boolean drawing = gs.getActionState() instanceof ActionStateDraw;
 		
 		g.setColor(turns >= 3 || drawing ? Color.GRAY : PropertyColor.GREEN.getColor());
 		g.fillPolygon(t1);
