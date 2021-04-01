@@ -37,6 +37,22 @@ Additional undocumented commands may be seen by using the `help` command.
 5. Input the User ID the host has assigned to you.
 6. Connect and play.
 
+### Video Tutorial
+
+[Here's a video](https://www.youtube.com/watch?v=GaBYbJwyJLY) explaining how to get the basic functionality setup for the client/server. Credit to [Zyga](https://www.youtube.com/channel/UCYMOaG7Eqq1jr1-i8m48fMw) for kindly creating the video.
+
+## Screenshots
+
+<details>
+  <summary>Click To View</summary>
+  <img src="https://i.imgur.com/LOzbxPM.png">
+  <img src="https://i.imgur.com/riEtxI9.png">
+  <img src="https://i.imgur.com/55eDAzy.png">
+  <img src="https://i.imgur.com/PReVrNn.png">
+  <img src="https://i.imgur.com/xuIQRYO.png">
+  <img src="https://i.imgur.com/tH9nKLW.png">
+</details>
+
 ## Modding Support
 
 If you're a developer, you can create mods for the server. A guide for modding will be made Soon™, but the gist of it is you create a class that extends `MDMod` and override `onLoad()` as an entry point for your code. You can create custom decks, custom cards, listen to events, etc. Export your jar and put it in the mods folder of the server. Modding is subject to massive changes and improvements as it's just something I whipped together.
