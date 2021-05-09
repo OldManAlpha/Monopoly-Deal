@@ -303,7 +303,7 @@ public class MJPacketBuffer
 	{
 		try
 		{
-			if (bb.capacity() > bb.position() + bytes.length)
+			if (bb.capacity() < bb.position() + bytes.length)
 			{
 				resize(bb.position() + bytes.length);
 			}

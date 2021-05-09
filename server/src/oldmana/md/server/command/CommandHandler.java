@@ -44,6 +44,24 @@ public class CommandHandler
 		registerCommand(new CommandListEffects());
 		registerCommand(new CommandOp());
 		registerCommand(new CommandDeop());
+		registerCommand(new CommandStop());
+		registerCommand(new CommandListRegisteredCards());
+		
+		
+		// Registering test/debug commands through reflection, as they're only used in a development environment.
+		try
+		{
+			Class<?> clazz = Class.forName("oldmana.md.server.command.CommandTest");
+			registerCommand((Command) clazz.newInstance());
+		}
+		catch (Exception e) {}
+		
+		try
+		{
+			Class<?> clazz = Class.forName("oldmana.md.server.command.CommandDebug");
+			registerCommand((Command) clazz.newInstance());
+		}
+		catch (Exception e) {}
 	}
 	
 	public void registerCommand(Command cmd)

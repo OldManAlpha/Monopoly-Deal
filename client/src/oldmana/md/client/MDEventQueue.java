@@ -32,6 +32,11 @@ public class MDEventQueue
 		return !queue.isEmpty() || currentTask != null;
 	}
 	
+	public TickingEventTask getCurrentTask()
+	{
+		return currentTask;
+	}
+	
 	public void tick()
 	{
 		if (currentTask != null)
@@ -162,6 +167,16 @@ public class MDEventQueue
 				return true;
 			}
 			return false;
+		}
+		
+		public CardCollection getFrom()
+		{
+			return from;
+		}
+		
+		public CardCollection getTo()
+		{
+			return to;
 		}
 	}
 }

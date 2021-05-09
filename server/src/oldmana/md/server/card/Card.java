@@ -1,11 +1,11 @@
 package oldmana.md.server.card;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardData;
@@ -206,6 +206,7 @@ public class Card
 	{
 		private static int nextID;
 		private static Map<Integer, CardDescription> descriptionMap = new HashMap<Integer, CardDescription>();
+		private static Map<Integer, CardDescription> hashMap = new HashMap<Integer, CardDescription>();
 		
 		private int id;
 		private String[] description;
@@ -215,6 +216,7 @@ public class Card
 			id = nextID++;
 			this.description = description;
 			descriptionMap.put(id, this);
+			hashMap.put(Arrays.hashCode(description), this);
 			MDServer.getInstance().broadcastPacket(new PacketCardDescription(id, description));
 		}
 		
@@ -240,6 +242,9 @@ public class Card
 		
 		public static CardDescription getDescriptionByText(String[] text)
 		{
+			int hash = Arrays.hashCode(text);
+			return hashMap.get(hash);
+			/*
 			MapIter:
 			for (Entry<Integer, CardDescription> entry : descriptionMap.entrySet())
 			{
@@ -257,7 +262,7 @@ public class Card
 					return desc;
 				}
 			}
-			return null;
+			*/
 		}
 	}
 	
@@ -276,6 +281,11 @@ public class Card
 	public static void registerCard(Card card)
 	{
 		cards.add(card);
+	}
+	
+	public static void unregisterCard(Card card)
+	{
+		cards.remove(card);
 	}
 
 	public static List<Card> getCards(int[] ids)

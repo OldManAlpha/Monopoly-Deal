@@ -21,7 +21,8 @@ public class CommandListDecks extends Command
 		for (Entry<String, DeckStack> entry : decks.entrySet())
 		{
 			DeckStack stack = entry.getValue();
-			sender.sendMessage(entry.getKey() + ": " + stack.getCards().size() + " Cards (" + stack.getClass().getSimpleName() + ")");
+			sender.sendMessage(entry.getKey() + ": " + stack.getCards().size() + " Cards (" + stack.getClass().getSimpleName() + ")" + 
+								(getServer().getDeck().getDeckStack() == stack ? " (In Use)" : ""));
 		}
 	}
 }

@@ -1,6 +1,8 @@
 package oldmana.md.client.gui.component;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.ArrayList;
@@ -10,12 +12,12 @@ import javax.swing.JLayeredPane;
 
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
+import oldmana.md.client.gui.LayoutAdapter;
+import oldmana.md.client.gui.component.large.MDPlayer;
 import oldmana.md.client.gui.util.GraphicsUtils;
 
 public class MDPlayerPropertySets extends MDComponent
 {
-	public static Dimension SETS_SIZE = new Dimension(1000 - 5, MDPropertySet.PROPERTY_SET_SIZE.height);
-	
 	private Player player; 
 	
 	private List<MDPropertySet> sets = new ArrayList<MDPropertySet>();
@@ -62,6 +64,21 @@ public class MDPlayerPropertySets extends MDComponent
 		{
 			g.setColor(Color.MAGENTA);
 			g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+		}
+	}
+	
+	public class PropertySetsLayout extends LayoutAdapter
+	{
+		@Override
+		public void layoutContainer(Container container)
+		{
+			
+		}
+		
+		@Override
+		public void addLayoutComponent(Component component, Object arg1)
+		{
+			layoutContainer(MDPlayerPropertySets.this);
 		}
 	}
 }

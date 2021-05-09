@@ -11,7 +11,7 @@ public class CommandKickPlayer extends Command
 {
 	public CommandKickPlayer()
 	{
-		super("kickplayer", new String[] {"kick"}, new String[] {"/kick [Player ID]"}, true);
+		super("kickplayer", new String[] {"kick"}, new String[] {"/kick [Player ID] <Reason>"}, true);
 	}
 	
 	@Override
@@ -29,7 +29,13 @@ public class CommandKickPlayer extends Command
 		{
 			gs.nextTurn();
 		}
-		getServer().kickPlayer(player);
+		String reason = "Kicked by operator";
+		if (args.length > 1)
+		{
+			reason = getFullStringArgument(args, 1);
+		}
+		player.sendMessage("Kicked player " + player.getName() + " (ID: " + player.getID() + ") for '" + reason + "'", true);
+		getServer().kickPlayer(player, reason);
 		getServer().broadcastPacket(new PacketDestroyPlayer(player.getID()));
 	}
 }

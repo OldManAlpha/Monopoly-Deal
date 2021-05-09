@@ -1,13 +1,19 @@
 package oldmana.md.client.gui.component;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 
+import oldmana.md.client.MDScheduler.MDTask;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.DiscardPile;
 import oldmana.md.client.gui.util.GraphicsUtils;
@@ -16,10 +22,89 @@ import oldmana.md.client.gui.util.TextPainter.Alignment;
 
 public class MDDiscardPile extends MDCardCollection
 {
+	private MDInfoIcon icon;
+	
+	public int scrollPos;
+	
+	private int animTicks;
+	private boolean animDir;
+	private boolean collapsing;
+	
 	public MDDiscardPile(DiscardPile discard)
 	{
 		super(discard, 2);
 		update();
+		addMouseListener(new MDDiscardListener());
+		addMouseWheelListener(new MouseWheelListener()
+		{
+			@Override
+			public void mouseWheelMoved(MouseWheelEvent event)
+			{
+				if (event.getUnitsToScroll() > 0)
+				{
+					if (scrollPos < getCurrentCardCount() - 1)
+					{
+						scrollPos++;
+						if (scrollPos == 1)
+						{
+							getParent().invalidate();
+						}
+						animDir = true;
+						animTicks = 15;
+					}
+				}
+				else
+				{
+					if (scrollPos > 0)
+					{
+						scrollPos--;
+						if (scrollPos == 0)
+						{
+							getParent().invalidate();
+						}
+						animDir = false;
+						animTicks = 15;
+					}
+				}
+				constructInfoIcon();
+				repaint();
+			}
+		});
+		getClient().getScheduler().scheduleTask(new MDTask(1, true)
+		{
+			@Override
+			public void run()
+			{
+				if (animTicks > 0)
+				{
+					animTicks--;
+					repaint();
+				}
+				if (collapsing)
+				{
+					for (int i = 0 ; i < 4 ; i++)
+					{
+						if (animTicks == 0)
+						{
+							if (--scrollPos == 0)
+							{
+								getParent().invalidate();
+								collapsing = false;
+								break;
+							}
+							else
+							{
+								animTicks = 15;
+							}
+						}
+						else
+						{
+							animTicks--;
+						}
+					}
+				}
+			}
+		});
 	}
 
 	@Override
@@ -40,8 +125,24 @@ public class MDDiscardPile extends MDCardCollection
 			if (getCollection().getCardCount() - (isCardIncoming() ? 1 : 0) > 0)
 			{
 				g.setColor(Color.DARK_GRAY);
-				g.fillRoundRect(scale(60), 0, scale(60) + (int) Math.floor((getCollection().getCardCount() - (isCardIncoming() ? 1 : 0)) * (0.3 * GraphicsUtils.SCALE)), scale(180), scale(20), scale(20));
-				g.drawImage(getCollection().getCardAt(getCollection().getCardCount() - 1 - (isCardIncoming() ? 1 : 0)).getGraphics(getScale() * 2), 0, 0, GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2), null);
+				g.fillRoundRect(scale(60), 0, scale(60) + (int) Math.floor((getCurrentCardCount() - scrollPos) * (0.3 * GraphicsUtils.SCALE)), scale(180), scale(20), scale(20));
+				g.drawImage(getCollection().getCardAt(Math.min(getCardCount() - 1, getCurrentCardCount() - 1 - scrollPos - (animTicks > 0 && !animDir ? 1 : 0)))
+						.getGraphics(getScale() * 2), 0, 0, GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2), null);
+				if (scrollPos > 0)
+				{
+					if (getCurrentCardCount() > getCurrentCardCount() - scrollPos - (animTicks > 0 && animDir ? -1 : 0))
+					{
+					g.fillRoundRect(scale(60), scale(186), scale(60) + (int) Math.floor(scrollPos * (0.3 * GraphicsUtils.SCALE)), scale(180), scale(20), scale(20));
+					g.drawImage(getCollection().getCardAt(Math.max(0, Math.min(getCurrentCardCount() - 1, getCurrentCardCount() - scrollPos - (animTicks > 0 && animDir ? -1 : 0))))
+							.getGraphics(getScale() * 2), 0, scale(186), GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2), null);
+					}
+				}
+				if (animTicks > 0)
+				{
+					double prog = (double) animTicks / 15;
+					g.drawImage(getCollection().getCardAt(Math.max(0, getCurrentCardCount() - scrollPos - (!animDir ? 1 : 0)))
+							.getGraphics(getScale() * 2), 0, scale(!animDir ? prog * 186 : 186 - (prog * 186)), GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2), null);
+				}
 			}
 			else
 			{
@@ -59,15 +160,76 @@ public class MDDiscardPile extends MDCardCollection
 			if (getClient().isDebugEnabled())
 			{
 				g.setColor(Color.ORANGE);
-				GraphicsUtils.drawDebug(g, "ID: " + getCollection().getID(), scale(30), getWidth(), getHeight() / 2);
+				GraphicsUtils.drawDebug(g, "ID: " + getCollection().getID(), scale(30), GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight());
 			}
 		}
 		//g.fillRect(60, 0, collection.getCardCount(), 90);
+	}
+	
+	public void constructInfoIcon()
+	{
+		destroyInfoIcon();
+		if (!getCollection().isEmpty())
+		{
+			icon = new MDInfoIcon(getCollection().getCardAt(getCollection().getCardCount() - 1 - scrollPos));
+			icon.setLocation(GraphicsUtils.getCardWidth(2) - scale(24), scale(2));
+			add(icon);
+			repaint();
+		}
+	}
+	
+	public void destroyInfoIcon()
+	{
+		if (icon != null)
+		{
+			icon.removeCardInfo();
+			remove(icon);
+			icon = null;
+		}
+	}
+	
+	public int getCurrentCardCount()
+	{
+		return getCollection().getCardCount() - (isCardIncoming() ? 1 : 0);
+	}
+	
+	@Override
+	public Dimension getPreferredSize()
+	{
+		return new Dimension(scale(120 + 40), scale(scrollPos > 0 ? 366 : 180));
 	}
 
 	@Override
 	public Point getLocationInComponentOf(Card card)
 	{
 		return new Point(0, 0);
+	}
+	
+	public class MDDiscardListener extends MouseAdapter
+	{
+		@Override
+		public void mouseEntered(MouseEvent event)
+		{
+			constructInfoIcon();
+			collapsing = false;
+		}
+		
+		@Override
+		public void mouseExited(MouseEvent event)
+		{
+			Point p = event.getPoint();
+			if (p.x < 0 || p.x >= getWidth() || p.y < 0 || p.y >= getHeight())
+			{
+				destroyInfoIcon();
+				//scrollPos = 0;
+				//getParent().invalidate();
+				if (scrollPos > 0)
+				{
+					collapsing = true;
+					animDir = false;
+				}
+				repaint();
+			}
+		}
 	}
 }

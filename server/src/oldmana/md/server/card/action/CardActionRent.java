@@ -14,7 +14,7 @@ public class CardActionRent extends CardAction
 	
 	public CardActionRent(int value, PropertyColor... colors)
 	{
-		super(value, "Rent");
+		super(value, getName(colors));
 		
 		this.colors = colors;
 		
@@ -62,7 +62,23 @@ public class CardActionRent extends CardAction
 		{
 			types[i] = colors[i].getID();
 		}
-		return new PacketCardActionRentData(getID(), getValue(), types, getDescription().getID());
+		return new PacketCardActionRentData(getID(), getName(), getValue(), types, getDescription().getID());
+	}
+	
+	private static String getName(PropertyColor[] colors)
+	{
+		if (colors.length == 1)
+		{
+			return colors[0].getFriendlyName() + " Rent";
+		}
+		else if (colors.length == 2)
+		{
+			return colors[0].getFriendlyName() + "/" + colors[1].getFriendlyName() + " Rent";
+		}
+		else
+		{
+			return colors.length + "-Color Rent";
+		}
 	}
 	
 	@Override

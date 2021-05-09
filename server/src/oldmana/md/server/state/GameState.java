@@ -145,6 +145,12 @@ public class GameState
 		nextNaturalActionState();
 	}
 	
+	public void decrementTurns(int amount)
+	{
+		turns = Math.max(turns - amount, 0);
+		nextNaturalActionState();
+	}
+	
 	public void markDrawn()
 	{
 		waitingDraw = false;

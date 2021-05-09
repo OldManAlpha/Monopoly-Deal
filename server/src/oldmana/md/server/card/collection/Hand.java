@@ -13,7 +13,7 @@ public class Hand extends CardCollection
 	{
 		super(owner);
 		getServer().broadcastPacket(getCollectionDataPacket(), getOwner());
-		if (getOwner().isLoggedIn())
+		if (getOwner().isOnline())
 		{
 			getOwner().sendPacket(getOwnerHandDataPacket());
 		}

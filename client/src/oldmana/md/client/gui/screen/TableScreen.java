@@ -23,6 +23,7 @@ import oldmana.md.client.card.CardRegistry;
 import oldmana.md.client.card.collection.Deck;
 import oldmana.md.client.card.collection.DiscardPile;
 import oldmana.md.client.card.collection.Hand;
+import oldmana.md.client.card.collection.VoidCollection;
 import oldmana.md.client.gui.action.ActionScreen;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDChat;
@@ -31,10 +32,12 @@ import oldmana.md.client.gui.component.MDDiscardPile;
 import oldmana.md.client.gui.component.MDText;
 import oldmana.md.client.gui.component.MDTurns;
 import oldmana.md.client.gui.component.MDUndoButton;
+import oldmana.md.client.gui.component.MDVoidCollection;
 import oldmana.md.client.gui.component.large.MDHand;
 import oldmana.md.client.gui.component.large.MDPlayer;
 import oldmana.md.client.gui.component.large.MDTopbar;
 import oldmana.md.client.gui.util.GraphicsUtils;
+import oldmana.md.client.gui.util.TextPainter.Alignment;
 
 public class TableScreen extends JLayeredPane
 {
@@ -42,6 +45,8 @@ public class TableScreen extends JLayeredPane
 	private MDDeck deck;
 	private MDDiscardPile discard;
 	private MDHand hand;
+	
+	private MDVoidCollection voidCollection;
 	
 	private MDButton multiButton;
 	private MDUndoButton undoButton;
@@ -57,6 +62,7 @@ public class TableScreen extends JLayeredPane
 	
 	private MDButton enlargeUI;
 	private MDButton shrinkUI;
+	private MDText uiScale;
 	
 	public TableScreen()
 	{
@@ -72,6 +78,9 @@ public class TableScreen extends JLayeredPane
 		
 		discard = new MDDiscardPile(null);
 		add(discard, new Integer(0));
+		
+		voidCollection = new MDVoidCollection(null);
+		add(voidCollection, new Integer(1));
 		
 		topbar = new MDTopbar();
 		topbar.setText("");
@@ -133,6 +142,7 @@ public class TableScreen extends JLayeredPane
 			public void mouseReleased(MouseEvent event)
 			{
 				GraphicsUtils.SCALE = ((GraphicsUtils.SCALE * 10) + 1) / 10.0;
+				uiScale.setText("" + GraphicsUtils.SCALE);
 				revalidate();
 				repaint();
 				
@@ -148,6 +158,7 @@ public class TableScreen extends JLayeredPane
 			public void mouseReleased(MouseEvent event)
 			{
 				GraphicsUtils.SCALE = Math.max(0.5, ((GraphicsUtils.SCALE * 10) - 1) / 10.0);
+				uiScale.setText("" + GraphicsUtils.SCALE);
 				revalidate();
 				repaint();
 				
@@ -155,6 +166,11 @@ public class TableScreen extends JLayeredPane
 			}
 		});
 		add(shrinkUI, new Integer(1));
+		
+		uiScale = new MDText("" + GraphicsUtils.SCALE);
+		uiScale.setFontSize(20);
+		uiScale.setHorizontalAlignment(Alignment.CENTER);
+		add(uiScale, new Integer(1));
 	}
 	
 	public void positionPlayers()
@@ -312,6 +328,16 @@ public class TableScreen extends JLayeredPane
 		return hand;
 	}
 	
+	public void setVoidCollection(VoidCollection voidCollection)
+	{
+		voidCollection.setUI(this.voidCollection);
+	}
+	
+	public MDVoidCollection getVoidCollection()
+	{
+		return voidCollection;
+	}
+	
 	public MDButton getMultiButton()
 	{
 		return multiButton;
@@ -368,11 +394,14 @@ public class TableScreen extends JLayeredPane
 			enlargeUI.setLocation(scale(5), scale(5));
 			enlargeUI.setSize(scale(25), scale(25));
 			
-			shrinkUI.setLocation(enlargeUI.getMaxX() + scale(5), scale(5));
+			uiScale.setLocation(enlargeUI.getMaxX() + scale(6), scale(5));
+			uiScale.setSize(scale(30), scale(30));
+			
+			shrinkUI.setLocation(uiScale.getMaxX() + scale(5), scale(5));
 			shrinkUI.setSize(scale(25), scale(25));
 			
-			chat.setSize(scale(600), scale(400));
-			chat.setLocation(scale(50), getHeight() - scale(600));
+			chat.setSize(scale(650), scale(450));
+			chat.setLocation(scale(50), getHeight() - scale(650));
 			
 			version.setLocation(scale(5), getHeight() - scale(20));
 			version.setSize(scale(200), scale(15));
@@ -383,7 +412,10 @@ public class TableScreen extends JLayeredPane
 				deck.setSize(scale(120 + 40), scale(180 + 24));
 				
 				discard.setLocation(scale(30), getMaxY(deck) + scale(6));
-				discard.setSize(scale(120 + 40), scale(180));
+				discard.setSize(discard.getPreferredSize());
+				
+				voidCollection.setLocation(scale(40), discard.getMaxY());
+				voidCollection.setSize(scale(60 + 40), scale(90 + 40));
 				
 				turnCount.setLocation(scale(10), getMaxY(discard) + scale(20));
 				turnCount.setSize(scale(180) + 1, scale(30));

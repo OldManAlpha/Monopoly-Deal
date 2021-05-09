@@ -11,30 +11,27 @@ public class IncomingConnectionsThread extends Thread
 {
 	private MJServer server;
 	
-	public IncomingConnectionsThread(int port)
+	public IncomingConnectionsThread(int port) throws IOException
 	{
-		try
-		{
-			server = new MJServer(port);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		server = new MJServer(port);
 		start();
 	}
 	
 	@Override
 	public void run()
 	{
-		while (true)
+		while (!MDServer.getInstance().isShuttingDown())
 		{
-			MJConnectAttempt attempt = server.listen();
-			System.out.println("Client attempting connection from " + attempt.getConnection().getSocket().getInetAddress().getHostAddress());
-			if (attempt.successful())
+			try
 			{
-				MDServer.getInstance().addClient(new Client(new ConnectionThread(attempt.getConnection())));
+				MJConnectAttempt attempt = server.listen();
+				System.out.println("Client attempting connection from " + attempt.getConnection().getSocket().getInetAddress().getHostAddress());
+				if (attempt.successful())
+				{
+					MDServer.getInstance().addClient(new Client(new ConnectionThread(attempt.getConnection())));
+				}
 			}
+			catch (Exception e) {}
 		}
 	}
 }

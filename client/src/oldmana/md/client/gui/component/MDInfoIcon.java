@@ -19,35 +19,46 @@ import oldmana.md.client.gui.util.TextPainter.Alignment;
 
 public class MDInfoIcon extends MDComponent
 {
+	private MDCardInfo cardInfo;
+	
 	public MDInfoIcon(Card card)
 	{
 		setSize(scale(22), scale(22));
 		
 		addMouseListener(new MouseAdapter()
 		{
-			private MDCardInfo cardInfo;
-			
 			@Override
 			public void mouseEntered(MouseEvent event)
 			{
+				if (cardInfo != null)
+				{
+					getClient().removeTableComponent(cardInfo);
+				}
 				cardInfo = new MDCardInfo(card);
-				Point pos = SwingUtilities.convertPoint(MDInfoIcon.this, new Point(getWidth() / 2, -(cardInfo.getHeight() / 2) - scale(5)), getClient().getTableScreen());
-				pos.x = Math.min(pos.x, getClient().getTableScreen().getWidth() - (cardInfo.getWidth() / 2));
-				cardInfo.setLocationCentered(pos.x, pos.y);
+				Point pos = SwingUtilities.convertPoint(MDInfoIcon.this, new Point(getWidth() / 2, -cardInfo.getHeight() - scale(5)), getClient().getTableScreen());
+				pos.x = Math.max(scale(2), Math.min(pos.x - (cardInfo.getWidth() / 2), getClient().getTableScreen().getWidth() - cardInfo.getWidth() - scale(2)));
+				pos.y = Math.max(scale(2), pos.y);
+				
+				cardInfo.setLocation(pos.x, pos.y);
 				getClient().addTableComponent(cardInfo, 110);
 			}
 			
 			@Override
 			public void mouseExited(MouseEvent event)
 			{
-				if (cardInfo != null)
-				{
-					getClient().removeTableComponent(cardInfo);
-					getClient().getTableScreen().repaint();
-					cardInfo = null;
-				}
+				removeCardInfo();
 			}
 		});
+	}
+	
+	public void removeCardInfo()
+	{
+		if (cardInfo != null)
+		{
+			getClient().removeTableComponent(cardInfo);
+			getClient().getTableScreen().repaint();
+			cardInfo = null;
+		}
 	}
 	
 	@Override

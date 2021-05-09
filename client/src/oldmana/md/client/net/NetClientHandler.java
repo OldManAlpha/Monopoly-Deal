@@ -53,10 +53,11 @@ import oldmana.md.net.packet.server.PacketCardCollectionData.CardCollectionType;
 import oldmana.md.net.packet.server.actionstate.*;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
 import oldmana.md.net.packet.universal.PacketChat;
+import oldmana.md.net.packet.universal.PacketKeepConnected;
 
 public class NetClientHandler
 {
-	public static int PROTOCOL_VERSION = 4;
+	public static int PROTOCOL_VERSION = 7;
 	
 	private MDClient client;
 	
@@ -115,6 +116,7 @@ public class NetClientHandler
 		Packet.registerPacket(PacketActionSelectProperties.class);
 		Packet.registerPacket(PacketActionSelectPlayerMonopoly.class);
 		Packet.registerPacket(PacketActionUndoCard.class);
+		Packet.registerPacket(PacketActionClickLink.class);
 		
 		// Server -> Client
 		Packet.registerPacket(PacketActionStateBasic.class);
@@ -127,6 +129,7 @@ public class NetClientHandler
 		
 		// Client <-> Server
 		Packet.registerPacket(PacketChat.class);
+		Packet.registerPacket(PacketKeepConnected.class);
 		
 		// Find Packet Handlers
 		for (Method m : getClass().getDeclaredMethods())
@@ -147,7 +150,10 @@ public class NetClientHandler
 	{
 		for (Packet packet : connection.getInPackets())
 		{
-			System.out.println("Packet: " + packet.getClass());
+			if (!(packet instanceof PacketKeepConnected))
+			{
+				System.out.println("Processing: " + packet.getClass());
+			}
 			
 			try
 			{
@@ -164,6 +170,12 @@ public class NetClientHandler
 	public void handleHandshake(PacketHandshake packet)
 	{
 		client.createThePlayer(packet.id, packet.name);
+	}
+	
+	public void handleKick(PacketKick packet)
+	{
+		client.getTableScreen().getTopbar().setText("Disconnected: " + packet.reason);
+		client.getTableScreen().getTopbar().repaint();
 	}
 	
 	public void handleCardDescription(PacketCardDescription packet)
@@ -206,7 +218,7 @@ public class NetClientHandler
 	
 	public void handleCardActionRentData(PacketCardActionRentData packet)
 	{
-		new CardActionRent(packet.id, packet.value, PropertyColor.fromIDs(packet.colors).toArray(new PropertyColor[packet.colors.length]), 
+		new CardActionRent(packet.id, packet.value, packet.name, PropertyColor.fromIDs(packet.colors).toArray(new PropertyColor[packet.colors.length]), 
 				CardDescription.getDescriptionByID(packet.description));
 	}
 	
@@ -287,7 +299,7 @@ public class NetClientHandler
 		}
 		else if (packet.type == CardCollectionType.VOID.getID())
 		{
-			new VoidCollection(packet.id);
+			client.setVoidCollection(new VoidCollection(packet.id));
 		}
 	}
 	
@@ -553,6 +565,12 @@ public class NetClientHandler
 		{
 			undoButton.removeUndoCard();
 		}
+	}
+	
+	public void handleKeepConnected(PacketKeepConnected packet)
+	{
+		client.sendPacket(packet);
+		client.timeSincePing = 0;
 	}
 	
 	public void handleChat(PacketChat packet)

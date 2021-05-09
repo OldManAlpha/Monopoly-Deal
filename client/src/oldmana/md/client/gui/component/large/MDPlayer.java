@@ -20,6 +20,7 @@ import oldmana.md.client.Player;
 import oldmana.md.client.ThePlayer;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.PropertySet;
+import oldmana.md.client.gui.LayoutAdapter;
 import oldmana.md.client.gui.component.MDBank;
 import oldmana.md.client.gui.component.MDComponent;
 import oldmana.md.client.gui.component.MDInvisibleHand;
@@ -32,8 +33,6 @@ import oldmana.md.client.state.GameState;
 
 public class MDPlayer extends MDComponent
 {
-	public static Dimension PLAYER_SIZE = new Dimension(1400 - 5, MDPropertySet.PROPERTY_SET_SIZE.height + 10);
-	
 	private Player player;
 	
 	private MDInvisibleHand hand;
@@ -44,11 +43,8 @@ public class MDPlayer extends MDComponent
 	public MDPlayer(Player player)
 	{
 		this.player = player;
-		setSize(PLAYER_SIZE);
 		setLayout(new PlayerLayout());
 		propertySets = new MDPlayerPropertySets(player);
-		propertySets.setLocation(395, 5);
-		propertySets.setSize(MDPlayerPropertySets.SETS_SIZE);
 		for (PropertySet set : player.getPropertySets())
 		{
 			propertySets.addPropertySet((MDPropertySet) set.getUI());
@@ -136,7 +132,7 @@ public class MDPlayer extends MDComponent
 				else if (state.isRefused(player))
 				{
 					border = Color.BLUE;
-					nameplate = new Color(0, 0, 150);
+					nameplate = new Color(80, 80, 255);
 				}
 				else
 				{
@@ -162,7 +158,8 @@ public class MDPlayer extends MDComponent
 		Font font = GraphicsUtils.getThinMDFont(Font.PLAIN, scale(18));
 		g.setFont(font);
 		FontMetrics metrics = g.getFontMetrics();
-		int nameWidth = metrics.stringWidth(player.getName());
+		String nameText = MDClient.getInstance().isDebugEnabled() ? player.getName() + " (ID: " + player.getID() + ")" : player.getName();
+		int nameWidth = metrics.stringWidth(nameText);
 		int nameHeight = metrics.getHeight();
 		g.setColor(nameplate);
 		g.fillRoundRect(0, 0, nameWidth + scale(8), nameHeight + scale(2), scale(10), scale(10));
@@ -174,7 +171,7 @@ public class MDPlayer extends MDComponent
 		{
 			g.setColor(Color.BLACK);
 		}
-		TextPainter tp = new TextPainter(player.getName(), font, new Rectangle(scale(4), scale(2), nameWidth, nameHeight));
+		TextPainter tp = new TextPainter(nameText, font, new Rectangle(scale(4), scale(2), nameWidth, nameHeight));
 		tp.paint(g);
 		g.setColor(border);
 		g.drawRoundRect(0, 0, nameWidth + scale(8), nameHeight + scale(2), scale(10), scale(10));
@@ -182,16 +179,8 @@ public class MDPlayer extends MDComponent
 		//g.drawString(player.getName(), 2, 16);
 	}
 	
-	public class PlayerLayout implements LayoutManager2
+	public class PlayerLayout extends LayoutAdapter
 	{
-
-		@Override
-		public void addLayoutComponent(String arg0, Component arg1)
-		{
-			// TODO Auto-generated method stub
-			
-		}
-
 		@Override
 		public void layoutContainer(Container container)
 		{
@@ -214,60 +203,11 @@ public class MDPlayer extends MDComponent
 			propertySets.setSize(getWidth() - x - scale(5), getHeight() - scale(10));
 			propertySets.update();
 		}
-
-		@Override
-		public Dimension minimumLayoutSize(Container arg0)
-		{
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Dimension preferredLayoutSize(Container arg0)
-		{
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void removeLayoutComponent(Component arg0)
-		{
-			// TODO Auto-generated method stub
-			
-		}
-
+		
 		@Override
 		public void addLayoutComponent(Component component, Object arg1)
 		{
 			layoutContainer(MDPlayer.this);
 		}
-
-		@Override
-		public float getLayoutAlignmentX(Container arg0)
-		{
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public float getLayoutAlignmentY(Container arg0)
-		{
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public void invalidateLayout(Container arg0)
-		{
-			layoutContainer(arg0);
-		}
-
-		@Override
-		public Dimension maximumLayoutSize(Container arg0)
-		{
-			// TODO Auto-generated method stub
-			return null;
-		}
-		
 	}
 }

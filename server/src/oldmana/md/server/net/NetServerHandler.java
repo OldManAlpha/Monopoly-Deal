@@ -10,6 +10,8 @@ import oldmana.md.net.packet.client.action.*;
 import oldmana.md.net.packet.server.*;
 import oldmana.md.net.packet.server.actionstate.*;
 import oldmana.md.net.packet.universal.PacketChat;
+import oldmana.md.net.packet.universal.PacketKeepConnected;
+import oldmana.md.server.ChatLinkHandler.ChatLink;
 import oldmana.md.server.Client;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
@@ -26,8 +28,7 @@ import oldmana.md.server.card.collection.Hand;
 import oldmana.md.server.card.collection.PropertySet;
 import oldmana.md.server.event.CardDiscardEvent;
 import oldmana.md.server.event.DeckDrawEvent;
-import oldmana.md.server.event.PostCardBankedEvent;
-import oldmana.md.server.event.PreCardBankedEvent;
+import oldmana.md.server.event.PlayerReconnectedEvent;
 import oldmana.md.server.event.UndoCardEvent;
 import oldmana.md.server.state.ActionState;
 import oldmana.md.server.state.ActionStateRent;
@@ -41,8 +42,8 @@ import oldmana.md.server.state.GameState;
 
 public class NetServerHandler
 {
-	public static int PROTOCOL_VERSION = 4;
-	public static int PROTOCOL_MINIMUM = 4;
+	public static int PROTOCOL_VERSION = 7;
+	public static int PROTOCOL_MINIMUM = 7;
 	
 	private MDServer server;
 	
@@ -56,8 +57,10 @@ public class NetServerHandler
 	@SuppressWarnings("unchecked")
 	public void registerPackets()
 	{
+		// Client -> Server
 		Packet.registerPacket(PacketLogin.class);
 		
+		// Server -> Client
 		Packet.registerPacket(PacketHandshake.class);
 		Packet.registerPacket(PacketCardCollectionData.class);
 		Packet.registerPacket(PacketCardData.class);
@@ -82,6 +85,7 @@ public class NetServerHandler
 		Packet.registerPacket(PacketSoundData.class);
 		Packet.registerPacket(PacketPlaySound.class);
 		
+		// Client -> Server
 		Packet.registerPacket(PacketActionAccept.class);
 		Packet.registerPacket(PacketActionDraw.class);
 		Packet.registerPacket(PacketActionEndTurn.class);
@@ -98,7 +102,9 @@ public class NetServerHandler
 		Packet.registerPacket(PacketActionSelectProperties.class);
 		Packet.registerPacket(PacketActionSelectPlayerMonopoly.class);
 		Packet.registerPacket(PacketActionUndoCard.class);
+		Packet.registerPacket(PacketActionClickLink.class);
 		
+		// Server -> Client
 		Packet.registerPacket(PacketActionStateBasic.class);
 		Packet.registerPacket(PacketActionStateRent.class);
 		Packet.registerPacket(PacketActionStatePropertiesSelected.class);
@@ -109,6 +115,7 @@ public class NetServerHandler
 		
 		// Client <-> Server
 		Packet.registerPacket(PacketChat.class);
+		Packet.registerPacket(PacketKeepConnected.class);
 		
 		// Find Packet Handlers
 		for (Method m : getClass().getDeclaredMethods())
@@ -132,7 +139,10 @@ public class NetServerHandler
 			if (client instanceof Player)
 			{
 				Player player = (Player) client;
-				System.out.println("Processing: " + packet.getClass().getName() + " (" + player.getName() + ")");
+				if (!(packet instanceof PacketKeepConnected))
+				{
+					System.out.println("Processing: " + packet.getClass().getName() + " (" + player.getName() + ")");
+				}
 				try
 				{
 					packetHandlers.get(packet.getClass()).invoke(this, player, packet);
@@ -172,10 +182,13 @@ public class NetServerHandler
 					Player player = server.getPlayerByUID(uid);
 					player.setNet(client.getNet());
 					player.sendPacket(new PacketHandshake(player.getID(), player.getName()));
-					player.setLoggedIn(true);
+					player.setOnline(true);
+					player.setLastPing(server.getTickCount());
+					player.setSentPing(false);
 					server.refreshPlayer(player);
 					server.broadcastPacket(new PacketPlayerStatus(player.getID(), true), player);
 					System.out.println("Player " + player.getName() + " reconnected (ID: " + player.getID() + ")");
+					server.getEventManager().callEvent(new PlayerReconnectedEvent(player));
 				}
 				else
 				{
@@ -183,7 +196,7 @@ public class NetServerHandler
 					player.sendPacket(new PacketHandshake(player.getID(), player.getName()));
 					server.addPlayer(player);
 					//server.broadcastPacket(new PacketPlayerInfo(player.getID(), player.getName()), player);
-					player.setLoggedIn(true);
+					player.setOnline(true);
 					server.refreshPlayer(player);
 					System.out.println("Player " + player.getName() + " logged in with ID " + player.getID());
 				}
@@ -205,9 +218,7 @@ public class NetServerHandler
 	
 	public void handleDraw(Player player, PacketActionDraw packet)
 	{
-		server.getDeck().drawCards(player, 2);
-		server.getGameState().markDrawn();
-		server.getGameState().nextNaturalActionState();
+		player.draw();
 	}
 	
 	public void handlePlayCardBank(Player player, PacketActionPlayCardBank packet)
@@ -215,22 +226,7 @@ public class NetServerHandler
 		Card card = Card.getCard(packet.id);
 		if (checkIntegrity(player, card, true))
 		{
-			PreCardBankedEvent preEvent = new PreCardBankedEvent(player, card);
-			server.getEventManager().callEvent(preEvent);
-			if (!preEvent.isCanceled())
-			{
-				player.getHand().transferCard(card, player.getBank());
-				player.addRevocableCard(card);
-				PostCardBankedEvent postEvent = new PostCardBankedEvent(player, card);
-				server.getEventManager().callEvent(postEvent);
-				player.checkEmptyHand();
-				
-				server.getGameState().decrementTurn();
-			}
-			else
-			{
-				server.getGameState().resendActionState(player);
-			}
+			player.playCardBank(card);
 		}
 	}
 	
@@ -466,6 +462,21 @@ public class NetServerHandler
 		}
 	}
 	
+	public void handleKeepConnected(Player player, PacketKeepConnected packet)
+	{
+		player.setLastPing(server.getTickCount());
+		player.setSentPing(false);
+	}
+	
+	public void handleActionClickLink(Player player, PacketActionClickLink packet)
+	{
+		ChatLink link = server.getChatLinkHandler().getChatLinkByID(packet.id);
+		if (link != null && link.getListener() != null)
+		{
+			link.getListener().linkClicked();
+		}
+	}
+	
 	public void handleChat(Player player, PacketChat packet)
 	{
 		String msg = packet.message;
@@ -475,8 +486,7 @@ public class NetServerHandler
 		}
 		else
 		{
-			System.out.println(player.getName() + ": " + msg);
-			server.broadcastMessage(player.getName() + ": " + msg);
+			server.broadcastMessage(player.getName() + ": " + msg, true);
 		}
 	}
 	
@@ -484,8 +494,7 @@ public class NetServerHandler
 	{
 		if (card == null)
 		{
-			player.sendPacket(new PacketKick("Invalid card ID"));
-			server.kickPlayer(player);
+			server.kickPlayer(player, "Invalid card ID");
 			return false;
 		}
 		Hand hand = player.getHand();

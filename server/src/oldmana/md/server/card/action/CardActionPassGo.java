@@ -22,12 +22,5 @@ public class CardActionPassGo extends CardAction
 		Deck deck = getServer().getDeck();
 		deck.drawCards(player, 2);
 		getServer().getGameState().nextNaturalActionState();
-		/*
-		for (int i = 0 ; i < 2 ; i++)
-		{
-			deck.drawCard(getOwner());
-		}
-		*/
-		//getServer().getGameState().nextNaturalActionState();
 	}
 }

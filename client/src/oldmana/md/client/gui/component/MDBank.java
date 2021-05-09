@@ -47,6 +47,7 @@ public class MDBank extends MDCardCollection
 	{
 		super.paintComponent(gr);
 		Graphics2D g = (Graphics2D) gr;
+		Graphics2D debug = (Graphics2D) g.create();
 		g.setColor(Color.DARK_GRAY);
 		g.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, scale(15), scale(15));
 		g.drawLine(0, scale(20), getWidth(), scale(20));
@@ -91,8 +92,8 @@ public class MDBank extends MDCardCollection
 		}
 		if (getClient().isDebugEnabled())
 		{
-			g.setColor(Color.GREEN);
-			GraphicsUtils.drawDebug(g, "ID: " + getCollection().getID(), scale(20), getWidth(), getHeight());
+			debug.setColor(Color.GREEN);
+			GraphicsUtils.drawDebug(debug, "ID: " + getCollection().getID(), scale(20), getWidth(), getHeight());
 		}
 	}
 	
