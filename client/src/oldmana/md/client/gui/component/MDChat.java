@@ -103,22 +103,25 @@ public class MDChat extends MDComponent
 			@Override
 			public boolean dispatchKeyEvent(KeyEvent event)
 			{
-				if (!chatOpen && event.getID() == KeyEvent.KEY_PRESSED)
+				if (getClient().getTableScreen().getParent() != null)
 				{
-					if (event.getKeyCode() == KeyEvent.VK_T)
+					if (!chatOpen && event.getID() == KeyEvent.KEY_PRESSED)
 					{
-						setChatOpen(true);
-						requestFocus();
-						repaint();
-						return true;
-					}
-					else if (event.getKeyCode() == KeyEvent.VK_SLASH)
-					{
-						setChatOpen(true);
-						typed.append("/");
-						requestFocus();
-						repaint();
-						return true;
+						if (event.getKeyCode() == KeyEvent.VK_T)
+						{
+							setChatOpen(true);
+							requestFocus();
+							repaint();
+							return true;
+						}
+						else if (event.getKeyCode() == KeyEvent.VK_SLASH)
+						{
+							setChatOpen(true);
+							typed.append("/");
+							requestFocus();
+							repaint();
+							return true;
+						}
 					}
 				}
 				return false;
