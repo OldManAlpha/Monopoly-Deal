@@ -110,7 +110,7 @@ public class MDInvisibleHand extends MDCardCollectionUnknown
 		}
 		if (getClient().isDebugEnabled())
 		{
-			g.setColor(Color.GREEN);
+			g.setColor(Color.MAGENTA);
 			GraphicsUtils.drawDebug(g, "ID: " + getCollection().getID(), scale(20), getWidth(), getHeight());
 		}
 	}

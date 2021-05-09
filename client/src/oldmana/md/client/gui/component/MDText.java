@@ -14,6 +14,9 @@ public class MDText extends MDComponent
 	private String text;
 	private int fontSize = 12;
 	
+	private Alignment verticalAlign = Alignment.CENTER;
+	private Alignment horizontalAlign = Alignment.LEFT;
+	
 	public MDText(String text)
 	{
 		this.text = text;
@@ -34,14 +37,24 @@ public class MDText extends MDComponent
 		fontSize = size;
 	}
 	
+	public void setVerticalAlignment(Alignment alignment)
+	{
+		verticalAlign = alignment;
+	}
+	
+	public void setHorizontalAlignment(Alignment alignment)
+	{
+		horizontalAlign = alignment;
+	}
+	
 	@Override
 	public void paintComponent(Graphics gr)
 	{
 		Graphics2D g = (Graphics2D) gr;
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		TextPainter tp = new TextPainter(text, GraphicsUtils.getThinMDFont(scale(fontSize)), new Rectangle(0, 0, getWidth(), getHeight()));
-		tp.setHorizontalAlignment(Alignment.LEFT);
-		tp.setVerticalAlignment(Alignment.CENTER);
+		tp.setHorizontalAlignment(horizontalAlign);
+		tp.setVerticalAlignment(verticalAlign);
 		tp.paint(g);
 	}
 }

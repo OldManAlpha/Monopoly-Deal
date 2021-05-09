@@ -60,7 +60,6 @@ public class MDButton extends MDComponent
 	public void setFontSize(int size)
 	{
 		this.fontSize = size;
-		//setFont(GraphicsUtils.getThinMDFont(Font.PLAIN, size));
 	}
 	
 	public void setText(String text)

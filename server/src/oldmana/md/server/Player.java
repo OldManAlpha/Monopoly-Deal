@@ -18,6 +18,8 @@ import oldmana.md.server.card.CardProperty.PropertyColor;
 import oldmana.md.server.card.collection.Bank;
 import oldmana.md.server.card.collection.Hand;
 import oldmana.md.server.card.collection.PropertySet;
+import oldmana.md.server.event.PostCardBankedEvent;
+import oldmana.md.server.event.PreCardBankedEvent;
 import oldmana.md.server.net.ConnectionThread;
 import oldmana.md.server.status.StatusEffect;
 import oldmana.md.server.util.IDCounter;
@@ -44,7 +46,9 @@ public class Player extends Client implements CommandSender
 	
 	private List<StatusEffect> statusEffects = new ArrayList<StatusEffect>();
 	
-	private boolean loggedIn = false;
+	private boolean online = false;
+	private int lastPing;
+	private boolean sentPing = false;
 	
 	public Player(MDServer server, int uid, ConnectionThread net, String name, boolean op)
 	{
@@ -59,6 +63,8 @@ public class Player extends Client implements CommandSender
 		hand = new Hand(this);
 		bank = new Bank(this);
 		propertySets = new ArrayList<PropertySet>();
+		
+		lastPing = server.getTickCount();
 	}
 	
 	public int getUID()
@@ -127,14 +133,34 @@ public class Player extends Client implements CommandSender
 		sendPacket(new PacketUndoCardStatus(-1));
 	}
 	
-	public boolean isLoggedIn()
+	public boolean isOnline()
 	{
-		return loggedIn;
+		return online;
 	}
 	
-	public void setLoggedIn(boolean loggedIn)
+	public void setOnline(boolean online)
 	{
-		this.loggedIn = loggedIn;
+		this.online = online;
+	}
+	
+	public int getLastPing()
+	{
+		return lastPing;
+	}
+	
+	public void setLastPing(int lastPing)
+	{
+		this.lastPing = lastPing;
+	}
+	
+	public boolean hasSentPing()
+	{
+		return sentPing;
+	}
+	
+	public void setSentPing(boolean sent)
+	{
+		sentPing = sent;
 	}
 	
 	public Hand getHand()
@@ -468,6 +494,19 @@ public class Player extends Client implements CommandSender
 		return monopolyCount;
 	}
 	
+	public int getUniqueMonopolyCount()
+	{
+		List<PropertyColor> monopolyColors = new ArrayList<PropertyColor>();
+		for (PropertySet set : propertySets)
+		{
+			if (set.isMonopoly() && !monopolyColors.contains(set.getEffectiveColor()))
+			{
+				monopolyColors.add(set.getEffectiveColor());
+			}
+		}
+		return monopolyColors.size();
+	}
+	
 	/**Checks if the hand is empty and draws 5 cards if it is.
 	 * 
 	 * @return True if hand was empty
@@ -482,59 +521,6 @@ public class Player extends Client implements CommandSender
 		}
 		return false;
 	}
-	
-	/*
-	public boolean canRevokeCard(Card card)
-	{
-		for (Card turn : turnHistory)
-		{
-			if (card == turn)
-			{
-				if (card.isRevocable())
-				{
-					return true;
-				}
-			}
-			else
-			{
-				if (turn.marksPreviousUnrevocable())
-				{
-					break;
-				}
-			}
-		}
-		return false;
-	}
-	
-	// TODO: Mess with turn count
-	public void revokeCard(Card card)
-	{
-		if (canRevokeCard(card))
-		{
-			if (card instanceof CardProperty)
-			{
-				for (PropertySet set : propertySets)
-				{
-					if (set.hasCard(card))
-					{
-						set.transferCard(card, hand);
-						break;
-					}
-				}
-			}
-			else
-			{
-				if (bank.hasCard(card))
-				{
-					bank.transferCard(card, hand);
-				}
-			}
-			
-			turnHistory.remove(card);
-			//turns++;
-		}
-	}
-	*/
 	
 	public List<StatusEffect> getStatusEffects()
 	{
@@ -596,6 +582,33 @@ public class Player extends Client implements CommandSender
 		}
 	}
 	
+	public void draw()
+	{
+		server.getDeck().drawCards(this, 2);
+		server.getGameState().markDrawn();
+		server.getGameState().nextNaturalActionState();
+	}
+	
+	public void playCardBank(Card card)
+	{
+		PreCardBankedEvent preEvent = new PreCardBankedEvent(this, card);
+		server.getEventManager().callEvent(preEvent);
+		if (!preEvent.isCanceled())
+		{
+			getHand().transferCard(card, getBank());
+			addRevocableCard(card);
+			PostCardBankedEvent postEvent = new PostCardBankedEvent(this, card);
+			server.getEventManager().callEvent(postEvent);
+			checkEmptyHand();
+			
+			server.getGameState().decrementTurn();
+		}
+		else
+		{
+			server.getGameState().resendActionState(this);
+		}
+	}
+	
 	public Packet[] getPropertySetPackets()
 	{
 		Packet[] packets = new Packet[propertySets.size()];
@@ -621,5 +634,10 @@ public class Player extends Client implements CommandSender
 	public boolean isOp()
 	{
 		return op;
+	}
+	
+	public void setOp(boolean op)
+	{
+		this.op = op;
 	}
 }

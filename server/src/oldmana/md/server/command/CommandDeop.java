@@ -1,9 +1,7 @@
 package oldmana.md.server.command;
 
 import oldmana.md.server.CommandSender;
-import oldmana.md.server.Player;
 import oldmana.md.server.PlayerRegistry.RegisteredPlayer;
-import oldmana.md.server.status.StatusEffect;
 
 public class CommandDeop extends Command
 {
@@ -19,12 +17,17 @@ public class CommandDeop extends Command
 		{
 			if (verifyInt(args[0]))
 			{
-				RegisteredPlayer player = getServer().getPlayerRegistry().getRegisteredPlayerByUID(parseInt(args[0]));
+				int uid = parseInt(args[0]);
+				RegisteredPlayer player = getServer().getPlayerRegistry().getRegisteredPlayerByUID(uid);
 				if (player != null)
 				{
 					player.op = false;
 					getServer().getPlayerRegistry().savePlayers();
-					sender.sendMessage("Removed operator permissions from " + player.name +".");
+					if (getServer().isPlayerWithUIDLoggedIn(uid))
+					{
+						getServer().getPlayerByUID(uid).setOp(false);
+					}
+					sender.sendMessage("Removed operator permissions from " + player.name +".", true);
 				}
 				else
 				{

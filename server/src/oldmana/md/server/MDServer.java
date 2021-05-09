@@ -6,8 +6,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -20,22 +23,20 @@ import java.util.jar.JarFile;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardDescription;
+import oldmana.md.net.packet.server.PacketKick;
 import oldmana.md.net.packet.server.PacketPlaySound;
 import oldmana.md.net.packet.server.PacketPlayerStatus;
 import oldmana.md.net.packet.server.PacketSoundData;
 import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateAccepted;
 import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateRefusal;
 import oldmana.md.net.packet.universal.PacketChat;
+import oldmana.md.net.packet.universal.PacketKeepConnected;
+import oldmana.md.server.MDScheduler.MDTask;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.Card.CardDescription;
-import oldmana.md.server.card.action.CardActionItsMyBirthday;
-import oldmana.md.server.card.action.CardActionDealBreaker;
-import oldmana.md.server.card.action.CardActionDebtCollector;
-import oldmana.md.server.card.action.CardActionDoubleTheRent;
-import oldmana.md.server.card.action.CardActionForcedDeal;
-import oldmana.md.server.card.action.CardActionPassGo;
-import oldmana.md.server.card.action.CardActionJustSayNo;
-import oldmana.md.server.card.action.CardActionSlyDeal;
+import oldmana.md.server.card.CardProperty.PropertyColor;
+import oldmana.md.server.card.CardRegistry;
+import oldmana.md.server.card.action.*;
 import oldmana.md.server.card.collection.Deck;
 import oldmana.md.server.card.collection.DiscardPile;
 import oldmana.md.server.card.collection.VoidCollection;
@@ -53,11 +54,11 @@ public class MDServer
 {
 	private static MDServer instance;
 	
-	public static final String VERSION = "0.6";
+	public static final String VERSION = "0.6.1 Dev";
 	
 	private List<MDMod> mods = new ArrayList<MDMod>();
 	
-	private Map<String, Class<? extends Card>> actionCards = new HashMap<String, Class<? extends Card>>();
+	private CardRegistry cardRegistry = new CardRegistry();
 	
 	private ServerConfig config = new ServerConfig();
 	private PlayerRegistry playerRegistry = new PlayerRegistry();
@@ -68,7 +69,7 @@ public class MDServer
 	
 	private GameState gameState;
 	
-	private VoidCollection voidCollection = new VoidCollection();
+	private VoidCollection voidCollection;
 	private Deck deck;
 	private DiscardPile discardPile;
 	
@@ -77,19 +78,24 @@ public class MDServer
 	private NetServerHandler netHandler = new NetServerHandler(this);
 	
 	private EventManager eventManager = new EventManager();
+	private ChatLinkHandler linkHandler = new ChatLinkHandler();
 	
 	private Console consoleSender = new Console();
 	private CommandHandler cmdHandler = new CommandHandler();
+	
+	private MDScheduler scheduler = new MDScheduler();
 	
 	private List<String> cmdQueue = Collections.synchronizedList(new ArrayList<String>());
 	
 	private boolean shutdown = false;
 	
-	private GameRules rules;
+	private GameRules rules = new GameRules();
 	
 	private int tickCount;
 	
 	private Map<String, byte[]> soundMap = new HashMap<String, byte[]>();
+	
+	private IncomingConnectionsThread threadIncConnect;
 	
 	public MDServer()
 	{
@@ -98,15 +104,27 @@ public class MDServer
 	
 	public void startServer() throws Exception
 	{
+		System.setOut(new MDPrintStream(System.out));
+		System.setErr(new MDPrintStream(System.err));
+		
 		System.out.println("Starting Monopoly Deal Server Version " + VERSION);
-		rules = new GameRules();
+		voidCollection = new VoidCollection();
 		decks.put("vanilla", new VanillaDeck());
 		deck = new Deck(decks.get("vanilla"));
 		discardPile = new DiscardPile();
 		netHandler.registerPackets();
 		config.loadConfig();
 		int port = Integer.parseInt(config.getSetting("Server-Port"));
-		new IncomingConnectionsThread(port);
+		try
+		{
+			threadIncConnect = new IncomingConnectionsThread(port);
+		}
+		catch (IOException e)
+		{
+			System.out.println("Failed to bind port " + port);
+			e.printStackTrace();
+			System.exit(0);
+		}
 		System.out.println("Using port " + port);
 		gameState = new GameState(this);
 		gameState.setActionState(new ActionStateDoNothing());
@@ -114,12 +132,44 @@ public class MDServer
 		playerRegistry.loadPlayers();
 		registerDefaultActionCards();
 		
+		// Keep connected checker
+		scheduler.scheduleTask(new MDTask(20, true)
+		{
+			@Override
+			public void run()
+			{
+				for (Player player : getPlayers())
+				{
+					if (player.isOnline())
+					{
+						if (!player.hasSentPing() && player.getLastPing() + (20 * 20) <= tickCount)
+						{
+							player.sendPacket(new PacketKeepConnected());
+							player.setSentPing(true);
+						}
+						else if (player.getLastPing() + (40 * 20) <= tickCount)
+						{
+							player.setOnline(false);
+							player.setSentPing(false);
+							if (player.getNet() != null)
+							{
+								player.getNet().close();
+								player.setNet(null);
+							}
+							broadcastPacket(new PacketPlayerStatus(player.getID(), false));
+							System.out.println(player.getName() + " (ID: " + player.getID() + ") timed out");
+						}
+					}
+				}
+			}
+		});
+		
 		loadSounds();
 		
 		System.out.println("Loading Mods");
 		loadMods();
 		
-		new Thread()
+		new Thread("Console Reader Thread")
 		{
 			@Override
 			public void run()
@@ -148,7 +198,28 @@ public class MDServer
 			tickServer();
 			Thread.sleep(50);
 		}
-		System.out.println("Server has shut down");
+		broadcastPacket(new PacketKick("Server shut down"));
+		threadIncConnect.interrupt();
+		tickServer();
+		while (true)
+		{
+			boolean hasPackets = false;
+			for (Player player : getPlayers())
+			{
+				if (player.getNet() != null && player.getNet().hasOutPackets())
+				{
+					hasPackets = true;
+					break;
+				}
+			}
+			if (!hasPackets)
+			{
+				break;
+			}
+			Thread.sleep(50);
+		}
+		System.out.println("Server stopped");
+		System.exit(0);
 	}
 	
 	public void tickServer()
@@ -172,7 +243,7 @@ public class MDServer
 				if (player.getNet().isClosed())
 				{
 					player.setNet(null);
-					player.setLoggedIn(false);
+					player.setOnline(false);
 					broadcastPacket(new PacketPlayerStatus(player.getID(), false));
 					continue;
 				}
@@ -190,7 +261,19 @@ public class MDServer
 			cmdQueue.clear();
 		}
 		
+		scheduler.runTick();
+		
 		tickCount++;
+	}
+	
+	public void shutdown()
+	{
+		shutdown = true;
+	}
+	
+	public boolean isShuttingDown()
+	{
+		return shutdown;
 	}
 	
 	public void loadMods()
@@ -254,26 +337,29 @@ public class MDServer
 		return mods;
 	}
 	
+	public CardRegistry getCardRegistry()
+	{
+		return cardRegistry;
+	}
+	
 	private void registerDefaultActionCards()
 	{
-		registerActionCard("DealBreaker", CardActionDealBreaker.class);
-		registerActionCard("Go", CardActionPassGo.class);
-		registerActionCard("ForcedDeal", CardActionForcedDeal.class);
-		registerActionCard("SlyDeal", CardActionSlyDeal.class);
-		registerActionCard("JustSayNo", CardActionJustSayNo.class);
-		registerActionCard("DoubleTheRent", CardActionDoubleTheRent.class);
-		registerActionCard("ItsMyBirthday", CardActionItsMyBirthday.class);
-		registerActionCard("DebtCollector", CardActionDebtCollector.class);
-	}
-	
-	public void registerActionCard(String name, Class<? extends Card> clazz)
-	{
-		actionCards.put(name.toLowerCase(), clazz);
-	}
-	
-	public Class<? extends Card> getActionCardClass(String name)
-	{
-		return actionCards.get(name.toLowerCase());
+		cardRegistry.registerActionCard(CardActionDealBreaker.class, "Deal Breaker");
+		cardRegistry.registerActionCard(CardActionPassGo.class, "Pass Go", "Go");
+		cardRegistry.registerActionCard(CardActionForcedDeal.class, "Forced Deal");
+		cardRegistry.registerActionCard(CardActionSlyDeal.class, "Sly Deal");
+		cardRegistry.registerActionCard(CardActionJustSayNo.class, "Just Say No!", "JSN");
+		cardRegistry.registerActionCard(CardActionDoubleTheRent.class, "Double The Rent!", "Double Rent");
+		cardRegistry.registerActionCard(CardActionItsMyBirthday.class, "It's My Birthday", "Birthday");
+		cardRegistry.registerActionCard(CardActionDebtCollector.class, "Debt Collector");
+		
+		// Rents
+		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.BROWN, PropertyColor.LIGHT_BLUE), "Brown/Light Blue Rent", "B/LB Rent");
+		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.MAGENTA, PropertyColor.ORANGE), "Magenta/Orange Rent", "M/O Rent");
+		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.RED, PropertyColor.YELLOW), "Red/Yellow Rent", "R/Y Rent");
+		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.GREEN, PropertyColor.DARK_BLUE), "Green/Dark Blue Rent", "G/DB Rent");
+		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.RAILROAD, PropertyColor.UTILITY), "Railroad/Utility Rent", "RR/U Rent");
+		cardRegistry.registerActionCard(() -> new CardActionRent(3, PropertyColor.values()), "10-Color Rent", "Rent");
 	}
 	
 	public CommandHandler getCommandHandler()
@@ -286,10 +372,21 @@ public class MDServer
 		return eventManager;
 	}
 	
+	public ChatLinkHandler getChatLinkHandler()
+	{
+		return linkHandler;
+	}
+	
+	public MDScheduler getScheduler()
+	{
+		return scheduler;
+	}
+	
 	public GameState getGameState()
 	{
 		return gameState;
 	}
+	
 	
 	public void setActionState(ActionState state)
 	{
@@ -341,6 +438,12 @@ public class MDServer
 	
 	public void kickPlayer(Player player)
 	{
+		kickPlayer(player, "You've been kicked");
+	}
+	
+	public void kickPlayer(Player player, String reason)
+	{
+		player.sendPacket(new PacketKick(reason));
 		if (player.getNet() != null)
 		{
 			player.getNet().close();
@@ -380,12 +483,25 @@ public class MDServer
 		return null;
 	}
 	
+	public Player getPlayerByName(String name)
+	{
+		name = name.toLowerCase();
+		for (Player player : players)
+		{
+			if (player.getName().toLowerCase().equals(name))
+			{
+				return player;
+			}
+		}
+		return null;
+	}
+	
 	public List<Player> findWinners()
 	{
 		List<Player> winners = new ArrayList<Player>();
 		for (Player player : getPlayers())
 		{
-			if (player.getMonopolyCount() >= getGameRules().getMonopoliesRequiredToWin())
+			if (player.getUniqueMonopolyCount() >= getGameRules().getMonopoliesRequiredToWin())
 			{
 				winners.add(player);
 			}
@@ -542,11 +658,50 @@ public class MDServer
 	
 	public void broadcastMessage(String message)
 	{
+		broadcastMessage(message, false);
+	}
+	
+	public void broadcastMessage(String message, boolean printConsole)
+	{
 		broadcastPacket(new PacketChat(message));
+		if (printConsole)
+		{
+			System.out.println(message);
+		}
 	}
 	
 	public static MDServer getInstance()
 	{
 		return instance;
+	}
+	
+	public class MDPrintStream extends PrintStream
+	{
+		private PrintStream wrapped;
+		
+		public MDPrintStream(PrintStream out)
+		{
+			super(out);
+			wrapped = out;
+		}
+
+		@Override
+		public void println(String str)
+		{
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss"); 
+			wrapped.println("[" + dtf.format(LocalDateTime.now()) + "] " + str);
+		}
+		
+		@Override
+		public void println(boolean b)
+		{
+			println("" + b);
+		}
+		
+		@Override
+		public void println(int i)
+		{
+			println("" + i);
+		}
 	}
 }

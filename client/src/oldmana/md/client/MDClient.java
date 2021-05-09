@@ -16,6 +16,7 @@ import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.client.MDScheduler.MDTask;
 import oldmana.md.client.card.collection.Deck;
 import oldmana.md.client.card.collection.DiscardPile;
+import oldmana.md.client.card.collection.VoidCollection;
 import oldmana.md.client.gui.MDFrame;
 import oldmana.md.client.gui.component.large.MDHand;
 import oldmana.md.client.gui.screen.TableScreen;
@@ -32,7 +33,7 @@ public class MDClient
 {
 	private static MDClient instance;
 	
-	public static final String VERSION = "0.6";
+	public static final String VERSION = "0.6.1 Dev";
 	
 	private MDFrame window;
 	
@@ -49,12 +50,15 @@ public class MDClient
 	
 	private Deck deck;
 	private DiscardPile discard;
+	private VoidCollection voidCollection;
 	
 	private NetClientHandler netHandler;
 	
 	private ConnectionThread connection;
 	
 	public MDEventQueue eventQueue;
+	
+	public int timeSincePing;
 	
 	public boolean debugEnabled = false;
 	
@@ -90,6 +94,19 @@ public class MDClient
 			public void run()
 			{
 				eventQueue.tick();
+			}
+		});
+		scheduler.scheduleTask(new MDTask(60, true)
+		{
+			@Override
+			public void run()
+			{
+				if (++timeSincePing > 50)
+				{
+					getTableScreen().getTopbar().setText("Disconnected: Timed out");
+					getTableScreen().getTopbar().repaint();
+					connection.close();
+				}
 			}
 		});
 		/*
@@ -198,6 +215,17 @@ public class MDClient
 	public DiscardPile getDiscardPile()
 	{
 		return discard;
+	}
+	
+	public void setVoidCollection(VoidCollection voidCollection)
+	{
+		this.voidCollection = voidCollection;
+		getTableScreen().setVoidCollection(voidCollection);
+	}
+	
+	public VoidCollection getVoidCollection()
+	{
+		return voidCollection;
 	}
 	
 	public List<Player> getAllPlayers()

@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import oldmana.md.client.card.Card;
-import oldmana.md.client.card.CardActionRent;
 import oldmana.md.client.card.CardMoney;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.gui.util.GraphicsUtils;
@@ -27,9 +26,11 @@ public class MDCardInfo extends MDComponent
 		setLocation(20, 20);
 		this.card = card;
 		
+		int width = 400;
+		
 		FontMetrics metrics = getFontMetrics(GraphicsUtils.getThinMDFont(scale(20)));
-		List<String> desc = GraphicsUtils.splitStrings(Arrays.asList(card.getDescription().getText()), metrics, scale(342), true);
-		setSize(scale(350), scale(60) + (metrics.getHeight() * desc.size()));
+		List<String> desc = GraphicsUtils.splitStrings(Arrays.asList(card.getDescription().getText()), metrics, scale(width - 8), true);
+		setSize(scale(width), scale(60) + (metrics.getHeight() * desc.size()));
 	}
 	
 	@Override
@@ -53,10 +54,6 @@ public class MDCardInfo extends MDComponent
 		if (card instanceof CardMoney)
 		{
 			name = card.getValue() + "M";
-		}
-		else if (card instanceof CardActionRent)
-		{
-			name = ((CardActionRent) card).getRentColors().length + "-Color Rent";
 		}
 		TextPainter tp = new TextPainter(name, g.getFont(), 
 				new Rectangle(0, scale(2), getWidth(), scale(28)));

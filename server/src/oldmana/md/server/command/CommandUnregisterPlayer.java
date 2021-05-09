@@ -24,7 +24,7 @@ public class CommandUnregisterPlayer extends Command
 				{
 					registry.unregisterPlayer(player);
 					registry.savePlayers();
-					sender.sendMessage("Unregistered player '" + player.name + "'");
+					sender.sendMessage("Unregistered player '" + player.name + "'", true);
 				}
 				else
 				{

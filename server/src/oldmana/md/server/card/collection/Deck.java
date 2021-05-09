@@ -27,6 +27,11 @@ public class Deck extends CardCollection
 	
 	public void setDeckStack(DeckStack stack)
 	{
+		setDeckStack(stack, true);
+	}
+	
+	public void setDeckStack(DeckStack stack, boolean shuffle)
+	{
 		if (this.stack != null)
 		{
 			for (Card card : this.stack.getCards())
@@ -39,7 +44,10 @@ public class Deck extends CardCollection
 		{
 			card.transfer(this, -1, 15);
 		}
-		shuffle();
+		if (shuffle)
+		{
+			shuffle();
+		}
 	}
 	
 	public DeckStack getDeckStack()

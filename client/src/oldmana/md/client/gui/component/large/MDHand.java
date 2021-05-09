@@ -209,7 +209,7 @@ public class MDHand extends MDCardCollection
 			
 			if (getClient().isDebugEnabled())
 			{
-				g.setColor(Color.GREEN);
+				g.setColor(Color.MAGENTA);
 				GraphicsUtils.drawDebug(g, "ID: " + getCollection().getID(), scale(32), getWidth(), getHeight() / 2);
 				
 				g.setColor(Color.GREEN);

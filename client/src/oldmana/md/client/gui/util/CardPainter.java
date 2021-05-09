@@ -268,7 +268,7 @@ public class CardPainter
 						g.setColor(new Color(30, 30, 30));
 						Font font = GraphicsUtils.getBoldMDFont(scale(9));
 						g.setFont(font);
-						TextPainter tp = new TextPainter(card.getName(), font, new Rectangle(scale(14) - 1, scale(33) - 1, scale(32) + 1, scale(24) + 1));
+						TextPainter tp = new TextPainter("RENT", font, new Rectangle(scale(14) - 1, scale(33) - 1, scale(32) + 1, scale(24) + 1));
 						tp.setHorizontalAlignment(Alignment.CENTER);
 						tp.setVerticalAlignment(Alignment.CENTER);
 						tp.paint(g);

@@ -217,7 +217,7 @@ public class MDDeck extends MDCardCollectionUnknown
 			{
 				g = (Graphics2D) gr.create();
 				g.setColor(Color.ORANGE);
-				GraphicsUtils.drawDebug(g, "ID: " + getCollection().getID(), scale(30), getWidth(), getHeight() / 2);
+				GraphicsUtils.drawDebug(g, "ID: " + getCollection().getID(), scale(30), GraphicsUtils.getCardWidth(2), getHeight() / 2);
 			}
 		}
 		//g.fillRect(60, 0, collection.getCardCount(), 90);

@@ -1,5 +1,6 @@
 package oldmana.md.server.card;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,7 +16,7 @@ public class CardProperty extends Card
 	public CardProperty(PropertyColor color, int value, String name)
 	{
 		super(value, name);
-		colors = new ArrayList<PropertyColor>();
+		colors = new ArrayList<PropertyColor>(1);
 		colors.add(color);
 		base = true;
 		setDefaultDescription();
@@ -53,16 +54,19 @@ public class CardProperty extends Card
 		return colors.size() == 2;
 	}
 	
-	public boolean isPropertyWildCard()
-	{
-		return colors.size() == 10;
-	}
-	
+	/**If a card is a base, it may be a color without having supporting properties
+	 * 
+	 * @return True if card is base
+	 */
 	public boolean isBase()
 	{
 		return base;
 	}
 	
+	/**If there are multiple colors on the card, the first color is returned
+	 * 
+	 * @return First color of the card
+	 */
 	public PropertyColor getColor()
 	{
 		return colors.get(0);
@@ -98,7 +102,7 @@ public class CardProperty extends Card
 	@Override
 	public String toString()
 	{
-		String str = "CardProperty (" + colors.size() + " Colors: ";
+		String str = "CardProperty (" + colors.size() + " Color" + (colors.size() != 1 ? "s" : "") + ": ";
 		for (PropertyColor color : colors)
 		{
 			str += color.getLabel() + "/";
@@ -124,16 +128,16 @@ public class CardProperty extends Card
 
 	public static enum PropertyColor
 	{
-		BROWN(0, "B", 1, 2),
-		LIGHT_BLUE(1, "LB", 1, 2, 3),
-		MAGENTA(2, "M", 1, 2, 4),
-		ORANGE(3, "O", 1, 3, 5),
-		RED(4, "R", 2, 3, 6),
-		YELLOW(5, "Y", 2, 4, 6),
-		GREEN(6, "G", 2, 4, 7),
-		DARK_BLUE(7, "DB", 3, 8),
-		RAILROAD(8, "RR", 1, 2, 3, 4),
-		UTILITY(9, "U", 1, 2);
+		BROWN(0, new Color(134, 70, 27), "B", 1, 2),
+		LIGHT_BLUE(1, new Color(187, 222, 241), "LB", 1, 2, 3),
+		MAGENTA(2, new Color(189, 47, 131), "M", 1, 2, 4),
+		ORANGE(3, new Color(227, 139, 3), "O", 1, 3, 5),
+		RED(4, new Color(215, 16, 37), "R", 2, 3, 6),
+		YELLOW(5, new Color(249, 239, 4), "Y", 2, 4, 6),
+		GREEN(6, new Color(80, 180, 47), "G", 2, 4, 7),
+		DARK_BLUE(7, new Color(64, 92, 165), "DB", 3, 8),
+		RAILROAD(8, new Color(17, 17, 14), "RR", 1, 2, 3, 4),
+		UTILITY(9, new Color(206, 229, 183), "U", 1, 2);
 		
 		public static PropertyColor[] TIER_1 = new PropertyColor[] {BROWN, LIGHT_BLUE};
 		public static PropertyColor[] TIER_2 = new PropertyColor[] {MAGENTA, ORANGE};
@@ -145,14 +149,31 @@ public class CardProperty extends Card
 		byte id;
 		int[] rent;
 		
+		Color color;
+		
 		String label;
 		
-		PropertyColor(int id, String label, int... rent)
+		String name = "";
+		
+		PropertyColor(int id, Color color, String label, int... rent)
 		{
 			this.id = (byte) id;
 			this.rent = rent;
 			
+			this.color = color;
+			
 			this.label = label;
+			
+			String[] words = name().split("_");
+			for (int i = 0 ; i < words.length ; i++)
+			{
+				String word = words[i].toLowerCase();
+				name += Character.toUpperCase(word.charAt(0)) + word.substring(1);
+				if (i + 1 < words.length)
+				{
+					name += " ";
+				}
+			}
 		}
 		
 		public int getRent(int propertyCount)
@@ -165,6 +186,11 @@ public class CardProperty extends Card
 			return rent.length;
 		}
 		
+		public Color getColor()
+		{
+			return color;
+		}
+		
 		public byte getID()
 		{
 			return id;
@@ -173,6 +199,11 @@ public class CardProperty extends Card
 		public String getLabel()
 		{
 			return label;
+		}
+		
+		public String getFriendlyName()
+		{
+			return name;
 		}
 		
 		public static PropertyColor fromID(int id)

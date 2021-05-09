@@ -15,6 +15,8 @@ public class ConnectionThread extends Thread
 	private List<Packet> inPackets;
 	private List<Packet> outPackets;
 	
+	private boolean close = false;
+	
 	public ConnectionThread(MJConnection connection)
 	{
 		this.connection = connection;
@@ -61,16 +63,17 @@ public class ConnectionThread extends Thread
 		}
 	}
 	
+	public boolean hasOutPackets()
+	{
+		synchronized (outPackets)
+		{
+			return !outPackets.isEmpty();
+		}
+	}
+	
 	public void close()
 	{
-		try
-		{
-			connection.close();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		close = true;
 	}
 	
 	public boolean isClosed()
@@ -95,12 +98,24 @@ public class ConnectionThread extends Thread
 					Packet p = connection.receivePackets(10000);
 					addInPacket(p);
 				}
+				
+				if (close)
+				{
+					connection.close();
+				}
 			}
 			catch (Exception e)
 			{
 				System.err.println(connection.getSocket().getInetAddress().getHostAddress() + " lost connection");
 				e.printStackTrace();
-				close();
+				try
+				{
+					connection.close();
+				}
+				catch (IOException e1)
+				{
+					e1.printStackTrace();
+				}
 			}
 			try
 			{

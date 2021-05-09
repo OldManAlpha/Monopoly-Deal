@@ -2,10 +2,8 @@ package oldmana.md.client.gui.component;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
@@ -132,34 +130,35 @@ public class MDPropertySet extends MDCardCollection
 		Graphics2D g = (Graphics2D) gr;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		PropertyColor effectiveColor = ((PropertySet) getCollection()).getEffectiveColor();
-		if (effectiveColor != null && getCollection().getCardCount() > 0 && !(getCollection().getCardCount() == 1 && isCardIncoming()))
+		PropertySet set = (PropertySet) getCollection();
+		PropertyColor effectiveColor = set.getEffectiveColor();
+		if (effectiveColor != null && set.getCardCount() > 0 && !(set.getCardCount() == 1 && isCardIncoming()))
 		{
 			g.setColor(effectiveColor.getColor());
 			g.fillRoundRect(0, 0, getWidth(), getHeight() - (isCardIncoming() ? getInterval() : 0), scale(12), scale(12));
 			// TODO: Account for cards going into indices not at the end (might require bigger rework)
 		}
 		g.translate(Math.max(1, scale(1)), Math.max(1, scale(1)));
-		for (int i = 0 ; i < getCollection().getCardCount() ; i++)
+		for (int i = 0 ; i < set.getCardCount() ; i++)
 		{
-			if (getCollection().getCardAt(i) != getIncomingCard())
+			if (set.getCardAt(i) != getIncomingCard())
 			{
 				g.translate(0, (i * getInterval()));
-				g.drawImage(getCollection().getCardAt(i).getGraphics(getScale()), 0, 0, GraphicsUtils.getCardWidth(), GraphicsUtils.getCardHeight(), null);
+				g.drawImage(set.getCardAt(i).getGraphics(getScale()), 0, 0, GraphicsUtils.getCardWidth(), GraphicsUtils.getCardHeight(), null);
 				g.translate(0, -(i * getInterval()));
 			}
 		}
 		if (getClient().isDebugEnabled())
 		{
 			g.setColor(Color.CYAN);
-			GraphicsUtils.drawDebug(g, "ID: " + getCollection().getID(), scale(16), getWidth(), getHeight());
+			GraphicsUtils.drawDebug(g, "ID: " + set.getID(), scale(16), getWidth(), (int) (GraphicsUtils.getCardHeight() * 0.5));
 		}
 	}
 
 	@Override
 	public Point getLocationInComponentOf(Card card)
 	{
-		return new Point(1, 1 + (getInterval() * getCollection().getIndexOf(card)));
+		return new Point(Math.max(1, scale(1)), Math.max(1, scale(1)) + (getInterval() * getCollection().getIndexOf(card)));
 	}
 	
 	public class MDPropertySetListener extends MouseAdapter

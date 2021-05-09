@@ -23,8 +23,8 @@ public class CommandRegisterPlayer extends Command
 			PlayerRegistry registry = getServer().getPlayerRegistry();
 			registry.registerPlayer(player);
 			registry.savePlayers();
-			sender.sendMessage("Registered player '" + name + "' with the User ID " + player.uid);
-			sender.sendMessage("Give this ID to the player intended to use it.");
+			sender.sendMessage("Registered player '" + name + "' with the User ID " + player.uid, true);
+			sender.sendMessage("Give this ID to the player intended to use it.", true);
 		}
 		else
 		{

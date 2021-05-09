@@ -80,6 +80,8 @@ public class CardProperty extends Card
 		
 		String label;
 		
+		String name = "";
+		
 		PropertyColor(int id, Color color, String label, int... rent)
 		{
 			this.id = (byte) id;
@@ -88,6 +90,17 @@ public class CardProperty extends Card
 			this.color = color;
 			
 			this.label = label;
+			
+			String[] words = name().split("_");
+			for (int i = 0 ; i < words.length ; i++)
+			{
+				String word = words[i].toLowerCase();
+				name += Character.toUpperCase(word.charAt(0)) + word.substring(1);
+				if (i + 1 < words.length)
+				{
+					name += " ";
+				}
+			}
 		}
 		
 		public int getRent(int propertyCount)
@@ -113,6 +126,11 @@ public class CardProperty extends Card
 		public String getLabel()
 		{
 			return label;
+		}
+		
+		public String getFriendlyName()
+		{
+			return name;
 		}
 		
 		public static PropertyColor fromID(int id)

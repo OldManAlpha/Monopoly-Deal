@@ -24,7 +24,7 @@ public class PropertySet extends CardCollection
 	public PropertySet(Player owner, CardProperty card)
 	{
 		super(owner);
-		if (!card.isPropertyWildCard())
+		if (card.isBase())
 		{
 			effectiveColor = card.getColor();
 		}

@@ -154,12 +154,20 @@ public class GraphicsUtils
 		List<String> lines = new ArrayList<String>();
 		String line = "";
 		char[] chars = str.toCharArray();
+		// Iterate through all characters in the string
 		for (int i = 0 ; i < chars.length ; i++)
 		{
 			char c = chars[i];
+			// If the width of the string with the new character is greater than the allowed width
 			if (metrics.stringWidth(line + c) > lineWidth)
 			{
-				if (wrap)
+				if (wrap && c == ' ')
+				{
+					lines.add(line);
+					line = "";
+					continue;
+				}
+				else if (wrap)
 				{
 					char[] lineChars = line.toCharArray();
 					boolean foundSpace = false;

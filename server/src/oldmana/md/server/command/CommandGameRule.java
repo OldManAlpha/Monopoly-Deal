@@ -21,19 +21,19 @@ public class CommandGameRule extends Command
 			if (args[0].equalsIgnoreCase("setwin"))
 			{
 				rules.setMonopoliesRequiredToWin(Integer.parseInt(args[1]));
-				sender.sendMessage("Set required monopolies to win to " + rules.getMonopoliesRequiredToWin());
+				sender.sendMessage("Set required monopolies to win to " + rules.getMonopoliesRequiredToWin(), true);
 			}
 			else if (args[0].equalsIgnoreCase("rentall"))
 			{
 				boolean rentAll = Boolean.parseBoolean(args[1]);
 				rules.setDoesRentChargeAll(rentAll);
-				sender.sendMessage("Rent charges all: " + rentAll);
+				sender.sendMessage("Rent charges all: " + rentAll, true);
 			}
 			else if (args[0].equalsIgnoreCase("dealbreakerdiscard"))
 			{
 				boolean dealBreakerDiscard = Boolean.parseBoolean(args[1]);;
 				rules.setDoDealBreakersDiscardSets(dealBreakerDiscard);
-				sender.sendMessage("Deal breakers discard: " + dealBreakerDiscard);
+				sender.sendMessage("Deal breakers discard: " + dealBreakerDiscard, true);
 			}
 			else
 			{

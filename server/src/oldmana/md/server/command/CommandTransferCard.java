@@ -11,7 +11,7 @@ public class CommandTransferCard extends Command
 {
 	public CommandTransferCard()
 	{
-		super("transfercard", null, new String[] {"/transfercard [Card ID] [Set ID] <Index>", "/transfercard [Set ID] [-1] [Player ID]"}, true);
+		super("transfercard", new String[] {"transfer"}, new String[] {"/transfercard [Card ID] [Set ID] <Index>", "/transfercard [Set ID] [-1] [Player ID]"}, true);
 	}
 	
 	@Override

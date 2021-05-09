@@ -22,7 +22,7 @@ public class CommandSetDeck extends Command
 			if (decks.containsKey(name))
 			{
 				getServer().getDeck().setDeckStack(decks.get(name));
-				sender.sendMessage("Deck swapped");
+				sender.sendMessage("Swapped to deck '" + name + "'", true);
 			}
 			else
 			{

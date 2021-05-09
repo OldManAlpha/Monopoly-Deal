@@ -7,8 +7,6 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 
-import javax.swing.JComponent;
-
 import oldmana.md.client.gui.component.MDComponent;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
@@ -21,7 +19,7 @@ public class MDTopbar extends MDComponent
 	public MDTopbar()
 	{
 		super();
-		setLocation(0,  0);
+		setLocation(0, 0);
 	}
 	
 	public void setText(String text)
