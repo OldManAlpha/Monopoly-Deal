@@ -14,6 +14,8 @@ public class ActionStateRent extends ActionState
 {
 	private int amount;
 	
+	private String renterName = "Bank"; // Only used if renter is null
+	
 	public ActionStateRent(Player renter, Player rented, int amount)
 	{
 		super(renter, rented);
@@ -30,6 +32,24 @@ public class ActionStateRent extends ActionState
 		broadcastStatus();
 	}
 	
+	public ActionStateRent(String renterName, Player rented, int amount)
+	{
+		super(null, rented);
+		this.renterName = renterName;
+		this.amount = amount;
+		checkBrokePlayers();
+		broadcastStatus();
+	}
+	
+	public ActionStateRent(String renterName, List<Player> rented, int amount)
+	{
+		super(null, rented);
+		this.renterName = renterName;
+		this.amount = amount;
+		checkBrokePlayers();
+		broadcastStatus();
+	}
+	
 	public void broadcastStatus()
 	{
 		if (getNumberOfTargets() > 0)
@@ -39,7 +59,8 @@ public class ActionStateRent extends ActionState
 			{
 				if (status == null)
 				{
-					status = getActionOwner().getName() + " charges " + amount + "M against " + target.getPlayer().getName();
+					status = (getActionOwner() != null ? getActionOwner().getName() : renterName) + " charges " + amount + "M against " + 
+							target.getPlayer().getName();
 				}
 				else
 				{
@@ -70,30 +91,40 @@ public class ActionStateRent extends ActionState
 	{
 		Player renter = getActionOwner();
 		
-		RentPaymentEvent event = new RentPaymentEvent(getActionOwner(), player, cards);
-		getServer().getEventManager().callEvent(event);
-		cards = event.getPayment();
-		
-		for (Card card : cards)
+		if (renter != null)
 		{
-			if (card instanceof CardProperty)
+			RentPaymentEvent event = new RentPaymentEvent(getActionOwner(), player, cards);
+			getServer().getEventManager().callEvent(event);
+			cards = event.getPayment();
+			
+			for (Card card : cards)
 			{
-				CardProperty property = (CardProperty) card;
-				if (property.isSingleColor() && renter.hasSolidPropertySet(property.getColor()))
+				if (card instanceof CardProperty)
 				{
-					PropertySet set = renter.getSolidPropertySet(property.getColor());
-					card.transfer(set);
-					set.checkMaxProperties();
+					CardProperty property = (CardProperty) card;
+					if (property.isSingleColor() && renter.hasSolidPropertySet(property.getColor()))
+					{
+						PropertySet set = renter.getSolidPropertySet(property.getColor());
+						card.transfer(set);
+						set.checkMaxProperties();
+					}
+					else
+					{
+						PropertySet set = renter.createPropertySet();
+						card.getOwningCollection().transferCard(card, set);
+					}
 				}
 				else
 				{
-					PropertySet set = renter.createPropertySet();
-					card.getOwningCollection().transferCard(card, set);
+					player.getBank().transferCard(card, renter.getBank());
 				}
 			}
-			else
+		}
+		else
+		{
+			for (Card card : cards)
 			{
-				player.getBank().transferCard(card, renter.getBank());
+				card.transfer(getServer().getDiscardPile());
 			}
 		}
 		setAccepted(player, true);
@@ -124,6 +155,6 @@ public class ActionStateRent extends ActionState
 		{
 			refused[i] = refusedPlayers.get(i).getID();
 		}
-		return new PacketActionStateRent(getActionOwner().getID(), rented, getRent());
+		return new PacketActionStateRent(getActionOwner() != null ? getActionOwner().getID() : -1, rented, getRent());
 	}
 }
