@@ -85,18 +85,12 @@ public abstract class CardCollection
 	
 	public void addCard(Card card)
 	{
-		cards.add(card);
-		card.setOwningCollection(this);
-		//ui.addCard(card.getUI());
-		if (ui != null)
-		{
-			ui.update();
-		}
+		addCardAtIndex(card, -1);
 	}
 	
 	public void addCardAtIndex(Card card, int index)
 	{
-		cards.add(index, card);
+		cards.add(index > -1 ? index : cards.size(), card);
 		card.setOwningCollection(this);
 		if (ui != null)
 		{

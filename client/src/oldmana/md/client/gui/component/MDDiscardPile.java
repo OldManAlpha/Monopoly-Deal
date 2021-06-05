@@ -51,9 +51,11 @@ public class MDDiscardPile extends MDCardCollection
 						}
 						animDir = true;
 						animTicks = 15;
+						constructInfoIcon();
+						repaint();
 					}
 				}
-				else
+				else if (event.getUnitsToScroll() < 0)
 				{
 					if (scrollPos > 0)
 					{
@@ -64,10 +66,10 @@ public class MDDiscardPile extends MDCardCollection
 						}
 						animDir = false;
 						animTicks = 15;
+						constructInfoIcon();
+						repaint();
 					}
 				}
-				constructInfoIcon();
-				repaint();
 			}
 		});
 		getClient().getScheduler().scheduleTask(new MDTask(1, true)
@@ -106,6 +108,28 @@ public class MDDiscardPile extends MDCardCollection
 			}
 		});
 	}
+	
+	public void cardAdded()
+	{
+		if (scrollPos > 0)
+		{
+			scrollPos++;
+		}
+	}
+	
+	public void cardRemoved()
+	{
+		if (scrollPos > 0)
+		{
+			scrollPos--;
+			if (scrollPos == 0)
+			{
+				getParent().invalidate();
+				collapsing = false;
+				animTicks = 0;
+			}
+		}
+	}
 
 	@Override
 	public void update()
@@ -125,23 +149,24 @@ public class MDDiscardPile extends MDCardCollection
 			if (getCollection().getCardCount() - (isCardIncoming() ? 1 : 0) > 0)
 			{
 				g.setColor(Color.DARK_GRAY);
-				g.fillRoundRect(scale(60), 0, scale(60) + (int) Math.floor((getCurrentCardCount() - scrollPos) * (0.3 * GraphicsUtils.SCALE)), scale(180), scale(20), scale(20));
-				g.drawImage(getCollection().getCardAt(Math.min(getCardCount() - 1, getCurrentCardCount() - 1 - scrollPos - (animTicks > 0 && !animDir ? 1 : 0)))
+				g.fillRoundRect(scale(60), 0, scale(60) + (int) Math.floor(getMainPileCardCount() * (0.3 * GraphicsUtils.SCALE)), scale(180), scale(20), scale(20));
+				g.drawImage(getMainPileFace()
 						.getGraphics(getScale() * 2), 0, 0, GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2), null);
 				if (scrollPos > 0)
 				{
-					if (getCurrentCardCount() > getCurrentCardCount() - scrollPos - (animTicks > 0 && animDir ? -1 : 0))
+					if (getCurrentCardCount() > getCurrentCardCount() - scrollPos + (animTicks > 0 && animDir ? 1 : 0))
 					{
-					g.fillRoundRect(scale(60), scale(186), scale(60) + (int) Math.floor(scrollPos * (0.3 * GraphicsUtils.SCALE)), scale(180), scale(20), scale(20));
-					g.drawImage(getCollection().getCardAt(Math.max(0, Math.min(getCurrentCardCount() - 1, getCurrentCardCount() - scrollPos - (animTicks > 0 && animDir ? -1 : 0))))
-							.getGraphics(getScale() * 2), 0, scale(186), GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2), null);
+						g.fillRoundRect(scale(60), scale(186), scale(60) + (int) Math.floor(getOtherPileCardCount() * (0.3 * GraphicsUtils.SCALE)), 
+								scale(180), scale(20), scale(20));
+						g.drawImage(getOtherPileFace().getGraphics(getScale() * 2), 0, scale(186), GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2), 
+								null);
 					}
 				}
 				if (animTicks > 0)
 				{
 					double prog = (double) animTicks / 15;
-					g.drawImage(getCollection().getCardAt(Math.max(0, getCurrentCardCount() - scrollPos - (!animDir ? 1 : 0)))
-							.getGraphics(getScale() * 2), 0, scale(!animDir ? prog * 186 : 186 - (prog * 186)), GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2), null);
+					g.drawImage(getMovingCard().getGraphics(getScale() * 2), 0, scale(!animDir ? prog * 186 : 186 - (prog * 186)), GraphicsUtils.getCardWidth(2), 
+							GraphicsUtils.getCardHeight(2), null);
 				}
 			}
 			else
@@ -186,6 +211,31 @@ public class MDDiscardPile extends MDCardCollection
 			remove(icon);
 			icon = null;
 		}
+	}
+	
+	public Card getMainPileFace()
+	{
+		return getCollection().getCardAt(Math.min(getCardCount() - 1, getCurrentCardCount() - 1 - scrollPos + (animTicks > 0 && !animDir ? -1 : 0)));
+	}
+	
+	public int getMainPileCardCount()
+	{
+		return getCurrentCardCount() - scrollPos - (animTicks > 0 && !animDir ? 1 : 0);
+	}
+	
+	public Card getOtherPileFace()
+	{
+		return getCollection().getCardAt(Math.max(0, Math.min(getCurrentCardCount() - 1, getCurrentCardCount() - scrollPos + (animTicks > 0 && animDir ? 1 : 0))));
+	}
+	
+	public int getOtherPileCardCount()
+	{
+		return scrollPos + (animTicks > 0 && animDir ? -1 : 0);
+	}
+	
+	public Card getMovingCard()
+	{
+		return getCollection().getCardAt(Math.max(0, getCurrentCardCount() - scrollPos + (!animDir ? -1 : 0)));
 	}
 	
 	public int getCurrentCardCount()

@@ -457,10 +457,7 @@ public class Player extends Client implements CommandSender
 	public int getTotalMonetaryAssets()
 	{
 		int wealth = 0;
-		for (Card card : getBank().getCards())
-		{
-			wealth += card.getValue();
-		}
+		wealth += getBank().getTotalValue();
 		for (PropertySet set : getPropertySets())
 		{
 			for (Card card : set.getCards())

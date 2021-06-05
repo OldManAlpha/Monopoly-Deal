@@ -54,7 +54,7 @@ public class MDServer
 {
 	private static MDServer instance;
 	
-	public static final String VERSION = "0.6.1 Dev";
+	public static final String VERSION = "0.6.1";
 	
 	private List<MDMod> mods = new ArrayList<MDMod>();
 	
@@ -102,7 +102,7 @@ public class MDServer
 		instance = this;
 	}
 	
-	public void startServer() throws Exception
+	public void startServer()
 	{
 		System.setOut(new MDPrintStream(System.out));
 		System.setErr(new MDPrintStream(System.err));
@@ -196,7 +196,14 @@ public class MDServer
 		while (!shutdown)
 		{
 			tickServer();
-			Thread.sleep(50);
+			try
+			{
+				Thread.sleep(50);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
 		}
 		broadcastPacket(new PacketKick("Server shut down"));
 		threadIncConnect.interrupt();
@@ -216,7 +223,14 @@ public class MDServer
 			{
 				break;
 			}
-			Thread.sleep(50);
+			try
+			{
+				Thread.sleep(50);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
 		}
 		System.out.println("Server stopped");
 		System.exit(0);
