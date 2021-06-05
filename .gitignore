@@ -3,6 +3,7 @@ client/.classpath
 client/.project
 client/.settings
 client/settings.dat
+server/src/oldmana/md/server/command/CommandTest.java
 server/bin
 server/mods
 server/sounds

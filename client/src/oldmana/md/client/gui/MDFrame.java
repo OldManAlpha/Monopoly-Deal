@@ -76,15 +76,15 @@ public class MDFrame extends JFrame
 		normalIcons = new ArrayList<BufferedImage>();
 		alertIcons = new ArrayList<BufferedImage>();
 		
-		for (int i = 0 ; i < 3 ; i++)
+		for (int i = 0 ; i < 4 ; i++)
 		{
 			BufferedImage icon = GraphicsUtils.createImage(power(32, i), power(32, i));
 			Graphics2D g = icon.createGraphics();
-			g.translate(power(3, i), power(1, i));
-			drawIconCardBack(g, power(20, i), power(30, i));
+			g.translate(power(3, i), power(2, i));
+			drawIconCardBack(g, power(18, i), power(27, i));
 			g.rotate(Math.toRadians(10), power(10, i), power(25, i));
-			g.translate(power(4, i), 0);
-			drawIconCardBack(g, power(20, i), power(30, i));
+			g.translate(power(5, i), 0);
+			drawIconCardBack(g, power(18, i), power(27, i));
 			g.dispose();
 			normalIcons.add(icon);
 			BufferedImage alertIcon = GraphicsUtils.createImage(power(32, i), power(32, i));
