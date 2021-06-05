@@ -55,9 +55,9 @@ Additional undocumented commands may be seen by using the `help` command.
 
 ## Modding Support
 
-If you're a developer, you can create mods for the server. A guide for modding will be made Soon™, but the gist of it is you create a class that extends `MDMod` and override `onLoad()` as an entry point for your code. You can create custom decks, custom cards, listen to events, etc. Export your jar and put it in the mods folder of the server. Modding is subject to massive changes and improvements as it's just something I whipped together.
+If you're a developer, you can create mods for the server. You can find the guide [here](https://github.com/OldManAlpha/Monopoly-Deal/wiki/Modding-Guide).
 
-There's a ton of custom cards I made that I'll probably release as a mod.
+There's a ton of custom cards I made that I'll probably release as a mod at some point.
 
 ## <img src="https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png" width="80" height="80"> Discord
 
