@@ -61,6 +61,6 @@ There's a ton of custom cards I made that I'll probably release as a mod at some
 
 ## <img src="https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png" width="80" height="80"> Discord
 
-Come join [the Discord](https://discord.gg/9dKvSguVM4) if you'd like to chat about Monopoly Deal, make suggestions, or look for a game.
+Come join [the Discord](https://discord.gg/9dKvSguVM4) if you'd like to chat about Monopoly Deal, make suggestions, ask for help, or look for a game.
 
 <br><br><br><br>***This project is not affiliated with Hasbro in any way.***
