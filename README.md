@@ -59,6 +59,14 @@ If you're a developer, you can create mods for the server. You can find the guid
 
 There's a ton of custom cards I made that I'll probably release as a mod at some point.
 
+## To-do
+
+- [ ] Implement Houses/Hotels
+- [ ] Implement customizable decks
+- [ ] Allow for the customization of game rules
+- [ ] Implement action cards from other editions
+- [ ] Better document server commands
+
 ## <img src="https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png" width="80" height="80"> Discord
 
 Come join [the Discord](https://discord.gg/9dKvSguVM4) if you'd like to chat about Monopoly Deal, make suggestions, ask for help, or look for a game.
