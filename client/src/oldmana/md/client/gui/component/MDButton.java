@@ -5,15 +5,10 @@ import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.LinearGradientPaint;
-import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Point2D;
-
-import javax.swing.JComponent;
 
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
@@ -75,7 +70,10 @@ public class MDButton extends MDComponent
 	public void setListener(MouseAdapter listener)
 	{
 		removeListener();
-		addMouseListener(listener);
+		if (listener != null)
+		{
+			addMouseListener(listener);
+		}
 		this.listener = listener;
 	}
 	

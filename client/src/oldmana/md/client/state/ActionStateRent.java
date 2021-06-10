@@ -6,7 +6,7 @@ import java.util.List;
 
 import oldmana.md.client.Player;
 import oldmana.md.client.card.Card;
-import oldmana.md.client.card.CardActionJustSayNo;
+import oldmana.md.client.card.CardActionActionCounter;
 import oldmana.md.client.gui.action.ActionScreenRent;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDButton.ButtonColorScheme;
@@ -40,7 +40,7 @@ public class ActionStateRent extends ActionState
 	}
 	
 	@Override
-	public void onJustSayNo(CardActionJustSayNo jsn)
+	public void onJustSayNo(CardActionActionCounter jsn)
 	{
 		super.onJustSayNo(jsn);
 	}

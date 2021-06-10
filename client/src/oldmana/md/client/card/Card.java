@@ -235,7 +235,7 @@ public class Card
 	
 	public static enum CardType
 	{
-		MONEY(0), PROPERTY(1), ACTION(2), JUST_SAY_NO(3), DOUBLE_THE_RENT(4), SPECIAL(5), RENT_COUNTER(6);
+		MONEY(0), PROPERTY(1), ACTION(2), JUST_SAY_NO(3), DOUBLE_THE_RENT(4), SPECIAL(5), RENT_COUNTER(6), BUILDING(7);
 		
 		private int id;
 		
@@ -302,27 +302,6 @@ public class Card
 				return GREATER_THAN_TEN;
 			}
 			return OTHER;
-			/*
-			switch (value)
-			{
-				case 0:
-					return ZERO;
-				case 1:
-					return ONE;
-				case 2:
-					return TWO;
-				case 3:
-					return THREE;
-				case 4:
-					return FOUR;
-				case 5:
-					return FIVE;
-				case 10:
-					return TEN;
-				default:
-					return OTHER;
-			}
-			*/
 		}
 	}
 }

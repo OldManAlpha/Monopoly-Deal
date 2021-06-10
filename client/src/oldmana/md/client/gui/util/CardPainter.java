@@ -305,8 +305,16 @@ public class CardPainter
 						trans.translate(scale(14), scale(40));
 						drawMiniProps(trans, prop.getColor());
 						trans = (Graphics2D) g.create();
-						trans.translate(scale(39), scale(40));
+						//trans.translate(scale(39), scale(40));
+						trans.translate(scale(37), scale(40));
 						drawRentText(trans, prop.getColor());
+						if (prop.getColor().getMaxProperties() > 4)
+						{
+							TextPainter tp = new TextPainter("...  Max " + prop.getColor().getMaxProperties() + "  ...", GraphicsUtils.getBoldMDFont(scale(6)), new Rectangle(0, getHeight() - scale(10), getWidth(), scale(7)), false, false);
+							tp.setHorizontalAlignment(Alignment.CENTER);
+							tp.setVerticalAlignment(Alignment.CENTER);
+							tp.paint(g);
+						}
 					}
 					else if (prop.isBiColor())
 					{
@@ -314,15 +322,33 @@ public class CardPainter
 						trans.translate(scale(10), scale(40));
 						drawMiniProps(trans, prop.getColors().get(0));
 						trans = (Graphics2D) g.create();
-						trans.translate(scale(19), scale(40));
+						//trans.translate(scale(19), scale(40));
+						trans.translate(scale(17), scale(40));
 						drawRentText(trans, prop.getColors().get(0));
+						if (prop.getColors().get(0).getMaxProperties() > 4)
+						{
+							TextPainter tp = new TextPainter("Max " + prop.getColors().get(0).getMaxProperties(), GraphicsUtils.getBoldMDFont(scale(6)), 
+									new Rectangle(0, getHeight() - scale(9), getWidth() / 2, scale(7)), false, false);
+							tp.setHorizontalAlignment(Alignment.CENTER);
+							tp.setVerticalAlignment(Alignment.CENTER);
+							tp.paint(g);
+						}
 						
 						trans = (Graphics2D) g.create();
 						trans.translate(scale(34), scale(40));
 						drawMiniProps(trans, prop.getColors().get(1));
 						trans = (Graphics2D) g.create();
-						trans.translate(scale(43), scale(40));
+						//trans.translate(scale(43), scale(40));
+						trans.translate(scale(41), scale(40));
 						drawRentText(trans, prop.getColors().get(1));
+						if (prop.getColors().get(1).getMaxProperties() > 4)
+						{
+							TextPainter tp = new TextPainter("Max " + prop.getColors().get(1).getMaxProperties(), GraphicsUtils.getBoldMDFont(scale(6)), 
+									new Rectangle(getWidth() / 2, getHeight() - scale(9), getWidth() / 2, scale(7)), false, false);
+							tp.setHorizontalAlignment(Alignment.CENTER);
+							tp.setVerticalAlignment(Alignment.CENTER);
+							tp.paint(g);
+						}
 					}
 				}
 			}
@@ -363,7 +389,7 @@ public class CardPainter
 	
 	public void drawMiniProps(Graphics2D g, PropertyColor color)
 	{
-		for (int i = 0 ; i < color.getMaxProperties() ; i++)
+		for (int i = 0 ; i < Math.min(color.getMaxProperties(), 4) ; i++)
 		{
 			for (int e = i ; e >= 0 ; e--)
 			{
@@ -391,9 +417,9 @@ public class CardPainter
 	
 	public void drawRentText(Graphics2D g, PropertyColor color)
 	{
-		for (int i = 0 ; i < color.getMaxProperties() ; i++)
+		for (int i = 0 ; i < Math.min(color.getMaxProperties(), 4) ; i++)
 		{
-			TextPainter tp = new TextPainter(color.getRent(i + 1) + "M", GraphicsUtils.getBoldMDFont(scale(7)), new Rectangle(0, 0, scale(10), scale(9)));
+			TextPainter tp = new TextPainter(color.getRent(i + 1) + "M", GraphicsUtils.getBoldMDFont(scale(7)), new Rectangle(0, 0, scale(14), scale(9)));
 			tp.setHorizontalAlignment(Alignment.CENTER);
 			tp.setVerticalAlignment(Alignment.CENTER);
 			tp.paint(g);

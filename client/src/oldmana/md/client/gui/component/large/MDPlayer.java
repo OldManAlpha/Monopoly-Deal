@@ -6,19 +6,16 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.LayoutManager2;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 
-import javax.swing.JLayeredPane;
-
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.ThePlayer;
-import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.LayoutAdapter;
 import oldmana.md.client.gui.component.MDBank;
@@ -117,8 +114,8 @@ public class MDPlayer extends MDComponent
 		Color nameplate = null;
 		if (gs.getWhoseTurn() == player)
 		{
-			border = PropertyColor.DARK_BLUE.getColor();
-			nameplate = PropertyColor.LIGHT_BLUE.getColor();
+			border = GraphicsUtils.DARK_BLUE;
+			nameplate = GraphicsUtils.LIGHT_BLUE;
 		}
 		else if (state != null)
 		{
@@ -126,7 +123,7 @@ public class MDPlayer extends MDComponent
 			{
 				if (state.isAccepted(player))
 				{
-					border = PropertyColor.GREEN.getColor();
+					border = GraphicsUtils.GREEN;
 					nameplate = border.brighter();
 				}
 				else if (state.isRefused(player))
@@ -136,7 +133,7 @@ public class MDPlayer extends MDComponent
 				}
 				else
 				{
-					border = PropertyColor.RED.getColor();
+					border = GraphicsUtils.RED;
 					nameplate = new Color(255, 169, 112);
 				}
 			}
@@ -162,6 +159,8 @@ public class MDPlayer extends MDComponent
 		int nameWidth = metrics.stringWidth(nameText);
 		int nameHeight = metrics.getHeight();
 		g.setColor(nameplate);
+		GradientPaint paint = new GradientPaint(0, 0, GraphicsUtils.getLighterColor(nameplate, 1), 0, (float) (nameHeight * 0.6), nameplate);
+		g.setPaint(paint);
 		g.fillRoundRect(0, 0, nameWidth + scale(8), nameHeight + scale(2), scale(10), scale(10));
 		if (!player.isConnected())
 		{

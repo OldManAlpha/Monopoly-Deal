@@ -29,11 +29,7 @@ public class CardActionJustSayNo extends CardSpecial
 			state.setRefused(player, true);
 			transfer(getServer().getDiscardPile());
 		}
-		if (player.getHand().getCardCount() == 0)
-		{
-			player.clearRevocableCards();
-			getServer().getDeck().drawCards(player, 5, 1.2);
-		}
+		player.checkEmptyHand();
 		if (state.isFinished())
 		{
 			getServer().getGameState().nextNaturalActionState();
@@ -43,7 +39,7 @@ public class CardActionJustSayNo extends CardSpecial
 	@Override
 	public CardType getType()
 	{
-		return CardType.JUST_SAY_NO;
+		return CardType.ACTION_COUNTER;
 	}
 	
 	@Override

@@ -5,7 +5,7 @@ import java.util.List;
 
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardActionDoubleTheRent;
-import oldmana.md.client.card.CardActionJustSayNo;
+import oldmana.md.client.card.CardActionActionCounter;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.Bank;
@@ -102,7 +102,7 @@ public class Player
 		{
 			for (Card card : getHand().getCards())
 			{
-				if (card instanceof CardActionJustSayNo)
+				if (card instanceof CardActionActionCounter)
 				{
 					return true;
 				}
@@ -255,6 +255,19 @@ public class Player
 			}
 		}
 		return false;
+	}
+	
+	public List<PropertySet> getPropertySetsCompatibleWithBuildingTier(int tier)
+	{
+		List<PropertySet> sets = new ArrayList<PropertySet>();
+		for (PropertySet set : propertySets)
+		{
+			if (set.getEffectiveColor().isBuildable() && tier == set.getHighestBuildingTier() + 1)
+			{
+				sets.add(set);
+			}
+		}
+		return sets;
 	}
 	
 	public int getTotalMonetaryAssets()

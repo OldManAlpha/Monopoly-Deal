@@ -431,27 +431,21 @@ public class Player extends Client implements CommandSender
 	
 	public boolean hasAnyMonetaryAssets()
 	{
-		boolean broke = true;
-		if (getBank().isEmpty())
+		if (!getBank().isEmpty())
 		{
-			SetIter:
-			for (PropertySet set : getPropertySets())
+			return true;
+		}
+		for (PropertySet set : getPropertySets())
+		{
+			for (CardProperty card : set.getPropertyCards())
 			{
-				for (CardProperty card : set.getPropertyCards())
+				if (card.getValue() > 0)
 				{
-					if (card.getValue() > 0)
-					{
-						broke = false;
-						break SetIter;
-					}
+					return true;
 				}
 			}
 		}
-		else
-		{
-			broke = false;
-		}
-		return !broke;
+		return false;
 	}
 	
 	public int getTotalMonetaryAssets()

@@ -60,47 +60,37 @@ public class CardProperty extends Card
 		return colors.contains(color);
 	}
 	
-	public static enum PropertyColor
+	public static class PropertyColor
 	{
-		BROWN(0, new Color(134, 70, 27), "B", 1, 2),
-		LIGHT_BLUE(1, new Color(187, 222, 241), "LB", 1, 2, 3),
-		MAGENTA(2, new Color(189, 47, 131), "M", 1, 2, 4),
-		ORANGE(3, new Color(227, 139, 3), "O", 1, 3, 5),
-		RED(4, new Color(215, 16, 37), "R", 2, 3, 6),
-		YELLOW(5, new Color(249, 239, 4), "Y", 2, 4, 6),
-		GREEN(6, new Color(80, 180, 47), "G", 2, 4, 7),
-		DARK_BLUE(7, new Color(64, 92, 165), "DB", 3, 8),
-		RAILROAD(8, new Color(17, 17, 14), "RR", 1, 2, 3, 4),
-		UTILITY(9, new Color(206, 229, 183), "U", 1, 2);
+		private static List<PropertyColor> colors = new ArrayList<PropertyColor>();
 		
-		byte id;
-		int[] rent;
 		
-		Color color;
+		private int id;
 		
-		String label;
+		private String name;
+		private String label;
 		
-		String name = "";
+		private Color color;
 		
-		PropertyColor(int id, Color color, String label, int... rent)
+		private boolean buildable;
+		
+		private byte[] rent;
+		
+		
+		public PropertyColor(int id, String name, String label, Color color, boolean buildable, byte... rent)
 		{
-			this.id = (byte) id;
-			this.rent = rent;
+			this.id = id;
+			
+			this.name = name;
+			this.label = label;
 			
 			this.color = color;
 			
-			this.label = label;
+			this.buildable = buildable;
 			
-			String[] words = name().split("_");
-			for (int i = 0 ; i < words.length ; i++)
-			{
-				String word = words[i].toLowerCase();
-				name += Character.toUpperCase(word.charAt(0)) + word.substring(1);
-				if (i + 1 < words.length)
-				{
-					name += " ";
-				}
-			}
+			this.rent = rent;
+			
+			colors.add(this);
 		}
 		
 		public int getRent(int propertyCount)
@@ -113,6 +103,11 @@ public class CardProperty extends Card
 			return rent.length;
 		}
 		
+		public boolean isBuildable()
+		{
+			return buildable;
+		}
+		
 		public Color getColor()
 		{
 			return color;
@@ -120,7 +115,12 @@ public class CardProperty extends Card
 		
 		public byte getID()
 		{
-			return id;
+			return (byte) id;
+		}
+		
+		public String getName()
+		{
+			return name;
 		}
 		
 		public String getLabel()
@@ -128,14 +128,9 @@ public class CardProperty extends Card
 			return label;
 		}
 		
-		public String getFriendlyName()
-		{
-			return name;
-		}
-		
 		public static PropertyColor fromID(int id)
 		{
-			for (PropertyColor color : values())
+			for (PropertyColor color : getAllColors())
 			{
 				if (color.getID() == id)
 				{
@@ -153,6 +148,11 @@ public class CardProperty extends Card
 				colors.add(fromID(id));
 			}
 			return colors;
+		}
+		
+		public static List<PropertyColor> getAllColors()
+		{
+			return new ArrayList<PropertyColor>(colors);
 		}
 	}
 }

@@ -12,7 +12,7 @@ import oldmana.md.client.MDClient;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardAction;
 import oldmana.md.client.card.CardActionDoubleTheRent;
-import oldmana.md.client.card.CardActionJustSayNo;
+import oldmana.md.client.card.CardActionActionCounter;
 import oldmana.md.client.card.CardActionRent;
 import oldmana.md.client.card.CardActionRentCounter;
 import oldmana.md.client.card.CardMoney;
@@ -73,10 +73,10 @@ public class MDOverlayHand extends MDComponent
 				@Override
 				public void mouseReleased(MouseEvent event)
 				{
-					if (card instanceof CardActionJustSayNo)
+					if (card instanceof CardActionActionCounter)
 					{
 						ActionState state = client.getGameState().getActionState();
-						state.onJustSayNo((CardActionJustSayNo) card);
+						state.onJustSayNo((CardActionActionCounter) card);
 					}
 					else if (card instanceof CardActionRentCounter)
 					{
@@ -150,8 +150,8 @@ public class MDOverlayHand extends MDComponent
 					}
 				}
 			});
-			if (!(card instanceof CardMoney || card instanceof CardActionJustSayNo || card instanceof CardActionDoubleTheRent) 
-					|| (card instanceof CardActionJustSayNo && !client.canActFreely()) || (card instanceof CardActionRentCounter && 
+			if (!(card instanceof CardMoney || card instanceof CardActionActionCounter || card instanceof CardActionDoubleTheRent) 
+					|| (card instanceof CardActionActionCounter && !client.canActFreely()) || (card instanceof CardActionRentCounter && 
 							state instanceof ActionStateRent && state.isTarget(client.getThePlayer()) && !state.isAccepted(client.getThePlayer()) && 
 							!state.isRefused(client.getThePlayer())))
 			{

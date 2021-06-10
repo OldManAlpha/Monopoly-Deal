@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oldmana.md.client.card.Card;
+import oldmana.md.client.card.CardBuilding;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.PropertySet;
@@ -53,12 +54,12 @@ public class ActionScreenModifyPropertySet extends ActionScreen
 		List<Card> cards = set.getCards();
 		for (int i = 0 ; i < cardCount ; i++)
 		{
-			CardProperty prop = (CardProperty) cards.get(i);
-			MDCard ui = new MDCard(prop, 2);
+			Card card = (Card) cards.get(i);
+			MDCard ui = new MDCard(card, 2);
 			//ui.setLocation(800 - offset + (i * (MDCard.CARD_SIZE.width * 2 + 50)), 150);
 			add(ui);
 			this.cards.add(ui);
-			if (!prop.isSingleColor())
+			if (card instanceof CardProperty && !((CardProperty) card).isSingleColor())
 			{
 				ui.addMouseListener(new MouseAdapter()
 				{
@@ -68,6 +69,10 @@ public class ActionScreenModifyPropertySet extends ActionScreen
 						state.propertySelected(ui.getCard());
 					}
 				});
+			}
+			else if (card instanceof CardBuilding)
+			{
+				
 			}
 		}
 		List<PropertyColor> colors = set.getPossibleBaseColors();

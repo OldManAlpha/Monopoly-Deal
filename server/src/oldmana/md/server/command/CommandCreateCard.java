@@ -94,7 +94,13 @@ public class CommandCreateCard extends Command
 				ChatLink link = mb.addLinkedString("[Transfer To Hand]");
 				mb.addString(ChatColor.WHITE + " (Link expires in 1 minute)");
 				Card c = card;
-				link.setListener(() -> c.transfer(player.getHand()));
+				link.setListener(() -> 
+				{
+					if (c.getOwningCollection() != player.getHand())
+					{
+						c.transfer(player.getHand());
+					}
+				});
 				player.sendMessage(mb.getMessage());
 				getServer().getScheduler().scheduleTask(new MDTask(60 * 20, false)
 				{

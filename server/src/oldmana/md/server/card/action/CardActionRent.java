@@ -1,5 +1,7 @@
 package oldmana.md.server.card.action;
 
+import java.util.List;
+
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardActionRentData;
 import oldmana.md.server.Player;
@@ -22,6 +24,11 @@ public class CardActionRent extends CardAction
 		setClearsRevocableCards(true);
 		setDescription("Charge rent to all players on the properties that match the colors on the card. "
 				+ "Only properties put down on your table are valid to rent on. Highest rent possible is automatically calculated.");
+	}
+	
+	public CardActionRent(int value, List<PropertyColor> colors)
+	{
+		this(value, colors.toArray(new PropertyColor[0]));
 	}
 	
 	public PropertyColor[] getRentColors()
@@ -69,11 +76,11 @@ public class CardActionRent extends CardAction
 	{
 		if (colors.length == 1)
 		{
-			return colors[0].getFriendlyName() + " Rent";
+			return colors[0].getName() + " Rent";
 		}
 		else if (colors.length == 2)
 		{
-			return colors[0].getFriendlyName() + "/" + colors[1].getFriendlyName() + " Rent";
+			return colors[0].getName() + "/" + colors[1].getName() + " Rent";
 		}
 		else
 		{

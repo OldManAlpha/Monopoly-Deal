@@ -40,6 +40,26 @@ public class MJPacketBuffer
 		}
 	}
 	
+	public void addBooleans(boolean[] bs)
+	{
+		addInt(bs.length);
+		for (boolean b : bs)
+		{
+			addByte((byte) (b ? 1 : 0));
+		}
+	}
+	
+	public boolean[] getBooleans()
+	{
+		int len = getInt();
+		boolean[] bs = new boolean[len];
+		for (int i = 0 ; i < len ; i++)
+		{
+			bs[i] = getByte() == 1;
+		}
+		return bs;
+	}
+	
 	public boolean getBoolean()
 	{
 		return bb.get() == 1;

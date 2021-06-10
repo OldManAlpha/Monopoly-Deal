@@ -27,8 +27,6 @@ import oldmana.md.net.packet.server.PacketKick;
 import oldmana.md.net.packet.server.PacketPlaySound;
 import oldmana.md.net.packet.server.PacketPlayerStatus;
 import oldmana.md.net.packet.server.PacketSoundData;
-import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateAccepted;
-import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateRefusal;
 import oldmana.md.net.packet.universal.PacketChat;
 import oldmana.md.net.packet.universal.PacketKeepConnected;
 import oldmana.md.server.MDScheduler.MDTask;
@@ -54,7 +52,7 @@ public class MDServer
 {
 	private static MDServer instance;
 	
-	public static final String VERSION = "0.6.1";
+	public static final String VERSION = "0.6.2 Dev";
 	
 	private List<MDMod> mods = new ArrayList<MDMod>();
 	
@@ -373,7 +371,7 @@ public class MDServer
 		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.RED, PropertyColor.YELLOW), "Red/Yellow Rent", "R/Y Rent");
 		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.GREEN, PropertyColor.DARK_BLUE), "Green/Dark Blue Rent", "G/DB Rent");
 		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.RAILROAD, PropertyColor.UTILITY), "Railroad/Utility Rent", "RR/U Rent");
-		cardRegistry.registerActionCard(() -> new CardActionRent(3, PropertyColor.values()), "10-Color Rent", "Rent");
+		cardRegistry.registerActionCard(() -> new CardActionRent(3, PropertyColor.getAllColors()), "10-Color Rent", "Rent");
 	}
 	
 	public CommandHandler getCommandHandler()
@@ -612,6 +610,9 @@ public class MDServer
 			player.sendPacket(new PacketCardDescription(desc.getID(), desc.getText()));
 		}
 		
+		// Send card colors
+		player.sendPacket(PropertyColor.getColorsPacket());
+		
 		// Send all card data
 		for (Card card : Card.getRegisteredCards())
 		{
@@ -633,20 +634,7 @@ public class MDServer
 			player.sendPacket(other.getBank().getCollectionDataPacket());
 			player.sendPacket(player == other ? other.getHand().getOwnerHandDataPacket() : other.getHand().getCollectionDataPacket());
 		}
-		// Send action state
-		ActionState state = getGameState().getActionState();
-		if (state != null)
-		{
-			player.sendPacket(state.constructPacket());
-			for (Player accepted : state.getAccepted())
-			{
-				player.sendPacket(new PacketUpdateActionStateAccepted(accepted.getID(), true));
-			}
-			for (Player refused : state.getRefused())
-			{
-				player.sendPacket(new PacketUpdateActionStateRefusal(refused.getID(), true));
-			}
-		}
+		getGameState().resendActionState(player);
 		player.sendUndoStatus();
 		getGameState().sendStatus(player);
 	}

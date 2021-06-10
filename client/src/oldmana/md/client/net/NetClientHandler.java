@@ -1,5 +1,6 @@
 package oldmana.md.client.net;
 
+import java.awt.Color;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +14,7 @@ import oldmana.md.client.card.Card;
 import oldmana.md.client.card.Card.CardDescription;
 import oldmana.md.client.card.CardAction;
 import oldmana.md.client.card.CardActionDoubleTheRent;
-import oldmana.md.client.card.CardActionJustSayNo;
+import oldmana.md.client.card.CardActionActionCounter;
 import oldmana.md.client.card.CardActionRent;
 import oldmana.md.client.card.CardActionRentCounter;
 import oldmana.md.client.card.CardMoney;
@@ -57,7 +58,7 @@ import oldmana.md.net.packet.universal.PacketKeepConnected;
 
 public class NetClientHandler
 {
-	public static int PROTOCOL_VERSION = 7;
+	public static int PROTOCOL_VERSION = 8;
 	
 	private MDClient client;
 	
@@ -76,6 +77,7 @@ public class NetClientHandler
 		
 		// Server -> Client
 		Packet.registerPacket(PacketHandshake.class);
+		Packet.registerPacket(PacketPropertyColors.class);
 		Packet.registerPacket(PacketCardCollectionData.class);
 		Packet.registerPacket(PacketCardData.class);
 		Packet.registerPacket(PacketCardActionRentData.class);
@@ -172,6 +174,21 @@ public class NetClientHandler
 		client.createThePlayer(packet.id, packet.name);
 	}
 	
+	public void handlePropertyColors(PacketPropertyColors packet)
+	{
+		int len = packet.name.length;
+		System.out.println(packet.name.length);
+		System.out.println(packet.label.length);
+		System.out.println(packet.color.length);
+		System.out.println(packet.rents.length);
+		System.out.println(packet.buildable.length);
+		System.out.println(packet.rents.length);
+		for (int i = 0 ; i < len ; i++)
+		{
+			new PropertyColor(i, packet.name[i], packet.label[i], new Color(packet.color[i]), packet.buildable[i], packet.rents[i]);
+		}
+	}
+	
 	public void handleKick(PacketKick packet)
 	{
 		client.getTableScreen().getTopbar().setText("Disconnected: " + packet.reason);
@@ -192,7 +209,7 @@ public class NetClientHandler
 		}
 		else if (packet.type == CardType.JUST_SAY_NO.getID())
 		{
-			card = new CardActionJustSayNo(packet.id, packet.value, packet.name);
+			card = new CardActionActionCounter(packet.id, packet.value, packet.name);
 		}
 		else if (packet.type == CardType.DOUBLE_THE_RENT.getID())
 		{
@@ -410,6 +427,7 @@ public class NetClientHandler
 			@Override
 			public void start()
 			{
+				client.setAwaitingResponse(false);
 				client.getGameState().setActionState(new ActionStateRent(client.getPlayerByID(packet.renter), client.getPlayersByIDs(packet.rented), 
 						packet.amount));
 				client.getTableScreen().repaint();
