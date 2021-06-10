@@ -1,7 +1,6 @@
 package oldmana.general.mjnetworkingapi.packet;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.net.Socket;
@@ -10,19 +9,7 @@ import java.util.Map;
 
 import oldmana.general.mjnetworkingapi.MJConnection;
 import oldmana.general.mjnetworkingapi.MJPacketBuffer;
-import oldmana.general.mjnetworkingapi.packet.field.BooleanHandler;
-import oldmana.general.mjnetworkingapi.packet.field.ByteArrayHandler;
-import oldmana.general.mjnetworkingapi.packet.field.ByteHandler;
-import oldmana.general.mjnetworkingapi.packet.field.CharHandler;
-import oldmana.general.mjnetworkingapi.packet.field.DoubleHandler;
-import oldmana.general.mjnetworkingapi.packet.field.FieldTypeHandler;
-import oldmana.general.mjnetworkingapi.packet.field.FloatHandler;
-import oldmana.general.mjnetworkingapi.packet.field.IntArrayHandler;
-import oldmana.general.mjnetworkingapi.packet.field.IntHandler;
-import oldmana.general.mjnetworkingapi.packet.field.LongHandler;
-import oldmana.general.mjnetworkingapi.packet.field.ShortHandler;
-import oldmana.general.mjnetworkingapi.packet.field.StringArrayHandler;
-import oldmana.general.mjnetworkingapi.packet.field.StringHandler;
+import oldmana.general.mjnetworkingapi.packet.field.*;
 
 /**The base class extended by all packets. Subclasses should override <i>fromBytes</i> and <i>toBytes</i>. A blank
  * constructor should always be present.
@@ -48,8 +35,12 @@ public abstract class Packet
 		registerFieldTypeHandler(new CharHandler());
 		
 		// Primitive Array Types
+		registerFieldTypeHandler(new BooleanArrayHandler());
 		registerFieldTypeHandler(new ByteArrayHandler());
 		registerFieldTypeHandler(new IntArrayHandler());
+		
+		// Primitive 2D Array Types
+		registerFieldTypeHandler(new ByteArray2DHandler());
 		
 		// String
 		registerFieldTypeHandler(new StringHandler());

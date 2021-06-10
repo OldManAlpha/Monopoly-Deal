@@ -9,6 +9,7 @@ import java.util.List;
 
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.collection.PropertySet;
+import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.component.MDCreateSet;
 import oldmana.md.client.gui.component.MDPropertySet;
@@ -22,6 +23,7 @@ public class ActionStateClientPlayProperty extends ActionStateClient
 	private CardProperty property;
 	
 	private MDSelection propSelect;
+	private MDButton cancel;
 	private List<PropertySet> setSelects = new ArrayList<PropertySet>();
 	private MDCreateSet createSet;
 	
@@ -37,7 +39,20 @@ public class ActionStateClientPlayProperty extends ActionStateClient
 		propSelect = new MDSelection(Color.BLUE);
 		propSelect.setLocation(propLoc);
 		propSelect.setSize(MDCard.CARD_SIZE.width * 2, MDCard.CARD_SIZE.height * 2);
-		getClient().getTableScreen().add(propSelect, new Integer(90));
+		getClient().addTableComponent(propSelect, 90);
+		
+		cancel = new MDButton("Cancel");
+		cancel.setSize((int) (propSelect.getWidth() * 0.8), (int) (propSelect.getHeight() * 0.2));
+		cancel.setLocation((int) (propSelect.getWidth() * 0.1) + propSelect.getX(), (int) (propSelect.getHeight() * 0.4) + propSelect.getY());
+		cancel.setListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseReleased(MouseEvent event)
+			{
+				removeState();
+			}
+		});
+		getClient().addTableComponent(cancel, 91);
 		
 		for (PropertySet set : getClient().getThePlayer().getPropertySets(true))
 		{
@@ -92,15 +107,17 @@ public class ActionStateClientPlayProperty extends ActionStateClient
 	@Override
 	public void cleanup()
 	{
-		getClient().getTableScreen().remove(propSelect);
+		getClient().removeTableComponent(propSelect);
+		getClient().removeTableComponent(cancel);
 		if (createSet != null)
 		{
-			getClient().getTableScreen().remove(createSet);
+			getClient().removeTableComponent(createSet);
 		}
 		for (PropertySet set : setSelects)
 		{
 			((MDPropertySet) set.getUI()).disableSelection();
 		}
+		getClient().getTableScreen().repaint();
 		
 		/*
 		MDButton button = getClient().getTableScreen().getMultiButton();

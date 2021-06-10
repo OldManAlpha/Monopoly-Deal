@@ -13,6 +13,7 @@ public class ServerConfig
 	private Map<String, String> defaults = new HashMap<String, String>();
 	{
 		defaults.put("Server-Port", "27599");
+		defaults.put("Verbose", "false");
 	}
 	
 	private Map<String, String> settings = new HashMap<String, String>();

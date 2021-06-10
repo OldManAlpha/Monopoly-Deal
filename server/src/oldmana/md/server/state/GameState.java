@@ -5,6 +5,7 @@ import java.util.Random;
 
 import oldmana.md.net.packet.server.PacketStatus;
 import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateAccepted;
+import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateRefusal;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
@@ -241,12 +242,36 @@ public class GameState
 	
 	public void resendActionState(Player player)
 	{
-		player.sendPacket(state.constructPacket());
+		if (state != null)
+		{
+			player.sendPacket(state.constructPacket());
+			
+			for (Player accepted : state.getAccepted())
+			{
+				player.sendPacket(new PacketUpdateActionStateAccepted(accepted.getID(), true));
+			}
+			for (Player refused : state.getRefused())
+			{
+				player.sendPacket(new PacketUpdateActionStateRefusal(refused.getID(), true));
+			}
+		}
 	}
 	
 	public void resendActionState()
 	{
-		server.broadcastPacket(state.constructPacket());
+		if (state != null)
+		{
+			server.broadcastPacket(state.constructPacket());
+			
+			for (Player accepted : state.getAccepted())
+			{
+				server.broadcastPacket(new PacketUpdateActionStateAccepted(accepted.getID(), true));
+			}
+			for (Player refused : state.getRefused())
+			{
+				server.broadcastPacket(new PacketUpdateActionStateRefusal(refused.getID(), true));
+			}
+		}
 	}
 	
 	public void nextNaturalActionState()

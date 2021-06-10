@@ -7,8 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oldmana.md.client.card.Card;
+import oldmana.md.client.card.CardBuilding;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.CardProperty.PropertyColor;
+import oldmana.md.client.card.collection.Bank;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.action.ActionScreenModifyPropertySet;
 import oldmana.md.client.gui.component.MDCard;
@@ -26,7 +28,7 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 	private ActionScreenModifyPropertySet screen;
 	
 	private MDCard cardView;
-	private MDSelection cardSelection;
+	private MDSelection selection;
 	
 	private List<PropertySet> setSelects = new ArrayList<PropertySet>();
 	private MDCreateSet createSet;
@@ -45,10 +47,10 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 		cardView = new MDCard(card);
 		cardView.setLocation(card.getOwningCollection().getUI().getLocationOf(card.getOwningCollection().getIndexOf(card)));
 		getClient().addTableComponent(cardView, 90);
-		cardSelection = new MDSelection(Color.BLUE);
-		cardSelection.setLocation(cardView.getLocation());
-		cardSelection.setSize(cardView.getSize());
-		getClient().addTableComponent(cardSelection, 91);
+		selection = new MDSelection(Color.BLUE);
+		selection.setLocation(cardView.getLocation());
+		selection.setSize(cardView.getSize());
+		getClient().addTableComponent(selection, 91);
 		
 		for (PropertySet set : getClient().getThePlayer().getPropertySets(true))
 		{
@@ -82,6 +84,27 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 			public void mouseReleased(MouseEvent event)
 			{
 				getClient().sendPacket(new PacketActionMoveProperty(property.getID(), -1));
+				getClient().setAwaitingResponse(true);
+				
+				removeState();
+			}
+		});
+	}
+	
+	public void buildingSelected(Card card)
+	{
+		CardBuilding building = (CardBuilding) card;
+		Bank bank = card.getOwner().getBank();
+		selection = new MDSelection(Color.BLUE);
+		selection.setLocation(bank.getUI().getLocation());
+		selection.setSize(bank.getUI().getSize());
+		getClient().addTableComponent(selection, 91);
+		selection.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseReleased(MouseEvent event)
+			{
+				// TODO: Move building to bank packet
 				getClient().setAwaitingResponse(true);
 				
 				removeState();
@@ -126,7 +149,10 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 		if (cardView != null)
 		{
 			getClient().removeTableComponent(cardView);
-			getClient().removeTableComponent(cardSelection);
+		}
+		if (selection != null)
+		{
+			getClient().removeTableComponent(selection);
 		}
 	}
 	

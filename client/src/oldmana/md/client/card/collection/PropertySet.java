@@ -1,10 +1,12 @@
 package oldmana.md.client.card.collection;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import oldmana.md.client.Player;
 import oldmana.md.client.card.Card;
+import oldmana.md.client.card.CardBuilding;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.gui.component.MDPropertySet;
@@ -46,6 +48,10 @@ public class PropertySet extends CardCollection
 			CardProperty property = (CardProperty) card;
 			addCard(property);
 		}
+		else
+		{
+			super.addCard(card);
+		}
 	}
 	
 	public void addCard(CardProperty card)
@@ -77,12 +83,13 @@ public class PropertySet extends CardCollection
 	
 	public List<PropertyColor> getPossibleColors()
 	{
-		List<PropertyColor> colors = new ArrayList<PropertyColor>(((CardProperty) getCards().get(0)).getColors());
-		if (getCardCount() > 1)
+		List<CardProperty> props = getPropertyCards();
+		List<PropertyColor> colors = new ArrayList<PropertyColor>(((CardProperty) props.get(0)).getColors());
+		if (props.size() > 1)
 		{
-			for (int i = 1 ; i < getCardCount() ; i++)
+			for (int i = 1 ; i < props.size() ; i++)
 			{
-				colors.retainAll(((CardProperty) getCards().get(i)).getColors());
+				colors.retainAll(props.get(i).getColors());
 			}
 		}
 		return colors;
@@ -91,19 +98,42 @@ public class PropertySet extends CardCollection
 	public List<PropertyColor> getPossibleBaseColors()
 	{
 		List<PropertyColor> colors = null;
-		for (int i = 0 ; i < getCardCount() ; i++)
+		boolean hasBase = false;
+		List<CardProperty> props = getPropertyCards();
+		for (int i = 0 ; i < props.size() ; i++)
 		{
-			CardProperty prop = (CardProperty) getCards().get(i);
-			if (colors == null && prop.isBase())
+			CardProperty prop = props.get(i);
+			
+			if (prop.isBase())
+			{
+				hasBase = true;
+			}
+			
+			if (colors == null)
 			{
 				colors = new ArrayList<PropertyColor>(prop.getColors());
 			}
-			else if (colors != null)
+			else
 			{
 				colors.retainAll(prop.getColors());
 			}
 		}
-		return colors == null ? new ArrayList<PropertyColor>() : colors;
+		return colors == null || !hasBase ? new ArrayList<PropertyColor>() : colors;
+	}
+	
+	public List<PropertyColor> getPossibleMonopolyColors()
+	{
+		List<PropertyColor> colors = getPossibleBaseColors();
+		Iterator<PropertyColor> it = colors.iterator();
+		while (it.hasNext())
+		{
+			PropertyColor color = it.next();
+			if (!color.isBuildable() || color.getMaxProperties() != getPropertyCount())
+			{
+				it.remove();
+			}
+		}
+		return colors;
 	}
 	
 	public boolean hasBase()
@@ -157,13 +187,56 @@ public class PropertySet extends CardCollection
 		effectiveColor = color;
 	}
 	
+	public boolean hasBuildings()
+	{
+		for (Card card : getCards())
+		{
+			if (card instanceof CardBuilding)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public int getHighestBuildingTier()
+	{
+		int highestTier = -1;
+		for (CardBuilding card : getBuildingCards())
+		{
+			highestTier = Math.max(highestTier, card.getTier());
+		}
+		return highestTier;
+	}
+	
 	public List<CardProperty> getPropertyCards()
 	{
 		List<CardProperty> properties = new ArrayList<CardProperty>();
 		for (Card card : getCards())
 		{
-			properties.add((CardProperty) card);
+			if (card instanceof CardProperty)
+			{
+				properties.add((CardProperty) card);
+			}
 		}
 		return properties;
+	}
+	
+	public List<CardBuilding> getBuildingCards()
+	{
+		List<CardBuilding> buildings = new ArrayList<CardBuilding>();
+		for (Card card : getCards())
+		{
+			if (card instanceof CardBuilding)
+			{
+				buildings.add((CardBuilding) card);
+			}
+		}
+		return buildings;
+	}
+	
+	public int getPropertyCount()
+	{
+		return getPropertyCards().size();
 	}
 }

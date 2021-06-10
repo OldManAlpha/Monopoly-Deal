@@ -124,12 +124,13 @@ public class PropertySet extends CardCollection
 	
 	public List<PropertyColor> getPossibleColors()
 	{
-		List<PropertyColor> colors = new ArrayList<PropertyColor>(((CardProperty) getCards().get(0)).getColors());
-		if (getCardCount() > 1)
+		List<CardProperty> props = getPropertyCards();
+		List<PropertyColor> colors = new ArrayList<PropertyColor>(((CardProperty) props.get(0)).getColors());
+		if (props.size() > 1)
 		{
-			for (int i = 1 ; i < getCardCount() ; i++)
+			for (int i = 1 ; i < props.size() ; i++)
 			{
-				colors.retainAll(((CardProperty) getCards().get(i)).getColors());
+				colors.retainAll(props.get(i).getColors());
 			}
 		}
 		return colors;
@@ -138,19 +139,27 @@ public class PropertySet extends CardCollection
 	public List<PropertyColor> getPossibleBaseColors()
 	{
 		List<PropertyColor> colors = null;
-		for (int i = 0 ; i < getCardCount() ; i++)
+		boolean hasBase = false;
+		List<CardProperty> props = getPropertyCards();
+		for (int i = 0 ; i < props.size() ; i++)
 		{
-			CardProperty prop = (CardProperty) getCards().get(i);
-			if (colors == null && prop.isBase())
+			CardProperty prop = props.get(i);
+			
+			if (prop.isBase())
+			{
+				hasBase = true;
+			}
+			
+			if (colors == null)
 			{
 				colors = new ArrayList<PropertyColor>(prop.getColors());
 			}
-			else if (colors != null)
+			else
 			{
 				colors.retainAll(prop.getColors());
 			}
 		}
-		return colors == null ? new ArrayList<PropertyColor>() : colors;
+		return colors == null || !hasBase ? new ArrayList<PropertyColor>() : colors;
 	}
 	
 	public boolean hasBase()

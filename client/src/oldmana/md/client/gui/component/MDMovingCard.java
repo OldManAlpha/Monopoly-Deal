@@ -1,8 +1,11 @@
 package oldmana.md.client.gui.component;
 
+import java.awt.AlphaComposite;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 
@@ -215,7 +218,22 @@ public class MDMovingCard extends MDComponent
 		
 		        synchronized (frameCache)
 		        {
-		        	BufferedImage from = SwingFXUtils.fromFXImage(newImage, image);;
+		        	BufferedImage from = SwingFXUtils.fromFXImage(newImage, image);
+		        	if (progress > 0.5)
+		        	{
+		        		int pos = (int) (((progress - 0.5) * 2) * height);
+		        		Graphics2D g = from.createGraphics();
+		        		//g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OUT));
+		        		Polygon p = new Polygon();
+		        		p.addPoint((int) ((width / 2) * prog), pos);
+		        		p.addPoint((int) ((width / 2) * prog), pos + scale(10));
+		        		p.addPoint(width, pos + scale(8));
+		        		p.addPoint(width, pos + scale(2));
+		        		GradientPaint paint = new GradientPaint(0, getHeight() - scale(24), new java.awt.Color(255, 255, 255, 200), 0, height, 
+		        				new java.awt.Color(255, 255, 255, 50));
+		        		g.setPaint(paint);
+		        		g.fillPolygon(p);
+		        	}
 		        	frameCache[i] = GraphicsUtils.createImage(width, height);
 		        	frameCache[i].createGraphics().drawImage(from, (int) ((width / 2) * prog), 0, null);
 		        }

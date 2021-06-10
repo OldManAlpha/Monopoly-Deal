@@ -122,9 +122,19 @@ public class Card
 		this.fontSize = fontSize;
 	}
 	
+	public int getFontSize()
+	{
+		return fontSize;
+	}
+	
 	public void setDisplayOffsetY(int offset)
 	{
 		this.displayOffsetY = offset;
+	}
+	
+	public int getDisplayOffsetY()
+	{
+		return displayOffsetY;
 	}
 	
 	/**Might be removed in the future in favor of setDescription(CardDescription)
@@ -187,7 +197,7 @@ public class Card
 	
 	public static enum CardType
 	{
-		MONEY(0), PROPERTY(1), ACTION(2), JUST_SAY_NO(3), DOUBLE_THE_RENT(4), SPECIAL(5), RENT_COUNTER(6);
+		MONEY(0), PROPERTY(1), ACTION(2), ACTION_COUNTER(3), DOUBLE_THE_RENT(4), SPECIAL(5), RENT_COUNTER(6), BUILDING(7);
 		
 		private int id;
 		
@@ -244,25 +254,6 @@ public class Card
 		{
 			int hash = Arrays.hashCode(text);
 			return hashMap.get(hash);
-			/*
-			MapIter:
-			for (Entry<Integer, CardDescription> entry : descriptionMap.entrySet())
-			{
-				CardDescription desc = entry.getValue();
-				String[] descText = desc.getText();
-				if (descText.length == text.length)
-				{
-					for (int i = 0 ; i < text.length ; i++)
-					{
-						if (!descText[i].equals(text[i]))
-						{
-							continue MapIter;
-						}
-					}
-					return desc;
-				}
-			}
-			*/
 		}
 	}
 	

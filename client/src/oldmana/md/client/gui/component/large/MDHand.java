@@ -21,7 +21,7 @@ import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.MDScheduler.MDTask;
 import oldmana.md.client.card.Card;
-import oldmana.md.client.card.CardActionJustSayNo;
+import oldmana.md.client.card.CardActionActionCounter;
 import oldmana.md.client.card.CardActionRentCounter;
 import oldmana.md.client.card.CardMoney;
 import oldmana.md.client.card.CardProperty;
@@ -239,7 +239,7 @@ public class MDHand extends MDCardCollection
 				Player player = getClient().getThePlayer();
 				ActionState state = getClient().getGameState().getActionState();
 				Card curHover = getCardAt(event.getX(), 0);
-				boolean canPlayJSN = curHover instanceof CardActionJustSayNo && state != null && ((state.isTarget(player) && 
+				boolean canPlayJSN = curHover instanceof CardActionActionCounter && state != null && ((state.isTarget(player) && 
 						!state.isRefused(player) && !state.isAccepted(player)) || (state.getActionOwner() == player && state.getNumberOfRefused() > 0)) 
 						&& !state.isUsingJustSayNo();
 				boolean canPlayRentCounter = curHover instanceof CardActionRentCounter && state != null && state instanceof ActionStateRent && 

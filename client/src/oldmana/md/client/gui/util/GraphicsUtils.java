@@ -5,11 +5,9 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.event.MouseEvent;
@@ -20,17 +18,20 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
-import oldmana.md.client.card.Card;
-import oldmana.md.client.card.CardAction;
-import oldmana.md.client.card.CardMoney;
-import oldmana.md.client.card.CardProperty;
-import oldmana.md.client.card.CardSpecial;
-import oldmana.md.client.card.CardProperty.PropertyColor;
-import oldmana.md.client.gui.util.TextPainter.Alignment;
-
 public class GraphicsUtils
 {
 	public static double SCALE = 1;
+	
+	public static Color BROWN = new Color(134, 70, 27);
+	public static Color LIGHT_BLUE = new Color(187, 222, 241);
+	public static Color MAGENTA = new Color(189, 47, 131);
+	public static Color ORANGE = new Color(227, 139, 3);
+	public static Color RED = new Color(215, 16, 37);
+	public static Color YELLOW = new Color(249, 239, 4);
+	public static Color GREEN = new Color(80, 180, 47);
+	public static Color DARK_BLUE = new Color(64, 92, 165);
+	public static Color RAILROAD = new Color(17, 17, 14);
+	public static Color UTILITY = new Color(206, 229, 183);
 	
 	public static BufferedImage createImage(int width, int height)
 	{

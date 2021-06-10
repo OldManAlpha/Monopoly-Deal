@@ -42,8 +42,8 @@ import oldmana.md.server.state.GameState;
 
 public class NetServerHandler
 {
-	public static int PROTOCOL_VERSION = 7;
-	public static int PROTOCOL_MINIMUM = 7;
+	public static int PROTOCOL_VERSION = 8;
+	public static int PROTOCOL_MINIMUM = 8;
 	
 	private MDServer server;
 	
@@ -62,6 +62,7 @@ public class NetServerHandler
 		
 		// Server -> Client
 		Packet.registerPacket(PacketHandshake.class);
+		Packet.registerPacket(PacketPropertyColors.class);
 		Packet.registerPacket(PacketCardCollectionData.class);
 		Packet.registerPacket(PacketCardData.class);
 		Packet.registerPacket(PacketCardActionRentData.class);
@@ -500,8 +501,7 @@ public class NetServerHandler
 		Hand hand = player.getHand();
 		if (!hand.hasCard(card))
 		{
-			player.sendPacket(new PacketKick("Tried to play a card not in your hand!"));
-			server.kickPlayer(player);
+			server.kickPlayer(player, "Tried to play a card not in your hand!");
 			return false;
 		}
 		return true;

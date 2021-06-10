@@ -7,6 +7,7 @@ import java.util.List;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardPropertyData;
+import oldmana.md.net.packet.server.PacketPropertyColors;
 
 public class CardProperty extends Card
 {
@@ -126,18 +127,22 @@ public class CardProperty extends Card
 		return props;
 	}
 
-	public static enum PropertyColor
+	public static class PropertyColor
 	{
-		BROWN(0, new Color(134, 70, 27), "B", 1, 2),
-		LIGHT_BLUE(1, new Color(187, 222, 241), "LB", 1, 2, 3),
-		MAGENTA(2, new Color(189, 47, 131), "M", 1, 2, 4),
-		ORANGE(3, new Color(227, 139, 3), "O", 1, 3, 5),
-		RED(4, new Color(215, 16, 37), "R", 2, 3, 6),
-		YELLOW(5, new Color(249, 239, 4), "Y", 2, 4, 6),
-		GREEN(6, new Color(80, 180, 47), "G", 2, 4, 7),
-		DARK_BLUE(7, new Color(64, 92, 165), "DB", 3, 8),
-		RAILROAD(8, new Color(17, 17, 14), "RR", 1, 2, 3, 4),
-		UTILITY(9, new Color(206, 229, 183), "U", 1, 2);
+		private static int nextID = 0;
+		private static List<PropertyColor> colors = new ArrayList<PropertyColor>();
+		
+		
+		public static PropertyColor BROWN = new PropertyColor("Brown", "B", new Color(134, 70, 27), true, 1, 2);
+		public static PropertyColor LIGHT_BLUE = new PropertyColor("Light Blue", "LB", new Color(187, 222, 241), true, 1, 2, 3);
+		public static PropertyColor MAGENTA = new PropertyColor("Magenta", "M", new Color(189, 47, 131), true, 1, 2, 4);
+		public static PropertyColor ORANGE = new PropertyColor("Orange", "O", new Color(227, 139, 3), true, 1, 3, 5);
+		public static PropertyColor RED = new PropertyColor("Red", "R", new Color(215, 16, 37), true, 2, 3, 6);
+		public static PropertyColor YELLOW = new PropertyColor("Yellow", "Y", new Color(249, 239, 4), true, 2, 4, 6);
+		public static PropertyColor GREEN = new PropertyColor("Green", "G", new Color(80, 180, 47), true, 2, 4, 7);
+		public static PropertyColor DARK_BLUE = new PropertyColor("Dark Blue", "DB", new Color(64, 92, 165), true, 3, 8);
+		public static PropertyColor RAILROAD = new PropertyColor("Railroad", "RR", new Color(17, 17, 14), false, 1, 2, 3, 4);
+		public static PropertyColor UTILITY = new PropertyColor("Utility", "U", new Color(206, 229, 183), false, 1, 2);
 		
 		public static PropertyColor[] TIER_1 = new PropertyColor[] {BROWN, LIGHT_BLUE};
 		public static PropertyColor[] TIER_2 = new PropertyColor[] {MAGENTA, ORANGE};
@@ -146,24 +151,43 @@ public class CardProperty extends Card
 		public static PropertyColor[] TIER_OTHER = new PropertyColor[] {RAILROAD, UTILITY};
 		public static PropertyColor[][] TIERS = new PropertyColor[][] {TIER_1, TIER_2, TIER_3, TIER_4, TIER_OTHER};
 		
-		byte id;
-		int[] rent;
 		
-		Color color;
+		private int id;
 		
-		String label;
+		private String name;
+		private String label;
 		
-		String name = "";
+		private Color color;
 		
-		PropertyColor(int id, Color color, String label, int... rent)
+		private boolean buildable;
+		
+		private int[] rent;
+		
+		
+		/**Invoking this constructor automatically registers the color for use by the server.
+		 * 
+		 * @param name - Name of the property color
+		 * @param label - Abbreviation of the name
+		 * @param color - The RGB color
+		 * @param buildable - Whether or not buildings can be applied to property sets of this color
+		 * @param rent - Rent values for the amount of properties with the color you have; The amount of values indicates the max set size
+		 */
+		public PropertyColor(String name, String label, Color color, boolean buildable, int... rent)
 		{
-			this.id = (byte) id;
-			this.rent = rent;
+			this.id = nextID++;
+			
+			this.name = name;
+			this.label = label;
 			
 			this.color = color;
 			
-			this.label = label;
+			this.buildable = buildable;
 			
+			this.rent = rent;
+			
+			colors.add(this);
+			
+			/*
 			String[] words = name().split("_");
 			for (int i = 0 ; i < words.length ; i++)
 			{
@@ -174,6 +198,7 @@ public class CardProperty extends Card
 					name += " ";
 				}
 			}
+			*/
 		}
 		
 		public int getRent(int propertyCount)
@@ -181,9 +206,19 @@ public class CardProperty extends Card
 			return rent[propertyCount - 1];
 		}
 		
+		public int[] getRents()
+		{
+			return rent;
+		}
+		
 		public int getMaxProperties()
 		{
 			return rent.length;
+		}
+		
+		public boolean isBuildable()
+		{
+			return buildable;
 		}
 		
 		public Color getColor()
@@ -193,7 +228,12 @@ public class CardProperty extends Card
 		
 		public byte getID()
 		{
-			return id;
+			return (byte) id;
+		}
+		
+		public String getName()
+		{
+			return name;
 		}
 		
 		public String getLabel()
@@ -201,14 +241,9 @@ public class CardProperty extends Card
 			return label;
 		}
 		
-		public String getFriendlyName()
-		{
-			return name;
-		}
-		
 		public static PropertyColor fromID(int id)
 		{
-			for (PropertyColor color : values())
+			for (PropertyColor color : getAllColors())
 			{
 				if (color.getID() == id)
 				{
@@ -226,6 +261,38 @@ public class CardProperty extends Card
 				colors.add(fromID(id));
 			}
 			return colors;
+		}
+		
+		public static List<PropertyColor> getAllColors()
+		{
+			return new ArrayList<PropertyColor>(colors);
+		}
+		
+		public static Packet getColorsPacket()
+		{
+			PacketPropertyColors packet = new PacketPropertyColors();
+			int len = colors.size();
+			packet.name = new String[len];
+			packet.label = new String[len];
+			packet.color = new int[len];
+			packet.buildable = new boolean[len];
+			packet.rents = new byte[len][];
+			for (int i = 0 ; i < len ; i++)
+			{
+				PropertyColor color = colors.get(i);
+				packet.name[i] = color.getName();
+				packet.label[i] = color.getLabel();
+				packet.color[i] = color.getColor().getRGB();
+				packet.buildable[i] = color.isBuildable();
+				int[] intRents = color.getRents();
+				byte[] rents = new byte[intRents.length];
+				for (int r = 0 ; r < intRents.length ; r++)
+				{
+					rents[r] = (byte) intRents[r];
+				}
+				packet.rents[i] = rents;
+			}
+			return packet;
 		}
 	}
 }

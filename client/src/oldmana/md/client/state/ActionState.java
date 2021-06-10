@@ -7,12 +7,13 @@ import java.util.List;
 
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
-import oldmana.md.client.card.CardActionJustSayNo;
+import oldmana.md.client.card.CardActionActionCounter;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.component.MDButton.ButtonColorScheme;
 import oldmana.md.client.gui.component.overlay.MDPlayerAcceptOverlay;
 import oldmana.md.net.packet.client.action.PacketActionAccept;
+import oldmana.md.net.packet.client.action.PacketActionEndTurn;
 import oldmana.md.net.packet.client.action.PacketActionPlayCardSpecial;
 
 public class ActionState
@@ -22,7 +23,7 @@ public class ActionState
 	
 	private boolean defaultButton = true;
 	
-	private CardActionJustSayNo jsn;
+	private CardActionActionCounter jsn;
 	private boolean oneTargetMode = false;
 	
 	public ActionState(Player actionOwner)
@@ -89,7 +90,7 @@ public class ActionState
 	
 	public void updateUI() {}
 	
-	public void onJustSayNo(CardActionJustSayNo card)
+	public void onJustSayNo(CardActionActionCounter card)
 	{
 		Player player = getClient().getThePlayer();
 		if (isTarget(player) && !isAccepted(player) && !isRefused(player))
@@ -318,6 +319,37 @@ public class ActionState
 			target.setOverlay(null);
 		}
 	}
+	
+	/*
+	protected void applyButtonEndTurn()
+	{
+		MDButton button = getClient().getTableScreen().getMultiButton();
+		button.setColorScheme(ButtonColorScheme.ALERT);
+		button.setText("End Turn");
+		if (getActionOwner().getHand().getCardCount() > 7)
+		{
+			button.setEnabled(false);
+		}
+		else
+		{
+			button.setEnabled(true);
+			button.setListener(new MouseAdapter()
+			{
+				@Override
+				public void mouseReleased(MouseEvent event)
+				{
+					if (!getClient().isInputBlocked() && getClient().canActFreely() && getActionOwner().getHand().getCardCount() <= 7)
+					{
+						getClient().sendPacket(new PacketActionEndTurn());
+						getClient().setAwaitingResponse(true);
+						button.setEnabled(false);
+						button.removeListener();
+					}
+				}
+			});
+		}
+	}
+	*/
 	
 	private void applyButtonAccept(Player player)
 	{

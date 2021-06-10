@@ -100,7 +100,7 @@ public class MDPropertySet extends MDCardCollection
 	
 	public int getInterval()
 	{
-		return GraphicsUtils.getCardWidth() / 3;
+		return GraphicsUtils.getCardWidth() / Math.max(3, getCardCount() - 1);
 	}
 	
 	public void onMouseEntered()

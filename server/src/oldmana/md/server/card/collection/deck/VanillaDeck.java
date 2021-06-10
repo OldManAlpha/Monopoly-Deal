@@ -110,7 +110,7 @@ public class VanillaDeck extends DeckStack
 		}
 		for (int i = 0 ; i < 3 ; i++)
 		{
-			addCard(new CardActionRent(3, PropertyColor.values()));
+			addCard(new CardActionRent(3, PropertyColor.getAllColors()));
 		}
 		
 		for (int i = 0 ; i < 6 ; i++)

@@ -29,6 +29,7 @@ import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDChat;
 import oldmana.md.client.gui.component.MDDeck;
 import oldmana.md.client.gui.component.MDDiscardPile;
+import oldmana.md.client.gui.component.MDLayeredButton;
 import oldmana.md.client.gui.component.MDText;
 import oldmana.md.client.gui.component.MDTurns;
 import oldmana.md.client.gui.component.MDUndoButton;
@@ -92,7 +93,7 @@ public class TableScreen extends JLayeredPane
 		undoButton.setFontSize(24);
 		add(undoButton, new Integer(0));
 		
-		multiButton = new MDButton("");
+		multiButton = new MDLayeredButton("");
 		multiButton.setLocation(10, 500);
 		multiButton.setSize(180, 50);
 		multiButton.setFontSize(24);
