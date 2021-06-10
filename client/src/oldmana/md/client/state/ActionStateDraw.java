@@ -13,5 +13,6 @@ public class ActionStateDraw extends ActionState
 	public void setup()
 	{
 		getGameState().setWhoseTurn(getActionOwner());
+		getGameState().setTurns(0);
 	}
 }

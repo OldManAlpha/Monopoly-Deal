@@ -4,57 +4,147 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.LinearGradientPaint;
 import java.awt.Polygon;
 import java.awt.RenderingHints;
+import java.util.ArrayList;
+import java.util.List;
 
+import oldmana.md.client.MDScheduler.MDTask;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
 import oldmana.md.client.state.ActionStateDraw;
-import oldmana.md.client.state.GameState;
 
 public class MDTurns extends MDComponent
 {
+	private int maxTurns = 3;
+	private int visibleMaxTurns = maxTurns;
+	
+	private double visibleTurns;
+	
 	public MDTurns()
 	{
 		super();
+		
+		getClient().getScheduler().scheduleTask(new MDTask(1, true)
+		{
+			@Override
+			public void run()
+			{
+				int turns = getTurns();
+				if (visibleTurns > turns)
+				{
+					visibleTurns -= visibleTurns > turns + 1 ? 0.1 : 0.05;
+					if (visibleTurns < turns)
+					{
+						visibleTurns = turns;
+					}
+					repaint();
+				}
+				else if (visibleTurns < turns)
+				{
+					visibleTurns += visibleTurns < turns - 1 ? 0.1 : 0.05;
+					if (visibleTurns > turns)
+					{
+						visibleTurns = turns;
+					}
+					repaint();
+				}
+				if (visibleTurns > visibleMaxTurns)
+				{
+					visibleMaxTurns++;
+					repaint();
+				}
+				if (visibleMaxTurns > maxTurns && visibleTurns <= maxTurns)
+				{
+					visibleMaxTurns--;
+					repaint();
+				}
+			}
+		});
+	}
+	
+	public void setMaxTurns(int maxTurns)
+	{
+		this.maxTurns = maxTurns;
+	}
+	
+	public int getMaxTurns()
+	{
+		return maxTurns;
+	}
+	
+	private int getTurns()
+	{
+		return getClient().getGameState().getTurns();
 	}
 	
 	@Override
 	public void paintComponent(Graphics gr)
 	{
+		int turns = getTurns();
+		boolean drawing = getClient().getGameState().getActionState() instanceof ActionStateDraw;
+		
+		int width = 170;
+		double turnWidth = (double) width / visibleMaxTurns;
 		Graphics2D g = (Graphics2D) gr;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setColor(Color.GRAY);
-		Polygon t1 = new Polygon();
-		t1.addPoint(scale(10), 0);
-		t1.addPoint(scale(65), 0);
-		t1.addPoint(scale(55), scale(30));
-		t1.addPoint(0, scale(30));
-		Polygon t2 = new Polygon();
-		t2.addPoint(scale(65), 0);
-		t2.addPoint(scale(125), 0);
-		t2.addPoint(scale(115), scale(30));
-		t2.addPoint(scale(55), scale(30));
-		Polygon t3 = new Polygon();
-		t3.addPoint(scale(125), 0);
-		t3.addPoint(scale(180), 0);
-		t3.addPoint(scale(170), scale(30));
-		t3.addPoint(scale(115), scale(30));
+		List<Polygon> turnPolygons = new ArrayList<Polygon>();
+		List<Polygon> activePolygons = new ArrayList<Polygon>();
+		for (int i = 0 ; i < visibleMaxTurns ; i++)
+		{
+			Polygon p = new Polygon();
+			double startX = turnWidth * i;
+			double endX = turnWidth * (i + 1);
+			p.addPoint(scale(10 + startX), 0);
+			p.addPoint(scale(10 + endX), 0);
+			p.addPoint(scale(endX), scale(30));
+			p.addPoint(scale(startX), scale(30));
+			turnPolygons.add(p);
+			if (visibleTurns >= i + 1)
+			{
+				activePolygons.add(p);
+			}
+			else if ((int) visibleTurns == i)
+			{
+				Polygon ap = new Polygon();
+				double visibleEndX = startX + ((endX - startX) * (visibleTurns - (int) visibleTurns));
+				ap.addPoint(scale(10 + startX), 0);
+				ap.addPoint(scale(10 + visibleEndX), 0);
+				ap.addPoint(scale(visibleEndX), scale(30));
+				ap.addPoint(scale(startX), scale(30));
+				activePolygons.add(ap);
+			}
+		}
 		
-		GameState gs = getClient().getGameState();
-		int turns = gs.getTurns();
-		boolean drawing = gs.getActionState() instanceof ActionStateDraw;
-		
-		g.setColor(turns >= 3 || drawing ? Color.GRAY : GraphicsUtils.GREEN);
-		g.fillPolygon(t1);
-		g.setColor(turns >= 2 || drawing ? Color.GRAY : GraphicsUtils.GREEN);
-		g.fillPolygon(t2);
-		g.setColor(turns >= 1 || drawing ? Color.GRAY : GraphicsUtils.GREEN);
-		g.fillPolygon(t3);
+		g.setColor(Color.GRAY);
+		for (int i = 0 ; i < visibleMaxTurns ; i++)
+		{
+			g.fillPolygon(turnPolygons.get(i));
+		}
+		g.setColor(GraphicsUtils.GREEN);
+		for (int i = 0 ; i < activePolygons.size() ; i++)
+		{
+			Polygon p = activePolygons.get(i);
+			g.fillPolygon(p);
+			if (i == activePolygons.size() - 1 && (visibleTurns != turns && visibleTurns < visibleMaxTurns))
+			{
+				LinearGradientPaint paint = new LinearGradientPaint(p.xpoints[2] - scale(4), 0, p.xpoints[2] + scale(10), scale(3), 
+						new float[] {0F, 1F}, new Color[] {new Color(255, 255, 255, 0), new Color(255, 255, 255, 200)});
+	    		g.setPaint(paint);
+	    		g.fillPolygon(p);
+			}
+		}
 		g.setColor(Color.DARK_GRAY);
-		g.drawLine(scale(65), 0, scale(55), scale(30));
-		g.drawLine(scale(125), 0, scale(115), scale(30));
+		for (int i = 0 ; i < visibleMaxTurns ; i++)
+		{
+			Polygon p = turnPolygons.get(i);
+			g.drawLine(p.xpoints[0], p.ypoints[0], p.xpoints[3], p.ypoints[3]);
+		}
+		
+		g.setColor(Color.DARK_GRAY);
 		Polygon whole = new Polygon();
 		whole.addPoint(scale(10), 0);
 		whole.addPoint(scale(180), 0);
