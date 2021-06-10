@@ -1,15 +1,11 @@
 package oldmana.md.client.gui.component;
 
-import java.awt.AlphaComposite;
-import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.LinearGradientPaint;
 import java.awt.Point;
-import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-
-import javax.swing.JComponent;
 
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
@@ -178,9 +174,22 @@ public class MDMovingCard extends MDComponent
 			{
 				double progress = Math.min(progMap[i] * 1.2, 1);
 				BufferedImage image = GraphicsUtils.createImage(cardCache[0].getWidth(), cardCache[0].getHeight());
-				image.createGraphics().drawImage(cardCache[progress < 0.5 ? 0 : 1], 0, 0, null);
-		        int width = image.getWidth();
+				int width = image.getWidth();
 		        int height = image.getHeight();
+				Graphics2D g = image.createGraphics();
+				g.drawImage(cardCache[progress < 0.5 ? 0 : 1], 0, 0, null);
+				if (progress > 0.5 && end != null)
+				{
+					int widthPos = (int) (((progress - 0.5) * 2) * width);
+					int heightPos = (int) (((progress - 0.5) * 2) * height);
+					java.awt.Color transparent = new java.awt.Color(255, 255, 255, 0);
+					java.awt.Color shine = new java.awt.Color(255, 255, 255, 170);
+					LinearGradientPaint paint = new LinearGradientPaint(widthPos, heightPos, widthPos + (width / 4), heightPos + (height / 4), 
+							new float[] {0F, 0.45F, 0.55F, 1F}, new java.awt.Color[] {transparent, shine, shine, transparent});
+	        		g.setPaint(paint);
+	        		g.fillRect(0, 0, width, height);
+				}
+		        
 		        Canvas canvas = new Canvas(width, height);
 		        GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
 		        ImageView imageView = new ImageView(SwingFXUtils.toFXImage(image, null));
@@ -219,21 +228,6 @@ public class MDMovingCard extends MDComponent
 		        synchronized (frameCache)
 		        {
 		        	BufferedImage from = SwingFXUtils.fromFXImage(newImage, image);
-		        	if (progress > 0.5)
-		        	{
-		        		int pos = (int) (((progress - 0.5) * 2) * height);
-		        		Graphics2D g = from.createGraphics();
-		        		//g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OUT));
-		        		Polygon p = new Polygon();
-		        		p.addPoint((int) ((width / 2) * prog), pos);
-		        		p.addPoint((int) ((width / 2) * prog), pos + scale(10));
-		        		p.addPoint(width, pos + scale(8));
-		        		p.addPoint(width, pos + scale(2));
-		        		GradientPaint paint = new GradientPaint(0, getHeight() - scale(24), new java.awt.Color(255, 255, 255, 200), 0, height, 
-		        				new java.awt.Color(255, 255, 255, 50));
-		        		g.setPaint(paint);
-		        		g.fillPolygon(p);
-		        	}
 		        	frameCache[i] = GraphicsUtils.createImage(width, height);
 		        	frameCache[i].createGraphics().drawImage(from, (int) ((width / 2) * prog), 0, null);
 		        }
