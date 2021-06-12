@@ -242,10 +242,7 @@ public class MJPacketBuffer
 	public void addBytes(byte[] bs)
 	{
 		addInt(bs.length);
-		for (byte b : bs)
-		{
-			addByte(b);
-		}
+		append(bs);
 	}
 	
 	public byte[] getBytes()
