@@ -135,10 +135,7 @@ public abstract class Packet
 		int id = in.readShort();
 		int len = in.readInt();
 		byte[] data = new byte[len];
-		for (int i = 0 ; i < len ; i++)
-		{
-			data[i] = in.readByte();
-		}
+		in.readFully(data);
 		
 		return toPacket(id, data);
 	}
