@@ -2,6 +2,7 @@ package oldmana.md.server.net;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
@@ -31,6 +32,7 @@ import oldmana.md.server.event.DeckDrawEvent;
 import oldmana.md.server.event.PlayerReconnectedEvent;
 import oldmana.md.server.event.UndoCardEvent;
 import oldmana.md.server.state.ActionState;
+import oldmana.md.server.state.ActionStateDraw;
 import oldmana.md.server.state.ActionStateRent;
 import oldmana.md.server.state.ActionStateStealMonopoly;
 import oldmana.md.server.state.ActionStateTargetAnyProperty;
@@ -219,7 +221,16 @@ public class NetServerHandler
 	
 	public void handleDraw(Player player, PacketActionDraw packet)
 	{
-		player.draw();
+		ActionState state = server.getGameState().getActionState();
+		if (state instanceof ActionStateDraw && state.getActionOwner() == player)
+		{
+			player.draw();
+			server.getEventManager().callEvent(new DeckDrawEvent(player));
+		}
+		else
+		{
+			server.getGameState().resendActionState(player);
+		}
 	}
 	
 	public void handlePlayCardBank(Player player, PacketActionPlayCardBank packet)
@@ -228,6 +239,10 @@ public class NetServerHandler
 		if (checkIntegrity(player, card, true))
 		{
 			player.playCardBank(card);
+		}
+		else
+		{
+			server.getGameState().resendActionState(player);
 		}
 	}
 	
@@ -262,6 +277,10 @@ public class NetServerHandler
 			
 			server.getGameState().decrementTurn();
 		}
+		else
+		{
+			server.getGameState().resendActionState(player);
+		}
 	}
 	
 	public void handlePlayCardAction(Player player, PacketActionPlayCardAction packet)
@@ -270,7 +289,7 @@ public class NetServerHandler
 		GameState gs = server.getGameState();
 		if (gs.getActivePlayer() == player && gs.getTurnsRemaining() > 0)
 		{
-			if (card.canPlayCard(player))
+			if (card.canPlayCard(player) && checkIntegrity(player, card, true))
 			{
 				card.transfer(server.getDiscardPile());
 				if (card.clearsRevocableCards())
@@ -296,7 +315,7 @@ public class NetServerHandler
 	public void handlePlayCardSpecial(Player player, PacketActionPlayCardSpecial packet)
 	{
 		Card card = Card.getCard(packet.id);
-		if (card instanceof CardSpecial)
+		if (card instanceof CardSpecial && checkIntegrity(player, card, true))
 		{
 			((CardSpecial) card).playCard(player, packet.data);
 		}
@@ -308,7 +327,7 @@ public class NetServerHandler
 		{
 			Card c1 = Card.getCard(packet.ids[0]);
 			Card c2 = Card.getCard(packet.ids[1]);
-			if (c1 instanceof CardActionRent && c2 instanceof CardActionDoubleTheRent)
+			if (c1 instanceof CardActionRent && c2 instanceof CardActionDoubleTheRent && checkIntegrity(player, c1, true) && checkIntegrity(player, c2, true))
 			{
 				CardActionRent rentCard = (CardActionRent) c1;
 				if (rentCard.canPlayCard(player))
@@ -327,15 +346,26 @@ public class NetServerHandler
 					server.getGameState().resendActionState(player);
 				}
 			}
+			else
+			{
+				server.getGameState().resendActionState(player);
+			}
 		}
 	}
 	
 	public void handleActionDiscard(Player player, PacketActionDiscard packet)
 	{
 		Card card = Card.getCard(packet.card);
-		card.transfer(server.getDiscardPile());
-		server.getGameState().nextNaturalActionState();
-		server.getEventManager().callEvent(new CardDiscardEvent(player, card));
+		if (checkIntegrity(player, card, true))
+		{
+			card.transfer(server.getDiscardPile());
+			server.getGameState().nextNaturalActionState();
+			server.getEventManager().callEvent(new CardDiscardEvent(player, card));
+		}
+		else
+		{
+			server.getGameState().resendActionState(player);
+		}
 	}
 	
 	public void handlePay(Player player, PacketActionPay packet)
@@ -343,26 +373,41 @@ public class NetServerHandler
 		if (server.getGameState().getActionState() instanceof ActionStateRent)
 		{
 			ActionStateRent rent = (ActionStateRent) server.getGameState().getActionState();
+			List<Card> cards = Card.getCards(packet.ids);
+			for (Card card : cards)
+			{
+				if (card.getOwner() != player)
+				{
+					System.out.println("Player " + player.getName() + " (ID: " + player.getID() + ") attempted to pay rent with a card they do not own! (ID: " + 
+							card.getID() + ")");
+					server.getGameState().resendActionState(player);
+					return;
+				}
+			}
 			rent.playerPaid(player, Card.getCards(packet.ids));
 		}
 	}
 	
-	public void handleActionDraw(Player player, PacketActionDraw packet)
-	{
-		server.getDeck().drawCards(player, 2);
-		server.getGameState().markDrawn();
-		server.getGameState().nextNaturalActionState();
-		server.getEventManager().callEvent(new DeckDrawEvent(player));
-	}
-	
 	public void handleActionEndTurn(Player player, PacketActionEndTurn packet)
 	{
-		server.getGameState().nextTurn();
+		if (server.getGameState().getActivePlayer() == player)
+		{
+			server.getGameState().nextTurn();
+		}
+		else
+		{
+			server.getGameState().resendActionState(player);
+		}
 	}
 	
 	public void handleActionMoveProperty(Player player, PacketActionMoveProperty packet)
 	{
 		Card card = Card.getCard(packet.id);
+		if (card.getOwner() != player || !(card.getOwningCollection() instanceof PropertySet))
+		{
+			server.getGameState().resendActionState(player);
+			return;
+		}
 		CardProperty property = (CardProperty) card;
 		if (packet.setId > -1)
 		{
@@ -380,7 +425,11 @@ public class NetServerHandler
 	public void handleActionChangeSetColor(Player player, PacketActionChangeSetColor packet)
 	{
 		PropertySet set = (PropertySet) CardCollection.getCardCollection(packet.setId);
-		set.setEffectiveColor(PropertyColor.fromID(packet.color));
+		PropertyColor color = PropertyColor.fromID(packet.color);
+		if (set.getPossibleBaseColors().contains(color))
+		{
+			set.setEffectiveColor(PropertyColor.fromID(packet.color));
+		}
 		server.getGameState().resendActionState(player);
 		server.getGameState().checkWin();
 	}
@@ -501,30 +550,9 @@ public class NetServerHandler
 		Hand hand = player.getHand();
 		if (!hand.hasCard(card))
 		{
-			server.kickPlayer(player, "Tried to play a card not in your hand!");
+			server.kickPlayer(player, "Tried to use a card not in your hand!");
 			return false;
 		}
 		return true;
 	}
-	
-	/*
-	public void handlePlayCard(Player player, PacketPlayCard packet)
-	{
-		Card card = CardRegistry.getCard(packet.getCardID());
-		if (card == null)
-		{
-			player.sendPacket(new PacketKick("Invalid card ID played"));
-			server.disconnectPlayer(player);
-			return;
-		}
-		Hand hand = player.getHand();
-		if (!hand.hasCard(card))
-		{
-			player.sendPacket(new PacketKick("Tried to play a card not in your hand!"));
-			server.disconnectPlayer(player);
-			return;
-		}
-		
-	}
-	*/
 }
