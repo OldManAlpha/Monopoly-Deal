@@ -155,14 +155,7 @@ public class CardProperty extends Card
 		public static PropertyColor[] TIER_OTHER = new PropertyColor[] {RAILROAD, UTILITY};
 		public static PropertyColor[][] TIERS = new PropertyColor[][] {TIER_1, TIER_2, TIER_3, TIER_4, TIER_OTHER};
 		
-		private static List<PropertyColor> vanillaColors = new ArrayList<PropertyColor>();
-		static
-		{
-			for (int i = 0 ; i < 10 ; i++)
-			{
-				vanillaColors.add(colors.get(i));
-			}
-		}
+		private static List<PropertyColor> vanillaColors = new ArrayList<PropertyColor>(colors);
 		
 		
 		private int id;
