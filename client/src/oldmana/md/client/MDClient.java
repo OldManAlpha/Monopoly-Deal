@@ -23,6 +23,7 @@ import oldmana.md.client.gui.screen.TableScreen;
 import oldmana.md.client.net.ConnectionThread;
 import oldmana.md.client.net.NetClientHandler;
 import oldmana.md.client.state.ActionState;
+import oldmana.md.client.state.ActionStateDiscard;
 import oldmana.md.client.state.ActionStateDraw;
 import oldmana.md.client.state.ActionStateFinishTurn;
 import oldmana.md.client.state.ActionStatePlay;
@@ -312,6 +313,12 @@ public class MDClient
 	{
 		ActionState state = getGameState().getActionState();
 		return isThePlayersTurn() && (state instanceof ActionStatePlay || state instanceof ActionStateFinishTurn);
+	}
+	
+	public boolean canModifySets()
+	{
+		ActionState state = getGameState().getActionState();
+		return isThePlayersTurn() && (state instanceof ActionStatePlay || state instanceof ActionStateFinishTurn || state instanceof ActionStateDiscard);
 	}
 	
 	public void createThePlayer(int id, String name)

@@ -167,7 +167,7 @@ public class MDPropertySet extends MDCardCollection
 		@Override
 		public void mouseReleased(MouseEvent event)
 		{
-			if (getClient().canActFreely() && !getClient().isInputBlocked())
+			if (getClient().canModifySets() && !getClient().isInputBlocked())
 			{
 				if (getCollection().getOwner() == getClient().getThePlayer())
 				{
