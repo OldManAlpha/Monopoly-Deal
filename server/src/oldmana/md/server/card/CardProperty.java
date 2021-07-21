@@ -3,7 +3,9 @@ package oldmana.md.server.card;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardPropertyData;
@@ -131,6 +133,8 @@ public class CardProperty extends Card
 	{
 		private static int nextID = 0;
 		private static List<PropertyColor> colors = new ArrayList<PropertyColor>();
+		private static Map<String, PropertyColor> nameColorMap = new HashMap<String, PropertyColor>();
+		private static Map<Integer, PropertyColor> idColorMap = new HashMap<Integer, PropertyColor>();
 		
 		
 		public static PropertyColor BROWN = new PropertyColor("Brown", "B", new Color(134, 70, 27), true, 1, 2);
@@ -150,6 +154,15 @@ public class CardProperty extends Card
 		public static PropertyColor[] TIER_4 = new PropertyColor[] {GREEN, DARK_BLUE};
 		public static PropertyColor[] TIER_OTHER = new PropertyColor[] {RAILROAD, UTILITY};
 		public static PropertyColor[][] TIERS = new PropertyColor[][] {TIER_1, TIER_2, TIER_3, TIER_4, TIER_OTHER};
+		
+		private static List<PropertyColor> vanillaColors = new ArrayList<PropertyColor>();
+		static
+		{
+			for (int i = 0 ; i < 10 ; i++)
+			{
+				vanillaColors.add(colors.get(i));
+			}
+		}
 		
 		
 		private int id;
@@ -186,19 +199,8 @@ public class CardProperty extends Card
 			this.rent = rent;
 			
 			colors.add(this);
-			
-			/*
-			String[] words = name().split("_");
-			for (int i = 0 ; i < words.length ; i++)
-			{
-				String word = words[i].toLowerCase();
-				name += Character.toUpperCase(word.charAt(0)) + word.substring(1);
-				if (i + 1 < words.length)
-				{
-					name += " ";
-				}
-			}
-			*/
+			nameColorMap.put(name, this);
+			idColorMap.put(id, this);
 		}
 		
 		public int getRent(int propertyCount)
@@ -243,14 +245,7 @@ public class CardProperty extends Card
 		
 		public static PropertyColor fromID(int id)
 		{
-			for (PropertyColor color : getAllColors())
-			{
-				if (color.getID() == id)
-				{
-					return color;
-				}
-			}
-			return null;
+			return idColorMap.get(id);
 		}
 		
 		public static List<PropertyColor> fromIDs(byte[] ids)
@@ -261,6 +256,16 @@ public class CardProperty extends Card
 				colors.add(fromID(id));
 			}
 			return colors;
+		}
+		
+		public static PropertyColor fromName(String name)
+		{
+			return nameColorMap.get(name);
+		}
+		
+		public static List<PropertyColor> getVanillaColors()
+		{
+			return new ArrayList<PropertyColor>(vanillaColors);
 		}
 		
 		public static List<PropertyColor> getAllColors()

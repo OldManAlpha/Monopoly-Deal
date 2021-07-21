@@ -23,7 +23,7 @@ public class Card
 	private static CardDescription defaultDescription = new CardDescription("Missing card description");
 	
 	
-	private int id;
+	private int id = -1;
 	
 	private CardCollection collection;
 	
@@ -31,12 +31,14 @@ public class Card
 	private String name;
 	
 	private String[] displayName;
-	private int fontSize;
-	private int displayOffsetY;
-	private CardDescription description;
+	private int fontSize = 8;
+	private int displayOffsetY = 0;
+	private CardDescription description = defaultDescription;
 	
 	private boolean revocable = true;
 	private boolean clearsRevocableCards = false;
+	
+	public Card() {}
 	
 	public Card(int value, String name)
 	{
@@ -47,9 +49,17 @@ public class Card
 		this.name = name;
 		
 		displayName = new String[] {name.toUpperCase()};
-		fontSize = 8;
-		displayOffsetY = 0;
-		description = defaultDescription;
+	}
+	
+	public void registerCard()
+	{
+		if (id > -1)
+		{
+			System.out.print("Tried to register card that is already registered!");
+			return;
+		}
+		id = nextID++;
+		registerCard(this);
 	}
 	
 	public int getID()
@@ -77,9 +87,23 @@ public class Card
 		return collection;
 	}
 	
+	public void setValue(int value)
+	{
+		this.value = value;
+	}
+	
 	public int getValue()
 	{
 		return value;
+	}
+	
+	public void setName(String name)
+	{
+		if (displayName == null)
+		{
+			displayName = new String[] {name.toUpperCase()};
+		}
+		this.name = name;
 	}
 	
 	public String getName()

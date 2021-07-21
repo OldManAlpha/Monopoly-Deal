@@ -15,8 +15,8 @@ import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.action.ActionScreenModifyPropertySet;
 import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.component.MDCreateSet;
-import oldmana.md.client.gui.component.MDPropertySet;
 import oldmana.md.client.gui.component.MDSelection;
+import oldmana.md.client.gui.component.collection.MDPropertySet;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.net.packet.client.action.PacketActionChangeSetColor;
 import oldmana.md.net.packet.client.action.PacketActionMoveProperty;
@@ -45,7 +45,7 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 		CardProperty property = (CardProperty) card;
 		
 		cardView = new MDCard(card);
-		cardView.setLocation(card.getOwningCollection().getUI().getLocationOf(card.getOwningCollection().getIndexOf(card)));
+		cardView.setLocation(card.getOwningCollection().getUI().getScreenLocationOf(card.getOwningCollection().getIndexOf(card)));
 		getClient().addTableComponent(cardView, 90);
 		selection = new MDSelection(Color.BLUE);
 		selection.setLocation(cardView.getLocation());

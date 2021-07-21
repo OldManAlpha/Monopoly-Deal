@@ -7,8 +7,9 @@ import java.util.List;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.Bank;
 import oldmana.md.client.card.collection.CardCollection;
-import oldmana.md.client.gui.component.MDCardCollection;
 import oldmana.md.client.gui.component.MDMovingCard;
+import oldmana.md.client.gui.component.collection.MDCardCollection;
+import oldmana.md.client.gui.component.collection.MDCardCollectionBase;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.ActionStateRent;
 
@@ -113,23 +114,31 @@ public class MDEventQueue
 			
 			if (from.isUnknown())
 			{
-				p1 = from.getUI().getLocationOf(0);
+				MDCardCollectionBase ui = from.getUI();
+				p1 = ui.getScreenLocationOf(from.getCardCount() - 1);
+				ui.startRemoval(from.getCardCount() - 1);
 				from.removeUnknownCard();
 			}
 			else
 			{
-				p1 = ((MDCardCollection) from.getUI()).getLocationOf(card);
+				MDCardCollection ui = (MDCardCollection) from.getUI();
+				p1 = ui.getScreenLocationOf(card);
+				ui.startRemoval(card);
 				from.removeCard(card);
 			}
 			Point p2 = null;
 			if (to.isUnknown())
 			{
+				MDCardCollectionBase ui = to.getUI();
+				ui.startAddition(/*toPos > -1 ? toPos : */to.getCardCount());
 				to.addUnknownCard();
-				to.getUI().cardIncoming();
-				p2 = to.getUI().getLocationOf(0);
+				p2 = ui.getScreenLocationOf(/*toPos > -1 ? toPos : */to.getCardCount() - 1);
+				//ui.cardIncoming();
 			}
 			else
 			{
+				MDCardCollection ui = (MDCardCollection) to.getUI();
+				ui.startAddition(card, toPos > -1 ? toPos : to.getCardCount());
 				if (toPos > -1)
 				{
 					to.addCardAtIndex(card, toPos);
@@ -138,11 +147,10 @@ public class MDEventQueue
 				{
 					to.addCard(card);
 				}
-				((MDCardCollection) to.getUI()).setIncomingCard(card);
-				p2 = ((MDCardCollection) to.getUI()).getLocationOf(card);
+				p2 = ui.getScreenLocationOf(card);
 			}
-			anim = new MDMovingCard(from.isUnknown() ? null : card, p1, from.getUI().getComponentScale(), to.isUnknown() ? null : card, p2, 
-					to.getUI().getComponentScale(), speed);
+			anim = new MDMovingCard(from.isUnknown() ? null : card, p1, from.getUI().getCardScale(), to.isUnknown() ? null : card, p2, 
+					to.getUI().getCardScale(), speed);
 			MDClient.getInstance().addTableComponent(anim, 99);
 			
 			// Update the rent screen if money is added/removed from their bank
@@ -163,8 +171,17 @@ public class MDEventQueue
 			if (anim.tickMove())
 			{
 				to.getUI().cardArrived();
+				to.getUI().modificationFinished();
+				from.getUI().modificationFinished();
 				anim.getParent().remove(anim);
 				return true;
+			}
+			else
+			{
+				from.getUI().setCardMoveProgress(anim.progMap[anim.pos]);
+				to.getUI().setCardMoveProgress(anim.progMap[anim.pos]);
+				from.getUI().repaint();
+				to.getUI().repaint();
 			}
 			return false;
 		}

@@ -2,14 +2,19 @@ package oldmana.md.client.net;
 
 import java.awt.Color;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.MDEventQueue.EventTask;
-import oldmana.md.client.MDSound;
+import oldmana.md.client.MDSoundSystem;
+import oldmana.md.client.MDSoundSystem.MDSound;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.Card.CardDescription;
 import oldmana.md.client.card.CardAction;
@@ -48,6 +53,7 @@ import oldmana.md.client.state.ActionStateTargetPlayerMonopoly;
 import oldmana.md.client.state.ActionStateTargetPlayerProperty;
 import oldmana.md.client.state.ActionStateTargetSelfPlayerProperty;
 import oldmana.md.net.packet.client.PacketLogin;
+import oldmana.md.net.packet.client.PacketSoundCache;
 import oldmana.md.net.packet.client.action.*;
 import oldmana.md.net.packet.server.*;
 import oldmana.md.net.packet.server.PacketCardCollectionData.CardCollectionType;
@@ -58,7 +64,7 @@ import oldmana.md.net.packet.universal.PacketKeepConnected;
 
 public class NetClientHandler
 {
-	public static int PROTOCOL_VERSION = 8;
+	public static int PROTOCOL_VERSION = 9;
 	
 	private MDClient client;
 	
@@ -74,6 +80,7 @@ public class NetClientHandler
 	{
 		// Client -> Server
 		Packet.registerPacket(PacketLogin.class);
+		Packet.registerPacket(PacketSoundCache.class);
 		
 		// Server -> Client
 		Packet.registerPacket(PacketHandshake.class);
@@ -172,6 +179,16 @@ public class NetClientHandler
 	public void handleHandshake(PacketHandshake packet)
 	{
 		client.createThePlayer(packet.id, packet.name);
+		List<MDSound> sounds = new ArrayList<MDSound>(MDSoundSystem.getSounds().values());
+		String[] soundNames = new String[sounds.size()];
+		int[] soundHashes = new int[sounds.size()];
+		for (int i = 0 ; i < sounds.size() ; i++)
+		{
+			MDSound sound = sounds.get(i);
+			soundNames[i] = sound.getName();
+			soundHashes[i] = sound.getHash();
+		}
+		client.sendPacket(new PacketSoundCache(soundNames, soundHashes));
 	}
 	
 	public void handlePropertyColors(PacketPropertyColors packet)
@@ -598,11 +615,11 @@ public class NetClientHandler
 	
 	public void handleSoundData(PacketSoundData packet)
 	{
-		MDSound.addSound(packet.name, packet.data);
+		MDSoundSystem.addSound(packet.name, packet.data, packet.hash);
 	}
 	
 	public void handlePlaySound(PacketPlaySound packet)
 	{
-		MDSound.playSound(packet.name);
+		MDSoundSystem.playSound(packet.name);
 	}
 }

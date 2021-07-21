@@ -1,19 +1,14 @@
-package oldmana.md.client.gui.component;
+package oldmana.md.client.gui.component.collection;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 
-import oldmana.md.client.ThePlayer;
-import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.Bank;
 import oldmana.md.client.card.collection.CardCollection;
-import oldmana.md.client.gui.util.CardPainter;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
@@ -57,38 +52,14 @@ public class MDBank extends MDCardCollection
 		btp.setVerticalAlignment(Alignment.CENTER);
 		btp.paint(g);
 		CardCollection bank = getCollection();
-		g.translate(scale(5), scale(25));
-		if (bank.isEmpty())
-		{
-			/*
-			g.setColor(Color.DARK_GRAY);
-			Font font = new Font(getFont().getFontName(), Font.BOLD, 16);
-			g.setFont(font);
-			TextPainter tp = new TextPainter("Bank Empty", font, new Rectangle(0, 0, getWidth(), getHeight()));
-			tp.setHorizontalAlignment(Alignment.CENTER);
-			tp.setVerticalAlignment(Alignment.CENTER);
-			tp.paint(g);
-			*/
-		}
-		else
+		
+		if (!bank.isEmpty())
 		{
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-			//double interval = bank.getCardCount() == 1 ? 0 : Math.min(scale(30), (getWidth() - scale(10) - GraphicsUtils.getCardWidth()) / 
-			//		(double) (bank.getCardCount() - 1));
-			double interval = getInterval();
-			for (int i = 0 ; i < bank.getCardCount() ; i++)
-			{
-				g.translate((int) (interval * i), 0);
-				if (bank.getCardAt(i) != getIncomingCard())
-				{
-					g.drawImage(bank.getCardAt(i).getGraphics(getScale()), 0, 0, GraphicsUtils.getCardWidth(), GraphicsUtils.getCardHeight(), null);
-				}
-				g.translate((int) -(interval * i), 0);
-				
-				//getMDCards().get(i).setLocation(start + (interval * i), 0);
-			}
+			
+			paintCards(g);
 		}
 		if (getClient().isDebugEnabled())
 		{
@@ -97,15 +68,20 @@ public class MDBank extends MDCardCollection
 		}
 	}
 	
+	public double getInterval(int cardCount)
+	{
+		return cardCount == 1 ? 0 : Math.min(scale(30), (getWidth() - scale(10) - GraphicsUtils.getCardWidth()) / 
+				(double) (cardCount - 1));
+	}
+	
 	public double getInterval()
 	{
-		return getCollection().getCardCount() == 1 ? 0 : Math.min(scale(30), (getWidth() - scale(10) - GraphicsUtils.getCardWidth()) / 
-				(double) (getCollection().getCardCount() - 1));
+		return getInterval(getCollection().getCardCount());
 	}
 
 	@Override
-	public Point getLocationInComponentOf(Card card)
+	public Point getLocationOf(int cardIndex, int cardCount)
 	{
-		return new Point((int) (getCollection().getIndexOf(card) * getInterval()) + scale(5), scale(25));
+		return new Point((int) (cardIndex * getInterval(cardCount)) + scale(5), scale(25));
 	}
 }

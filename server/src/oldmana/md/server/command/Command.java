@@ -78,6 +78,24 @@ public abstract class Command
 		return Integer.parseInt(str);
 	}
 	
+	protected boolean verifyDouble(String str)
+	{
+		try
+		{
+			Double.parseDouble(str);
+		}
+		catch (Exception e)
+		{
+			return false;
+		}
+		return true;
+	}
+	
+	protected double parseDouble(String str)
+	{
+		return Double.parseDouble(str);
+	}
+	
 	protected boolean verifyBoolean(String str)
 	{
 		try

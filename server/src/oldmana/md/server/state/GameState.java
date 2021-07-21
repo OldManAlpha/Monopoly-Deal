@@ -205,9 +205,9 @@ public class GameState
 			PlayersWonEvent event = new PlayersWonEvent(winners);
 			server.getEventManager().callEvent(event);
 			deferWinBy(event.getWinDeferredTurns());
-			if (event.isCanceled()) // Probably a bad idea to cancel a win, for now
+			if (event.isCanceled())
 			{
-				setWinningEnabled(false);
+				return false;
 			}
 		}
 		

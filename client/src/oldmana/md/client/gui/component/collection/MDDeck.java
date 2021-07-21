@@ -1,4 +1,4 @@
-package oldmana.md.client.gui.component;
+package oldmana.md.client.gui.component.collection;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -14,11 +14,10 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 
-import javax.swing.SwingUtilities;
-
 import oldmana.md.client.MDScheduler.MDTask;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.Deck;
+import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.util.CardPainter;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
@@ -105,50 +104,16 @@ public class MDDeck extends MDCardCollectionUnknown
 		repaint();
 	}
 	
-	/*
-	@Override
-	public void addCard(MDCard card)
-	{
-		
-	}
-	
-	@Override
-	public void removeCard(MDCard card)
-	{
-		
-	}
-	*/
-	
 	@Override
 	public void update()
 	{
-		/*
-		if (getCollection().getCardCount() == 0)
-		{
-			if (face != null)
-			{
-				remove(face);
-				face = null;
-			}
-		}
-		else
-		{
-			if (face == null)
-			{
-				face = new MDCard(null);
-				face.setScale(2);
-				face.setLocation(0, 0);
-				add(face);
-			}
-		}
-		*/
 		repaint();
 	}
 	
 	@Override
-	public Point getLocationOf(int cardIndex)
+	public Point getLocationOf(int cardIndex, int cardCount)
 	{
-		return SwingUtilities.convertPoint(this, new Point(0, scale(10)), getClient().getTableScreen());
+		return new Point(0, scale(10));
 	}
 	
 	@Override

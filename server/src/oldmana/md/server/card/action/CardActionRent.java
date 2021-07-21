@@ -74,17 +74,14 @@ public class CardActionRent extends CardAction
 	
 	private static String getName(PropertyColor[] colors)
 	{
-		if (colors.length == 1)
+		switch (colors.length)
 		{
-			return colors[0].getName() + " Rent";
-		}
-		else if (colors.length == 2)
-		{
-			return colors[0].getName() + "/" + colors[1].getName() + " Rent";
-		}
-		else
-		{
-			return colors.length + "-Color Rent";
+			case 1:
+				return colors[0].getName() + " Rent";
+			case 2:
+				return colors[0].getName() + "/" + colors[1].getName() + " Rent";
+			default:
+				return colors.length + "-Color Rent";
 		}
 	}
 	

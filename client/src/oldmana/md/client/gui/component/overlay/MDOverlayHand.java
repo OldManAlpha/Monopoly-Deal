@@ -21,7 +21,7 @@ import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.component.MDComponent;
 import oldmana.md.client.gui.component.MDInfoIcon;
-import oldmana.md.client.gui.component.large.MDHand;
+import oldmana.md.client.gui.component.collection.MDHand;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.ActionStateDiscard;

@@ -10,11 +10,10 @@ import java.util.List;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.component.MDButton;
-import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.component.MDCreateSet;
-import oldmana.md.client.gui.component.MDPropertySet;
 import oldmana.md.client.gui.component.MDSelection;
-import oldmana.md.client.gui.component.large.MDHand;
+import oldmana.md.client.gui.component.collection.MDHand;
+import oldmana.md.client.gui.component.collection.MDPropertySet;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.net.packet.client.action.PacketActionPlayCardProperty;
 
@@ -35,10 +34,10 @@ public class ActionStateClientPlayProperty extends ActionStateClient
 	@Override
 	public void setup()
 	{
-		Point propLoc = ((MDHand) getClient().getThePlayer().getHand().getUI()).getLocationOf(property);
+		Point propLoc = ((MDHand) getClient().getThePlayer().getHand().getUI()).getScreenLocationOf(property);
 		propSelect = new MDSelection(Color.BLUE);
 		propSelect.setLocation(propLoc);
-		propSelect.setSize(MDCard.CARD_SIZE.width * 2, MDCard.CARD_SIZE.height * 2);
+		propSelect.setSize(GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2));
 		getClient().addTableComponent(propSelect, 90);
 		
 		cancel = new MDButton("Cancel");

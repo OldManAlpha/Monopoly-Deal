@@ -3,9 +3,6 @@ package oldmana.md.client.gui.component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-
-import javax.swing.JComponent;
 
 import oldmana.md.client.card.Card;
 import oldmana.md.client.gui.util.GraphicsUtils;
