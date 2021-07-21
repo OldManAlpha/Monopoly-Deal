@@ -7,8 +7,8 @@ import java.awt.event.MouseEvent;
 import oldmana.md.client.Player;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.component.MDButton;
-import oldmana.md.client.gui.component.MDPropertySet;
 import oldmana.md.client.gui.component.MDSelection;
+import oldmana.md.client.gui.component.collection.MDPropertySet;
 import oldmana.md.net.packet.client.action.PacketActionSelectPlayerMonopoly;
 
 public class ActionStateTargetPlayerMonopoly extends ActionState

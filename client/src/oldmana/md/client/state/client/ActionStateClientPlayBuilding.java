@@ -11,9 +11,9 @@ import oldmana.md.client.card.CardBuilding;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDCard;
-import oldmana.md.client.gui.component.MDPropertySet;
 import oldmana.md.client.gui.component.MDSelection;
-import oldmana.md.client.gui.component.large.MDHand;
+import oldmana.md.client.gui.component.collection.MDHand;
+import oldmana.md.client.gui.component.collection.MDPropertySet;
 import oldmana.md.net.packet.client.action.PacketActionPlayCardBuilding;
 
 public class ActionStateClientPlayBuilding extends ActionStateClient
@@ -32,7 +32,7 @@ public class ActionStateClientPlayBuilding extends ActionStateClient
 	@Override
 	public void setup()
 	{
-		Point propLoc = ((MDHand) getClient().getThePlayer().getHand().getUI()).getLocationOf(building);
+		Point propLoc = ((MDHand) getClient().getThePlayer().getHand().getUI()).getScreenLocationOf(building);
 		buildingSelect = new MDSelection(Color.BLUE);
 		buildingSelect.setLocation(propLoc);
 		buildingSelect.setSize(MDCard.CARD_SIZE.width * 2, MDCard.CARD_SIZE.height * 2);

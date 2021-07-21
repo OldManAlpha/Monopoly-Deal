@@ -1,4 +1,5 @@
 client/bin
+client/cache
 client/.classpath
 client/.project
 client/.settings
@@ -7,6 +8,7 @@ server/src/oldmana/md/server/command/CommandTest.java
 server/bin
 server/mods
 server/sounds
+server/decks
 server/config.txt
 server/players.dat
 server/.classpath

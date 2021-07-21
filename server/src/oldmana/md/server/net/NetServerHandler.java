@@ -7,6 +7,7 @@ import java.util.Map;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.client.PacketLogin;
+import oldmana.md.net.packet.client.PacketSoundCache;
 import oldmana.md.net.packet.client.action.*;
 import oldmana.md.net.packet.server.*;
 import oldmana.md.net.packet.server.actionstate.*;
@@ -44,8 +45,8 @@ import oldmana.md.server.state.GameState;
 
 public class NetServerHandler
 {
-	public static int PROTOCOL_VERSION = 8;
-	public static int PROTOCOL_MINIMUM = 8;
+	public static int PROTOCOL_VERSION = 9;
+	public static int PROTOCOL_MINIMUM = PROTOCOL_VERSION;
 	
 	private MDServer server;
 	
@@ -61,6 +62,7 @@ public class NetServerHandler
 	{
 		// Client -> Server
 		Packet.registerPacket(PacketLogin.class);
+		Packet.registerPacket(PacketSoundCache.class);
 		
 		// Server -> Client
 		Packet.registerPacket(PacketHandshake.class);
@@ -217,6 +219,16 @@ public class NetServerHandler
 			client.sendPacket(new PacketKick("Invalid protocol version"));
 			server.disconnectClient(client);
 		}
+	}
+	
+	public void handleSoundCache(Player player, PacketSoundCache packet)
+	{
+		Map<String, Integer> cachedSounds = new HashMap<String, Integer>();
+		for (int i = 0 ; i < packet.cachedSounds.length ; i++)
+		{
+			cachedSounds.put(packet.cachedSounds[i], packet.soundHashes[i]);
+		}
+		server.verifySounds(player, cachedSounds);
 	}
 	
 	public void handleDraw(Player player, PacketActionDraw packet)
@@ -384,7 +396,7 @@ public class NetServerHandler
 					return;
 				}
 			}
-			rent.playerPaid(player, Card.getCards(packet.ids));
+			rent.playerPaid(player, cards);
 		}
 	}
 	

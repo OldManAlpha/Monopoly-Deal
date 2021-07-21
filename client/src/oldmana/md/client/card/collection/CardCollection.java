@@ -7,7 +7,7 @@ import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.MDEventQueue.CardMove;
 import oldmana.md.client.card.Card;
-import oldmana.md.client.gui.component.MDCardCollectionBase;
+import oldmana.md.client.gui.component.collection.MDCardCollectionBase;
 
 public abstract class CardCollection
 {

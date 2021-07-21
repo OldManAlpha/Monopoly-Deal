@@ -9,7 +9,7 @@ import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardBuilding;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.CardProperty.PropertyColor;
-import oldmana.md.client.gui.component.MDPropertySet;
+import oldmana.md.client.gui.component.collection.MDPropertySet;
 
 public class PropertySet extends CardCollection
 {

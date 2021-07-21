@@ -4,7 +4,7 @@ import java.awt.Color;
 
 import oldmana.md.client.Player;
 import oldmana.md.client.card.collection.PropertySet;
-import oldmana.md.client.gui.component.MDPropertySet;
+import oldmana.md.client.gui.component.collection.MDPropertySet;
 
 public class ActionStateStealMonopoly extends ActionState
 {

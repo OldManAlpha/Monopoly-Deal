@@ -1,12 +1,10 @@
-package oldmana.md.client.gui.component;
+package oldmana.md.client.gui.component.collection;
 
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
-
-import javax.swing.SwingUtilities;
 
 import oldmana.md.client.MDEventQueue.CardMove;
 import oldmana.md.client.MDScheduler.MDTask;
@@ -71,9 +69,9 @@ public class MDVoidCollection extends MDCardCollectionUnknown
 	}
 
 	@Override
-	public Point getLocationOf(int cardIndex)
+	public Point getLocationOf(int cardIndex, int cardCount)
 	{
-		return SwingUtilities.convertPoint(this, new Point(scale(20), scale(20)), getClient().getTableScreen());
+		return new Point(scale(20), scale(20));
 	}
 	
 	@Override

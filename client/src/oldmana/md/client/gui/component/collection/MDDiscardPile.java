@@ -1,4 +1,4 @@
-package oldmana.md.client.gui.component;
+package oldmana.md.client.gui.component.collection;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -16,6 +16,7 @@ import java.awt.event.MouseWheelListener;
 import oldmana.md.client.MDScheduler.MDTask;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.DiscardPile;
+import oldmana.md.client.gui.component.MDInfoIcon;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
@@ -248,9 +249,9 @@ public class MDDiscardPile extends MDCardCollection
 	{
 		return new Dimension(scale(120 + 40), scale(scrollPos > 0 ? 366 : 180));
 	}
-
+	
 	@Override
-	public Point getLocationInComponentOf(Card card)
+	public Point getLocationOf(int cardIndex, int cardCount)
 	{
 		return new Point(0, 0);
 	}

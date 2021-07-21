@@ -18,7 +18,7 @@ import oldmana.md.client.card.collection.Deck;
 import oldmana.md.client.card.collection.DiscardPile;
 import oldmana.md.client.card.collection.VoidCollection;
 import oldmana.md.client.gui.MDFrame;
-import oldmana.md.client.gui.component.large.MDHand;
+import oldmana.md.client.gui.component.collection.MDHand;
 import oldmana.md.client.gui.screen.TableScreen;
 import oldmana.md.client.net.ConnectionThread;
 import oldmana.md.client.net.NetClientHandler;
@@ -86,6 +86,8 @@ public class MDClient
 		
 		settings = new Settings();
 		settings.loadSettings();
+		
+		MDSoundSystem.loadCache();
 		
 		scheduler = new MDScheduler();
 		scheduler.scheduleTask(new MDTask(1, true)

@@ -1,7 +1,7 @@
 package oldmana.md.client.card.collection;
 
 import oldmana.md.client.Player;
-import oldmana.md.client.gui.component.MDInvisibleHand;
+import oldmana.md.client.gui.component.collection.MDInvisibleHand;
 
 public class Hand extends CardCollection
 {

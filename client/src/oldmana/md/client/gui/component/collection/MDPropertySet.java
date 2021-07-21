@@ -1,4 +1,4 @@
-package oldmana.md.client.gui.component;
+package oldmana.md.client.gui.component.collection;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -11,9 +11,11 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.SwingUtilities;
 
-import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.PropertySet;
+import oldmana.md.client.gui.component.MDCard;
+import oldmana.md.client.gui.component.MDCardView;
+import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.state.client.ActionStateClientModifyPropertySet;
 
@@ -98,9 +100,14 @@ public class MDPropertySet extends MDCardCollection
 		return select;
 	}
 	
+	public int getInterval(int cardCount)
+	{
+		return GraphicsUtils.getCardWidth() / Math.max(3, cardCount - 1);
+	}
+	
 	public int getInterval()
 	{
-		return GraphicsUtils.getCardWidth() / Math.max(3, getCardCount() - 1);
+		return getInterval(getCollection().getCardCount());
 	}
 	
 	public void onMouseEntered()
@@ -138,15 +145,9 @@ public class MDPropertySet extends MDCardCollection
 			g.fillRoundRect(0, 0, getWidth(), getHeight() - (isCardIncoming() ? getInterval() : 0), scale(12), scale(12));
 			// TODO: Account for cards going into indices not at the end (might require bigger rework)
 		}
-		g.translate(Math.max(1, scale(1)), Math.max(1, scale(1)));
-		for (int i = 0 ; i < set.getCardCount() ; i++)
+		if (!(set.getCardCount() == 1 && isCardIncoming()))
 		{
-			if (set.getCardAt(i) != getIncomingCard())
-			{
-				g.translate(0, (i * getInterval()));
-				g.drawImage(set.getCardAt(i).getGraphics(getScale()), 0, 0, GraphicsUtils.getCardWidth(), GraphicsUtils.getCardHeight(), null);
-				g.translate(0, -(i * getInterval()));
-			}
+			paintCards(g);
 		}
 		if (getClient().isDebugEnabled())
 		{
@@ -156,9 +157,9 @@ public class MDPropertySet extends MDCardCollection
 	}
 
 	@Override
-	public Point getLocationInComponentOf(Card card)
+	public Point getLocationOf(int cardIndex, int cardCount)
 	{
-		return new Point(Math.max(1, scale(1)), Math.max(1, scale(1)) + (getInterval() * getCollection().getIndexOf(card)));
+		return new Point(Math.max(1, scale(1)), Math.max(1, scale(1)) + (getInterval(cardCount) * cardIndex));
 	}
 	
 	public class MDPropertySetListener extends MouseAdapter

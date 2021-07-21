@@ -14,7 +14,14 @@ public class CommandPlaySound extends Command
 	{
 		if (args.length >= 1)
 		{
-			getServer().playSound(args[0]);
+			if (getServer().doesSoundExist(args[0]))
+			{
+				getServer().playSound(args[0]);
+			}
+			else
+			{
+				sender.sendMessage("Sound does not exist.");
+			}
 		}
 		else
 		{

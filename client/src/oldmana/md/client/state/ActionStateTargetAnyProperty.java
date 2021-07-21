@@ -12,8 +12,8 @@ import oldmana.md.client.gui.action.ActionScreenSelectProperty;
 import oldmana.md.client.gui.action.ActionScreenSelectProperty.PropertySelectListener;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDCard;
-import oldmana.md.client.gui.component.MDPropertySet;
 import oldmana.md.client.gui.component.MDSelection;
+import oldmana.md.client.gui.component.collection.MDPropertySet;
 import oldmana.md.net.packet.client.action.PacketActionSelectProperties;
 
 public class ActionStateTargetAnyProperty extends ActionState

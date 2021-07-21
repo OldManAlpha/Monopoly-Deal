@@ -3,17 +3,14 @@ package oldmana.md.client.gui.component;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JLayeredPane;
-
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.gui.LayoutAdapter;
-import oldmana.md.client.gui.component.large.MDPlayer;
+import oldmana.md.client.gui.component.collection.MDPropertySet;
 import oldmana.md.client.gui.util.GraphicsUtils;
 
 public class MDPlayerPropertySets extends MDComponent

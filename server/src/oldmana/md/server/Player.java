@@ -513,23 +513,39 @@ public class Player extends Client implements CommandSender
 		return false;
 	}
 	
+	/**Get all status effects currently applied to the player
+	 * 
+	 * @return A copy of the list of status effects currently on the player
+	 */
 	public List<StatusEffect> getStatusEffects()
 	{
 		return new ArrayList<StatusEffect>(statusEffects);
 	}
 	
+	/**Adds a status effect to the player
+	 * 
+	 * @param effect - The effect to add
+	 */
 	public void addStatusEffect(StatusEffect effect)
 	{
 		server.getEventManager().registerEvents(effect);
 		statusEffects.add(effect);
 	}
 	
+	/**Removes the status effect instance from the player
+	 * 
+	 * @param effect - The effect to remove
+	 */
 	public void removeStatusEffect(StatusEffect effect)
 	{
 		server.getEventManager().unregisterEvents(effect);
 		statusEffects.remove(effect);
 	}
 	
+	/**Removes all instances of a status effect type from the player
+	 * 
+	 * @param clazz - The type to remove
+	 */
 	public void removeStatusEffect(Class<? extends StatusEffect> clazz)
 	{
 		Iterator<StatusEffect> it = statusEffects.iterator();
@@ -544,6 +560,11 @@ public class Player extends Client implements CommandSender
 		}
 	}
 	
+	/**Gets a status effect by the type. There's no guarantee that there aren't multiple instances of a type.
+	 * 
+	 * @param clazz - The type to get
+	 * @return The status effect
+	 */
 	@SuppressWarnings("unchecked")
 	public <T extends StatusEffect> T getStatusEffect(Class<T> clazz)
 	{
@@ -557,6 +578,11 @@ public class Player extends Client implements CommandSender
 		return null;
 	}
 	
+	/**Check if the player has at least one instance of a given type.
+	 * 
+	 * @param clazz - The type to check
+	 * @return Whether or not the player has one instance of the type
+	 */
 	public boolean hasStatusEffect(Class<? extends StatusEffect> clazz)
 	{
 		return getStatusEffect(clazz) != null;

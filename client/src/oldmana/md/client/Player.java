@@ -11,9 +11,9 @@ import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.Bank;
 import oldmana.md.client.card.collection.Hand;
 import oldmana.md.client.card.collection.PropertySet;
-import oldmana.md.client.gui.component.MDBank;
-import oldmana.md.client.gui.component.MDInvisibleHand;
-import oldmana.md.client.gui.component.large.MDHand;
+import oldmana.md.client.gui.component.collection.MDBank;
+import oldmana.md.client.gui.component.collection.MDHand;
+import oldmana.md.client.gui.component.collection.MDInvisibleHand;
 import oldmana.md.client.gui.component.large.MDPlayer;
 
 public class Player

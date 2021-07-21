@@ -9,15 +9,19 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -27,6 +31,7 @@ import oldmana.md.net.packet.server.PacketKick;
 import oldmana.md.net.packet.server.PacketPlaySound;
 import oldmana.md.net.packet.server.PacketPlayerStatus;
 import oldmana.md.net.packet.server.PacketSoundData;
+import oldmana.md.net.packet.server.PacketStatus;
 import oldmana.md.net.packet.universal.PacketChat;
 import oldmana.md.net.packet.universal.PacketKeepConnected;
 import oldmana.md.server.MDScheduler.MDTask;
@@ -38,6 +43,7 @@ import oldmana.md.server.card.action.*;
 import oldmana.md.server.card.collection.Deck;
 import oldmana.md.server.card.collection.DiscardPile;
 import oldmana.md.server.card.collection.VoidCollection;
+import oldmana.md.server.card.collection.deck.CustomDeck;
 import oldmana.md.server.card.collection.deck.DeckStack;
 import oldmana.md.server.card.collection.deck.VanillaDeck;
 import oldmana.md.server.command.CommandHandler;
@@ -91,7 +97,7 @@ public class MDServer
 	
 	private int tickCount;
 	
-	private Map<String, byte[]> soundMap = new HashMap<String, byte[]>();
+	private Map<String, MDSound> sounds = new HashMap<String, MDSound>();
 	
 	private IncomingConnectionsThread threadIncConnect;
 	
@@ -166,6 +172,9 @@ public class MDServer
 		
 		System.out.println("Loading Mods");
 		loadMods();
+		
+		System.out.println("Loading Decks");
+		loadDecks();
 		
 		new Thread("Console Reader Thread")
 		{
@@ -347,6 +356,23 @@ public class MDServer
 	public List<MDMod> getMods()
 	{
 		return mods;
+	}
+	
+	public void loadDecks()
+	{
+		File folder = new File("decks");
+		if (!folder.exists())
+		{
+			folder.mkdir();
+		}
+		for (File f : folder.listFiles())
+		{
+			String name = f.getName();
+			if (!f.isDirectory() && name.endsWith(".json"))
+			{
+				decks.put(f.getName().substring(0, name.length() - 5), new CustomDeck(f));
+			}
+		}
 	}
 	
 	public CardRegistry getCardRegistry()
@@ -569,12 +595,18 @@ public class MDServer
 	
 	public void loadSound(File file)
 	{
+		loadSound(file, file.getName().substring(0, file.getName().length() - 4));
+	}
+	
+	public void loadSound(File file, String name)
+	{
 		try
 		{
-			BufferedInputStream is = new BufferedInputStream(new FileInputStream(file));
+			DigestInputStream is = new DigestInputStream(new FileInputStream(file), MessageDigest.getInstance("MD5"));
 			byte[] data = new byte[is.available()];
 			is.read(data);
-			soundMap.put(file.getName().substring(0, file.getName().length() - 4), data);
+			int hash = Arrays.hashCode(is.getMessageDigest().digest());
+			sounds.put(name, new MDSound(name, data, hash));
 			is.close();
 			System.out.println("Loaded sound file: " + file.getName());
 		}
@@ -585,19 +617,36 @@ public class MDServer
 		}
 	}
 	
+	public boolean doesSoundExist(String name)
+	{
+		return sounds.containsKey(name);
+	}
+	
 	public void playSound(String name)
 	{
 		broadcastPacket(new PacketPlaySound(name));
 	}
 	
+	public void verifySounds(Player player, Map<String, Integer> cachedSounds)
+	{
+		Set<Entry<String, MDSound>> sounds = this.sounds.entrySet();
+		int i = 1;
+		for (Entry<String, MDSound> entry : sounds)
+		{
+			MDSound sound = entry.getValue();
+			if (!cachedSounds.containsKey(sound.getName()) || sound.getHash() != cachedSounds.get(sound.getName()))
+			{
+				player.sendPacket(new PacketStatus("Downloading sound " + i + "/" + sounds.size() + ".."));
+				player.sendPacket(new PacketSoundData(sound.getName(), sound.getData(), sound.getHash()));
+			}
+			i++;
+		}
+		getGameState().sendStatus(player);
+	}
+	
 	public void refreshPlayer(Player player)
 	{
 		//player.sendPacket(new PacketRefresh());
-		
-		for (Entry<String, byte[]> sound : soundMap.entrySet())
-		{
-			player.sendPacket(new PacketSoundData(sound.getKey(), sound.getValue()));
-		}
 		
 		for (Player other : getPlayersExcluding(player))
 		{
@@ -704,6 +753,35 @@ public class MDServer
 		public void println(int i)
 		{
 			println("" + i);
+		}
+	}
+	
+	public static class MDSound
+	{
+		private String name;
+		private byte[] data;
+		private int hash;
+		
+		public MDSound(String name, byte[] data, int hash)
+		{
+			this.name = name;
+			this.data = data;
+			this.hash = hash;
+		}
+		
+		public String getName()
+		{
+			return name;
+		}
+		
+		public byte[] getData()
+		{
+			return data;
+		}
+		
+		public int getHash()
+		{
+			return hash;
 		}
 	}
 }

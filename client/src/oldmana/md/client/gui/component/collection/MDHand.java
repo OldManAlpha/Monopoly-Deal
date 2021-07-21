@@ -1,37 +1,22 @@
-package oldmana.md.client.gui.component.large;
+package oldmana.md.client.gui.component.collection;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.util.ArrayList;
-import java.util.List;
 
-import javax.swing.JLayeredPane;
-
-import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
-import oldmana.md.client.MDScheduler.MDTask;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardActionActionCounter;
 import oldmana.md.client.card.CardActionRentCounter;
-import oldmana.md.client.card.CardMoney;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.card.collection.Hand;
-import oldmana.md.client.gui.component.MDButton;
-import oldmana.md.client.gui.component.MDCard;
-import oldmana.md.client.gui.component.MDCardCollection;
 import oldmana.md.client.gui.component.overlay.MDOverlayHand;
-import oldmana.md.client.gui.util.CardPainter;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.ActionStateDiscard;
@@ -138,12 +123,11 @@ public class MDHand extends MDCardCollection
 	}
 	
 	@Override
-	public Point getLocationInComponentOf(Card card)
+	public Point getLocationOf(int cardIndex, int cardCount)
 	{
-		CardCollection hand = getCollection();
-		double interval = getWidth() / (double) hand.getCardCount();
-		double start = (getWidth() / (hand.getCardCount() * 2.0)) - GraphicsUtils.getCardWidth();
-		int x = (int) (start + (interval * getCollection().getIndexOf(card)));
+		double interval = getWidth() / (double) cardCount;
+		double start = (getWidth() / (cardCount * 2.0)) - GraphicsUtils.getCardWidth();
+		int x = (int) (start + (interval * cardIndex));
 		return new Point(x, 0);
 	}
 	
@@ -191,21 +175,11 @@ public class MDHand extends MDCardCollection
 		
 		if (hand != null)
 		{
-			double interval = getWidth() / (double) hand.getCardCount();
-			double start = (getWidth() / (hand.getCardCount() * 2.0)) - GraphicsUtils.getCardWidth();
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-			for (int i = 0 ; i < hand.getCardCount() ; i++)
-			{
-				Card card = hand.getCardAt(i);
-				if (getIncomingCard() != card)
-				{
-					g.translate((int) (start + (interval * i)), 0);
-					g.drawImage(card.getGraphics(getScale() * 2), 0, 0, GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2), null);
-					g.translate((int) -(start + (interval * i)), 0);
-				}
-			}
+			
+			paintCards(g);
 			
 			if (getClient().isDebugEnabled())
 			{

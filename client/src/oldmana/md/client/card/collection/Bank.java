@@ -2,7 +2,7 @@ package oldmana.md.client.card.collection;
 
 import oldmana.md.client.Player;
 import oldmana.md.client.card.Card;
-import oldmana.md.client.gui.component.MDBank;
+import oldmana.md.client.gui.component.collection.MDBank;
 
 public class Bank extends CardCollection
 {

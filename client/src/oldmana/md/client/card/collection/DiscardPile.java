@@ -3,7 +3,7 @@ package oldmana.md.client.card.collection;
 import java.util.List;
 
 import oldmana.md.client.card.Card;
-import oldmana.md.client.gui.component.MDDiscardPile;
+import oldmana.md.client.gui.component.collection.MDDiscardPile;
 
 public class DiscardPile extends CardCollection
 {
