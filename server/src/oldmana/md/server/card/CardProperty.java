@@ -134,6 +134,7 @@ public class CardProperty extends Card
 		private static int nextID = 0;
 		private static List<PropertyColor> colors = new ArrayList<PropertyColor>();
 		private static Map<String, PropertyColor> nameColorMap = new HashMap<String, PropertyColor>();
+		private static Map<String, PropertyColor> labelColorMap = new HashMap<String, PropertyColor>();
 		private static Map<Integer, PropertyColor> idColorMap = new HashMap<Integer, PropertyColor>();
 		
 		
@@ -170,7 +171,8 @@ public class CardProperty extends Card
 		private int[] rent;
 		
 		
-		/**Invoking this constructor automatically registers the color for use by the server.
+		/**Invoking this constructor automatically registers the color for use by the server. Clients joined before registering a color will not know of the color.
+		 * In mods, it is highly recommended to register colors during the loading process.
 		 * 
 		 * @param name - Name of the property color
 		 * @param label - Abbreviation of the name
@@ -193,6 +195,7 @@ public class CardProperty extends Card
 			
 			colors.add(this);
 			nameColorMap.put(name, this);
+			labelColorMap.put(label, this);
 			idColorMap.put(id, this);
 		}
 		
@@ -254,6 +257,11 @@ public class CardProperty extends Card
 		public static PropertyColor fromName(String name)
 		{
 			return nameColorMap.get(name);
+		}
+		
+		public static PropertyColor fromLabel(String label)
+		{
+			return labelColorMap.get(label);
 		}
 		
 		public static List<PropertyColor> getVanillaColors()
