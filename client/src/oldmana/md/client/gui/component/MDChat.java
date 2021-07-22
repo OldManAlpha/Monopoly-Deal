@@ -443,6 +443,18 @@ public class MDChat extends MDComponent
 		
 		if (chatOpen)
 		{
+			// Draw scroll bar
+			if (lineCount > maxLines)
+			{
+				double barSize = (double) maxLines / lineCount;
+				double barPos = (double) (scroll + maxLines) / lineCount;
+				int barOffset = (int) (chatHistoryHeight - (chatHistoryHeight * barPos));
+				g.setColor(new Color(240, 240, 240));
+				g.fillRect(0, barOffset, scale(6), (int) (barSize * chatHistoryHeight));
+				g.setColor(Color.DARK_GRAY);
+				g.drawRect(0, barOffset, scale(6), (int) (barSize * chatHistoryHeight));
+			}
+			
 			g.setColor(new Color(0, 0, 0, 80));
 			g.fillRect(0, getHeight() - chatHeight, getWidth(), chatHeight);
 			FontMetrics metrics = g.getFontMetrics(f);
@@ -473,18 +485,6 @@ public class MDChat extends MDComponent
 			if (blink)
 			{
 				g.fillRect(cursorPos, getHeight() - chatHeight + scale(3), scale(3), chatHeight - scale(6));
-			}
-			
-			// Draw scroll bar
-			if (lineCount > maxLines)
-			{
-				double barSize = (double) maxLines / lineCount;
-				double barPos = (double) (scroll + maxLines) / lineCount;
-				int barOffset = (int) (chatHistoryHeight - (chatHistoryHeight * barPos));
-				g.setColor(new Color(240, 240, 240));
-				g.fillRect(0, barOffset, scale(6), (int) (barSize * chatHistoryHeight));
-				g.setColor(Color.DARK_GRAY);
-				g.drawRect(0, barOffset, scale(6), (int) (barSize * chatHistoryHeight));
 			}
 		}
 	}
