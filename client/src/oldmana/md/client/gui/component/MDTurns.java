@@ -23,6 +23,8 @@ public class MDTurns extends MDComponent
 	
 	private double visibleTurns;
 	
+	private boolean rush;
+	
 	public MDTurns()
 	{
 		super();
@@ -33,9 +35,15 @@ public class MDTurns extends MDComponent
 			public void run()
 			{
 				int turns = getTurns();
+				
+				if (visibleTurns > turns + 1 || visibleTurns < turns - 1)
+				{
+					rush = true;
+				}
+				
 				if (visibleTurns > turns)
 				{
-					visibleTurns -= visibleTurns > turns + 1 ? 0.1 : 0.05;
+					visibleTurns -= rush ? 0.1 : 0.05;
 					if (visibleTurns < turns)
 					{
 						visibleTurns = turns;
@@ -44,12 +52,16 @@ public class MDTurns extends MDComponent
 				}
 				else if (visibleTurns < turns)
 				{
-					visibleTurns += visibleTurns < turns - 1 ? 0.1 : 0.05;
+					visibleTurns += rush ? 0.1 : 0.05;
 					if (visibleTurns > turns)
 					{
 						visibleTurns = turns;
 					}
 					repaint();
+				}
+				else
+				{
+					rush = false;
 				}
 				if (visibleTurns > visibleMaxTurns)
 				{
