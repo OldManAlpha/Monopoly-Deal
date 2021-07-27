@@ -11,7 +11,6 @@ import oldmana.md.server.ButtonManager.PlayerButtonType;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardProperty;
-import oldmana.md.server.card.collection.PropertySet;
 import oldmana.md.server.event.RentPaymentEvent;
 
 public class ActionStateRent extends ActionState
@@ -153,21 +152,11 @@ public class ActionStateRent extends ActionState
 				if (card instanceof CardProperty)
 				{
 					CardProperty property = (CardProperty) card;
-					if (property.isSingleColor() && renter.hasSolidPropertySet(property.getColor()))
-					{
-						PropertySet set = renter.getSolidPropertySet(property.getColor());
-						card.transfer(set);
-						set.checkMaxProperties();
-					}
-					else
-					{
-						PropertySet set = renter.createPropertySet();
-						card.getOwningCollection().transferCard(card, set);
-					}
+					player.safelyGrantProperty(property);
 				}
 				else
 				{
-					player.getBank().transferCard(card, renter.getBank());
+					card.transfer(renter.getBank());
 				}
 			}
 		}

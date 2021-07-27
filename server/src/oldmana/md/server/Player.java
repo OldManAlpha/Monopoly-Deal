@@ -23,10 +23,11 @@ import oldmana.md.server.event.PostCardBankedEvent;
 import oldmana.md.server.event.PreCardBankedEvent;
 import oldmana.md.server.net.ConnectionThread;
 import oldmana.md.server.status.StatusEffect;
-import oldmana.md.server.util.IDCounter;
 
 public class Player extends Client implements CommandSender
 {
+	private static int nextID;
+	
 	private MDServer server;
 	
 	private int uid;
@@ -60,7 +61,7 @@ public class Player extends Client implements CommandSender
 		this.uid = uid;
 		this.name = name;
 		this.op = op;
-		id = IDCounter.nextPlayerID();
+		id = nextID++;
 		
 		server.broadcastPacket(new PacketPlayerInfo(getID(), getName(), true), this);
 		hand = new Hand(this);

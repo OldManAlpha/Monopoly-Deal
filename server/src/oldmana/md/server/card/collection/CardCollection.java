@@ -13,11 +13,12 @@ import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.event.CardMovedEvent;
-import oldmana.md.server.util.IDCounter;
 
 public abstract class CardCollection
 {
 	public static List<CardCollection> collections = new ArrayList<CardCollection>();
+	
+	private static int nextID;
 	
 	
 	private int id;
@@ -30,7 +31,7 @@ public abstract class CardCollection
 		this.owner = owner;
 		cards = new ArrayList<Card>();
 		
-		id = IDCounter.nextCollectionID();
+		id = nextID++;
 		registerCardCollection(this);
 	}
 	
@@ -43,7 +44,7 @@ public abstract class CardCollection
 			card.setOwningCollection(this);
 		}
 		
-		id = IDCounter.nextCollectionID();
+		id = nextID++;
 		registerCardCollection(this);
 	}
 	

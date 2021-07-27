@@ -245,9 +245,14 @@ public abstract class ActionState
 		return getNumberOfAccepted() == getNumberOfTargets();
 	}
 	
-	public MDServer getServer()
+	protected MDServer getServer()
 	{
 		return MDServer.getInstance();
+	}
+	
+	protected GameState getGameState()
+	{
+		return getServer().getGameState();
 	}
 	
 	public abstract Packet constructPacket();
