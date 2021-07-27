@@ -49,7 +49,7 @@ public class MDEventQueue
 		}
 		if (currentTask == null)
 		{
-			if (!queue.isEmpty())
+			while (!queue.isEmpty() && currentTask == null)
 			{
 				EventTask task = queue.remove(0);
 				task.start();
