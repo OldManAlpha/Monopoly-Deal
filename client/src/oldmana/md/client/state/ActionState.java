@@ -1,5 +1,7 @@
 package oldmana.md.client.state;
 
+import java.awt.Color;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -11,9 +13,8 @@ import oldmana.md.client.card.CardActionActionCounter;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.component.MDButton.ButtonColorScheme;
-import oldmana.md.client.gui.component.overlay.MDPlayerAcceptOverlay;
-import oldmana.md.net.packet.client.action.PacketActionAccept;
-import oldmana.md.net.packet.client.action.PacketActionEndTurn;
+import oldmana.md.client.gui.component.collection.MDHand;
+import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.net.packet.client.action.PacketActionPlayCardSpecial;
 
 public class ActionState
@@ -21,10 +22,10 @@ public class ActionState
 	private Player actionOwner;
 	private List<ActionTarget> targets;
 	
-	private boolean defaultButton = true;
-	
 	private CardActionActionCounter jsn;
-	private boolean oneTargetMode = false;
+	
+	private MDSelection counterSelect;
+	private MDButton counterCancel;
 	
 	public ActionState(Player actionOwner)
 	{
@@ -38,13 +39,6 @@ public class ActionState
 		targets.add(new ActionTarget(actionTarget));
 	}
 	
-	public ActionState(Player actionOwner, Player actionTarget, boolean defaultButton)
-	{
-		this(actionOwner);
-		targets.add(new ActionTarget(actionTarget));
-		this.defaultButton = defaultButton;
-	}
-	
 	public ActionState(Player actionOwner, List<Player> actionTargets)
 	{
 		this(actionOwner);
@@ -54,26 +48,7 @@ public class ActionState
 		}
 	}
 	
-	public ActionState(Player actionOwner, List<Player> actionTargets, boolean defaultButton)
-	{
-		this(actionOwner);
-		for (Player player : actionTargets)
-		{
-			targets.add(new ActionTarget(player));
-		}
-		this.defaultButton = defaultButton;
-	}
-	
-	/**Call superclass method to set up multibutton
-	 * 
-	 */
-	public void setup()
-	{
-		if (defaultButton && isTarget(getClient().getThePlayer()))
-		{
-			applyButtonAccept(getActionOwner());
-		}
-	};
+	public void setup() {}
 	
 	/**Call superclass method to clean up multibutton
 	 * 
@@ -90,7 +65,7 @@ public class ActionState
 	
 	public void updateUI() {}
 	
-	public void onJustSayNo(CardActionActionCounter card)
+	public void onActionCounter(CardActionActionCounter card)
 	{
 		Player player = getClient().getThePlayer();
 		if (isTarget(player) && !isAccepted(player) && !isRefused(player))
@@ -109,419 +84,76 @@ public class ActionState
 			else if (getNumberOfRefused() > 1)
 			{
 				jsn = card;
-				applyButtonCancelJustSayNo();
-				checkOverlays();
+				setupActionCounterOverlay();
+				for (Player p : getClient().getOtherPlayers())
+				{
+					p.getUI().getButtons()[0].updateRefusableText();
+				}
 			}
 		}
 	}
 	
-	public void onRevokeJustSayNo() // Probably never called
+	public void setupActionCounterOverlay()
 	{
-		jsn = null;
-		removeButton();
+		Point propLoc = ((MDHand) getClient().getThePlayer().getHand().getUI()).getScreenLocationOf(jsn);
+		counterSelect = new MDSelection(Color.BLUE);
+		counterSelect.setLocation(propLoc);
+		counterSelect.setSize(GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2));
+		getClient().addTableComponent(counterSelect, 90);
+		
+		counterCancel = new MDButton("Cancel");
+		counterCancel.setSize((int) (counterSelect.getWidth() * 0.8), (int) (counterSelect.getHeight() * 0.2));
+		counterCancel.setLocation((int) (counterSelect.getWidth() * 0.1) + counterSelect.getX(), (int) (counterSelect.getHeight() * 0.4) + counterSelect.getY());
+		counterCancel.setListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseReleased(MouseEvent event)
+			{
+				removeActionCounter();
+			}
+		});
+		getClient().addTableComponent(counterCancel, 91);
 	}
 	
-	public boolean isUsingJustSayNo()
+	public void cleanupActionCounterOverlay()
+	{
+		getClient().removeTableComponent(counterSelect);
+		getClient().removeTableComponent(counterCancel);
+		getClient().getTableScreen().getHand().repaint();
+	}
+	
+	public void removeActionCounter()
+	{
+		jsn = null;
+		cleanupActionCounterOverlay();
+		for (Player p : getClient().getOtherPlayers())
+		{
+			p.getUI().getButtons()[0].updateRefusableText();
+		}
+	}
+	
+	public boolean isUsingActionCounter()
 	{
 		return jsn != null;
 	}
 	
-	public void onPlayerAccept(Player player)
-	{
-		if (getActionOwner() == getClient().getThePlayer()) // UI processing for the action owner
-		{
-			if (getNumberOfRefused() == 0)
-			{
-				removeButton();
-			}
-			else if (getNumberOfRefused() == 1) // Remove overlay and reapply the accept button for the remaining refusal
-			{
-				for (ActionTarget target : getActionTargets())
-				{
-					removeOverlay(target.getPlayer());
-				}
-				applyButtonAccept(getRefused().get(0));
-			}
-			else if (getNumberOfRefused() > 1)
-			{
-				removeOverlay(player);
-			}
-		}
-	}
+	public void onPlayerAccept(Player player) {}
 	
-	public void onPlayerRefused(Player player)
-	{
-		if (getActionOwner() == getClient().getThePlayer()) // UI processing for the action owner
-		{
-			if (getNumberOfRefused() == 1) // Initally apply accept button when it's only one refusal
-			{
-				applyButtonAccept(player);
-			}
-			else if (getNumberOfRefused() == 2) // Remove accept button and add overlay to first player instead when it's two refusals
-			{
-				removeButton();
-				for (Player refused : getRefused())
-				{
-					if (refused != player)
-					{
-						addOverlay(refused);
-						break;
-					}
-				}
-			}
-			
-			if (getNumberOfRefused() > 1) // Add overlay for any refusals past one
-			{
-				addOverlay(player);
-			}
-		}
-		else if (player == getClient().getThePlayer()) // UI processing for the refused target
-		{
-			removeButton();
-		}
-	}
+	public void onPlayerRefused(Player player) {}
 	
-	public void onPlayerUnrefused(Player player)
-	{
-		if (getActionOwner() == getClient().getThePlayer()) // UI processing for the action owner
-		{
-			if (getNumberOfRefused() == 0)
-			{
-				removeButton();
-			}
-			else if (getNumberOfRefused() == 1) // Remove overlay and reapply the accept button for the remaining refusal
-			{
-				for (ActionTarget target : getActionTargets())
-				{
-					removeOverlay(target.getPlayer());
-				}
-				applyButtonAccept(getRefused().get(0));
-			}
-			else if (getNumberOfRefused() > 1)
-			{
-				removeOverlay(player);
-			}
-		}
-		else if (player == getClient().getThePlayer()) // UI processing for the unrefused target
-		{
-			applyButtonAccept(getActionOwner());
-		}
-	}
+	public void onPlayerUnrefused(Player player) {}
 	
-	public void onPreTargetRemoved(Player player)
-	{
-		int refused = getNumberOfRefused() - (isRefused(player) ? 1 : 0);
-		if (getActionOwner() == getClient().getThePlayer()) // UI processing for the action owner
-		{
-			if (refused == 0)
-			{
-				removeButton();
-			}
-			else if (refused == 1) // Remove overlay and reapply the accept button for the remaining refusal
-			{
-				Player remaining = null;
-				for (ActionTarget target : getActionTargets())
-				{
-					removeOverlay(target.getPlayer());
-					if (target.getPlayer() != player)
-					{
-						remaining = target.getPlayer();
-					}
-				}
-				applyButtonAccept(remaining);
-			}
-			else if (refused > 1)
-			{
-				removeOverlay(player);
-			}
-		}
-		else if (player == getClient().getThePlayer())
-		{
-			
-		}
-	}
+	public void onPreTargetRemoved(Player player) {}
 	
-	public void checkOverlays()
+	public CardActionActionCounter getActionCounterCard()
 	{
-		if (getActionOwner() == getClient().getThePlayer())
-		{
-			for (Player refused : getRefused())
-			{
-				ActionTarget target = getActionTarget(refused);
-				if ((jsn == null && target.getOverlay() instanceof MDSelection) || (jsn != null && target.getOverlay() instanceof MDPlayerAcceptOverlay))
-				{
-					removeOverlay(refused);
-					addOverlay(refused);
-				}
-			}
-		}
-	}
-	
-	private void addOverlay(Player player)
-	{
-		if (jsn == null)
-		{
-			addAcceptOverlay(player);
-		}
-		else
-		{
-			addJSNOverlay(player);
-		}
-	}
-	
-	private void addAcceptOverlay(Player player)
-	{
-		MDPlayerAcceptOverlay accept = new MDPlayerAcceptOverlay(player);
-		accept.setLocation(player.getUI().getLocation());
-		getClient().addTableComponent(accept, 100);
-		getActionTarget(player).setOverlay(accept);
-		accept.addMouseListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseReleased(MouseEvent event)
-			{
-				getClient().sendPacket(new PacketActionAccept(player.getID()));
-				accept.removeMouseListener(this);
-				getClient().setAwaitingResponse(true);
-			}
-		});
-	}
-	
-	private void addJSNOverlay(Player player)
-	{
-		MDSelection jsnSelect = new MDSelection();
-		jsnSelect.setLocation(player.getUI().getLocation());
-		jsnSelect.setSize(player.getUI().getSize());
-		getClient().addTableComponent(jsnSelect, 100);
-		getActionTarget(player).setOverlay(jsnSelect);
-		jsnSelect.addMouseListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseReleased(MouseEvent event)
-			{
-				if (!getClient().isAwaitingResponse())
-				{
-					getClient().sendPacket(new PacketActionPlayCardSpecial(jsn.getID(), player.getID()));
-					jsn = null;
-					disableButton();
-					getClient().setAwaitingResponse(true);
-				}
-			}
-		});
-	}
-	
-	private void removeOverlay(Player player)
-	{
-		ActionTarget target = getActionTarget(player);
-		if (target.getOverlay() != null)
-		{
-			getClient().removeTableComponent(target.getOverlay());
-			target.setOverlay(null);
-		}
-	}
-	
-	/*
-	protected void applyButtonEndTurn()
-	{
-		MDButton button = getClient().getTableScreen().getMultiButton();
-		button.setColorScheme(ButtonColorScheme.ALERT);
-		button.setText("End Turn");
-		if (getActionOwner().getHand().getCardCount() > 7)
-		{
-			button.setEnabled(false);
-		}
-		else
-		{
-			button.setEnabled(true);
-			button.setListener(new MouseAdapter()
-			{
-				@Override
-				public void mouseReleased(MouseEvent event)
-				{
-					if (!getClient().isInputBlocked() && getClient().canActFreely() && getActionOwner().getHand().getCardCount() <= 7)
-					{
-						getClient().sendPacket(new PacketActionEndTurn());
-						getClient().setAwaitingResponse(true);
-						button.setEnabled(false);
-						button.removeListener();
-					}
-				}
-			});
-		}
-	}
-	*/
-	
-	private void applyButtonAccept(Player player)
-	{
-		if (defaultButton || getActionOwner() == getClient().getThePlayer())
-		{
-			MDButton button = getClient().getTableScreen().getMultiButton();
-			button.setColorScheme(ButtonColorScheme.ALERT);
-			button.setText("Accept");
-			button.setEnabled(true);
-			button.setListener(new MouseAdapter()
-			{
-				@Override
-				public void mouseReleased(MouseEvent event)
-				{
-					if (!getClient().isAwaitingResponse())
-					{
-						getClient().sendPacket(new PacketActionAccept(player.getID()));
-						button.removeListener();
-						button.setEnabled(false);
-						getClient().setAwaitingResponse(true);
-					}
-				}
-			});
-			button.repaint();
-		}
-	}
-	
-	private void applyButtonCancelJustSayNo()
-	{
-		if (getActionOwner() == getClient().getThePlayer() && jsn != null)
-		{
-			MDButton button = getClient().getTableScreen().getMultiButton();
-			button.setColorScheme(ButtonColorScheme.ALERT);
-			button.setText("Cancel");
-			button.setEnabled(true);
-			button.setListener(new MouseAdapter()
-			{
-				@Override
-				public void mouseReleased(MouseEvent event)
-				{
-					jsn = null;
-					removeButton();
-					checkOverlays();
-				}
-			});
-			button.repaint();
-		}
-	}
-	
-	private void removeButton()
-	{
-		if (defaultButton || getActionOwner() == getClient().getThePlayer())
-		{
-			MDButton button = getClient().getTableScreen().getMultiButton();
-			button.setColorScheme(ButtonColorScheme.NORMAL);
-			button.setText("");
-			button.setEnabled(false);
-			button.removeListener();
-			button.repaint();
-		}
+		return jsn;
 	}
 	
 	private void disableButton()
 	{
 		MDButton button = getClient().getTableScreen().getMultiButton();
 		button.setEnabled(false);
-	}
-	
-	public void updateOverlaysAndButton()
-	{
-		Player thePlayer = getClient().getThePlayer();
-		Player owner = getActionOwner();
-		List<ActionTarget> targets = new ArrayList<ActionTarget>(getActionTargets());
-		if (thePlayer == owner)
-		{
-			if (getNumberOfRefused() > 1)
-			{
-				for (ActionTarget target : targets)
-				{
-					Player player = target.getPlayer();
-					if (target.isRefused() && !target.isAccepted())
-					{
-						if (!target.hasOverlay())
-						{
-							if (jsn == null)
-							{
-								addAcceptOverlay(player);
-							}
-							else
-							{
-								addJSNOverlay(player);
-							}
-						}
-						else if (jsn != null && target.getOverlay() instanceof MDPlayerAcceptOverlay)
-						{
-							removeOverlay(player);
-							addJSNOverlay(player);
-						}
-						else if (jsn == null && target.getOverlay() instanceof MDSelection)
-						{
-							removeOverlay(player);
-							addAcceptOverlay(player);
-						}
-					}
-					else
-					{
-						if (target.hasOverlay())
-						{
-							removeOverlay(player);
-						}
-					}
-				}
-				if (oneTargetMode)
-				{
-					removeButton();
-					oneTargetMode = false;
-				}
-			}
-			else if (getNumberOfRefused() == 1)
-			{
-				if (!oneTargetMode)
-				{
-					for (ActionTarget target : targets)
-					{
-						removeOverlay(target.getPlayer());
-					}
-					applyButtonAccept(getRefused().get(0));
-					oneTargetMode = true;
-				}
-			}
-			else
-			{
-				if (oneTargetMode)
-				{
-					removeButton();
-					oneTargetMode = false;
-				}
-			}
-			getClient().getTableScreen().repaint();
-		}
-		else if (isTarget(thePlayer) && !isAccepted(thePlayer))
-		{
-			MDButton button = getClient().getTableScreen().getMultiButton();
-			applyButtonAccept(getActionOwner());
-			if (getClient().isInputBlocked() || isRefused(thePlayer))
-			{
-				button.setEnabled(false);
-			}
-			else
-			{
-				button.setEnabled(true);
-			}
-			/*
-			button.setText("Accept");
-			button.setColorScheme(ButtonColorScheme.ALERT);
-			button.repaint();
-			button.setListener(new MouseAdapter()
-			{
-				@Override
-				public void mouseReleased(MouseEvent event)
-				{
-					if (button.isEnabled())
-					{
-						getClient().sendPacket(new PacketActionAccept(getActionOwner().getID()));
-						getClient().setAwaitingResponse(true);
-						button.setEnabled(false);
-						button.repaint();
-					}
-				}
-			});
-			*/
-		}
 	}
 	
 	public void removeState()

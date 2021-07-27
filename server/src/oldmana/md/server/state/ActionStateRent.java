@@ -4,6 +4,10 @@ import java.util.List;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateRent;
+import oldmana.md.server.ButtonManager.PlayerButton;
+import oldmana.md.server.ButtonManager.ButtonColorScheme;
+import oldmana.md.server.ButtonManager.PlayerButtonSlot;
+import oldmana.md.server.ButtonManager.PlayerButtonType;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardProperty;
@@ -50,6 +54,53 @@ public class ActionStateRent extends ActionState
 		broadcastStatus();
 	}
 	
+	@Override
+	public void updateActionButtons()
+	{
+		PlayerButtonSlot slot = getActionButtonSlot();
+		slot.clearButtons();
+		if (getActionOwner() != null) // Buttons aren't applied when the server charges rent, the client will still use the multibutton
+		{
+			for (ActionTarget target : getActionTargets())
+			{
+				if (target.isAccepted()) // Paid players don't have a rent button
+				{
+					continue;
+				}
+				if (target.isRefused())
+				{
+					applyRentButtonTo(slot, target.getPlayer(), false); // Disable rent button for refused rented player
+					applyRefusalButtonFor(slot, target.getPlayer()); // Send the acceptance button to the renter
+				}
+				else
+				{
+					applyRentButtonTo(slot, target.getPlayer(), true); // Send rent button to rented player that hasn't refused
+				}
+			}
+		}
+		slot.sendUpdate();
+	}
+	
+	private void applyRefusalButtonFor(PlayerButtonSlot slot, Player p)
+	{
+		Player renter = getActionOwner();
+		if (renter != null)
+		{
+			PlayerButton b = slot.getButton(renter, p);
+			b.build("Accept`Refuse", ButtonColorScheme.ALERT);
+			b.setType(PlayerButtonType.REFUSABLE);
+		}
+	}
+	
+	private void applyRentButtonTo(PlayerButtonSlot slot, Player p, boolean enabled)
+	{
+		PlayerButton b = slot.getButton(p, getActionOwner());
+		b.setColor(ButtonColorScheme.ALERT);
+		b.setEnabled(enabled);
+		b.setText("View Charge");
+		b.setType(PlayerButtonType.RENT);
+	}
+	
 	public void broadcastStatus()
 	{
 		if (getNumberOfTargets() > 0)
@@ -77,7 +128,7 @@ public class ActionStateRent extends ActionState
 		{
 			if (!target.getPlayer().hasAnyMonetaryAssets())
 			{
-				target.setAccepted(true);
+				setAccepted(target.getPlayer(), true);
 			}
 		}
 	}

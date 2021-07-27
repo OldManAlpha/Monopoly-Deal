@@ -125,7 +125,7 @@ public class ActionStateTargetSelfPlayerProperty extends ActionState
 		}
 		
 		cardViewSelf = new MDCard(prop);
-		cardViewSelf.setLocation(prop.getOwningCollection().getUI().getLocationOf(prop.getOwningCollection().getIndexOf(prop)));
+		cardViewSelf.setLocation(prop.getOwningCollection().getUI().getScreenLocationOf(prop.getOwningCollection().getIndexOf(prop)));
 		getClient().addTableComponent(cardViewSelf, 91);
 		cardSelectionSelf = new MDSelection(Color.BLUE);
 		cardSelectionSelf.setLocation(cardViewSelf.getLocation());
@@ -144,7 +144,7 @@ public class ActionStateTargetSelfPlayerProperty extends ActionState
 		}
 		
 		cardViewOther = new MDCard(prop);
-		cardViewOther.setLocation(prop.getOwningCollection().getUI().getLocationOf(prop.getOwningCollection().getIndexOf(prop)));
+		cardViewOther.setLocation(prop.getOwningCollection().getUI().getScreenLocationOf(prop.getOwningCollection().getIndexOf(prop)));
 		getClient().addTableComponent(cardViewOther, 91);
 		cardSelectionOther = new MDSelection(Color.BLUE);
 		cardSelectionOther.setLocation(cardViewOther.getLocation());

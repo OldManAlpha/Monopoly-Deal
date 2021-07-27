@@ -20,14 +20,19 @@ public class ActionStateRent extends ActionState
 	
 	public ActionStateRent(Player renter, Player rented, int amount)
 	{
-		super(renter, rented, false);
+		super(renter, rented);
 		this.amount = amount;
 	}
 	
 	public ActionStateRent(Player renter, List<Player> rented, int amount)
 	{
-		super(renter, rented, false);
+		super(renter, rented);
 		this.amount = amount;
+	}
+	
+	public ActionScreenRent getRentScreen()
+	{
+		return rentScreen;
 	}
 	
 	@Override
@@ -40,9 +45,9 @@ public class ActionStateRent extends ActionState
 	}
 	
 	@Override
-	public void onJustSayNo(CardActionActionCounter jsn)
+	public void onActionCounter(CardActionActionCounter jsn)
 	{
-		super.onJustSayNo(jsn);
+		super.onActionCounter(jsn);
 	}
 	
 	@Override
@@ -79,12 +84,6 @@ public class ActionStateRent extends ActionState
 	}
 	
 	@Override
-	public void updateOverlaysAndButton()
-	{
-		super.updateOverlaysAndButton();
-	}
-	
-	@Override
 	public void setup()
 	{
 		Player player = getClient().getThePlayer();
@@ -93,26 +92,26 @@ public class ActionStateRent extends ActionState
 			rentScreen = new ActionScreenRent(getClient().getThePlayer(), this);
 			rentScreen.setVisible(false);
 			getClient().getTableScreen().setActionScreen(rentScreen);
-			MDButton button = getClient().getTableScreen().getMultiButton();
-			button.setEnabled(true);
-			button.setText("View Rent");
-			button.setColorScheme(ButtonColorScheme.ALERT);
-			button.repaint();
-			button.setListener(new MouseAdapter()
-			{
-				@Override
-				public void mouseReleased(MouseEvent event)
-				{
-					if (button.isEnabled())
-					{
-						rentScreen.setVisible(true);
-					}
-				}
-			});
-		}
-		else if (getActionOwner() == player)
-		{
 			
+			if (getActionOwner() == null) // We're still using the multibutton for rent charged directly by the server, at least for now
+			{
+				MDButton button = getClient().getTableScreen().getMultiButton();
+				button.setEnabled(true);
+				button.setText("View Charge");
+				button.setColorScheme(ButtonColorScheme.ALERT);
+				button.repaint();
+				button.setListener(new MouseAdapter()
+				{
+					@Override
+					public void mouseReleased(MouseEvent event)
+					{
+						if (button.isEnabled())
+						{
+							rentScreen.setVisible(true);
+						}
+					}
+				});
+			}
 		}
 	}
 	
@@ -121,14 +120,6 @@ public class ActionStateRent extends ActionState
 	{
 		super.cleanup();
 		getClient().getTableScreen().removeActionScreen();
-		/*
-		if (rentScreen != null)
-		{
-			getClient().removeTableComponent(rentScreen);
-			getClient().getTableScreen().repaint();
-			rentScreen = null;
-		}
-		*/
 	}
 	
 	@Override

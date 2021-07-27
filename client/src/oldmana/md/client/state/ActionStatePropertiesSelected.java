@@ -34,7 +34,7 @@ public class ActionStatePropertiesSelected extends ActionState
 		for (Card card : cards)
 		{
 			MDCard cardView = new MDCard(card);
-			cardView.setLocation(card.getOwningCollection().getUI().getLocationOf(card.getOwningCollection().getIndexOf(card)));
+			cardView.setLocation(card.getOwningCollection().getUI().getScreenLocationOf(card.getOwningCollection().getIndexOf(card)));
 			getClient().addTableComponent(cardView, 91);
 			MDSelection cardSelection = new MDSelection(selectColor);
 			cardSelection.setLocation(cardView.getLocation());

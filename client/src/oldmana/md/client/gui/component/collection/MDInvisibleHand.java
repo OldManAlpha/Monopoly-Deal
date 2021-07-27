@@ -1,13 +1,11 @@
 package oldmana.md.client.gui.component.collection;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 
-import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.card.collection.Hand;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
@@ -32,21 +30,34 @@ public class MDInvisibleHand extends MDCardCollectionUnknown
 	{
 		super.paintComponent(gr);
 		Graphics2D g = (Graphics2D) gr;
-		CardCollection hand = getCollection();
-		if (hand.isEmpty())
+		
+		Color textColor = new Color(80, 80, 80);
+		Color outlineColor = new Color(220, 220, 220);
+		if (getModification() == CollectionMod.ADDITION && getCardCount() == 1)
 		{
-			g.setColor(Color.DARK_GRAY);
-			Font font = GraphicsUtils.getBoldMDFont(scale(20));
-			g.setFont(font);
-			TextPainter tp = new TextPainter("Hand Empty", font, new Rectangle(0, 0, getWidth(), getHeight()));
+			double prog = getVisibleShiftProgress();
+			textColor = new Color(80, 80, 80, (int) (255 - (255 * prog)));
+			outlineColor = new Color(outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), 255 - (int) (prog * 255));
+		}
+		else if (getModification() == CollectionMod.REMOVAL && getCardCount() == 0)
+		{
+			double prog = getVisibleShiftProgress();
+			textColor = new Color(80, 80, 80, (int) (255 * prog));
+			outlineColor = new Color(outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), (int) (prog * 255));
+		}
+		if ((getCardCount() == 1 && getModification() == CollectionMod.ADDITION) || getCardCount() == 0)
+		{
+			g.setColor(outlineColor);
+			g.fillRoundRect(scale(0), scale(0), getWidth(), getHeight(), scale(15), scale(15));
+			
+			g.setColor(textColor);
+			TextPainter tp = new TextPainter("Hand Empty", GraphicsUtils.getBoldMDFont(scale(20)), new Rectangle(0, 0, getWidth(), getHeight()));
 			tp.setHorizontalAlignment(Alignment.CENTER);
 			tp.setVerticalAlignment(Alignment.CENTER);
 			tp.paint(g);
 		}
-		else
-		{
-			paintCards(g);
-		}
+		
+		paintCards(g);
 		
 		if (getClient().isDebugEnabled())
 		{

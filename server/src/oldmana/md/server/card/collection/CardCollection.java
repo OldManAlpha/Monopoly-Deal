@@ -12,6 +12,7 @@ import oldmana.md.net.packet.server.PacketMoveUnknownCard;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
+import oldmana.md.server.event.CardMovedEvent;
 import oldmana.md.server.util.IDCounter;
 
 public abstract class CardCollection
@@ -168,6 +169,7 @@ public abstract class CardCollection
 			}
 			player.sendPacket(packet);
 		}
+		getServer().getEventManager().callEvent(new CardMovedEvent(card, this, to, index, speed));
 	}
 	
 	public void setOwner(Player player)

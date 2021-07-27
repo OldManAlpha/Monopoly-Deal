@@ -11,7 +11,7 @@ public class CommandTransferCard extends Command
 {
 	public CommandTransferCard()
 	{
-		super("transfercard", new String[] {"transfer"}, new String[] {"/transfercard [Card ID] [Set ID] <Index> <Speed>", 
+		super("transfercard", new String[] {"transfer", "movecard"}, new String[] {"/transfercard [Card ID] [Set ID] <Index> <Speed>", 
 				"/transfercard [Set ID] [-1] [Player ID] <Speed>"}, true);
 	}
 	

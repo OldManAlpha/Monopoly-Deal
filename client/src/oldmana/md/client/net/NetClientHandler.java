@@ -3,11 +3,9 @@ package oldmana.md.client.net;
 import java.awt.Color;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.client.MDClient;
@@ -37,6 +35,9 @@ import oldmana.md.client.card.collection.Hand;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.card.collection.VoidCollection;
 import oldmana.md.client.gui.component.MDUndoButton;
+import oldmana.md.client.gui.component.MDButton.ButtonColorScheme;
+import oldmana.md.client.gui.component.MDPlayerButton;
+import oldmana.md.client.gui.component.MDPlayerButton.ButtonType;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.ActionStateDiscard;
 import oldmana.md.client.state.ActionStateDoNothing;
@@ -64,7 +65,7 @@ import oldmana.md.net.packet.universal.PacketKeepConnected;
 
 public class NetClientHandler
 {
-	public static int PROTOCOL_VERSION = 9;
+	public static int PROTOCOL_VERSION = 10;
 	
 	private MDClient client;
 	
@@ -107,6 +108,7 @@ public class NetClientHandler
 		Packet.registerPacket(PacketUndoCardStatus.class);
 		Packet.registerPacket(PacketSoundData.class);
 		Packet.registerPacket(PacketPlaySound.class);
+		Packet.registerPacket(PacketButton.class);
 		
 		// Client -> Server
 		Packet.registerPacket(PacketActionAccept.class);
@@ -126,6 +128,7 @@ public class NetClientHandler
 		Packet.registerPacket(PacketActionSelectPlayerMonopoly.class);
 		Packet.registerPacket(PacketActionUndoCard.class);
 		Packet.registerPacket(PacketActionClickLink.class);
+		Packet.registerPacket(PacketActionButtonClick.class);
 		
 		// Server -> Client
 		Packet.registerPacket(PacketActionStateBasic.class);
@@ -621,5 +624,31 @@ public class NetClientHandler
 	public void handlePlaySound(PacketPlaySound packet)
 	{
 		MDSoundSystem.playSound(packet.name);
+	}
+	
+	public void handleButton(PacketButton packet)
+	{
+		client.getEventQueue().addTask(new EventTask()
+		{
+			@Override
+			public void start()
+			{
+				Player player = client.getPlayerByID(packet.playerID);
+				MDPlayerButton b = player.getUI().getButtons()[packet.id];
+				b.setEnabled(packet.enabled);
+				b.setColorScheme(packet.color == 0 ? ButtonColorScheme.NORMAL : ButtonColorScheme.ALERT);
+				ButtonType type;
+				switch (packet.type)
+				{
+					case 0: type = ButtonType.NORMAL; break;
+					case 1: type = ButtonType.RENT; break;
+					case 2: type = ButtonType.REFUSABLE; break;
+					default: type = ButtonType.NORMAL;
+				}
+				b.setType(type);
+				b.setText(packet.name);
+				b.repaint();
+			}
+		});
 	}
 }

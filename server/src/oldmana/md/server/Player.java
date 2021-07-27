@@ -12,6 +12,7 @@ import oldmana.md.net.packet.server.PacketDestroyCardCollection;
 import oldmana.md.net.packet.server.PacketPlayerInfo;
 import oldmana.md.net.packet.server.PacketUndoCardStatus;
 import oldmana.md.net.packet.universal.PacketChat;
+import oldmana.md.server.ButtonManager.PlayerButton;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.CardProperty.PropertyColor;
@@ -45,6 +46,8 @@ public class Player extends Client implements CommandSender
 	private List<Card> revocableCards = new ArrayList<Card>();
 	
 	private List<StatusEffect> statusEffects = new ArrayList<StatusEffect>();
+	
+	private Map<Player, PlayerButton[]> buttonPerspectives = new HashMap<Player, PlayerButton[]>();
 	
 	private boolean online = false;
 	private int lastPing;
@@ -214,10 +217,7 @@ public class Player extends Client implements CommandSender
 	public List<CardProperty> getAllPropertyCards()
 	{
 		List<CardProperty> cards = new ArrayList<CardProperty>();
-		for (PropertySet set : getPropertySets())
-		{
-			cards.addAll(set.getPropertyCards());
-		}
+		getPropertySets().forEach((set) -> cards.addAll(set.getPropertyCards()));
 		return cards;
 	}
 	
@@ -226,52 +226,9 @@ public class Player extends Client implements CommandSender
 		List<Card> cards = new ArrayList<Card>();
 		cards.addAll(getHand().getCards());
 		cards.addAll(getBank().getCards());
-		for (PropertySet set : getPropertySets())
-		{
-			cards.addAll(set.getCards());
-		}
+		getPropertySets().forEach((set) -> cards.addAll(set.getCards()));
 		return cards;
 	}
-	
-	/*
-	public PropertySet safelyGrantProperty(CardProperty card)
-	{
-		CardCollection owner = card.getOwningCollection();
-		PropertySet newSet = null;
-		if (card.isSingleColor())
-		{
-			for (PropertySet set : getPropertySets(true))
-			{
-				for (CardProperty property : set.getPropertyCards())
-				{
-					if (property.isSingleColor() && property.getColor() == card.getColor())
-					{
-						owner.transferCard(card, set);
-						newSet = set;
-						
-						if (set.getCardCount() > set.getEffectiveColor().getMaxProperties())
-						{
-							for (CardProperty prop : set.getPropertyCards())
-							{
-								if (!prop.isSingleColor())
-								{
-									transferPropertyCardNewSet(prop);
-									break;
-								}
-							}
-						}
-						break;
-					}
-				}
-			}
-		}
-		else
-		{
-			newSet = transferPropertyCardNewSet(card);
-		}
-		return newSet;
-	}
-	*/
 	
 	public void safelyGrantProperty(CardProperty property)
 	{
@@ -596,6 +553,78 @@ public class Player extends Client implements CommandSender
 			StatusEffect effect = it.next();
 			server.getEventManager().unregisterEvents(effect);
 			it.remove();
+		}
+	}
+	
+	protected void createButtons(Player player)
+	{
+		PlayerButton[] buttons = new PlayerButton[3];
+		for (int i = 0 ; i < buttons.length ; i++)
+		{
+			buttons[i] = new PlayerButton(this, player, i);
+		}
+		buttonPerspectives.put(player, buttons);
+	}
+	
+	protected void removeButtons(Player player)
+	{
+		buttonPerspectives.remove(player);
+	}
+	
+	public PlayerButton[] getButtonsFor(Player player)
+	{
+		return buttonPerspectives.get(player);
+	}
+	
+	public PlayerButton getButtonView(Player player, int index)
+	{
+		return buttonPerspectives.get(player)[index];
+	}
+	
+	public void clearActionButtons()
+	{
+		clearButtons(0);
+	}
+	
+	public void clearButtons(int index)
+	{
+		for (PlayerButton[] bs : buttonPerspectives.values())
+		{
+			bs[0].setBlank();
+		}
+	}
+	
+	public void clearAllButtons()
+	{
+		for (PlayerButton[] bs : buttonPerspectives.values())
+		{
+			for (PlayerButton b : bs)
+			{
+				b.setBlank();
+			}
+		}
+	}
+	
+	public void sendButtonPackets(int index)
+	{
+		for (Entry<Player, PlayerButton[]> entry : buttonPerspectives.entrySet())
+		{
+			PlayerButton[] bs = entry.getValue();
+			
+			bs[index].sendUpdate();
+		}
+	}
+	
+	public void sendButtonPackets()
+	{
+		for (Entry<Player, PlayerButton[]> entry : buttonPerspectives.entrySet())
+		{
+			PlayerButton[] bs = entry.getValue();
+			
+			for (int i = 0 ; i < bs.length ; i++)
+			{
+				bs[i].sendUpdate();;
+			}
 		}
 	}
 	

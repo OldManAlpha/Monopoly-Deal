@@ -154,7 +154,7 @@ public class MDEventQueue
 					to.getUI().getCardScale(), speed);
 			MDClient.getInstance().addTableComponent(anim, 99);
 			
-			// Update the rent screen if money is added/removed from their bank
+			// Update the rent screen if bank/property sets are modified
 			Player player = MDClient.getInstance().getThePlayer();
 			if (((from instanceof Bank || from instanceof PropertySet) && from.getOwner() == player) || 
 					((to instanceof Bank || to instanceof PropertySet) && to.getOwner() == player))

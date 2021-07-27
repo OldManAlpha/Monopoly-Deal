@@ -9,6 +9,10 @@ import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateRefusal;
 import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateTarget;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
+import oldmana.md.server.ButtonManager.PlayerButton;
+import oldmana.md.server.ButtonManager.ButtonColorScheme;
+import oldmana.md.server.ButtonManager.PlayerButtonSlot;
+import oldmana.md.server.ButtonManager.PlayerButtonType;
 import oldmana.md.server.card.Card;
 
 public abstract class ActionState
@@ -65,6 +69,7 @@ public abstract class ActionState
 	{
 		targets.remove(getActionTarget(player));
 		getServer().broadcastPacket(new PacketUpdateActionStateTarget(player.getID(), false));
+		updateActionButtons();
 	}
 	
 	public ActionTarget getActionTarget(Player player)
@@ -107,7 +112,11 @@ public abstract class ActionState
 	public void setRefused(Player player, boolean refused)
 	{
 		getActionTarget(player).setRefused(refused);
-		getServer().broadcastPacket(new PacketUpdateActionStateRefusal(player.getID(), refused));
+		if (getServer().getGameState().getActionState() == this)
+		{
+			getServer().broadcastPacket(new PacketUpdateActionStateRefusal(player.getID(), refused));
+			updateActionButtons();
+		}
 	}
 	
 	public boolean isRefused(Player player)
@@ -131,7 +140,11 @@ public abstract class ActionState
 	public void setAccepted(Player player, boolean accepted)
 	{
 		getActionTarget(player).setAccepted(accepted);
-		getServer().broadcastPacket(new PacketUpdateActionStateAccepted(player.getID(), accepted));
+		if (getServer().getGameState().getActionState() == this)
+		{
+			getServer().broadcastPacket(new PacketUpdateActionStateAccepted(player.getID(), accepted));
+			updateActionButtons();
+		}
 	}
 	
 	public boolean isAccepted(Player player)
@@ -181,6 +194,50 @@ public abstract class ActionState
 	public int getNumberOfTargets()
 	{
 		return targets.size();
+	}
+	
+	public void updateActionButtons()
+	{
+		PlayerButtonSlot slot = getActionButtonSlot();
+		slot.clearButtons();
+		for (ActionTarget target : getActionTargets())
+		{
+			if (target.isAccepted()) // Accepted players don't have an accept button
+			{
+				continue;
+			}
+			if (target.isRefused())
+			{
+				applyAcceptButtonTo(slot, target.getPlayer(), false); // Disable accept button for refused player
+				applyRefusalButtonFor(slot, target.getPlayer()); // Send the acceptance button to the renter
+			}
+			else
+			{
+				applyAcceptButtonTo(slot, target.getPlayer(), true); // Send accept button to player that hasn't refused
+			}
+		}
+		slot.sendUpdate();
+	}
+	
+	private void applyRefusalButtonFor(PlayerButtonSlot slot, Player p)
+	{
+		PlayerButton b = slot.getButton(getActionOwner(), p);
+		b.build("Accept`Refuse", ButtonColorScheme.ALERT);
+		b.setType(PlayerButtonType.REFUSABLE);
+	}
+	
+	private void applyAcceptButtonTo(PlayerButtonSlot slot, Player p, boolean enabled)
+	{
+		PlayerButton b = slot.getButton(p, getActionOwner());
+		b.setColor(ButtonColorScheme.ALERT);
+		b.setEnabled(enabled);
+		b.setText("Accept`Refuse");
+		b.setType(PlayerButtonType.REFUSABLE);
+	}
+	
+	public PlayerButtonSlot getActionButtonSlot()
+	{
+		return getServer().getButtonManager().getExistingButtonSlot(0);
 	}
 	
 	public boolean isFinished()

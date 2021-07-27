@@ -97,7 +97,7 @@ public class ActionStateTargetPlayerProperty extends ActionState
 		}
 		
 		cardViewOther = new MDCard(prop);
-		cardViewOther.setLocation(prop.getOwningCollection().getUI().getLocationOf(prop.getOwningCollection().getIndexOf(prop)));
+		cardViewOther.setLocation(prop.getOwningCollection().getUI().getScreenLocationOf(prop.getOwningCollection().getIndexOf(prop)));
 		getClient().addTableComponent(cardViewOther, 91);
 		cardSelectionOther = new MDSelection(Color.BLUE);
 		cardSelectionOther.setLocation(cardViewOther.getLocation());

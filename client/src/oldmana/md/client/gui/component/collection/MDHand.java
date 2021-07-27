@@ -16,7 +16,7 @@ import oldmana.md.client.card.CardActionRentCounter;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.card.collection.Hand;
-import oldmana.md.client.gui.component.overlay.MDOverlayHand;
+import oldmana.md.client.gui.component.MDOverlayHand;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.ActionStateDiscard;
@@ -215,7 +215,7 @@ public class MDHand extends MDCardCollection
 				Card curHover = getCardAt(event.getX(), 0);
 				boolean canPlayJSN = curHover instanceof CardActionActionCounter && state != null && ((state.isTarget(player) && 
 						!state.isRefused(player) && !state.isAccepted(player)) || (state.getActionOwner() == player && state.getNumberOfRefused() > 0)) 
-						&& !state.isUsingJustSayNo();
+						&& !state.isUsingActionCounter();
 				boolean canPlayRentCounter = curHover instanceof CardActionRentCounter && state != null && state instanceof ActionStateRent && 
 						state.isTarget(player) && !state.isRefused(player) && !state.isAccepted(player);
 				boolean discard = state instanceof ActionStateDiscard;

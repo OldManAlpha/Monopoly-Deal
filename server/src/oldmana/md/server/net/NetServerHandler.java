@@ -30,6 +30,7 @@ import oldmana.md.server.card.collection.Hand;
 import oldmana.md.server.card.collection.PropertySet;
 import oldmana.md.server.event.CardDiscardEvent;
 import oldmana.md.server.event.DeckDrawEvent;
+import oldmana.md.server.event.PlayerJoinedEvent;
 import oldmana.md.server.event.PlayerReconnectedEvent;
 import oldmana.md.server.event.UndoCardEvent;
 import oldmana.md.server.state.ActionState;
@@ -45,7 +46,7 @@ import oldmana.md.server.state.GameState;
 
 public class NetServerHandler
 {
-	public static int PROTOCOL_VERSION = 9;
+	public static int PROTOCOL_VERSION = 10;
 	public static int PROTOCOL_MINIMUM = PROTOCOL_VERSION;
 	
 	private MDServer server;
@@ -89,6 +90,7 @@ public class NetServerHandler
 		Packet.registerPacket(PacketUndoCardStatus.class);
 		Packet.registerPacket(PacketSoundData.class);
 		Packet.registerPacket(PacketPlaySound.class);
+		Packet.registerPacket(PacketButton.class);
 		
 		// Client -> Server
 		Packet.registerPacket(PacketActionAccept.class);
@@ -108,6 +110,7 @@ public class NetServerHandler
 		Packet.registerPacket(PacketActionSelectPlayerMonopoly.class);
 		Packet.registerPacket(PacketActionUndoCard.class);
 		Packet.registerPacket(PacketActionClickLink.class);
+		Packet.registerPacket(PacketActionButtonClick.class);
 		
 		// Server -> Client
 		Packet.registerPacket(PacketActionStateBasic.class);
@@ -141,12 +144,17 @@ public class NetServerHandler
 	{
 		for (Packet packet : client.getNet().getInPackets())
 		{
+			String packetName = packet.getClass().getName();
+			if (packetName.startsWith("oldmana.md.net.packet"))
+			{
+				packetName = packetName.substring(22);
+			}
 			if (client instanceof Player)
 			{
 				Player player = (Player) client;
 				if (!(packet instanceof PacketKeepConnected))
 				{
-					System.out.println("Processing: " + packet.getClass().getName() + " (" + player.getName() + ")");
+					System.out.println("Processing: " + packetName + " (" + player.getName() + ")");
 				}
 				try
 				{
@@ -159,7 +167,7 @@ public class NetServerHandler
 			}
 			else
 			{
-				System.out.println("Processing: " + packet.getClass().getName() + " (Connecting Client)");
+				System.out.println("Processing: " + packetName + " (Connecting Client)");
 				if (packet instanceof PacketLogin)
 				{
 					handleLogin(client, (PacketLogin) packet);
@@ -204,6 +212,7 @@ public class NetServerHandler
 					player.setOnline(true);
 					server.refreshPlayer(player);
 					System.out.println("Player " + player.getName() + " logged in with ID " + player.getID());
+					server.getEventManager().callEvent(new PlayerJoinedEvent(player));
 				}
 			}
 			else
@@ -537,6 +546,11 @@ public class NetServerHandler
 		{
 			link.getListener().linkClicked();
 		}
+	}
+	
+	public void handleButtonClick(Player player, PacketActionButtonClick packet)
+	{
+		player.getButtonView(server.getPlayerByID(packet.playerID), packet.id).buttonClicked();
 	}
 	
 	public void handleChat(Player player, PacketChat packet)

@@ -92,5 +92,6 @@ public class ActionStateTargetPlayer extends ActionState
 		{
 			getClient().removeTableComponent(select);
 		}
+		getClient().getTableScreen().repaint();
 	}
 }

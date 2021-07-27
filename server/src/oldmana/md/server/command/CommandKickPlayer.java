@@ -36,6 +36,5 @@ public class CommandKickPlayer extends Command
 		}
 		player.sendMessage("Kicked player " + player.getName() + " (ID: " + player.getID() + ") for '" + reason + "'", true);
 		getServer().kickPlayer(player, reason);
-		getServer().broadcastPacket(new PacketDestroyPlayer(player.getID()));
 	}
 }

@@ -1,6 +1,5 @@
 package oldmana.md.server;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,6 +26,7 @@ import java.util.jar.JarFile;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardDescription;
+import oldmana.md.net.packet.server.PacketDestroyPlayer;
 import oldmana.md.net.packet.server.PacketKick;
 import oldmana.md.net.packet.server.PacketPlaySound;
 import oldmana.md.net.packet.server.PacketPlayerStatus;
@@ -83,6 +83,8 @@ public class MDServer
 	
 	private EventManager eventManager = new EventManager();
 	private ChatLinkHandler linkHandler = new ChatLinkHandler();
+	
+	private ButtonManager buttonManager = new ButtonManager(this);
 	
 	private Console consoleSender = new Console();
 	private CommandHandler cmdHandler = new CommandHandler();
@@ -415,6 +417,11 @@ public class MDServer
 		return linkHandler;
 	}
 	
+	public ButtonManager getButtonManager()
+	{
+		return buttonManager;
+	}
+	
 	public MDScheduler getScheduler()
 	{
 		return scheduler;
@@ -472,6 +479,11 @@ public class MDServer
 	public void addPlayer(Player player)
 	{
 		players.add(player);
+		for (Player p : getPlayers())
+		{
+			p.createButtons(player);
+			player.createButtons(p);
+		}
 	}
 	
 	public void kickPlayer(Player player)
@@ -488,6 +500,11 @@ public class MDServer
 			player.setNet(null);
 		}
 		players.remove(player);
+		for (Player p : getPlayers())
+		{
+			p.removeButtons(player);
+		}
+		broadcastPacket(new PacketDestroyPlayer(player.getID()));
 	}
 	
 	public List<Player> getPlayers()
@@ -684,6 +701,7 @@ public class MDServer
 			player.sendPacket(player == other ? other.getHand().getOwnerHandDataPacket() : other.getHand().getCollectionDataPacket());
 		}
 		getGameState().resendActionState(player);
+		player.sendButtonPackets();
 		player.sendUndoStatus();
 		getGameState().sendStatus(player);
 	}

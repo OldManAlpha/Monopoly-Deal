@@ -23,17 +23,6 @@ public class MDBank extends MDCardCollection
 	@Override
 	public void update()
 	{
-		/*
-		if (getMDCards().size() > 0)
-		{
-			double interval = getMDCards().size() == 1 ? 0 : Math.min(30, (double) (getWidth() - MDCard.CARD_SIZE.width) / (double) (getMDCards().size() - 1));
-			int start = 0;
-			for (int i = 0 ; i < getMDCards().size() ; i++)
-			{
-				getMDCards().get(i).setLocation((int) (start + (interval * i)), 0);
-			}
-		}
-		*/
 		repaint();
 	}
 	
@@ -44,13 +33,37 @@ public class MDBank extends MDCardCollection
 		Graphics2D g = (Graphics2D) gr;
 		Graphics2D debug = (Graphics2D) g.create();
 		g.setColor(Color.DARK_GRAY);
-		g.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, scale(15), scale(15));
-		g.drawLine(0, scale(20), getWidth(), scale(20));
-		g.setColor(Color.BLACK);
-		TextPainter btp = new TextPainter("BANK", GraphicsUtils.getBoldMDFont(scale(18)), new Rectangle(0, scale(4), getWidth(), scale(20)));
-		btp.setHorizontalAlignment(Alignment.CENTER);
-		btp.setVerticalAlignment(Alignment.CENTER);
-		btp.paint(g);
+		Color gray = new Color(150, 150, 150);
+		Color textColor = Color.BLACK;
+		Color outlineColor = new Color(220, 220, 220);
+		if (getModification() == CollectionMod.ADDITION && getCardCount() == 1)
+		{
+			double prog = getVisibleShiftProgress();
+			int progColor = (int) (gray.getRed() - (prog * gray.getRed()));
+			textColor = new Color(progColor, progColor, progColor);
+			outlineColor = new Color(outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), 255 - (int) (prog * 255));
+		}
+		else if (getModification() == CollectionMod.REMOVAL && getCardCount() == 0)
+		{
+			double prog = getVisibleShiftProgress();
+			int progColor = (int) (prog * gray.getRed());
+			textColor = new Color(progColor, progColor, progColor);
+			outlineColor = new Color(outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), (int) (prog * 255));
+		}
+		else if (getCardCount() == 0)
+		{
+			textColor = gray;
+		}
+		if ((getCardCount() == 1 && getModification() == CollectionMod.ADDITION) || getCardCount() == 0)
+		{
+			g.setColor(outlineColor);
+			g.fillRoundRect(scale(0), scale(25), getWidth(), getHeight() - scale(25), scale(15), scale(15));
+		}
+		g.setColor(textColor);
+		TextPainter tp = new TextPainter("BANK", GraphicsUtils.getBoldMDFont(scale(18)), new Rectangle(0, scale(6), getWidth() - scale(5), scale(20)));
+		tp.setHorizontalAlignment(Alignment.RIGHT);
+		tp.setVerticalAlignment(Alignment.CENTER);
+		tp.paint(g);
 		CardCollection bank = getCollection();
 		
 		if (!bank.isEmpty())
@@ -64,13 +77,13 @@ public class MDBank extends MDCardCollection
 		if (getClient().isDebugEnabled())
 		{
 			debug.setColor(Color.GREEN);
-			GraphicsUtils.drawDebug(debug, "ID: " + getCollection().getID(), scale(20), getWidth(), getHeight());
+			GraphicsUtils.drawDebug(debug, "ID: " + getCollection().getID(), scale(20), getWidth(), getHeight() + scale(25));
 		}
 	}
 	
 	public double getInterval(int cardCount)
 	{
-		return cardCount == 1 ? 0 : Math.min(scale(30), (getWidth() - scale(10) - GraphicsUtils.getCardWidth()) / 
+		return cardCount == 1 ? 0 : Math.min(scale(30), (getWidth() - GraphicsUtils.getCardWidth()) / 
 				(double) (cardCount - 1));
 	}
 	
@@ -82,6 +95,6 @@ public class MDBank extends MDCardCollection
 	@Override
 	public Point getLocationOf(int cardIndex, int cardCount)
 	{
-		return new Point((int) (cardIndex * getInterval(cardCount)) + scale(5), scale(25));
+		return new Point(getWidth() - GraphicsUtils.getCardWidth() - (int) (cardIndex * getInterval(cardCount)), scale(25));
 	}
 }

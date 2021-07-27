@@ -15,10 +15,12 @@ import java.awt.RenderingHints;
 
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
-import oldmana.md.client.ThePlayer;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.LayoutAdapter;
+import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDComponent;
+import oldmana.md.client.gui.component.MDPlayerButton;
+import oldmana.md.client.gui.component.MDPlayerButton.ButtonType;
 import oldmana.md.client.gui.component.MDPlayerPropertySets;
 import oldmana.md.client.gui.component.collection.MDBank;
 import oldmana.md.client.gui.component.collection.MDInvisibleHand;
@@ -35,6 +37,8 @@ public class MDPlayer extends MDComponent
 	private MDInvisibleHand hand;
 	private MDBank bank;
 	
+	private MDPlayerButton[] buttons;
+	
 	private MDPlayerPropertySets propertySets;
 	
 	public MDPlayer(Player player)
@@ -48,6 +52,13 @@ public class MDPlayer extends MDComponent
 		}
 		add(propertySets, 0);
 		
+		buttons = new MDPlayerButton[3];
+		for (int i = 0 ; i < buttons.length ; i++)
+		{
+			buttons[i] = new MDPlayerButton(player, i);
+			buttons[i].setEnabled(false);
+			add(buttons[i]);
+		}
 	}
 	
 	public void addPropertySet(PropertySet set)
@@ -65,6 +76,21 @@ public class MDPlayer extends MDComponent
 		return propertySets;
 	}
 	
+	public MDPlayerButton[] getButtons()
+	{
+		return buttons;
+	}
+	
+	public boolean hasRentButton()
+	{
+		return buttons[0].getType() == ButtonType.RENT;
+	}
+	
+	public boolean hasRefusableButton()
+	{
+		return buttons[0].getType() == ButtonType.REFUSABLE;
+	}
+	
 	public void setHand(MDInvisibleHand hand)
 	{
 		if (this.hand != null)
@@ -72,8 +98,6 @@ public class MDPlayer extends MDComponent
 			remove(this.hand);
 		}
 		this.hand = hand;
-		hand.setLocation(20, 45);
-		hand.setSize(160, 90);
 		add(hand);
 	}
 	
@@ -84,16 +108,6 @@ public class MDPlayer extends MDComponent
 			remove(this.bank);
 		}
 		this.bank = bank;
-		if (player instanceof ThePlayer)
-		{
-			bank.setLocation(20, 35);
-			bank.setSize(340 + 10, 90 + 30);
-		}
-		else
-		{
-			bank.setLocation(200, 35);
-			bank.setSize(160 + 10, 90 + 30);
-		}
 		add(bank);
 	}
 	
@@ -183,20 +197,30 @@ public class MDPlayer extends MDComponent
 		@Override
 		public void layoutContainer(Container container)
 		{
-			Point bankPos = new Point(scale(20), scale(35));
-			Dimension bankSize = new Dimension(scale(340 + 10), scale(90 + 30));
+			Point bankPos = new Point(scale(20), 5);
+			Dimension bankSize = new Dimension(scale(340 + 10), scale(90 + 25));
 			if (hand != null)
 			{
-				hand.setLocation(scale(20), scale(45));
+				hand.setLocation(scale(20), scale(30));
 				hand.setSize(scale(160), scale(90));
-				bankPos = new Point(scale(200), scale(35));
-				bankSize = new Dimension(scale(160 + 10), scale(90 + 30));
+				bankPos = new Point(scale(200), 5);
+				bankSize = new Dimension(scale(160 + 10), scale(90 + 25));
 			}
 			if (bank != null)
 			{
 				bank.setLocation(bankPos);
 				bank.setSize(bankSize);
 			}
+			
+			if (buttons != null && buttons[2] != null)
+			{
+				for (int i = 0 ; i < buttons.length ; i++)
+				{
+					buttons[i].setSize(scale(110), scale(30));
+					buttons[i].setLocation(scale(20 + (i * 120)), scale(125));
+				}
+			}
+			
 			int x = bank == null ? scale(10) : (bank.getX() + bank.getWidth() + scale(20));
 			propertySets.setLocation(x, scale(5));
 			propertySets.setSize(getWidth() - x - scale(5), getHeight() - scale(10));

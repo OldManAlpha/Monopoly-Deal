@@ -1,4 +1,4 @@
-package oldmana.md.client.gui.component.overlay;
+package oldmana.md.client.gui.component;
 
 import java.awt.Color;
 import java.awt.Container;
@@ -17,10 +17,6 @@ import oldmana.md.client.card.CardActionRent;
 import oldmana.md.client.card.CardActionRentCounter;
 import oldmana.md.client.card.CardMoney;
 import oldmana.md.client.card.CardProperty;
-import oldmana.md.client.gui.component.MDButton;
-import oldmana.md.client.gui.component.MDCard;
-import oldmana.md.client.gui.component.MDComponent;
-import oldmana.md.client.gui.component.MDInfoIcon;
 import oldmana.md.client.gui.component.collection.MDHand;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.state.ActionState;
@@ -76,7 +72,7 @@ public class MDOverlayHand extends MDComponent
 					if (card instanceof CardActionActionCounter)
 					{
 						ActionState state = client.getGameState().getActionState();
-						state.onJustSayNo((CardActionActionCounter) card);
+						state.onActionCounter((CardActionActionCounter) card);
 					}
 					else if (card instanceof CardActionRentCounter)
 					{
