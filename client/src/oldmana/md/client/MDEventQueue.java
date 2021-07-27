@@ -7,6 +7,7 @@ import java.util.List;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.Bank;
 import oldmana.md.client.card.collection.CardCollection;
+import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.component.MDMovingCard;
 import oldmana.md.client.gui.component.collection.MDCardCollection;
 import oldmana.md.client.gui.component.collection.MDCardCollectionBase;
@@ -154,9 +155,9 @@ public class MDEventQueue
 			MDClient.getInstance().addTableComponent(anim, 99);
 			
 			// Update the rent screen if money is added/removed from their bank
-			// TODO: Probably should do that for properties too...
 			Player player = MDClient.getInstance().getThePlayer();
-			if ((from != null && from instanceof Bank && from.getOwner() == player) || (to != null && to instanceof Bank && to.getOwner() == player))
+			if (((from instanceof Bank || from instanceof PropertySet) && from.getOwner() == player) || 
+					((to instanceof Bank || to instanceof PropertySet) && to.getOwner() == player))
 			{
 				ActionState state = MDClient.getInstance().getGameState().getActionState();
 				if (state instanceof ActionStateRent && state.isTarget(player))
