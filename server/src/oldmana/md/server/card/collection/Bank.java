@@ -33,6 +33,6 @@ public class Bank extends CardCollection
 	@Override
 	public Packet getCollectionDataPacket()
 	{
-		return new PacketCardCollectionData(getID(), getOwner().getID(), getCardIds(), CardCollectionType.BANK);
+		return new PacketCardCollectionData(getID(), getOwner().getID(), getCardIDs(), CardCollectionType.BANK);
 	}
 }

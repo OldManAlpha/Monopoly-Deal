@@ -2,7 +2,9 @@ package oldmana.md.server.card.collection;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketMoveCard;
@@ -16,7 +18,7 @@ import oldmana.md.server.event.CardMovedEvent;
 
 public abstract class CardCollection
 {
-	public static List<CardCollection> collections = new ArrayList<CardCollection>();
+	private static Map<Integer, CardCollection> collections = new HashMap<Integer, CardCollection>();
 	
 	private static int nextID;
 	
@@ -102,7 +104,7 @@ public abstract class CardCollection
 		return cards.indexOf(card);
 	}
 	
-	public int[] getCardIds()
+	public int[] getCardIDs()
 	{
 		int[] ids = new int[getCardCount()];
 		for (int i = 0 ; i < ids.length ; i++)
@@ -201,23 +203,16 @@ public abstract class CardCollection
 	
 	public static void registerCardCollection(CardCollection collection)
 	{
-		collections.add(collection);
+		collections.put(collection.getID(), collection);
 	}
-
-	public static List<CardCollection> getRegisteredCardCollections()
+	
+	public static Map<Integer, CardCollection> getRegisteredCardCollections()
 	{
 		return collections;
 	}
-
+	
 	public static CardCollection getCardCollection(int id)
 	{
-		for (CardCollection collection : collections)
-		{
-			if (collection.getID() == id)
-			{
-				return collection;
-			}
-		}
-		return null;
+		return collections.get(id);
 	}
 }

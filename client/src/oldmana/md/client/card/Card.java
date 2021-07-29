@@ -5,7 +5,9 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import oldmana.md.client.MDClient;
@@ -17,6 +19,9 @@ import oldmana.md.client.gui.util.GraphicsUtils;
 
 public class Card
 {
+	private static Map<Integer, Card> cards = new HashMap<Integer, Card>();
+	
+	
 	private int id;
 	
 	private CardCollection collection;
@@ -34,6 +39,7 @@ public class Card
 	
 	private BufferedImage graphics;
 	private Map<Double, Image> graphicsCache = new HashMap<Double, Image>();
+	
 	private static Map<Double, BufferedImage> backGraphicsCache = new HashMap<Double, BufferedImage>();
 	
 	public Card(int id, int value, String name)
@@ -41,7 +47,7 @@ public class Card
 		this.id = id;
 		this.value = value;
 		this.name = name;
-		CardRegistry.registerCard(this);
+		registerCard(this);
 	}
 	
 	public Card(int id, int value, String name, String[] displayName, int fontSize, int displayOffsetY, CardDescription description)
@@ -51,6 +57,7 @@ public class Card
 		this.fontSize = fontSize;
 		this.displayOffsetY = displayOffsetY;
 		this.description = description;
+		registerCard(this);
 	}
 	
 	public int getID()
@@ -199,10 +206,48 @@ public class Card
 		return CardValueColor.getByValue(value).getColor();
 	}
 	
-	public MDClient getClient()
+	protected MDClient getClient()
 	{
 		return MDClient.getInstance();
 	}
+	
+	
+	public static Map<Integer, Card> getRegisteredCards()
+	{
+		return cards;
+	}
+	
+	public static void registerCard(Card card)
+	{
+		cards.put(card.getID(), card);
+	}
+	
+	public static List<CardProperty> getPropertyCards(int[] ids)
+	{
+		List<CardProperty> props = new ArrayList<CardProperty>();
+		List<Card> cards = getCards(ids);
+		for (Card card : cards)
+		{
+			props.add((CardProperty) card);
+		}
+		return props;
+	}
+	
+	public static List<Card> getCards(int[] ids)
+	{
+		List<Card> cards = new ArrayList<Card>();
+		for (int id : ids)
+		{
+			cards.add(getCard(id));
+		}
+		return cards;
+	}
+	
+	public static Card getCard(int id)
+	{
+		return cards.get(id);
+	}
+	
 	
 	public static class CardDescription
 	{
@@ -253,7 +298,7 @@ public class Card
 	public static enum CardValueColor
 	{
 		ZERO(Color.LIGHT_GRAY), ONE(new Color(243, 237, 159)), TWO(new Color(237, 209, 178)), THREE(new Color(230, 242, 203)), FOUR(new Color(194, 224, 233)), 
-		FIVE(new Color(193, 161, 203)), TEN(new Color(247, 210, 82)), GREATER_THAN_TEN(new Color(132, 240, 255)), OTHER(new Color(0, 200, 0));
+		FIVE(new Color(193, 161, 203)), TEN(new Color(247, 210, 82)), GREATER_THAN_TEN(new Color(132, 240, 255)), OTHER(new Color(80, 200, 80));
 		
 		private Color color;
 		
@@ -269,37 +314,26 @@ public class Card
 		
 		public static CardValueColor getByValue(int value)
 		{
-			if (value == 0)
+			switch (value)
 			{
-				return ZERO;
-			}
-			else if (value == 1)
-			{
-				return ONE;
-			}
-			else if (value == 2)
-			{
-				return TWO;
-			}
-			else if (value == 3)
-			{
-				return THREE;
-			}
-			else if (value == 4)
-			{
-				return FOUR;
-			}
-			else if (value == 5)
-			{
-				return FIVE;
-			}
-			else if (value == 10)
-			{
-				return TEN;
-			}
-			else if (value > 10)
-			{
-				return GREATER_THAN_TEN;
+				case 0: return ZERO;
+				case 1: return ONE;
+				case 2: return TWO;
+				case 3: return THREE;
+				case 4: return FOUR;
+				case 5: return FIVE;
+				case 10: return TEN;
+				default:
+				{
+					if (value > 10)
+					{
+						return GREATER_THAN_TEN;
+					}
+					else if (value > 5)
+					{
+						return OTHER;
+					}
+				}
 			}
 			return OTHER;
 		}

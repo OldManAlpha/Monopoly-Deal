@@ -274,6 +274,6 @@ public class PropertySet extends CardCollection
 	@Override
 	public Packet getCollectionDataPacket()
 	{
-		return new PacketPropertySetData(getID(), getOwner().getID(), getCardIds(), getEffectiveColor() != null ? getEffectiveColor().getID() : -1);
+		return new PacketPropertySetData(getID(), getOwner().getID(), getCardIDs(), getEffectiveColor() != null ? getEffectiveColor().getID() : -1);
 	}
 }

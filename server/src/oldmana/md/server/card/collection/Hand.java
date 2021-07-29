@@ -38,7 +38,7 @@ public class Hand extends CardCollection
 	
 	public Packet getOwnerHandDataPacket()
 	{
-		return new PacketCardCollectionData(getID(), getOwner().getID(), getCardIds(), CardCollectionType.HAND);
+		return new PacketCardCollectionData(getID(), getOwner().getID(), getCardIDs(), CardCollectionType.HAND);
 	}
 	
 	@Override

@@ -150,14 +150,9 @@ public class MDFrame extends JFrame
 		// Draw White
 		g.setColor(Color.WHITE);
 		g.fillRoundRect(0, 0, width - 1, height - 1, width / 6, height / 6);
-		
-		g.setColor(Color.BLACK);
-		//g.drawRoundRect(0, 0, width - 1, height - 1, width / 6, height / 6);
+		// Draw Red
 		g.setColor(new Color(239, 15, 20));
 		g.fillRect(width / 12, width / 12, width - ((width / 12) * 2) - 1, height - ((width / 12) * 2) - 1);
-		// Draw Inner Outline
-		g.setColor(Color.BLACK);
-		//g.drawRoundRect(width / 15, width / 15, width - ((width / 15) * 2) - 1, height - ((width / 15) * 2) - 1, width / 6, width / 6);
 	}
 	
 	private void drawAlert(Graphics2D g, int width, int height)

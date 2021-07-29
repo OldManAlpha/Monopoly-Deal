@@ -22,13 +22,11 @@ import oldmana.md.client.card.CardActionRent;
 import oldmana.md.client.card.CardActionRentCounter;
 import oldmana.md.client.card.CardMoney;
 import oldmana.md.client.card.CardProperty;
-import oldmana.md.client.card.CardRegistry;
 import oldmana.md.client.card.CardSpecial;
 import oldmana.md.client.card.Card.CardType;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.Bank;
 import oldmana.md.client.card.collection.CardCollection;
-import oldmana.md.client.card.collection.CardCollectionRegistry;
 import oldmana.md.client.card.collection.Deck;
 import oldmana.md.client.card.collection.DiscardPile;
 import oldmana.md.client.card.collection.Hand;
@@ -303,7 +301,7 @@ public class NetClientHandler
 			Bank bank = new Bank(packet.id, owner);
 			for (int id : packet.cardIds)
 			{
-				bank.addCard(CardRegistry.getCard(id));
+				bank.addCard(Card.getCard(id));
 			}
 			owner.setBank(bank);
 		}
@@ -313,13 +311,13 @@ public class NetClientHandler
 			Hand hand = new Hand(packet.id, player);
 			for (int id : packet.cardIds)
 			{
-				hand.addCard(CardRegistry.getCard(id));
+				hand.addCard(Card.getCard(id));
 			}
 			player.setHand(hand);
 		}
 		else if (packet.type == CardCollectionType.DISCARD_PILE.getID())
 		{
-			client.setDiscardPile(new DiscardPile(packet.id, CardRegistry.getCards(packet.cardIds)));
+			client.setDiscardPile(new DiscardPile(packet.id, Card.getCards(packet.cardIds)));
 		}
 	}
 	
@@ -343,7 +341,7 @@ public class NetClientHandler
 	public void handlePropertySetData(PacketPropertySetData packet)
 	{
 		Player owner = client.getPlayerByID(packet.owner);
-		PropertySet set = new PropertySet(packet.id, owner, CardRegistry.getPropertyCards(packet.cardIds), PropertyColor.fromID(packet.activeColor));
+		PropertySet set = new PropertySet(packet.id, owner, Card.getPropertyCards(packet.cardIds), PropertyColor.fromID(packet.activeColor));
 		owner.addPropertySet(set);
 	}
 	
@@ -362,22 +360,22 @@ public class NetClientHandler
 	
 	public void handleMoveCard(PacketMoveCard packet)
 	{
-		Card card = CardRegistry.getCard(packet.cardId);
-		CardCollection collection = CardCollectionRegistry.getCardCollection(packet.collectionId);
+		Card card = Card.getCard(packet.cardId);
+		CardCollection collection = CardCollection.getCardCollection(packet.collectionId);
 		collection.transferCard(card, packet.index, packet.speed);
 	}
 	
 	public void handleMoveRevealCard(PacketMoveRevealCard packet)
 	{
-		CardCollection from = CardCollectionRegistry.getCardCollection(packet.from);
-		CardCollection to = CardCollectionRegistry.getCardCollection(packet.to);
-		from.transferCardTo(CardRegistry.getCard(packet.cardId), to, packet.index, packet.speed);
+		CardCollection from = CardCollection.getCardCollection(packet.from);
+		CardCollection to = CardCollection.getCardCollection(packet.to);
+		from.transferCardTo(Card.getCard(packet.cardId), to, packet.index, packet.speed);
 	}
 	
 	public void handleMoveUnknownCard(PacketMoveUnknownCard packet)
 	{
-		CardCollection from = CardCollectionRegistry.getCardCollection(packet.from);
-		CardCollection to = CardCollectionRegistry.getCardCollection(packet.to);
+		CardCollection from = CardCollection.getCardCollection(packet.from);
+		CardCollection to = CardCollection.getCardCollection(packet.to);
 		from.transferCardTo(null, to, -1, packet.speed);
 	}
 	
@@ -457,7 +455,7 @@ public class NetClientHandler
 	
 	public void handleDestroyCardCollection(PacketDestroyCardCollection packet)
 	{
-		CardCollection collection = CardCollectionRegistry.getCardCollection(packet.id);
+		CardCollection collection = CardCollection.getCardCollection(packet.id);
 		if (collection instanceof PropertySet)
 		{
 			client.getEventQueue().addTask(new EventTask()
@@ -475,7 +473,7 @@ public class NetClientHandler
 	
 	public void handlePropertySetColor(PacketPropertySetColor packet)
 	{
-		PropertySet set = (PropertySet) CardCollectionRegistry.getCardCollection(packet.id);
+		PropertySet set = (PropertySet) CardCollection.getCardCollection(packet.id);
 		client.getEventQueue().addTask(new EventTask()
 		{
 			@Override
@@ -496,7 +494,7 @@ public class NetClientHandler
 			{
 				client.setAwaitingResponse(false);
 				client.getGameState().setActionState(new ActionStatePropertiesSelected(client.getPlayerByID(packet.owner), 
-						client.getPlayerByID(packet.target), CardRegistry.getPropertyCards(packet.cards)));
+						client.getPlayerByID(packet.target), Card.getPropertyCards(packet.cards)));
 				client.getTableScreen().repaint();
 			}
 		});
@@ -511,7 +509,7 @@ public class NetClientHandler
 					{
 				client.setAwaitingResponse(false);
 				client.getGameState().setActionState(new ActionStateStealMonopoly(client.getPlayerByID(packet.thief), 
-						(PropertySet) CardCollectionRegistry.getCardCollection(packet.collection)));
+						(PropertySet) CardCollection.getCardCollection(packet.collection)));
 				client.getTableScreen().repaint();
 			}
 		});
@@ -597,7 +595,7 @@ public class NetClientHandler
 		MDUndoButton undoButton = MDClient.getInstance().getTableScreen().getUndoButton();
 		if (packet.cardId > -1)
 		{
-			undoButton.setUndoCard(CardRegistry.getCard(packet.cardId));
+			undoButton.setUndoCard(Card.getCard(packet.cardId));
 		}
 		else
 		{

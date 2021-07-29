@@ -16,7 +16,7 @@ import oldmana.md.server.card.collection.CardCollection;
 
 public class Card
 {
-	public static List<Card> cards = new ArrayList<Card>();
+	private static Map<Integer, Card> cards = new HashMap<Integer, Card>();
 	
 	private static int nextID;
 	
@@ -287,22 +287,22 @@ public class Card
 		return getName() + " (" + getValue() + "M)";
 	}
 	
-
-	public static List<Card> getRegisteredCards()
+	
+	public static Map<Integer, Card> getRegisteredCards()
 	{
 		return cards;
 	}
-
+	
 	public static void registerCard(Card card)
 	{
-		cards.add(card);
+		cards.put(card.getID(), card);
 	}
 	
 	public static void unregisterCard(Card card)
 	{
-		cards.remove(card);
+		cards.remove(card.getID());
 	}
-
+	
 	public static List<Card> getCards(int[] ids)
 	{
 		List<Card> cards = new ArrayList<Card>();
@@ -312,16 +312,9 @@ public class Card
 		}
 		return cards;
 	}
-
+	
 	public static Card getCard(int id)
 	{
-		for (Card card : cards)
-		{
-			if (card.getID() == id)
-			{
-				return card;
-			}
-		}
-		return null;
+		return cards.get(id);
 	}
 }

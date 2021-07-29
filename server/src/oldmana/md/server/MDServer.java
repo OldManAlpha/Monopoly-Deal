@@ -680,7 +680,7 @@ public class MDServer
 		player.sendPacket(PropertyColor.getColorsPacket());
 		
 		// Send all card data
-		for (Card card : Card.getRegisteredCards())
+		for (Card card : Card.getRegisteredCards().values())
 		{
 			player.sendPacket(card.getCardDataPacket());
 		}

@@ -19,7 +19,6 @@ import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.ThePlayer;
 import oldmana.md.client.card.Card;
-import oldmana.md.client.card.CardRegistry;
 import oldmana.md.client.card.collection.Deck;
 import oldmana.md.client.card.collection.DiscardPile;
 import oldmana.md.client.card.collection.Hand;
@@ -121,7 +120,7 @@ public class TableScreen extends JLayeredPane
 			public void mouseReleased(MouseEvent event)
 			{
 				MDClient.getInstance().setDebugEnabled(!MDClient.getInstance().isDebugEnabled());
-				for (Card card : CardRegistry.getRegisteredCards())
+				for (Card card : Card.getRegisteredCards().values())
 				{
 					card.clearGraphicsCache();
 				}

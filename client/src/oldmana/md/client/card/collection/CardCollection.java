@@ -1,7 +1,9 @@
 package oldmana.md.client.card.collection;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
@@ -11,6 +13,9 @@ import oldmana.md.client.gui.component.collection.MDCardCollectionBase;
 
 public abstract class CardCollection
 {
+	private static Map<Integer, CardCollection> collections = new HashMap<Integer, CardCollection>();
+	
+	
 	private int id;
 	
 	private Player owner;
@@ -28,7 +33,7 @@ public abstract class CardCollection
 		cards = new ArrayList<Card>();
 		
 		this.id = id;
-		CardCollectionRegistry.registerCardCollection(this);
+		registerCardCollection(this);
 	}
 	
 	public CardCollection(int id, Player owner, List<Card> cards)
@@ -41,7 +46,7 @@ public abstract class CardCollection
 		}
 		
 		this.id = id;
-		CardCollectionRegistry.registerCardCollection(this);
+		registerCardCollection(this);
 	}
 	
 	public CardCollection(int id, Player owner, int unknownCards)
@@ -50,7 +55,7 @@ public abstract class CardCollection
 		this.id = id;
 		this.unknown = true;
 		this.unknownCardCount = unknownCards;
-		CardCollectionRegistry.registerCardCollection(this);
+		registerCardCollection(this);
 	}
 	
 	public CardCollection(int id, boolean unknown)
@@ -58,7 +63,7 @@ public abstract class CardCollection
 		this.owner = null;
 		this.id = id;
 		this.unknown = unknown;
-		CardCollectionRegistry.registerCardCollection(this);
+		registerCardCollection(this);
 	}
 	
 	public int getID()
@@ -198,5 +203,21 @@ public abstract class CardCollection
 	public MDClient getClient()
 	{
 		return MDClient.getInstance();
+	}
+	
+	
+	public static Map<Integer, CardCollection> getRegisteredCardCollections()
+	{
+		return collections;
+	}
+	
+	public static void registerCardCollection(CardCollection collection)
+	{
+		collections.put(collection.getID(), collection);
+	}
+	
+	public static CardCollection getCardCollection(int id)
+	{
+		return collections.get(id);
 	}
 }

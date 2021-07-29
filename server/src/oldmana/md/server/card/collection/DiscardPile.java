@@ -21,6 +21,6 @@ public class DiscardPile extends CardCollection
 	@Override
 	public Packet getCollectionDataPacket()
 	{
-		return new PacketCardCollectionData(getID(), -1, getCardIds(), CardCollectionType.DISCARD_PILE);
+		return new PacketCardCollectionData(getID(), -1, getCardIDs(), CardCollectionType.DISCARD_PILE);
 	}
 }
