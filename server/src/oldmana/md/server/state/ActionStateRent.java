@@ -152,7 +152,7 @@ public class ActionStateRent extends ActionState
 				if (card instanceof CardProperty)
 				{
 					CardProperty property = (CardProperty) card;
-					player.safelyGrantProperty(property);
+					renter.safelyGrantProperty(property);
 				}
 				else
 				{
