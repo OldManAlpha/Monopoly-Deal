@@ -8,7 +8,6 @@ public class ActionTarget
 {
 	private Player target;
 	private boolean refused;
-	private boolean refusalAccepted;
 	private boolean accepted;
 	
 	private JComponent overlay;
@@ -31,16 +30,6 @@ public class ActionTarget
 	public void setRefused(boolean refused)
 	{
 		this.refused = refused;
-	}
-	
-	public boolean isRefusalAccepted()
-	{
-		return refusalAccepted;
-	}
-	
-	public void setRefusalAccepted(boolean accepted)
-	{
-		this.refusalAccepted = accepted;
 	}
 	
 	public boolean isAccepted()

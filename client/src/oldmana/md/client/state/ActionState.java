@@ -15,6 +15,7 @@ import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.component.MDButton.ButtonColorScheme;
 import oldmana.md.client.gui.component.collection.MDHand;
 import oldmana.md.client.gui.util.GraphicsUtils;
+import oldmana.md.net.packet.client.action.PacketActionAccept;
 import oldmana.md.net.packet.client.action.PacketActionPlayCardSpecial;
 
 public class ActionState
@@ -48,12 +49,49 @@ public class ActionState
 		}
 	}
 	
-	public void setup() {}
+	/**Call superclass method to setup multibutton
+	 * 
+	 */
+	public void setup()
+	{
+		if (isTarget(getClient().getThePlayer()) && getActionTargets().size() == 1)
+		{
+			applyButtonAccept(getActionOwner());
+		}
+	}
 	
 	/**Call superclass method to clean up multibutton
 	 * 
 	 */
 	public void cleanup()
+	{
+		removeButton();
+	};
+	
+	private void applyButtonAccept(Player player)
+	{
+		MDButton button = getClient().getTableScreen().getMultiButton();
+		button.setColorScheme(ButtonColorScheme.ALERT);
+		button.setText("Accept");
+		button.setEnabled(true);
+		button.setListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseReleased(MouseEvent event)
+			{
+				if (!getClient().isAwaitingResponse())
+				{
+					getClient().sendPacket(new PacketActionAccept(player.getID()));
+					button.removeListener();
+					button.setEnabled(false);
+					getClient().setAwaitingResponse(true);
+				}
+			}
+		});
+		button.repaint();
+	}
+	
+	private void removeButton()
 	{
 		MDButton button = getClient().getTableScreen().getMultiButton();
 		button.setColorScheme(ButtonColorScheme.NORMAL);
@@ -61,7 +99,7 @@ public class ActionState
 		button.setEnabled(false);
 		button.removeListener();
 		button.repaint();
-	};
+	}
 	
 	public void updateUI() {}
 	
@@ -137,13 +175,40 @@ public class ActionState
 		return jsn != null;
 	}
 	
-	public void onPlayerAccept(Player player) {}
+	public void onPlayerAccept(Player player)
+	{
+		evaluateAcceptButton();
+	}
 	
-	public void onPlayerRefused(Player player) {}
+	public void onPlayerRefused(Player player)
+	{
+		evaluateAcceptButton();
+	}
 	
-	public void onPlayerUnrefused(Player player) {}
+	public void onPlayerUnrefused(Player player)
+	{
+		evaluateAcceptButton();
+	}
 	
-	public void onPreTargetRemoved(Player player) {}
+	public void onPreTargetRemoved(Player player)
+	{
+		evaluateAcceptButton();
+	}
+	
+	private void evaluateAcceptButton()
+	{
+		if (getActionOwner() == getClient().getThePlayer())
+		{
+			if (getNumberOfRefused() == 1) // Apply the accept button for the one refusal
+			{
+				applyButtonAccept(getRefused().get(0));
+			}
+			else
+			{
+				removeButton();
+			}
+		}
+	}
 	
 	public CardActionActionCounter getActionCounterCard()
 	{
@@ -286,12 +351,12 @@ public class ActionState
 		return refused;
 	}
 	
-	public int getNumberOfAcceptedRefusals()
+	public int getNumberOfAccepted()
 	{
 		int accepted = 0;
 		for (ActionTarget target : targets)
 		{
-			if (target.isRefusalAccepted())
+			if (target.isAccepted())
 			{
 				accepted++;
 			}

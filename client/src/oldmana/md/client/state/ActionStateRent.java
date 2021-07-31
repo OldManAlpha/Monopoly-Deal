@@ -93,25 +93,22 @@ public class ActionStateRent extends ActionState
 			rentScreen.setVisible(false);
 			getClient().getTableScreen().setActionScreen(rentScreen);
 			
-			if (getActionOwner() == null) // We're still using the multibutton for rent charged directly by the server, at least for now
+			MDButton button = getClient().getTableScreen().getMultiButton();
+			button.setEnabled(true);
+			button.setText("View Charge");
+			button.setColorScheme(ButtonColorScheme.ALERT);
+			button.repaint();
+			button.setListener(new MouseAdapter()
 			{
-				MDButton button = getClient().getTableScreen().getMultiButton();
-				button.setEnabled(true);
-				button.setText("View Charge");
-				button.setColorScheme(ButtonColorScheme.ALERT);
-				button.repaint();
-				button.setListener(new MouseAdapter()
+				@Override
+				public void mouseReleased(MouseEvent event)
 				{
-					@Override
-					public void mouseReleased(MouseEvent event)
+					if (button.isEnabled())
 					{
-						if (button.isEnabled())
-						{
-							rentScreen.setVisible(true);
-						}
+						rentScreen.setVisible(true);
 					}
-				});
-			}
+				}
+			});
 		}
 	}
 	
