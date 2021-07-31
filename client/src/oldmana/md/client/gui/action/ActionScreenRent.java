@@ -42,7 +42,7 @@ public class ActionScreenRent extends ActionScreen
 	{
 		super();
 		this.player = player;
-		this.rent = state.getRent();
+		this.rent = state.getPlayerRent(player);
 		//cardSelect.setPreferredSize(new Dimension(1350, 2000));
 		scrollPane = new JScrollPane();
 		scrollPane.setOpaque(false);

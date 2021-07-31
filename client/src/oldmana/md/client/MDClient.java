@@ -265,16 +265,9 @@ public class MDClient
 	public List<Player> getPlayersByIDs(int[] ids)
 	{
 		List<Player> players = new ArrayList<Player>();
-		for (Player player : getAllPlayers())
+		for (int id : ids)
 		{
-			for (int id : ids)
-			{
-				if (player.getID() == id)
-				{
-					players.add(player);
-					break;
-				}
-			}
+			players.add(getPlayerByID(id));
 		}
 		return players;
 	}

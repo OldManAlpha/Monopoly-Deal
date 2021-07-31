@@ -6,14 +6,14 @@ public class PacketActionStateRent extends Packet
 {
 	public int renter;
 	public int[] rented;
-	public int amount;
+	public int[] amounts;
 	
 	public PacketActionStateRent() {}
 	
-	public PacketActionStateRent(int renter, int[] rented, int amount)
+	public PacketActionStateRent(int renter, int[] rented, int[] amounts)
 	{
 		this.renter = renter;
 		this.rented = rented;
-		this.amount = amount;
+		this.amounts = amounts;
 	}
 }

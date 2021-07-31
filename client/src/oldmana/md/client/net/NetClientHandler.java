@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -446,8 +447,13 @@ public class NetClientHandler
 			public void start()
 			{
 				client.setAwaitingResponse(false);
-				client.getGameState().setActionState(new ActionStateRent(client.getPlayerByID(packet.renter), client.getPlayersByIDs(packet.rented), 
-						packet.amount));
+				Map<Player, Integer> charges = new HashMap<Player, Integer>();
+				List<Player> players = client.getPlayersByIDs(packet.rented);
+				for (int i = 0 ; i < players.size() ; i++)
+				{
+					charges.put(players.get(i), packet.amounts[i]);
+				}
+				client.getGameState().setActionState(new ActionStateRent(client.getPlayerByID(packet.renter), charges));
 				client.getTableScreen().repaint();
 			}
 		});

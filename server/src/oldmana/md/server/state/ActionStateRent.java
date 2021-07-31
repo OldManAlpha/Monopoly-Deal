@@ -1,6 +1,11 @@
 package oldmana.md.server.state;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateRent;
@@ -15,14 +20,14 @@ import oldmana.md.server.event.RentPaymentEvent;
 
 public class ActionStateRent extends ActionState
 {
-	private int amount;
+	private Map<Player, Integer> charges = new LinkedHashMap<Player, Integer>();
 	
 	private String renterName = "Bank"; // Only used if renter is null
 	
 	public ActionStateRent(Player renter, Player rented, int amount)
 	{
 		super(renter, rented);
-		this.amount = amount;
+		charges.put(rented, amount);
 		checkBrokePlayers();
 		broadcastStatus();
 	}
@@ -30,7 +35,15 @@ public class ActionStateRent extends ActionState
 	public ActionStateRent(Player renter, List<Player> rented, int amount)
 	{
 		super(renter, rented);
-		this.amount = amount;
+		rented.forEach((player) -> charges.put(player, amount));
+		checkBrokePlayers();
+		broadcastStatus();
+	}
+	
+	public ActionStateRent(Player renter, Map<Player, Integer> rented)
+	{
+		super(renter, new ArrayList<Player>(rented.keySet()));
+		charges = rented;
 		checkBrokePlayers();
 		broadcastStatus();
 	}
@@ -39,7 +52,7 @@ public class ActionStateRent extends ActionState
 	{
 		super(null, rented);
 		this.renterName = renterName;
-		this.amount = amount;
+		charges.put(rented, amount);
 		checkBrokePlayers();
 		broadcastStatus();
 	}
@@ -48,7 +61,16 @@ public class ActionStateRent extends ActionState
 	{
 		super(null, rented);
 		this.renterName = renterName;
-		this.amount = amount;
+		rented.forEach((player) -> charges.put(player, amount));
+		checkBrokePlayers();
+		broadcastStatus();
+	}
+	
+	public ActionStateRent(String renterName, Map<Player, Integer> rented)
+	{
+		super(null, new ArrayList<Player>(rented.keySet()));
+		this.renterName = renterName;
+		charges = rented;
 		checkBrokePlayers();
 		broadcastStatus();
 	}
@@ -104,17 +126,54 @@ public class ActionStateRent extends ActionState
 	{
 		if (getNumberOfTargets() > 0)
 		{
-			String status = null;
-			for (ActionTarget target : getActionTargets())
+			Map<Integer, List<Player>> sortedCharges = new TreeMap<Integer, List<Player>>();
+			charges.forEach((player, charge) ->
 			{
-				if (status == null)
+				if (!sortedCharges.containsKey(charge))
 				{
-					status = (getActionOwner() != null ? getActionOwner().getName() : renterName) + " charges " + amount + "M against " + 
-							target.getPlayer().getName();
+					sortedCharges.put(charge, new ArrayList<Player>());
 				}
-				else
+				sortedCharges.get(charge).add(player);
+			});
+			
+			String status = null;
+			if (sortedCharges.size() == 1)
+			{
+				for (ActionTarget target : getActionTargets())
 				{
-					status += ", " + target.getPlayer().getName();
+					if (status == null)
+					{
+						status = (getActionOwner() != null ? getActionOwner().getName() : renterName) + " charges " + charges.get(target.getPlayer()) + 
+								"M against " + target.getPlayer().getName();
+					}
+					else
+					{
+						status += ", " + target.getPlayer().getName();
+					}
+				}
+			}
+			else if (sortedCharges.size() > 1)
+			{
+				status = (getActionOwner() != null ? getActionOwner().getName() : renterName) + " charges: ";
+				List<Entry<Integer, List<Player>>> entries = new ArrayList<Entry<Integer, List<Player>>>(sortedCharges.entrySet());
+				for (int i = 0 ; i < entries.size() ; i++)
+				{
+					int amount = entries.get(i).getKey();
+					List<Player> players = entries.get(i).getValue();
+					
+					status += amount + "M -> ";
+					for (int e = 0 ; e < players.size() ; e++)
+					{
+						status += players.get(e).getName();
+						if (e != players.size() - 1)
+						{
+							status += ", ";
+						}
+					}
+					if (i != entries.size() - 1)
+					{
+						status += "; ";
+					}
 				}
 			}
 			getServer().getGameState().setStatus(status);
@@ -132,9 +191,9 @@ public class ActionStateRent extends ActionState
 		}
 	}
 	
-	public int getRent()
+	public int getPlayerRent(Player player)
 	{
-		return amount;
+		return charges.get(player);
 	}
 	
 	public void playerPaid(Player player, List<Card> cards)
@@ -177,15 +236,21 @@ public class ActionStateRent extends ActionState
 	@Override
 	public Packet constructPacket()
 	{
-		List<ActionTarget> targets = getActionTargets();
+		List<Player> targets = new ArrayList<Player>(charges.keySet());
+		List<Integer> rents = new ArrayList<Integer>(charges.values());
 		List<Player> refusedPlayers = getRefused();
 		List<Player> accepted = getAccepted();
 		int[] rented = new int[targets.size()];
+		int[] amounts = new int[targets.size()];
 		int[] paid = new int[accepted.size()];
 		int[] refused = new int[refusedPlayers.size()];
-		for (int i = 0 ; i < rented.length ; i ++)
+		for (int i = 0 ; i < rented.length ; i++)
 		{
-			rented[i] = targets.get(i).getPlayer().getID();
+			rented[i] = targets.get(i).getID();
+		}
+		for (int i = 0 ; i < amounts.length ; i++)
+		{
+			amounts[i] = rents.get(i);
 		}
 		for (int i = 0 ; i < paid.length ; i++)
 		{
@@ -195,6 +260,6 @@ public class ActionStateRent extends ActionState
 		{
 			refused[i] = refusedPlayers.get(i).getID();
 		}
-		return new PacketActionStateRent(getActionOwner() != null ? getActionOwner().getID() : -1, rented, getRent());
+		return new PacketActionStateRent(getActionOwner() != null ? getActionOwner().getID() : -1, rented, amounts);
 	}
 }

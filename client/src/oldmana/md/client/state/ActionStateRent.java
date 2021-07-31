@@ -2,7 +2,9 @@ package oldmana.md.client.state;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import oldmana.md.client.Player;
 import oldmana.md.client.card.Card;
@@ -14,20 +16,14 @@ import oldmana.md.net.packet.client.action.PacketActionPay;
 
 public class ActionStateRent extends ActionState
 {
-	private int amount;
+	private Map<Player, Integer> charges;
 	
 	private ActionScreenRent rentScreen;
 	
-	public ActionStateRent(Player renter, Player rented, int amount)
+	public ActionStateRent(Player renter, Map<Player, Integer> charges)
 	{
-		super(renter, rented);
-		this.amount = amount;
-	}
-	
-	public ActionStateRent(Player renter, List<Player> rented, int amount)
-	{
-		super(renter, rented);
-		this.amount = amount;
+		super(renter, new ArrayList<Player>(charges.keySet()));
+		this.charges = charges;
 	}
 	
 	public ActionScreenRent getRentScreen()
@@ -41,6 +37,10 @@ public class ActionStateRent extends ActionState
 		if (player == getClient().getThePlayer())
 		{
 			cleanup();
+		}
+		else
+		{
+			super.onPreTargetRemoved(player);
 		}
 	}
 	
@@ -138,8 +138,8 @@ public class ActionStateRent extends ActionState
 		cleanup();
 	}
 	
-	public int getRent()
+	public int getPlayerRent(Player player)
 	{
-		return amount;
+		return charges.get(player);
 	}
 }

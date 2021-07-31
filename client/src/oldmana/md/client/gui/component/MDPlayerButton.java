@@ -16,8 +16,8 @@ public class MDPlayerButton extends MDButton
 	private int id;
 	private ButtonType type = ButtonType.NORMAL;
 	
-	private String acceptText;
-	private String refuseText;
+	private String acceptText = "";
+	private String refuseText = "";
 	
 	public MDPlayerButton(Player player, int id)
 	{
