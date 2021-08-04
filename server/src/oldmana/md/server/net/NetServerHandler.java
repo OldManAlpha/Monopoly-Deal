@@ -20,6 +20,7 @@ import oldmana.md.server.Player;
 import oldmana.md.server.PlayerRegistry;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
+import oldmana.md.server.card.CardBuilding;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.CardProperty.PropertyColor;
 import oldmana.md.server.card.CardSpecial;
@@ -46,7 +47,7 @@ import oldmana.md.server.state.GameState;
 
 public class NetServerHandler
 {
-	public static int PROTOCOL_VERSION = 10;
+	public static int PROTOCOL_VERSION = 11;
 	public static int PROTOCOL_MINIMUM = PROTOCOL_VERSION;
 	
 	private MDServer server;
@@ -63,20 +64,24 @@ public class NetServerHandler
 	{
 		// Client -> Server
 		Packet.registerPacket(PacketLogin.class);
-		Packet.registerPacket(PacketSoundCache.class);
+		
+		// Client <-> Server
+		Packet.registerPacket(PacketChat.class);
+		Packet.registerPacket(PacketKeepConnected.class);
 		
 		// Server -> Client
 		Packet.registerPacket(PacketHandshake.class);
+		Packet.registerPacket(PacketKick.class);
 		Packet.registerPacket(PacketPropertyColors.class);
 		Packet.registerPacket(PacketCardCollectionData.class);
 		Packet.registerPacket(PacketCardData.class);
 		Packet.registerPacket(PacketCardActionRentData.class);
 		Packet.registerPacket(PacketCardDescription.class);
 		Packet.registerPacket(PacketCardPropertyData.class);
+		Packet.registerPacket(PacketCardBuildingData.class);
 		Packet.registerPacket(PacketDestroyCardCollection.class);
 		Packet.registerPacket(PacketPropertySetColor.class);
 		Packet.registerPacket(PacketStatus.class);
-		Packet.registerPacket(PacketKick.class);
 		Packet.registerPacket(PacketMoveCard.class);
 		Packet.registerPacket(PacketMovePropertySet.class);
 		Packet.registerPacket(PacketMoveRevealCard.class);
@@ -103,6 +108,7 @@ public class NetServerHandler
 		Packet.registerPacket(PacketActionPlayCardBank.class);
 		Packet.registerPacket(PacketActionPlayCardProperty.class);
 		Packet.registerPacket(PacketActionPlayCardSpecial.class);
+		Packet.registerPacket(PacketActionPlayCardBuilding.class);
 		Packet.registerPacket(PacketActionPlayMultiCardAction.class);
 		Packet.registerPacket(PacketActionDiscard.class);
 		Packet.registerPacket(PacketActionSelectPlayer.class);
@@ -112,6 +118,8 @@ public class NetServerHandler
 		Packet.registerPacket(PacketActionClickLink.class);
 		Packet.registerPacket(PacketActionButtonClick.class);
 		
+		Packet.registerPacket(PacketSoundCache.class);
+		
 		// Server -> Client
 		Packet.registerPacket(PacketActionStateBasic.class);
 		Packet.registerPacket(PacketActionStateRent.class);
@@ -120,10 +128,6 @@ public class NetServerHandler
 		Packet.registerPacket(PacketUpdateActionStateAccepted.class);
 		Packet.registerPacket(PacketUpdateActionStateRefusal.class);
 		Packet.registerPacket(PacketUpdateActionStateTarget.class);
-		
-		// Client <-> Server
-		Packet.registerPacket(PacketChat.class);
-		Packet.registerPacket(PacketKeepConnected.class);
 		
 		// Find Packet Handlers
 		for (Method m : getClass().getDeclaredMethods())
@@ -339,6 +343,23 @@ public class NetServerHandler
 		if (card instanceof CardSpecial && checkIntegrity(player, card, true))
 		{
 			((CardSpecial) card).playCard(player, packet.data);
+		}
+	}
+	
+	public void handlePlayCardBuilding(Player player, PacketActionPlayCardBuilding packet)
+	{
+		Card card = Card.getCard(packet.id);
+		CardBuilding building = (CardBuilding) card;
+		if (checkIntegrity(player, card, true))
+		{
+			PropertySet set = player.getPropertySetById(packet.setID);
+			building.transfer(set);
+			
+			player.addRevocableCard(card);
+			
+			player.checkEmptyHand();
+			
+			server.getGameState().decrementTurn();
 		}
 	}
 	

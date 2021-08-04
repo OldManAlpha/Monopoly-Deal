@@ -298,7 +298,7 @@ public class Card
 	public static enum CardValueColor
 	{
 		ZERO(Color.LIGHT_GRAY), ONE(new Color(243, 237, 159)), TWO(new Color(237, 209, 178)), THREE(new Color(230, 242, 203)), FOUR(new Color(194, 224, 233)), 
-		FIVE(new Color(193, 161, 203)), TEN(new Color(247, 210, 82)), GREATER_THAN_TEN(new Color(132, 240, 255)), OTHER(new Color(80, 200, 80));
+		FIVE(new Color(193, 161, 203)), TEN(new Color(247, 210, 82)), GREATER_THAN_TEN(new Color(132, 240, 255)), OTHER(new Color(225, 170, 160));
 		
 		private Color color;
 		

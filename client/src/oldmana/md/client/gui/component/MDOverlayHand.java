@@ -15,6 +15,7 @@ import oldmana.md.client.card.CardActionDoubleTheRent;
 import oldmana.md.client.card.CardActionActionCounter;
 import oldmana.md.client.card.CardActionRent;
 import oldmana.md.client.card.CardActionRentCounter;
+import oldmana.md.client.card.CardBuilding;
 import oldmana.md.client.card.CardMoney;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.gui.component.collection.MDHand;
@@ -22,6 +23,7 @@ import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.ActionStateDiscard;
 import oldmana.md.client.state.ActionStateRent;
+import oldmana.md.client.state.client.ActionStateClientPlayBuilding;
 import oldmana.md.client.state.client.ActionStateClientPlayProperty;
 import oldmana.md.net.packet.client.action.PacketActionDiscard;
 import oldmana.md.net.packet.client.action.PacketActionPlayCardAction;
@@ -100,6 +102,14 @@ public class MDOverlayHand extends MDComponent
 						{
 							client.sendPacket(new PacketActionPlayCardProperty(prop.getID(), -1));
 							client.setAwaitingResponse(true);
+						}
+					}
+					else if (card instanceof CardBuilding)
+					{
+						CardBuilding building = (CardBuilding) card;
+						if (client.getThePlayer().getPropertySetsCompatibleWithBuildingTier(building.getTier()).size() > 0)
+						{
+							client.getGameState().setClientActionState(new ActionStateClientPlayBuilding(building));
 						}
 					}
 					Container parent = MDOverlayHand.this.getParent();

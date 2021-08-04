@@ -8,7 +8,6 @@ import java.util.Map;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketMoveCard;
-import oldmana.md.net.packet.server.PacketMovePropertySet;
 import oldmana.md.net.packet.server.PacketMoveRevealCard;
 import oldmana.md.net.packet.server.PacketMoveUnknownCard;
 import oldmana.md.server.MDServer;
@@ -150,21 +149,17 @@ public abstract class CardCollection
 		}
 		for (Player player : getServer().getPlayers())
 		{
-			index = to.getIndexOf(card);
+			int fromIndex = to.getIndexOf(card);
 			boolean canSeeFrom = isVisibleTo(player);
 			boolean canSeeTo = to.isVisibleTo(player);
 			Packet packet = null;
-			if (canSeeFrom && canSeeTo)
+			if (canSeeFrom)
 			{
-				packet = new PacketMoveCard(card.getID(), to.getID(), index, speed);
+				packet = new PacketMoveCard(card.getID(), to.getID(), fromIndex, speed);
 			}
 			else if (!canSeeFrom && canSeeTo)
 			{
-				packet = new PacketMoveRevealCard(card.getID(), getID(), to.getID(), index, speed);
-			}
-			else if (canSeeFrom && !canSeeTo)
-			{
-				packet = new PacketMoveCard(card.getID(), to.getID(), index, speed);
+				packet = new PacketMoveRevealCard(card.getID(), getID(), to.getID(), fromIndex, speed);
 			}
 			else if (!canSeeFrom && !canSeeTo)
 			{
@@ -178,7 +173,6 @@ public abstract class CardCollection
 	public void setOwner(Player player)
 	{
 		owner = player;
-		getServer().broadcastPacket(new PacketMovePropertySet(getID(), player.getID(), -1));
 	}
 	
 	public Player getOwner()
@@ -191,7 +185,7 @@ public abstract class CardCollection
 		return owner != null;
 	}
 	
-	public MDServer getServer()
+	protected MDServer getServer()
 	{
 		return MDServer.getInstance();
 	}

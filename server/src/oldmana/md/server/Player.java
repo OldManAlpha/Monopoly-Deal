@@ -357,16 +357,19 @@ public class Player extends Client implements CommandSender
 		}
 		for (PropertySet set : propertySets)
 		{
-			for (CardProperty card : set.getPropertyCards())
+			if (!set.hasBuildings())
 			{
-				for (PropertyColor color : card.getColors())
+				for (CardProperty card : set.getPropertyCards())
 				{
-					if (colorCounts.containsKey(color))
+					for (PropertyColor color : card.getColors())
 					{
-						colorCounts.put(color, colorCounts.get(color) + 1);
-						if (card.isBase() && !hasBaseColor.contains(color))
+						if (colorCounts.containsKey(color))
 						{
-							hasBaseColor.add(color);
+							colorCounts.put(color, colorCounts.get(color) + 1);
+							if (card.isBase() && !hasBaseColor.contains(color))
+							{
+								hasBaseColor.add(color);
+							}
 						}
 					}
 				}
@@ -377,11 +380,15 @@ public class Player extends Client implements CommandSender
 		{
 			if (hasBaseColor.contains(entry.getKey()))
 			{
-				int value = entry.getKey().getRent(Math.min(entry.getValue(), entry.getKey().getMaxProperties()));
-				if (value > highestValue)
-				{
-					highestValue = value;
-				}
+				highestValue = Math.max(highestValue, entry.getKey().getRent(Math.min(entry.getValue(), entry.getKey().getMaxProperties())));
+			}
+		}
+		for (PropertySet set : propertySets)
+		{
+			PropertyColor color = set.getEffectiveColor();
+			if (colorCounts.containsKey(color) && set.isMonopoly() && set.hasBuildings())
+			{
+				highestValue = Math.max(highestValue, color.getRent(color.getMaxProperties()) + set.getBuildingRentAddition());
 			}
 		}
 		return highestValue;

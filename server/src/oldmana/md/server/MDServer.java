@@ -400,6 +400,9 @@ public class MDServer
 		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.GREEN, PropertyColor.DARK_BLUE), "Green/Dark Blue Rent", "G/DB Rent");
 		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.RAILROAD, PropertyColor.UTILITY), "Railroad/Utility Rent", "RR/U Rent");
 		cardRegistry.registerActionCard(() -> new CardActionRent(3, PropertyColor.getAllColors()), "10-Color Rent", "Rent");
+		
+		cardRegistry.registerActionCard(CardActionHouse.class, "House");
+		cardRegistry.registerActionCard(CardActionHotel.class, "Hotel");
 	}
 	
 	public CommandHandler getCommandHandler()

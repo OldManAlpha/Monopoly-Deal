@@ -208,7 +208,7 @@ public class Card
 		return CardType.MONEY;
 	}
 	
-	public MDServer getServer()
+	protected MDServer getServer()
 	{
 		return MDServer.getInstance();
 	}

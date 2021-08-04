@@ -262,7 +262,7 @@ public class Player
 		List<PropertySet> sets = new ArrayList<PropertySet>();
 		for (PropertySet set : propertySets)
 		{
-			if (set.getEffectiveColor().isBuildable() && tier == set.getHighestBuildingTier() + 1)
+			if (set.isMonopoly() && set.getEffectiveColor().isBuildable() && tier == set.getHighestBuildingTier() + 1)
 			{
 				sets.add(set);
 			}

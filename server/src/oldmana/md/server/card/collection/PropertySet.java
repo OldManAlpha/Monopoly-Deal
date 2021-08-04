@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.net.packet.server.PacketMovePropertySet;
 import oldmana.md.net.packet.server.PacketPropertySetColor;
 import oldmana.md.net.packet.server.PacketPropertySetData;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
+import oldmana.md.server.card.CardBuilding;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.CardProperty.PropertyColor;
 
@@ -37,21 +39,38 @@ public class PropertySet extends CardCollection
 	{
 		if (card instanceof CardProperty)
 		{
-			CardProperty property = (CardProperty) card;
-			addCard(property);
+			addCard((CardProperty) card);
+		}
+		else if (card instanceof CardBuilding)
+		{
+			addCard((CardBuilding) card);
 		}
 	}
 	
 	@Override
 	public void addCard(Card card, int index)
 	{
-		addCard((CardProperty) card);
+		if (card instanceof CardProperty)
+		{
+			addCard((CardProperty) card);
+		}
+		else if (card instanceof CardBuilding)
+		{
+			addCard((CardBuilding) card);
+		}
 	}
 	
 	@Override
 	public void removeCard(Card card)
 	{
-		removeCard((CardProperty) card);
+		if (card instanceof CardProperty)
+		{
+			removeCard((CardProperty) card);
+		}
+		else
+		{
+			super.removeCard(card);
+		}
 	}
 	
 	public void addCard(CardProperty card)
@@ -120,6 +139,48 @@ public class PropertySet extends CardCollection
 	public boolean hasCard(CardProperty card)
 	{
 		return hasCard((Card) card);
+	}
+	
+	public void addCard(CardBuilding building)
+	{
+		super.addCard(building);
+	}
+	
+	public boolean canBuild()
+	{
+		return hasBase() && isMonopoly();
+	}
+	
+	public boolean hasBuildings()
+	{
+		for (Card card : getCards())
+		{
+			if (card instanceof CardBuilding)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public int getHighestBuildingTier()
+	{
+		int highestTier = -1;
+		for (CardBuilding card : getBuildingCards())
+		{
+			highestTier = Math.max(highestTier, card.getTier());
+		}
+		return highestTier;
+	}
+	
+	public int getBuildingRentAddition()
+	{
+		int rentAddition = 0;
+		for (CardBuilding building : getBuildingCards())
+		{
+			rentAddition += building.getRentAddition();
+		}
+		return rentAddition;
 	}
 	
 	public List<PropertyColor> getPossibleColors()
@@ -230,9 +291,25 @@ public class PropertySet extends CardCollection
 		List<CardProperty> properties = new ArrayList<CardProperty>();
 		for (Card card : getCards())
 		{
-			properties.add((CardProperty) card);
+			if (card instanceof CardProperty)
+			{
+				properties.add((CardProperty) card);
+			}
 		}
 		return properties;
+	}
+	
+	public List<CardBuilding> getBuildingCards()
+	{
+		List<CardBuilding> buildings = new ArrayList<CardBuilding>();
+		for (Card card : getCards())
+		{
+			if (card instanceof CardBuilding)
+			{
+				buildings.add((CardBuilding) card);
+			}
+		}
+		return buildings;
 	}
 	
 	@Override
@@ -263,6 +340,13 @@ public class PropertySet extends CardCollection
 		{
 			getOwner().destroyPropertySet(this);
 		}
+	}
+	
+	@Override
+	public void setOwner(Player player)
+	{
+		super.setOwner(player);
+		getServer().broadcastPacket(new PacketMovePropertySet(getID(), player.getID(), -1));
 	}
 	
 	@Override

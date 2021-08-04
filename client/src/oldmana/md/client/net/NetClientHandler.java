@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +20,7 @@ import oldmana.md.client.card.CardActionDoubleTheRent;
 import oldmana.md.client.card.CardActionActionCounter;
 import oldmana.md.client.card.CardActionRent;
 import oldmana.md.client.card.CardActionRentCounter;
+import oldmana.md.client.card.CardBuilding;
 import oldmana.md.client.card.CardMoney;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.CardSpecial;
@@ -64,7 +64,7 @@ import oldmana.md.net.packet.universal.PacketKeepConnected;
 
 public class NetClientHandler
 {
-	public static int PROTOCOL_VERSION = 10;
+	public static int PROTOCOL_VERSION = 11;
 	
 	private MDClient client;
 	
@@ -80,20 +80,24 @@ public class NetClientHandler
 	{
 		// Client -> Server
 		Packet.registerPacket(PacketLogin.class);
-		Packet.registerPacket(PacketSoundCache.class);
+		
+		// Client <-> Server
+		Packet.registerPacket(PacketChat.class);
+		Packet.registerPacket(PacketKeepConnected.class);
 		
 		// Server -> Client
 		Packet.registerPacket(PacketHandshake.class);
+		Packet.registerPacket(PacketKick.class);
 		Packet.registerPacket(PacketPropertyColors.class);
 		Packet.registerPacket(PacketCardCollectionData.class);
 		Packet.registerPacket(PacketCardData.class);
 		Packet.registerPacket(PacketCardActionRentData.class);
 		Packet.registerPacket(PacketCardDescription.class);
 		Packet.registerPacket(PacketCardPropertyData.class);
+		Packet.registerPacket(PacketCardBuildingData.class);
 		Packet.registerPacket(PacketDestroyCardCollection.class);
 		Packet.registerPacket(PacketPropertySetColor.class);
 		Packet.registerPacket(PacketStatus.class);
-		Packet.registerPacket(PacketKick.class);
 		Packet.registerPacket(PacketMoveCard.class);
 		Packet.registerPacket(PacketMovePropertySet.class);
 		Packet.registerPacket(PacketMoveRevealCard.class);
@@ -120,6 +124,7 @@ public class NetClientHandler
 		Packet.registerPacket(PacketActionPlayCardBank.class);
 		Packet.registerPacket(PacketActionPlayCardProperty.class);
 		Packet.registerPacket(PacketActionPlayCardSpecial.class);
+		Packet.registerPacket(PacketActionPlayCardBuilding.class);
 		Packet.registerPacket(PacketActionPlayMultiCardAction.class);
 		Packet.registerPacket(PacketActionDiscard.class);
 		Packet.registerPacket(PacketActionSelectPlayer.class);
@@ -129,6 +134,8 @@ public class NetClientHandler
 		Packet.registerPacket(PacketActionClickLink.class);
 		Packet.registerPacket(PacketActionButtonClick.class);
 		
+		Packet.registerPacket(PacketSoundCache.class);
+		
 		// Server -> Client
 		Packet.registerPacket(PacketActionStateBasic.class);
 		Packet.registerPacket(PacketActionStateRent.class);
@@ -137,10 +144,6 @@ public class NetClientHandler
 		Packet.registerPacket(PacketUpdateActionStateAccepted.class);
 		Packet.registerPacket(PacketUpdateActionStateRefusal.class);
 		Packet.registerPacket(PacketUpdateActionStateTarget.class);
-		
-		// Client <-> Server
-		Packet.registerPacket(PacketChat.class);
-		Packet.registerPacket(PacketKeepConnected.class);
 		
 		// Find Packet Handlers
 		for (Method m : getClass().getDeclaredMethods())
@@ -264,6 +267,15 @@ public class NetClientHandler
 				CardDescription.getDescriptionByID(packet.description));
 	}
 	
+	public void handleCardBuildingData(PacketCardBuildingData packet)
+	{
+		CardBuilding card = new CardBuilding(packet.id, packet.value, packet.name, packet.tier, packet.rentAddition);
+		card.setDisplayName(packet.displayName);
+		card.setFontSize(packet.fontSize);
+		card.setDisplayOffsetY(packet.displayOffsetY);
+		card.setDescription(CardDescription.getDescriptionByID(packet.description));
+	}
+	
 	public void handlePlayerInfo(PacketPlayerInfo packet)
 	{
 		if (client.getPlayerByID(packet.id) == null)
@@ -342,7 +354,7 @@ public class NetClientHandler
 	public void handlePropertySetData(PacketPropertySetData packet)
 	{
 		Player owner = client.getPlayerByID(packet.owner);
-		PropertySet set = new PropertySet(packet.id, owner, Card.getPropertyCards(packet.cardIds), PropertyColor.fromID(packet.activeColor));
+		PropertySet set = new PropertySet(packet.id, owner, Card.getCards(packet.cardIds), PropertyColor.fromID(packet.activeColor));
 		owner.addPropertySet(set);
 	}
 	

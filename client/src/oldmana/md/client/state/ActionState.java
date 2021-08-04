@@ -190,7 +190,9 @@ public class ActionState
 		evaluateAcceptButton();
 	}
 	
-	public void onPreTargetRemoved(Player player)
+	public void onPreTargetRemoved(Player player) {}
+	
+	public void onTargetRemoved(Player player)
 	{
 		evaluateAcceptButton();
 	}
@@ -247,6 +249,7 @@ public class ActionState
 		{
 			onPreTargetRemoved(player);
 			targets.remove(getActionTarget(player));
+			onTargetRemoved(player);
 		}
 		else if (isTarget && !isTarget(player))
 		{

@@ -29,12 +29,12 @@ public class PropertySet extends CardCollection
 		addCard(card);
 	}
 	
-	public PropertySet(int id, Player owner, List<CardProperty> cards, PropertyColor effectiveColor)
+	public PropertySet(int id, Player owner, List<Card> cards, PropertyColor effectiveColor)
 	{
 		super(id, owner);
 		this.effectiveColor = effectiveColor;
 		setUI(new MDPropertySet(this));
-		for (CardProperty card : cards)
+		for (Card card : cards)
 		{
 			addCard(card);
 		}
@@ -185,6 +185,11 @@ public class PropertySet extends CardCollection
 	public void setEffectiveColor(PropertyColor color)
 	{
 		effectiveColor = color;
+	}
+	
+	public boolean canBuild()
+	{
+		return hasBase() && isMonopoly();
 	}
 	
 	public boolean hasBuildings()

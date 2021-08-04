@@ -196,10 +196,14 @@ public abstract class ActionState
 		return targets.size();
 	}
 	
+	/**The action button is currently largely unused in favor of just using the giant multibutton. It's still required when there's two or more refusals.
+	 * 
+	 */
 	public void updateActionButtons()
 	{
 		PlayerButtonSlot slot = getActionButtonSlot();
 		slot.clearButtons();
+		boolean sendRefusalButtons = getNumberOfRefused() > 1;
 		for (ActionTarget target : getActionTargets())
 		{
 			if (target.isAccepted()) // Accepted players don't have an accept button
@@ -208,12 +212,15 @@ public abstract class ActionState
 			}
 			if (target.isRefused())
 			{
-				applyAcceptButtonTo(slot, target.getPlayer(), false); // Disable accept button for refused player
-				applyRefusalButtonFor(slot, target.getPlayer()); // Send the acceptance button to the renter
+				//applyAcceptButtonTo(slot, target.getPlayer(), false); // Disable accept button for refused player
+				if (sendRefusalButtons)
+				{
+					applyRefusalButtonFor(slot, target.getPlayer()); // Send the acceptance button to the action owner
+				}
 			}
 			else
 			{
-				applyAcceptButtonTo(slot, target.getPlayer(), true); // Send accept button to player that hasn't refused
+				//applyAcceptButtonTo(slot, target.getPlayer(), true); // Send accept button to player that hasn't refused
 			}
 		}
 		slot.sendUpdate();
