@@ -81,6 +81,7 @@ public class MDMovingCard extends MDComponent
 		cardCache[1] = img;
 		
 		int size = 0;
+		int frameSize = 0;
 		while (progress < 1)
 		{
 			progress += 0.02 * Math.abs(progress - 1.4) * speed;
@@ -93,11 +94,15 @@ public class MDMovingCard extends MDComponent
 		{
 			progress += 0.02 * Math.abs(progress - 1.4) * speed;
 			progMap[i] = progress;
+			if (frameSize == 0 && progress * 1.2 > 1)
+			{
+				frameSize = i;
+			}
 			i++;
 		}
 		if (start != end || animType == AnimationType.IMPORTANT)
 		{
-			frameCache = new BufferedImage[size];
+			frameCache = new BufferedImage[frameSize];
 			startCachingFrames();
 		}
 	}
@@ -113,7 +118,7 @@ public class MDMovingCard extends MDComponent
 		int cardWidth = GraphicsUtils.getCardWidth();
 		int cardHeight = GraphicsUtils.getCardHeight();
 		
-		if (frameCache != null && pos - 1 > 0)
+		if (frameCache != null && pos - 1 > 0 && frameCache.length > pos)
 		{
 			frameCache[pos - 1] = null;
 		}
@@ -270,10 +275,15 @@ public class MDMovingCard extends MDComponent
 			@Override
 			public void run()
 			{
-				for (int i = framePos ; i < progMap.length ; i++)
+				for (int i = framePos ; i < frameCache.length ; i++)
 				{
 					if (framePos > pos + 10)
 					{
+						try
+						{
+							Thread.sleep(1);
+						}
+						catch (InterruptedException e) {}
 						Platform.runLater(this);
 						return;
 					}
@@ -333,7 +343,6 @@ public class MDMovingCard extends MDComponent
 		            final double radius = width / 2D;
 		            final double back = height / 20D;
 		            
-		            
 		            trans.setUlx(radius - Math.sin(angle) * radius);
 		            trans.setUly(0 - Math.cos(angle) * back);
 		            trans.setUrx(radius + Math.sin(angle) * radius);
@@ -391,10 +400,9 @@ public class MDMovingCard extends MDComponent
 			        	frameCache[i] = GraphicsUtils.createImage(width, height);
 			        	Graphics2D gg = frameCache[i].createGraphics();
 			        	gg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-						gg.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
 						gg.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-			        	gg.drawImage(from, /*(int) ((width / 2) * prog)*/(width / 2) - (drawWidth / 2), 0, drawWidth, height - 1, null);
-			        	//gg.drawRect(0, 0, width - 1, height - 1);
+			        	gg.drawImage(from, /*(int) ((width / 2) * prog)*/(width / 2) - (drawWidth / 2), -1, drawWidth, height + 1, null);
+			        	// Nothin' a little pickle rickin' won't fix
 			        }
 			        framePos++;
 			        //System.out.println("Cached: " + i);
@@ -427,12 +435,10 @@ public class MDMovingCard extends MDComponent
 		*/
 		BufferedImage result = null;
 		int pos = this.pos - 1;
-		int i = 0;
-		if (pos >= 0 && frameCache != null/*&& start != end*/)
+		if (pos >= 0 && frameCache != null && progress < 1)
 		{
 			while (framePos < pos)
 			{
-				i++;
 				//System.out.println("Pickle Rick x" + i);
 				try
 				{
@@ -443,31 +449,14 @@ public class MDMovingCard extends MDComponent
 					e.printStackTrace();
 				}
 			}
-			BufferedImage img = GraphicsUtils.createImage(width, height);
-				/*
-				if (animType == AnimationType.IMPORTANT)
-				{
-					result = frameCache[pos];
-				}
-				else
-				{
-					if (progress >= 1)
-					{
-						Graphics2D cardGr = img.createGraphics();
-						cardGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-						cardGr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-						cardGr.drawImage(progress < 0.5 ? cardCache[0] : cardCache[1], 0, 0, width, height, null);
-						result = img;
-					}
-					else
-					{
-						result = frameCache[pos];
-					}
-				}
-				*/
-			synchronized (frameCache)
+			/*
+			if (animType == AnimationType.IMPORTANT)
 			{
-				if (frameCache[pos] == null)
+				result = frameCache[pos];
+			}
+			else
+			{
+				if (progress >= 1)
 				{
 					Graphics2D cardGr = img.createGraphics();
 					cardGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -479,6 +468,11 @@ public class MDMovingCard extends MDComponent
 				{
 					result = frameCache[pos];
 				}
+			}
+			*/
+			synchronized (frameCache)
+			{
+				result = frameCache[pos];
 			}
 		}
 		else
@@ -496,7 +490,6 @@ public class MDMovingCard extends MDComponent
 			//g.rotate(rot, getWidth() / 2, getHeight() / 2);
 		}
 		g.drawImage(result, 15, 15, getWidth() - 30, getHeight() - 30, null);
-		// TODO: Fix weird rendering cutoff issue
 		//System.out.println("WIDTH: " + getWidth() + " | IMG WIDTH: " + result.getWidth());
 		//System.out.println("Painted: " + pos);
 	}
