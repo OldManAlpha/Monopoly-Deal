@@ -28,6 +28,11 @@ public abstract class DeckStack
 		cards.remove(card);
 	}
 	
+	public boolean hasCard(Card card)
+	{
+		return cards.contains(card);
+	}
+	
 	public List<Card> getCards()
 	{
 		return cards;

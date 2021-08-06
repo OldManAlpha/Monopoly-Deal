@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import oldmana.md.net.packet.server.PacketStatus;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
@@ -23,14 +22,13 @@ public class CommandReset extends Command
 	public void executeCommand(CommandSender sender, String[] args)
 	{
 		MDServer server = getServer();
-		server.broadcastPacket(new PacketStatus(""));
 		server.getGameState().endGame();
 		Deck deck = server.getDeck();
 		for (Player player : server.getPlayers())
 		{
 			for (Card card : player.getBank().getCardsInReverse())
 			{
-				card.transfer(deck, -1, 4);
+				putCardAway(card);
 			}
 			List<PropertySet> sets = new ArrayList<PropertySet>(player.getPropertySets());
 			Collections.reverse(sets);
@@ -38,18 +36,48 @@ public class CommandReset extends Command
 			{
 				for (Card card : set.getCardsInReverse())
 				{
-					card.transfer(deck, -1, 4);
+					putCardAway(card);
 				}
 			}
 			for (Card card : player.getHand().getCardsInReverse())
 			{
-				card.transfer(deck, -1, 4);
+				putCardAway(card);
 			}
 		}
 		for (Card card : server.getDiscardPile().getCardsInReverse())
 		{
+			putCardAway(card);
+		}
+		
+		for (Card card : deck.getCards(true))
+		{
+			if (!deck.getDeckStack().hasCard(card))
+			{
+				putCardAway(card);
+			}
+		}
+		
+		for (Card card : deck.getDeckStack().getCards())
+		{
+			if (!deck.hasCard(card))
+			{
+				putCardAway(card);
+			}
+		}
+		
+		deck.shuffle();
+	}
+	
+	public void putCardAway(Card card)
+	{
+		Deck deck = getServer().getDeck();
+		if (deck.getDeckStack().hasCard(card))
+		{
 			card.transfer(deck, -1, 4);
 		}
-		deck.shuffle();
+		else
+		{
+			card.transfer(getServer().getVoidCollection(), -1, 4);
+		}
 	}
 }

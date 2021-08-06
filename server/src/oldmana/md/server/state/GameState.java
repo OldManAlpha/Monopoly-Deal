@@ -70,6 +70,7 @@ public class GameState
 		{
 			player.clearStatusEffects();
 		}
+		setStatus("");
 		setActionState(new ActionStateDoNothing());
 	}
 	
