@@ -1,12 +1,24 @@
 # Monopoly Deal
 
+## Screenshots (Slightly Outdated)
+
+<details>
+  <summary>Click To View</summary>
+  <img src="https://i.imgur.com/LOzbxPM.png">
+  <img src="https://i.imgur.com/riEtxI9.png">
+  <img src="https://i.imgur.com/55eDAzy.png">
+  <img src="https://i.imgur.com/PReVrNn.png">
+  <img src="https://i.imgur.com/xuIQRYO.png">
+  <img src="https://i.imgur.com/tH9nKLW.png">
+</details>
+
 ## Introduction
 
 I originally started making this project with the intention of it being something that I just play with my friends and myself. We had been wanting to be able to play Monopoly Deal remotely for the better part of a decade now, so I made it since there wasn't any solution that appeased us. There seems to be a niche community that would also like to see this, so here it is. I've made it barely functional enough to release it.
 
 ## Massive Disclaimers
 
-This project is far from polished or even feature complete. All cards from the base game have been implemented **except** houses/hotels. They're low priority as they are usually as good as money in our house rules(extra money cards are added to the deck to compensate). Speaking of house rules, this game uses my house rules which will almost certainly differ from how you play. Rule customization is something I very much want to implement in the future. You'll probably encounter a few UI bugs, especially if you scale the the UI up/down. If there's a UI bug that prevents you from taking action, restarting your client will likely fix it. There's many ways the server can crash if something goes slightly wrong(especially when misusing commands), so be cautious if you value the game you're currently playing.
+This project is far from polished or even feature complete. All cards from the base game have been implemented **except** houses/hotels. They're low priority as they are usually as good as money in our house rules(extra money cards are added to the deck to compensate). Speaking of house rules, this game uses my house rules which will almost certainly differ from how you play. Rule customization is something I very much want to implement in the future. You'll probably encounter a few UI bugs, especially if you scale the the UI up/down. If there's a UI bug that prevents you from taking action, restarting your client will likely fix it. There's many ways the server can crash when misusing certain commands, so be cautious if you value the game you're currently playing.
 
 ## How To Use
 
@@ -37,18 +49,6 @@ Additional undocumented commands may be seen by using the `help` command.
 
 [Here's a video](https://www.youtube.com/watch?v=GaBYbJwyJLY) explaining how to get the basic functionality setup for the client/server. Credit to [Zyga](https://www.youtube.com/channel/UCYMOaG7Eqq1jr1-i8m48fMw) for kindly creating the video.
 
-## Screenshots (Slightly Outdated)
-
-<details>
-  <summary>Click To View</summary>
-  <img src="https://i.imgur.com/LOzbxPM.png">
-  <img src="https://i.imgur.com/riEtxI9.png">
-  <img src="https://i.imgur.com/55eDAzy.png">
-  <img src="https://i.imgur.com/PReVrNn.png">
-  <img src="https://i.imgur.com/xuIQRYO.png">
-  <img src="https://i.imgur.com/tH9nKLW.png">
-</details>
-
 ## Modding Support
 
 If you're a developer, you can create mods for the server. You can find the guide [here](https://github.com/OldManAlpha/Monopoly-Deal/wiki/Modding-Guide).
@@ -62,6 +62,7 @@ There's a ton of custom cards I made that I'll probably release as a mod at some
 - [ ] Allow for the customization of game rules
 - [ ] Implement action cards from other editions
 - [ ] Better document server commands
+- [ ] Server UI?
 
 ## <img src="https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png" width="80" height="80"> Discord
 
