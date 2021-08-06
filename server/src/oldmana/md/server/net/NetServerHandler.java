@@ -7,6 +7,7 @@ import java.util.Map;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.client.PacketLogin;
+import oldmana.md.net.packet.client.PacketQuit;
 import oldmana.md.net.packet.client.PacketSoundCache;
 import oldmana.md.net.packet.client.action.*;
 import oldmana.md.net.packet.server.*;
@@ -47,7 +48,7 @@ import oldmana.md.server.state.GameState;
 
 public class NetServerHandler
 {
-	public static int PROTOCOL_VERSION = 11;
+	public static int PROTOCOL_VERSION = 12;
 	public static int PROTOCOL_MINIMUM = PROTOCOL_VERSION;
 	
 	private MDServer server;
@@ -65,13 +66,20 @@ public class NetServerHandler
 		// Client -> Server
 		Packet.registerPacket(PacketLogin.class);
 		
+		// Server -> Client
+		Packet.registerPacket(PacketHandshake.class);
+		Packet.registerPacket(PacketKick.class);
+		
+		// Client -> Server
+		Packet.registerPacket(PacketQuit.class);
+		
+		// ^ Ideally common protocol among future versions ^
+		
 		// Client <-> Server
 		Packet.registerPacket(PacketChat.class);
 		Packet.registerPacket(PacketKeepConnected.class);
 		
 		// Server -> Client
-		Packet.registerPacket(PacketHandshake.class);
-		Packet.registerPacket(PacketKick.class);
 		Packet.registerPacket(PacketPropertyColors.class);
 		Packet.registerPacket(PacketCardCollectionData.class);
 		Packet.registerPacket(PacketCardData.class);
@@ -197,14 +205,11 @@ public class NetServerHandler
 				if (server.isPlayerWithUIDLoggedIn(uid))
 				{
 					Player player = server.getPlayerByUID(uid);
+					player.setOnline(true);
 					player.setNet(client.getNet());
 					player.sendPacket(new PacketHandshake(player.getID(), player.getName()));
-					player.setOnline(true);
-					player.setLastPing(server.getTickCount());
-					player.setSentPing(false);
 					server.refreshPlayer(player);
-					server.broadcastPacket(new PacketPlayerStatus(player.getID(), true), player);
-					System.out.println("Player " + player.getName() + " reconnected (ID: " + player.getID() + ")");
+					System.out.println("Player " + player.getName() + " (ID: " + player.getID() + ") reconnected");
 					server.getEventManager().callEvent(new PlayerReconnectedEvent(player));
 				}
 				else
@@ -212,7 +217,6 @@ public class NetServerHandler
 					Player player = new Player(server, uid, client.getNet(), registry.getNameOf(packet.getUID()), registry.getRegisteredPlayerByUID(uid).op);
 					player.sendPacket(new PacketHandshake(player.getID(), player.getName()));
 					server.addPlayer(player);
-					//server.broadcastPacket(new PacketPlayerInfo(player.getID(), player.getName()), player);
 					player.setOnline(true);
 					server.refreshPlayer(player);
 					System.out.println("Player " + player.getName() + " logged in with ID " + player.getID());
@@ -232,6 +236,12 @@ public class NetServerHandler
 			client.sendPacket(new PacketKick("Invalid protocol version"));
 			server.disconnectClient(client);
 		}
+	}
+	
+	public void handleQuit(Player player, PacketQuit packet)
+	{
+		player.setOnline(false);
+		System.out.println(player.getName() + " left (" + packet.reason + ")");
 	}
 	
 	public void handleSoundCache(Player player, PacketSoundCache packet)

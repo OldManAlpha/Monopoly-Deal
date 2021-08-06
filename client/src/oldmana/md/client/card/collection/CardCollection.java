@@ -192,7 +192,10 @@ public abstract class CardCollection
 	public void setUI(MDCardCollectionBase ui)
 	{
 		this.ui = ui;
-		ui.setCollection(this);
+		if (ui != null)
+		{
+			ui.setCollection(this);
+		}
 	}
 	
 	public MDCardCollectionBase getUI()

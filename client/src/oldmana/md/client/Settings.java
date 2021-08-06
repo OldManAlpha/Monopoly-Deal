@@ -1,11 +1,15 @@
 package oldmana.md.client;
 
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import oldmana.md.client.gui.util.GraphicsUtils;
+
 import java.util.Scanner;
 
 public class Settings
@@ -15,6 +19,9 @@ public class Settings
 		defaults.put("Settings-Version", "1");
 		defaults.put("Last-IP", "localhost:27599");
 		defaults.put("Last-ID", "1");
+		defaults.put("Scale", String.valueOf(GraphicsUtils.roundScale(Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 1000)));
+		defaults.put("Developer-Mode", "false");
+		defaults.put("Extra-Buttons", "false");
 	}
 	
 	private Map<String, String> settings = new HashMap<String, String>();
@@ -78,8 +85,65 @@ public class Settings
 		return settings.get(name);
 	}
 	
+	public int getIntSetting(String name)
+	{
+		int i = Integer.parseInt(defaults.get(name));
+		try
+		{
+			i = Integer.parseInt(settings.get(name));
+		}
+		catch (Exception e)
+		{
+			System.err.println("Failed to parse setting: " + name);
+		}
+		return i;
+	}
+	
+	public double getDoubleSetting(String name)
+	{
+		double d = Double.parseDouble(defaults.get(name));
+		try
+		{
+			d = Double.parseDouble(settings.get(name));
+		}
+		catch (Exception e)
+		{
+			System.err.println("Failed to parse setting: " + name);
+		}
+		return d;
+	}
+	
+	public boolean getBooleanSetting(String name)
+	{
+		boolean b = Boolean.parseBoolean(defaults.get(name));
+		try
+		{
+			b = Boolean.parseBoolean(settings.get(name));
+		}
+		catch (Exception e)
+		{
+			System.err.println("Failed to parse setting: " + name);
+		}
+		return b;
+	}
+	
 	public void setSetting(String name, String value)
 	{
 		settings.put(name, value);
+	}
+	
+	public void setSetting(String name, int value)
+	{
+		settings.put(name, String.valueOf(value));
+	}
+	
+	public void setSetting(String name, double value)
+	{
+		settings.put(name, String.valueOf(value));
+	}
+	
+	public void setSetting(String name, boolean value)
+	{
+		settings.put(name, String.valueOf(value));
 	}
 }

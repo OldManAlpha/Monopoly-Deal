@@ -50,7 +50,7 @@ public class GameState
 		}
 		this.state = state;
 		MDClient client = MDClient.getInstance();
-		if (state.isTarget(client.getThePlayer()) || state.getActionOwner() == client.getThePlayer())
+		if (state != null && (state.isTarget(client.getThePlayer()) || state.getActionOwner() == client.getThePlayer()))
 		{
 			client.getWindow().setAlert(true);
 		}

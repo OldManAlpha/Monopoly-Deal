@@ -19,6 +19,8 @@ public class ConnectionThread extends Thread
 	private List<Packet> inPackets;
 	private List<Packet> outPackets;
 	
+	private volatile boolean sendingPackets;
+	
 	public ConnectionThread(MJConnection connection)
 	{
 		this.connection = connection;
@@ -65,6 +67,19 @@ public class ConnectionThread extends Thread
 		}
 	}
 	
+	public boolean hasOutPackets()
+	{
+		synchronized (outPackets)
+		{
+			return outPackets.size() > 0;
+		}
+	}
+	
+	public boolean isSendingPackets()
+	{
+		return sendingPackets;
+	}
+	
 	public void close()
 	{
 		try
@@ -84,10 +99,12 @@ public class ConnectionThread extends Thread
 		{
 			try
 			{
+				sendingPackets = true;
 				for (Packet p : getOutPackets())
 				{
 					connection.sendPacket(p);
 				}
+				sendingPackets = false;
 				
 				while (connection.hasAvailableInput())
 				{

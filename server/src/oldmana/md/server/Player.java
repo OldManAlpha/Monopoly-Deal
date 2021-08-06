@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketDestroyCardCollection;
 import oldmana.md.net.packet.server.PacketPlayerInfo;
+import oldmana.md.net.packet.server.PacketPlayerStatus;
 import oldmana.md.net.packet.server.PacketUndoCardStatus;
 import oldmana.md.net.packet.universal.PacketChat;
 import oldmana.md.server.ButtonManager.PlayerButton;
@@ -145,6 +146,22 @@ public class Player extends Client implements CommandSender
 	public void setOnline(boolean online)
 	{
 		this.online = online;
+		if (online)
+		{
+			setLastPing(getServer().getTickCount());
+			setSentPing(false);
+			getServer().broadcastPacket(new PacketPlayerStatus(getID(), true), this);
+		}
+		else
+		{
+			setSentPing(false);
+			if (getNet() != null)
+			{
+				getNet().close();
+				setNet(null);
+			}
+			getServer().broadcastPacket(new PacketPlayerStatus(getID(), false));
+		}
 	}
 	
 	public int getLastPing()
@@ -693,5 +710,10 @@ public class Player extends Client implements CommandSender
 	public void setOp(boolean op)
 	{
 		this.op = op;
+	}
+	
+	protected MDServer getServer()
+	{
+		return server;
 	}
 }

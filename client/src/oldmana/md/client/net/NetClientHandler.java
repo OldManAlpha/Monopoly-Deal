@@ -53,6 +53,7 @@ import oldmana.md.client.state.ActionStateTargetPlayerMonopoly;
 import oldmana.md.client.state.ActionStateTargetPlayerProperty;
 import oldmana.md.client.state.ActionStateTargetSelfPlayerProperty;
 import oldmana.md.net.packet.client.PacketLogin;
+import oldmana.md.net.packet.client.PacketQuit;
 import oldmana.md.net.packet.client.PacketSoundCache;
 import oldmana.md.net.packet.client.action.*;
 import oldmana.md.net.packet.server.*;
@@ -64,7 +65,7 @@ import oldmana.md.net.packet.universal.PacketKeepConnected;
 
 public class NetClientHandler
 {
-	public static int PROTOCOL_VERSION = 11;
+	public static int PROTOCOL_VERSION = 12;
 	
 	private MDClient client;
 	
@@ -81,13 +82,20 @@ public class NetClientHandler
 		// Client -> Server
 		Packet.registerPacket(PacketLogin.class);
 		
+		// Server -> Client
+		Packet.registerPacket(PacketHandshake.class);
+		Packet.registerPacket(PacketKick.class);
+		
+		// Client -> Server
+		Packet.registerPacket(PacketQuit.class);
+		
+		// ^ Ideally common protocol among future versions ^
+		
 		// Client <-> Server
 		Packet.registerPacket(PacketChat.class);
 		Packet.registerPacket(PacketKeepConnected.class);
 		
 		// Server -> Client
-		Packet.registerPacket(PacketHandshake.class);
-		Packet.registerPacket(PacketKick.class);
 		Packet.registerPacket(PacketPropertyColors.class);
 		Packet.registerPacket(PacketCardCollectionData.class);
 		Packet.registerPacket(PacketCardData.class);

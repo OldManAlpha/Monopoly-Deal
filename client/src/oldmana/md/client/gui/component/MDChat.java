@@ -103,9 +103,9 @@ public class MDChat extends MDComponent
 			@Override
 			public boolean dispatchKeyEvent(KeyEvent event)
 			{
-				if (getClient().getTableScreen().getParent() != null)
+				if (getClient().getTableScreen().isVisible())
 				{
-					if (!chatOpen && event.getID() == KeyEvent.KEY_PRESSED)
+					if (!chatOpen && event.getID() == KeyEvent.KEY_PRESSED && !getClient().getTableScreen().ingameMenu.isVisible())
 					{
 						if (event.getKeyCode() == KeyEvent.VK_T)
 						{
@@ -300,6 +300,11 @@ public class MDChat extends MDComponent
 			hoveringLink = false;
 		}
 		chatOpen = open;
+	}
+	
+	public boolean isChatOpen()
+	{
+		return chatOpen;
 	}
 	
 	public Map<TextSegment[], Integer> getVisibleLines()

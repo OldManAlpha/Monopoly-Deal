@@ -159,6 +159,9 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 	@Override
 	public void updateUI()
 	{
-		createSet.setSize(GraphicsUtils.getCardWidth(), GraphicsUtils.getCardHeight());
+		if (createSet != null)
+		{
+			createSet.setSize(GraphicsUtils.getCardWidth(), GraphicsUtils.getCardHeight());
+		}
 	}
 }

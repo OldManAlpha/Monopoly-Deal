@@ -64,6 +64,8 @@ public class TableScreen extends JLayeredPane
 	private MDButton shrinkUI;
 	private MDText uiScale;
 	
+	public IngameMenuScreen ingameMenu;
+	
 	public TableScreen()
 	{
 		super();
@@ -110,67 +112,72 @@ public class TableScreen extends JLayeredPane
 		version.setFontSize(16);
 		add(version);
 		
-		debug = new MDButton("DB");
-		debug.setLocation(1555, 5);
-		debug.setSize(40, 25);
-		debug.setFontSize(16);
-		debug.addMouseListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseReleased(MouseEvent event)
-			{
-				MDClient.getInstance().setDebugEnabled(!MDClient.getInstance().isDebugEnabled());
-				for (Card card : Card.getRegisteredCards().values())
-				{
-					card.clearGraphicsCache();
-				}
-				repaint();
-			}
-		});
-		add(debug, new Integer(1));
-		
 		chat = new MDChat();
 		chat.setSize(500, 400);
 		chat.setLocation(50, 300);
 		add(chat, new Integer(150));
 		
-		
-		enlargeUI = new MDButton("+");
-		enlargeUI.addMouseListener(new MouseAdapter()
+		if (getClient().getSettings().getBooleanSetting("Extra-Buttons"))
 		{
-			@Override
-			public void mouseReleased(MouseEvent event)
+			debug = new MDButton("DB");
+			debug.setLocation(1555, 5);
+			debug.setSize(40, 25);
+			debug.setFontSize(16);
+			debug.addMouseListener(new MouseAdapter()
 			{
-				GraphicsUtils.SCALE = ((GraphicsUtils.SCALE * 10) + 1) / 10.0;
-				uiScale.setText("" + GraphicsUtils.SCALE);
-				revalidate();
-				repaint();
-				
-				getClient().getGameState().updateUI();
-			}
-		});
-		add(enlargeUI, new Integer(1));
-		
-		shrinkUI = new MDButton("-");
-		shrinkUI.addMouseListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseReleased(MouseEvent event)
+				@Override
+				public void mouseReleased(MouseEvent event)
+				{
+					getClient().setDebugEnabled(!getClient().isDebugEnabled());
+					for (Card card : Card.getRegisteredCards().values())
+					{
+						card.clearGraphicsCache();
+					}
+					repaint();
+				}
+			});
+			add(debug, new Integer(1));
+			
+			enlargeUI = new MDButton("+");
+			enlargeUI.addMouseListener(new MouseAdapter()
 			{
-				GraphicsUtils.SCALE = Math.max(0.5, ((GraphicsUtils.SCALE * 10) - 1) / 10.0);
-				uiScale.setText("" + GraphicsUtils.SCALE);
-				revalidate();
-				repaint();
-				
-				getClient().getGameState().updateUI();
-			}
-		});
-		add(shrinkUI, new Integer(1));
+				@Override
+				public void mouseReleased(MouseEvent event)
+				{
+					GraphicsUtils.setScale(Math.min(GraphicsUtils.SCALE + 0.1, 4.0));
+					uiScale.setText("" + GraphicsUtils.SCALE);
+					revalidate();
+					repaint();
+					
+					getClient().getGameState().updateUI();
+				}
+			});
+			add(enlargeUI, new Integer(1));
+			
+			shrinkUI = new MDButton("-");
+			shrinkUI.addMouseListener(new MouseAdapter()
+			{
+				@Override
+				public void mouseReleased(MouseEvent event)
+				{
+					GraphicsUtils.setScale(Math.max(GraphicsUtils.SCALE - 0.1, 0.5));
+					uiScale.setText("" + GraphicsUtils.SCALE);
+					revalidate();
+					repaint();
+					
+					getClient().getGameState().updateUI();
+				}
+			});
+			add(shrinkUI, new Integer(1));
+			
+			uiScale = new MDText("" + GraphicsUtils.SCALE);
+			uiScale.setFontSize(20);
+			uiScale.setHorizontalAlignment(Alignment.CENTER);
+			add(uiScale, new Integer(1));
+		}
 		
-		uiScale = new MDText("" + GraphicsUtils.SCALE);
-		uiScale.setFontSize(20);
-		uiScale.setHorizontalAlignment(Alignment.CENTER);
-		add(uiScale, new Integer(1));
+		ingameMenu = new IngameMenuScreen();
+		add(ingameMenu, new Integer(10000));
 	}
 	
 	public void positionPlayers()
@@ -387,18 +394,21 @@ public class TableScreen extends JLayeredPane
 		{
 			topbar.setSize(getWidth(), scale(35));
 			
-			debug.setLocation(getWidth() - scale(45), scale(5));
-			debug.setSize(scale(40), scale(25));
-			debug.setFontSize(16);
-			
-			enlargeUI.setLocation(scale(5), scale(5));
-			enlargeUI.setSize(scale(25), scale(25));
-			
-			uiScale.setLocation(enlargeUI.getMaxX() + scale(6), scale(5));
-			uiScale.setSize(scale(30), scale(30));
-			
-			shrinkUI.setLocation(uiScale.getMaxX() + scale(5), scale(5));
-			shrinkUI.setSize(scale(25), scale(25));
+			if (getClient().getSettings().getBooleanSetting("Extra-Buttons"))
+			{
+				debug.setLocation(getWidth() - scale(45), scale(5));
+				debug.setSize(scale(40), scale(25));
+				debug.setFontSize(16);
+				
+				enlargeUI.setLocation(scale(5), scale(5));
+				enlargeUI.setSize(scale(25), scale(25));
+				
+				uiScale.setLocation(enlargeUI.getMaxX() + scale(6), scale(5));
+				uiScale.setSize(scale(30), scale(30));
+				
+				shrinkUI.setLocation(uiScale.getMaxX() + scale(5), scale(5));
+				shrinkUI.setSize(scale(25), scale(25));
+			}
 			
 			chat.setSize(scale(650), scale(450));
 			chat.setLocation(scale(50), getHeight() - scale(650));
@@ -438,6 +448,8 @@ public class TableScreen extends JLayeredPane
 			{
 				actionScreen.setSize(getSize());
 			}
+			
+			ingameMenu.setSize(getSize());
 		}
 		
 		@Override

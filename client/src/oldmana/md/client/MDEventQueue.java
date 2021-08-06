@@ -34,6 +34,12 @@ public class MDEventQueue
 		return !queue.isEmpty() || currentTask != null;
 	}
 	
+	public void clearTasks()
+	{
+		queue.clear();
+		currentTask = null;
+	}
+	
 	public TickingEventTask getCurrentTask()
 	{
 		return currentTask;
@@ -195,6 +201,11 @@ public class MDEventQueue
 		public CardCollection getTo()
 		{
 			return to;
+		}
+		
+		public MDMovingCard getComponent()
+		{
+			return anim;
 		}
 	}
 }

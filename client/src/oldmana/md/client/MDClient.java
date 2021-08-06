@@ -13,7 +13,10 @@ import javax.swing.Timer;
 import javafx.embed.swing.JFXPanel;
 import oldmana.general.mjnetworkingapi.MJConnection;
 import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.client.MDEventQueue.CardMove;
 import oldmana.md.client.MDScheduler.MDTask;
+import oldmana.md.client.card.Card;
+import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.card.collection.Deck;
 import oldmana.md.client.card.collection.DiscardPile;
 import oldmana.md.client.card.collection.VoidCollection;
@@ -28,13 +31,14 @@ import oldmana.md.client.state.ActionStateDraw;
 import oldmana.md.client.state.ActionStateFinishTurn;
 import oldmana.md.client.state.ActionStatePlay;
 import oldmana.md.client.state.GameState;
+import oldmana.md.net.packet.client.PacketQuit;
 import oldmana.md.net.packet.client.action.PacketActionDraw;
 
 public class MDClient
 {
 	private static MDClient instance;
 	
-	public static final String VERSION = "0.6.2";
+	public static final String VERSION = "0.6.3 Dev";
 	
 	private MDFrame window;
 	
@@ -104,45 +108,17 @@ public class MDClient
 			@Override
 			public void run()
 			{
-				if (++timeSincePing > 50)
+				if (connection != null)
 				{
-					getTableScreen().getTopbar().setText("Disconnected: Timed out");
-					getTableScreen().getTopbar().repaint();
-					connection.close();
+					if (++timeSincePing > 50)
+					{
+						getTableScreen().getTopbar().setText("Disconnected: Timed out");
+						getTableScreen().getTopbar().repaint();
+						connection.close();
+					}
 				}
 			}
 		});
-		/*
-		scheduler.scheduleTask(new MDTask(60, true)
-		{
-			{
-				GraphicsUtils.SCALE = 0.75;
-			}
-			boolean growing = true;
-			@Override
-			public void run()
-			{
-				if (growing)
-				{
-					GraphicsUtils.SCALE += 0.01;
-					if (GraphicsUtils.SCALE >= 1.6)
-					{
-						growing = false;
-					}
-				}
-				else
-				{
-					GraphicsUtils.SCALE -= 0.01;
-					if (GraphicsUtils.SCALE <= 0.5)
-					{
-						growing = true;
-					}
-				}
-				getTableScreen().invalidate();
-				getTableScreen().repaint();
-			}
-		});
-		*/
 		
 		eventQueue = new MDEventQueue();
 		
@@ -152,7 +128,6 @@ public class MDClient
 		gameState = new GameState();
 		
 		window = new MDFrame();
-		//window.setVisible(true);
 		
 		
 		Timer timer = new Timer(50, new ActionListener()
@@ -394,6 +369,66 @@ public class MDClient
 	public void removeTableComponent(JComponent component)
 	{
 		getTableScreen().remove(component);
+	}
+	
+	public void disconnect()
+	{
+		disconnect(null);
+	}
+	
+	public void disconnect(String reason)
+	{
+		disconnect(reason, false);
+	}
+	
+	public void disconnect(String reason, boolean closing)
+	{
+		if (connection != null)
+		{
+			sendPacket(new PacketQuit(reason));
+			while ((connection.hasOutPackets() || connection.isSendingPackets()) && connection.isAlive())
+			{
+				try
+				{
+					Thread.sleep(1);
+				}
+				catch (InterruptedException e) {}
+			}
+			connection.close();
+		}
+		if (!closing)
+		{
+			getGameState().setActionState(null);
+			
+			if (eventQueue.getCurrentTask() instanceof CardMove)
+			{
+				removeTableComponent(((CardMove) eventQueue.getCurrentTask()).getComponent());
+			}
+			eventQueue.clearTasks();
+			
+			awaitingResponse = false;
+			getTableScreen().getDeck().setCollection(null);
+			getTableScreen().getDiscardPile().setCollection(null);
+			getTableScreen().getVoidCollection().setCollection(null);
+			getTableScreen().getHand().setCollection(null);
+			deck = null;
+			discard = null;
+			voidCollection = null;
+			
+			for (Player p : getAllPlayers())
+			{
+				removeTableComponent(p.getUI());
+			}
+			thePlayer = null;
+			otherPlayers.clear();
+			
+			timeSincePing = 0;
+			
+			Card.getRegisteredCards().clear();
+			CardCollection.getRegisteredCardCollections().clear();
+			
+			getWindow().displayMenu();
+		}
 	}
 	
 	public static MDClient getInstance()

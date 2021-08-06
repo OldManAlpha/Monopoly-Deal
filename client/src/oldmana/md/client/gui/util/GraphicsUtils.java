@@ -18,6 +18,9 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
+import oldmana.md.client.MDClient;
+import oldmana.md.client.Settings;
+
 public class GraphicsUtils
 {
 	public static double SCALE = 1;
@@ -32,6 +35,31 @@ public class GraphicsUtils
 	public static Color DARK_BLUE = new Color(64, 92, 165);
 	public static Color RAILROAD = new Color(17, 17, 14);
 	public static Color UTILITY = new Color(206, 229, 183);
+	
+	/**Required to set scale through this method to avoid precision issues
+	 * 
+	 * @param scale
+	 */
+	public static void setScale(double scale)
+	{
+		setScale(scale, true);
+	}
+	
+	public static void setScale(double scale, boolean save)
+	{
+		SCALE = roundScale(scale);
+		if (save)
+		{
+			Settings s = MDClient.getInstance().getSettings();
+			s.setSetting("Scale", SCALE);
+			s.saveSettings();
+		}
+	}
+	
+	public static double roundScale(double scale)
+	{
+		return ((int) Math.round(scale * 10)) / 10.0;
+	}
 	
 	public static BufferedImage createImage(int width, int height)
 	{

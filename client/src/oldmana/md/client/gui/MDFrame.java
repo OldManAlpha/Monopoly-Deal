@@ -11,6 +11,8 @@ import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.Timer;
 
+import oldmana.md.client.MDClient;
 import oldmana.md.client.gui.screen.MainMenuScreen;
 import oldmana.md.client.gui.screen.TableScreen;
 import oldmana.md.client.gui.util.GraphicsUtils;
@@ -27,6 +30,7 @@ import oldmana.md.client.gui.util.TextPainter.Alignment;
 public class MDFrame extends JFrame
 {
 	private TableScreen tableScreen;
+	private MainMenuScreen menuScreen;
 	
 	private List<BufferedImage> normalIcons;
 	private List<BufferedImage> alertIcons;
@@ -37,7 +41,17 @@ public class MDFrame extends JFrame
 	{
 		super("Monopoly Deal");
 		
+		GraphicsUtils.setScale(MDClient.getInstance().getSettings().getDoubleSetting("Scale"), false);
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.addWindowListener(new WindowAdapter()
+		{
+			@Override
+			public void windowClosing(WindowEvent event)
+			{
+				MDClient.getInstance().disconnect("closing", true);
+			}
+		});
 		setLayout(new LayoutManager()
 		{
 			@Override
@@ -64,14 +78,13 @@ public class MDFrame extends JFrame
 			@Override
 			public void removeLayoutComponent(Component comp) {}
 		});
-		getContentPane().setPreferredSize(new Dimension(600, 400));
-		pack();
-		setLocation((int) (Toolkit.getDefaultToolkit().getScreenSize().getWidth() - getWidth()) / 2, 
-				(int) (Toolkit.getDefaultToolkit().getScreenSize().getHeight() - getHeight()) / 2);
 		tableScreen = new TableScreen();
-		MainMenuScreen menu = new MainMenuScreen();
-		getContentPane().add(menu);
+		tableScreen.setVisible(false);
+		menuScreen = new MainMenuScreen();
+		getContentPane().add(tableScreen);
+		getContentPane().add(menuScreen);
 		setVisible(true);
+		displayMenu();
 		
 		normalIcons = new ArrayList<BufferedImage>();
 		alertIcons = new ArrayList<BufferedImage>();
@@ -170,6 +183,27 @@ public class MDFrame extends JFrame
 		tp.setHorizontalAlignment(Alignment.CENTER);
 		tp.setVerticalAlignment(Alignment.CENTER);
 		tp.paint(g);
+	}
+	
+	public void displayTable()
+	{
+		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		getContentPane().setPreferredSize(new Dimension((int) Math.min(GraphicsUtils.scale(1600), screen.getWidth() - 200), 
+				(int) Math.min(GraphicsUtils.scale(900), screen.getHeight() - 180)));
+		pack();
+		setLocation((int) (screen.getWidth() - getWidth()) / 2, (int) (screen.getHeight() - getHeight()) / 2);
+		tableScreen.setVisible(true);
+		menuScreen.setVisible(false);
+	}
+	
+	public void displayMenu()
+	{
+		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		getContentPane().setPreferredSize(new Dimension(GraphicsUtils.scale(600), GraphicsUtils.scale(400)));
+		pack();
+		setLocation((int) (screen.getWidth() - getWidth()) / 2, (int) (screen.getHeight() - getHeight()) / 2);
+		tableScreen.setVisible(false);
+		menuScreen.setVisible(true);
 	}
 	
 	public TableScreen getTableScreen()
