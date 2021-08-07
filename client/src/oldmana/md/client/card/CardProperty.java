@@ -154,5 +154,10 @@ public class CardProperty extends Card
 		{
 			return new ArrayList<PropertyColor>(colors);
 		}
+		
+		public static void clearColors()
+		{
+			colors.clear();
+		}
 	}
 }

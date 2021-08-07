@@ -17,7 +17,7 @@ public class CommandLoadSound extends Command
 		if (args.length >= 1)
 		{
 			File f = new File("sounds" + File.separator + args[0] + ".wav");
-			getServer().loadSound(f);
+			getServer().loadSound(f, true);
 		}
 		else
 		{

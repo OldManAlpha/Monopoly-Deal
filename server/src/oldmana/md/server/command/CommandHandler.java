@@ -42,6 +42,7 @@ public class CommandHandler
 		registerCommand(new CommandPlaySound());
 		registerCommand(new CommandLoadSound());
 		registerCommand(new CommandListEffects());
+		registerCommand(new CommandRemoveEffect());
 		registerCommand(new CommandOp());
 		registerCommand(new CommandDeop());
 		registerCommand(new CommandStop());

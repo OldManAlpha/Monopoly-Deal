@@ -24,9 +24,17 @@ public class MDScheduler
 		while (it.hasNext())
 		{
 			MDTask task = it.next();
-			if (task.tick())
+			try
 			{
-				tasks.remove(task);
+				if (task.tick())
+				{
+					tasks.remove(task);
+				}
+			}
+			catch (Exception e)
+			{
+				System.err.println("Exception occured in scheduled task");
+				e.printStackTrace();
 			}
 		}
 	}

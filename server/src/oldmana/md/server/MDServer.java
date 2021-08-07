@@ -399,7 +399,8 @@ public class MDServer
 		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.RED, PropertyColor.YELLOW), "Red/Yellow Rent", "R/Y Rent");
 		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.GREEN, PropertyColor.DARK_BLUE), "Green/Dark Blue Rent", "G/DB Rent");
 		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.RAILROAD, PropertyColor.UTILITY), "Railroad/Utility Rent", "RR/U Rent");
-		cardRegistry.registerActionCard(() -> new CardActionRent(3, PropertyColor.getAllColors()), "10-Color Rent", "Rent");
+		cardRegistry.registerActionCard(() -> new CardActionRent(3, PropertyColor.getVanillaColors()), "10-Color Rent", "Rent");
+		cardRegistry.registerActionCard(() -> new CardActionRent(3, PropertyColor.getAllColors()), "All-Color Rent", "All Rent");
 		
 		cardRegistry.registerActionCard(CardActionHouse.class, "House");
 		cardRegistry.registerActionCard(CardActionHotel.class, "Hotel");
@@ -620,15 +621,30 @@ public class MDServer
 	
 	public void loadSound(File file, String name)
 	{
+		loadSound(file, name, false);
+	}
+	
+	public void loadSound(File file, boolean sendPackets)
+	{
+		loadSound(file, file.getName().substring(0, file.getName().length() - 4), sendPackets);
+	}
+	
+	public void loadSound(File file, String name, boolean sendPackets)
+	{
 		try
 		{
 			DigestInputStream is = new DigestInputStream(new FileInputStream(file), MessageDigest.getInstance("MD5"));
 			byte[] data = new byte[is.available()];
 			is.read(data);
 			int hash = Arrays.hashCode(is.getMessageDigest().digest());
-			sounds.put(name, new MDSound(name, data, hash));
+			MDSound sound = new MDSound(name, data, hash);
+			sounds.put(name, sound);
 			is.close();
 			System.out.println("Loaded sound file: " + file.getName());
+			if (sendPackets)
+			{
+				broadcastPacket(new PacketSoundData(sound.getName(), sound.getData(), sound.getHash()));
+			}
 		}
 		catch (Exception e)
 		{

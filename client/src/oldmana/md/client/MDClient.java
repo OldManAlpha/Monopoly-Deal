@@ -16,6 +16,7 @@ import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.client.MDEventQueue.CardMove;
 import oldmana.md.client.MDScheduler.MDTask;
 import oldmana.md.client.card.Card;
+import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.card.collection.Deck;
 import oldmana.md.client.card.collection.DiscardPile;
@@ -426,6 +427,7 @@ public class MDClient
 			
 			Card.getRegisteredCards().clear();
 			CardCollection.getRegisteredCardCollections().clear();
+			PropertyColor.clearColors();
 			
 			getWindow().displayMenu();
 		}

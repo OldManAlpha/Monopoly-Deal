@@ -542,6 +542,11 @@ public class Player extends Client implements CommandSender
 		}
 	}
 	
+	public void removeStatusEffect(int index)
+	{
+		removeStatusEffect(statusEffects.get(index));
+	}
+	
 	/**Gets a status effect by the type. There's no guarantee that there aren't multiple instances of a type.
 	 * 
 	 * @param clazz - The type to get
@@ -558,6 +563,11 @@ public class Player extends Client implements CommandSender
 			}
 		}
 		return null;
+	}
+	
+	public StatusEffect getStatusEffect(int index)
+	{
+		return statusEffects.get(index);
 	}
 	
 	/**Check if the player has at least one instance of a given type.
