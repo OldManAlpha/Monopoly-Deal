@@ -36,6 +36,13 @@ Operating the server will require a little bit of technical knowhow. If you are 
 4. After all the desired players have connected, you start the game with the `start` command.
 5. When the game finishes or you just want to restart, you can use the `reset` command to put all the cards back in the deck.
 
+#### Useful Commands
+
+- `op [Player UID]`: Give a player server operator permissions, allowing them to execute all commands that the console could right from the in-game chat(accessible with the `T` key). `deop` can be used to revoke these permissions from a player. Simply preface your chat message with a "/" to indicate you're executing a command in-game. Example: `/start`
+- `kick [Player ID]`: Remove a player from the game and return all of their cards back to the deck.
+- `transfercard [Card ID] [Collection ID] <Index> <Speed>`: Manually move a card to a destination. Card IDs and Collection IDs are visible when debug mode is enabled.
+- `stop`: Closes the server.
+
 Additional undocumented commands may be seen by using the `help` command.
 
 ### Client Setup
