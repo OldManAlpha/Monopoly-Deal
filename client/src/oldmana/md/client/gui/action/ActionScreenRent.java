@@ -189,6 +189,10 @@ public class ActionScreenRent extends ActionScreen
 		{
 			MDCardSelection cs = new MDCardSelection(card, selected);
 			cs.setDisabled(disabled);
+			if (card.getValue() == 0)
+			{
+				cs.setBanner("Immune");
+			}
 			cs.setListener(new CardSelectListener()
 			{
 				@Override

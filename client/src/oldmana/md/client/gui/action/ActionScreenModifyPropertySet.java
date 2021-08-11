@@ -59,16 +59,24 @@ public class ActionScreenModifyPropertySet extends ActionScreen
 			//ui.setLocation(800 - offset + (i * (MDCard.CARD_SIZE.width * 2 + 50)), 150);
 			add(ui);
 			this.cards.add(ui);
-			if (card instanceof CardProperty && !((CardProperty) card).isSingleColor())
+			if (card instanceof CardProperty)
 			{
-				ui.addMouseListener(new MouseAdapter()
+				CardProperty prop = (CardProperty) card;
+				if (prop.isSingleColor())
 				{
-					@Override
-					public void mouseReleased(MouseEvent event)
+					ui.setBanner("Locked");
+				}
+				else
+				{
+					ui.addMouseListener(new MouseAdapter()
 					{
-						state.propertySelected(ui.getCard());
-					}
-				});
+						@Override
+						public void mouseReleased(MouseEvent event)
+						{
+							state.propertySelected(ui.getCard());
+						}
+					});
+				}
 			}
 			else if (card instanceof CardBuilding)
 			{

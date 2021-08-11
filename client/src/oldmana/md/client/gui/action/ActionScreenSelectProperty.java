@@ -90,6 +90,10 @@ public class ActionScreenSelectProperty extends ActionScreen
 					}
 				});
 			}
+			else
+			{
+				ui.setBanner("Immune");
+			}
 		}
 	}
 	
