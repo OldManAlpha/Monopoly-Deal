@@ -645,7 +645,6 @@ public class MDChat extends MDComponent
 		public void calculateLines()
 		{
 			Font f = getFont();
-			FontMetrics m = getFontMetrics(f);
 			
 			int maxWidth = getChatHistoryWidth();
 			
@@ -659,7 +658,7 @@ public class MDChat extends MDComponent
 				System.out.println(text);
 				int startPos = line.length();
 				line += text;
-				List<String> split = GraphicsUtils.splitString(line, m, maxWidth);
+				List<String> split = GraphicsUtils.splitString(line, f, maxWidth);
 				if (split.size() == 1)
 				{
 					lineSegments.add(new TextSegment(text, seg.getColor(), seg.getLinkID()));

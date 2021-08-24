@@ -30,11 +30,24 @@ public class Settings
 	
 	public Settings()
 	{
-		file = new File("settings.dat");
+		for (Entry<String, String> defaultSetting : defaults.entrySet())
+		{
+			if (!settings.containsKey(defaultSetting.getKey()))
+			{
+				settings.put(defaultSetting.getKey(), defaultSetting.getValue());
+			}
+		}
 	}
 	
-	public void loadSettings()
+	public void setLocation(File folder)
 	{
+		file = new File(folder, "settings.dat");
+		saveSettings();
+	}
+	
+	public void loadSettings(File folder)
+	{
+		this.file = new File(folder, "settings.dat");
 		try
 		{
 			if (!file.exists())
@@ -65,18 +78,21 @@ public class Settings
 	
 	public void saveSettings()
 	{
-		try
+		if (file != null)
 		{
-			PrintWriter pw = new PrintWriter(new FileWriter(file, false));
-			for (Entry<String, String> setting : settings.entrySet())
+			try
 			{
-				pw.println(setting.getKey() + "=" + setting.getValue());
+				PrintWriter pw = new PrintWriter(new FileWriter(file, false));
+				for (Entry<String, String> setting : settings.entrySet())
+				{
+					pw.println(setting.getKey() + "=" + setting.getValue());
+				}
+				pw.close();
 			}
-			pw.close();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
 		}
 	}
 	

@@ -4,6 +4,8 @@ import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +44,8 @@ public class MDClient
 	public static final String VERSION = "0.6.3 Dev";
 	
 	private MDFrame window;
+	
+	private File dataFolder;
 	
 	private Settings settings;
 	
@@ -90,11 +94,6 @@ public class MDClient
 			e.printStackTrace();
 		}
 		
-		settings = new Settings();
-		settings.loadSettings();
-		
-		MDSoundSystem.loadCache();
-		
 		scheduler = new MDScheduler();
 		scheduler.scheduleTask(new MDTask(1, true)
 		{
@@ -109,7 +108,7 @@ public class MDClient
 			@Override
 			public void run()
 			{
-				if (connection != null)
+				if (connection != null && connection.isAlive())
 				{
 					if (++timeSincePing > 50)
 					{
@@ -128,7 +127,18 @@ public class MDClient
 		
 		gameState = new GameState();
 		
-		window = new MDFrame();
+		settings = new Settings();
+		
+		File folder = findUserData();
+		
+		if (folder != null)
+		{
+			dataFolder = folder;
+			settings.loadSettings(folder);
+			MDSoundSystem.loadCache();
+		}
+		
+		window = new MDFrame(folder == null);
 		
 		
 		Timer timer = new Timer(50, new ActionListener()
@@ -150,6 +160,73 @@ public class MDClient
 		{
 			netHandler.processPackets(connection);
 		}
+	}
+	
+	public File getDataFolder()
+	{
+		return dataFolder;
+	}
+	
+	public void setDataFolder(File folder)
+	{
+		dataFolder = folder;
+	}
+	
+	public File findUserData()
+	{
+		File portable = getJarFolder();
+		for (File f : portable.listFiles())
+		{
+			if (f.getName().equals("settings.dat"))
+			{
+				return portable;
+			}
+		}
+		File local = getLocalFolder();
+		if (local.exists())
+		{
+			return local;
+		}
+		return null;
+	}
+	
+	public File getJarFolder()
+	{
+		try
+		{
+			return new File(MDClient.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
+		}
+		catch (URISyntaxException e)
+		{
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public File getLocalFolder()
+	{
+		String dirPath = null;
+		
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.contains("win"))
+		{
+			dirPath = System.getenv("AppData");
+		}
+		else
+		{
+			// lol who knows if this actually will work properly on linux/mac
+			dirPath = System.getProperty("user.home");
+			if (os.contains("mac"))
+			{
+				dirPath += "/Library/Application Support";
+			}
+		}
+		return new File(dirPath, "Monopoly Deal");
+	}
+	
+	public void loadSettings(File folder)
+	{
+		settings.loadSettings(new File(folder, "settings.dat"));
 	}
 	
 	public Settings getSettings()

@@ -80,7 +80,7 @@ public class TextPainter
 		{
 			for (String str : text)
 			{
-				lines.addAll(GraphicsUtils.splitString(str, g.getFontMetrics(), (int) bounds.getWidth(), attachWords));
+				lines.addAll(GraphicsUtils.splitString(str, font, (int) bounds.getWidth(), attachWords));
 				/*
 				char[] chars = str.toCharArray();
 				String line = "";
@@ -135,11 +135,11 @@ public class TextPainter
 			int verticalAddition = 0;
 			if (vertical == Alignment.CENTER)
 			{
-				verticalAddition = ((int) bounds.getHeight() - (lines.size() * m.getHeight())) / 2;
+				verticalAddition = ((int) bounds.getHeight() - (lines.size() * font.getSize())) / 2;
 			}
 			else if (vertical == Alignment.BOTTOM)
 			{
-				verticalAddition = (int) bounds.getHeight() - (lines.size() * m.getHeight());
+				verticalAddition = (int) bounds.getHeight() - (lines.size() * font.getSize());
 			}
 			
 			for (int i = 0 ; i < lines.size() ; i++)
@@ -153,7 +153,7 @@ public class TextPainter
 				{
 					horizontalAddition = (int) bounds.getWidth() - m.stringWidth(lines.get(i));
 				}
-				g.drawString(lines.get(i), horizontalAddition, verticalAddition + (i * m.getHeight()) + m.getAscent());
+				g.drawString(lines.get(i), horizontalAddition, verticalAddition + (i * font.getSize()) + getAscent());
 			}
 		}
 		else
@@ -162,11 +162,11 @@ public class TextPainter
 			int verticalAddition = 0;
 			if (vertical == Alignment.CENTER)
 			{
-				verticalAddition = ((int) bounds.getHeight() - m.getHeight()) / 2;
+				verticalAddition = ((int) bounds.getHeight() - font.getSize()) / 2;
 			}
 			else if (vertical == Alignment.BOTTOM)
 			{
-				verticalAddition = (int) bounds.getHeight() - m.getHeight();
+				verticalAddition = (int) bounds.getHeight() - font.getSize();
 			}
 			int horizontalAddition = 0;
 			if (horizontal == Alignment.CENTER)
@@ -182,11 +182,11 @@ public class TextPainter
 			int verticalAddition = 0;
 			if (vertical == Alignment.CENTER)
 			{
-				verticalAddition = ((int) bounds.getHeight() - (text.size() * m.getHeight())) / 2;
+				verticalAddition = ((int) bounds.getHeight() - (text.size() * font.getSize())) / 2;
 			}
 			else if (vertical == Alignment.BOTTOM)
 			{
-				verticalAddition = (int) bounds.getHeight() - (text.size() * m.getHeight());
+				verticalAddition = (int) bounds.getHeight() - (text.size() * font.getSize());
 			}
 			
 			for (int i = 0 ; i < text.size() ; i++)
@@ -200,10 +200,15 @@ public class TextPainter
 				{
 					horizontalAddition = (int) bounds.getWidth() - m.stringWidth(text.get(i));
 				}
-				g.drawString(text.get(i), horizontalAddition, verticalAddition + (i * m.getHeight()) + m.getAscent());
+				g.drawString(text.get(i), horizontalAddition, verticalAddition + (i * font.getSize()) + getAscent());
 			}
 		}
 		g.translate(-bounds.getMinX(), -bounds.getMinY());
+	}
+	
+	public int getAscent()
+	{
+		return (int) (font.getSize() * 0.75);
 	}
 	
 	public static class TextMeasurement
@@ -222,7 +227,7 @@ public class TextPainter
 		
 		public int getHeight()
 		{
-			return m.getHeight();
+			return m.getFont().getSize();
 		}
 		
 		public String getHorizontalVisibleText(String text, int availableWidth, int pos)

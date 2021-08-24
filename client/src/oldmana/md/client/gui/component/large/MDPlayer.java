@@ -17,7 +17,6 @@ import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.LayoutAdapter;
-import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDComponent;
 import oldmana.md.client.gui.component.MDPlayerButton;
 import oldmana.md.client.gui.component.MDPlayerButton.ButtonType;
@@ -131,30 +130,22 @@ public class MDPlayer extends MDComponent
 			border = GraphicsUtils.DARK_BLUE;
 			nameplate = GraphicsUtils.LIGHT_BLUE;
 		}
-		else if (state != null)
+		else if (state != null && state.isTarget(player))
 		{
-			if (state.isTarget(player))
+			if (state.isAccepted(player))
 			{
-				if (state.isAccepted(player))
-				{
-					border = GraphicsUtils.GREEN;
-					nameplate = border.brighter();
-				}
-				else if (state.isRefused(player))
-				{
-					border = Color.BLUE;
-					nameplate = new Color(80, 80, 255);
-				}
-				else
-				{
-					border = GraphicsUtils.RED;
-					nameplate = new Color(255, 169, 112);
-				}
+				border = GraphicsUtils.GREEN;
+				nameplate = border.brighter();
+			}
+			else if (state.isRefused(player))
+			{
+				border = Color.BLUE;
+				nameplate = new Color(80, 80, 255);
 			}
 			else
 			{
-				border = Color.BLACK;
-				nameplate = Color.LIGHT_GRAY;
+				border = GraphicsUtils.RED;
+				nameplate = new Color(255, 169, 112);
 			}
 		}
 		else
@@ -165,31 +156,23 @@ public class MDPlayer extends MDComponent
 		g.setColor(border);
 		g.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, scale(10), scale(10));
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		//Font font = new Font(getFont().getFontName(), Font.ITALIC, 16);
 		Font font = GraphicsUtils.getThinMDFont(Font.PLAIN, scale(18));
 		g.setFont(font);
 		FontMetrics metrics = g.getFontMetrics();
 		String nameText = MDClient.getInstance().isDebugEnabled() ? player.getName() + " (ID: " + player.getID() + ")" : player.getName();
 		int nameWidth = metrics.stringWidth(nameText);
-		int nameHeight = metrics.getHeight();
+		int nameHeight = font.getSize() + 1;
 		g.setColor(nameplate);
 		GradientPaint paint = new GradientPaint(0, 0, GraphicsUtils.getLighterColor(nameplate, 1), 0, (float) (nameHeight * 0.6), nameplate);
 		g.setPaint(paint);
 		g.fillRoundRect(0, 0, nameWidth + scale(8), nameHeight + scale(2), scale(10), scale(10));
-		if (!player.isConnected())
-		{
-			g.setColor(Color.RED);
-		}
-		else
-		{
-			g.setColor(Color.BLACK);
-		}
-		TextPainter tp = new TextPainter(nameText, font, new Rectangle(scale(4), scale(2), nameWidth, nameHeight));
+		g.setColor(player.isConnected() ? Color.BLACK : Color.RED);
+		TextPainter tp = new TextPainter(nameText, font, new Rectangle(scale(4), scale(3), nameWidth, nameHeight));
 		tp.paint(g);
 		g.setColor(border);
 		g.drawRoundRect(0, 0, nameWidth + scale(8), nameHeight + scale(2), scale(10), scale(10));
-		//g.setFont(new Font(this.getFont().getFontName(), Font.ITALIC, 16));
-		//g.drawString(player.getName(), 2, 16);
+		
+		
 	}
 	
 	public class PlayerLayout extends LayoutAdapter

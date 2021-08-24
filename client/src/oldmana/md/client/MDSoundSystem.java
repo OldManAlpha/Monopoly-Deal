@@ -24,12 +24,12 @@ public class MDSoundSystem
 	{
 		try
 		{
-			File folder = new File("cache" + File.separator + "sounds");
-			if (!folder.exists())
+			File soundsFolder = new File(MDClient.getInstance().getDataFolder(), "cache" + File.separator + "sounds");
+			if (!soundsFolder.exists())
 			{
-				folder.mkdirs();
+				soundsFolder.mkdirs();
 			}
-			for (File f : folder.listFiles())
+			for (File f : soundsFolder.listFiles())
 			{
 				if (!f.isDirectory() && f.getName().endsWith(".wav"))
 				{
@@ -48,7 +48,7 @@ public class MDSoundSystem
 	{
 		try
 		{
-			File folder = new File("cache" + File.separator + "sounds");
+			File folder = new File(MDClient.getInstance().getDataFolder(), "cache" + File.separator + "sounds");
 			File file = new File(folder, name + ".wav");
 			FileOutputStream os = new FileOutputStream(file);
 			os.write(sounds.get(name).getData());

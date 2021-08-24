@@ -205,6 +205,10 @@ public class NetServerHandler
 				if (server.isPlayerWithUIDLoggedIn(uid))
 				{
 					Player player = server.getPlayerByUID(uid);
+					if (player.isOnline())
+					{
+						player.sendPacket(new PacketKick("Logged in from another client!"));
+					}
 					player.setOnline(true);
 					player.setNet(client.getNet());
 					player.sendPacket(new PacketHandshake(player.getID(), player.getName()));
@@ -601,13 +605,13 @@ public class NetServerHandler
 	{
 		if (card == null)
 		{
-			server.kickPlayer(player, "Invalid card ID");
+			player.disconnect("Invalid card ID");
 			return false;
 		}
 		Hand hand = player.getHand();
 		if (!hand.hasCard(card))
 		{
-			server.kickPlayer(player, "Tried to use a card not in your hand!");
+			player.disconnect("Tried to use a card not in your hand!");
 			return false;
 		}
 		return true;

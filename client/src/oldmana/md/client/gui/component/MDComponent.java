@@ -39,6 +39,11 @@ public class MDComponent extends JComponent
 		return new Point(getX() + (getWidth() / 2), getY() + (getHeight() / 2));
 	}
 	
+	public void setLocation(double x, double y)
+	{
+		setLocation((int) x, (int) y);
+	}
+	
 	public void setLocationCentered(int x, int y)
 	{
 		setLocation(x - (getWidth() / 2), y - (getHeight() / 2));

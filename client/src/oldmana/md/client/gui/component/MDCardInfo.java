@@ -1,7 +1,7 @@
 package oldmana.md.client.gui.component;
 
 import java.awt.Color;
-import java.awt.FontMetrics;
+import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -27,10 +27,17 @@ public class MDCardInfo extends MDComponent
 		this.card = card;
 		
 		int width = 400;
-		
-		FontMetrics metrics = getFontMetrics(GraphicsUtils.getThinMDFont(scale(20)));
-		List<String> desc = GraphicsUtils.splitStrings(Arrays.asList(card.getDescription().getText()), metrics, scale(width - 8), true);
-		setSize(scale(width), scale(60) + (metrics.getHeight() * desc.size()));
+		try
+		{
+			Font f = GraphicsUtils.getThinMDFont(scale(20));
+			List<String> desc = GraphicsUtils.splitStrings(Arrays.asList(card.getDescription().getText()), GraphicsUtils.getThinMDFont(scale(20)), 
+					scale(width - 8), true);
+			setSize(scale(width), scale(60) + (f.getSize() * desc.size()));
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	@Override

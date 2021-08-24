@@ -7,8 +7,6 @@ import java.awt.RenderingHints;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JComponent;
-
 import oldmana.md.client.card.Card;
 import oldmana.md.client.gui.util.GraphicsUtils;
 

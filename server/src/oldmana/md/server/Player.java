@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketDestroyCardCollection;
+import oldmana.md.net.packet.server.PacketKick;
 import oldmana.md.net.packet.server.PacketPlayerInfo;
 import oldmana.md.net.packet.server.PacketPlayerStatus;
 import oldmana.md.net.packet.server.PacketUndoCardStatus;
@@ -720,6 +721,26 @@ public class Player extends Client implements CommandSender
 	public void setOp(boolean op)
 	{
 		this.op = op;
+	}
+	
+	/**
+	 * Closes the connection with the player. This does not remove them from the game.
+	 */
+	public void disconnect()
+	{
+		disconnect("Disconnected by server");
+	}
+	
+	/**
+	 * Closes the connection with the player for a given reason. This does not remove them from the game.
+	 * 
+	 * @param reason - The message displayed on the client when disconnected
+	 */
+	public void disconnect(String reason)
+	{
+		sendPacket(new PacketKick(reason));
+		setOnline(false);
+		System.out.println("Player " + getName() + " (ID: " + getID() + ") was disconnected for '" + reason + "'");
 	}
 	
 	protected MDServer getServer()

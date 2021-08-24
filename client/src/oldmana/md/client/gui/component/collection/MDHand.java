@@ -1,13 +1,19 @@
 package oldmana.md.client.gui.component.collection;
 
+import java.awt.AWTEvent;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
+import java.awt.event.AWTEventListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+
+import javax.swing.SwingUtilities;
 
 import oldmana.md.client.Player;
 import oldmana.md.client.card.Card;
@@ -16,6 +22,7 @@ import oldmana.md.client.card.CardActionRentCounter;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.card.collection.Hand;
+import oldmana.md.client.gui.component.MDChat;
 import oldmana.md.client.gui.component.MDOverlayHand;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.state.ActionState;
@@ -34,82 +41,36 @@ public class MDHand extends MDCardCollection
 		listener = new MDHandListener();
 		addMouseListener(listener);
 		addMouseMotionListener(listener);
+		Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener()
+		{
+			@Override
+			public void eventDispatched(AWTEvent event)
+			{
+				if (overlay == null)
+				{
+					return;
+				}
+				if (event instanceof MouseEvent)
+				{
+					MouseEvent me = (MouseEvent) event;
+					if (me.getID() == MouseEvent.MOUSE_MOVED)
+					{
+						if (me.getComponent() != MDHand.this && !SwingUtilities.isDescendingFrom(me.getComponent(), overlay))
+						{
+							removeOverlay();
+						}
+					}
+				}
+			}
+		}, AWTEvent.MOUSE_EVENT_MASK + AWTEvent.MOUSE_MOTION_EVENT_MASK);
 		update();
 	}
 	
 	@Override
 	public void update()
 	{
-		/*
-		boolean adding = addition != null;
-		boolean removing = removal != null;
-		boolean motion = adding || removing;
-		if (getMDCards().size() > 0)
-		{
-			int interval = getWidth() / getMDCards().size();
-			int start = (getWidth() / (getMDCards().size() * 2)) - MDCard.CARD_SIZE.width + 5;
-			int motionInterval = 0;
-			int motionStart = 0;
-			if (adding)
-			{
-				motionInterval = ((getWidth() / (getMDCards().size() + 1)) + interval) / 2;
-				motionStart = (((getWidth() / ((getMDCards().size() + 1) * 2)) - MDCard.CARD_SIZE.width + 5) + start) / 2;
-			}
-			if (removing)
-			{
-				motionInterval = ((getWidth() / (getMDCards().size() - 1)) + interval) / 2;
-				motionStart = (((getWidth() / ((getMDCards().size() - 1) * 2)) - MDCard.CARD_SIZE.width + 5) + start) / 2;
-			}
-			for (int i = motion ? 1 : 0 ; i < getMDCards().size() ; i++)
-			{
-				getMDCards().get(motion ? i - 1 : i).setLocation(motion ? motionStart + (motionInterval * i) : start + (interval * i), 0);
-			}
-		}
-		*/
 		repaint();
 	}
-	
-	/*
-	private Card addition;
-	private Card removal;
-	private double motProg;
-	*/
-	
-	/*
-	@Override
-	public void startAddition(Card card)
-	{
-		addition = card;
-	}
-
-	@Override
-	public void startRemoval(Card card)
-	{
-		removal = card;
-	}
-
-	@Override
-	public void updateMotion(double progress)
-	{
-		motProg = progress;
-		update();
-	}
-
-	@Override
-	public void motionFinished()
-	{
-		if (addition != null)
-		{
-			addCard(addition.getUI());
-			addition = null;
-		}
-		else
-		{
-			removeCard(removal.getUI());
-			removal = null;
-		}
-	}
-	*/
 	
 	public void removeOverlay()
 	{

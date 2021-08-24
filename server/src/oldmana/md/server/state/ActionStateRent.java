@@ -198,7 +198,7 @@ public class ActionStateRent extends ActionState
 		
 		if (renter != null)
 		{
-			RentPaymentEvent event = new RentPaymentEvent(getActionOwner(), player, cards);
+			RentPaymentEvent event = new RentPaymentEvent(getActionOwner(), player, cards, getPlayerRent(player));
 			getServer().getEventManager().callEvent(event);
 			cards = event.getPayment();
 			

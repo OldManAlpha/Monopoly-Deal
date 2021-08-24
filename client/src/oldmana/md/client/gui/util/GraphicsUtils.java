@@ -1,5 +1,6 @@
 package oldmana.md.client.gui.util;
 
+import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -36,6 +37,8 @@ public class GraphicsUtils
 	public static Color RAILROAD = new Color(17, 17, 14);
 	public static Color UTILITY = new Color(206, 229, 183);
 	
+	private static Canvas canvas = new Canvas();
+	
 	/**Required to set scale through this method to avoid precision issues
 	 * 
 	 * @param scale
@@ -65,6 +68,11 @@ public class GraphicsUtils
 	{
 		return GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration()
 				.createCompatibleImage(width, height, Transparency.TRANSLUCENT);
+	}
+	
+	public static FontMetrics getFontMetrics(Font font)
+	{
+		return canvas.getFontMetrics(font);
 	}
 	
 	public static Font getBoldMDFont(int size)
@@ -173,13 +181,14 @@ public class GraphicsUtils
 		}
 	}
 	
-	public static List<String> splitString(String str, FontMetrics metrics, int lineWidth)
+	public static List<String> splitString(String str, Font font, int lineWidth)
 	{
-		return splitString(str, metrics, lineWidth, true);
+		return splitString(str, font, lineWidth, true);
 	}
 	
-	public static List<String> splitString(String str, FontMetrics metrics, int lineWidth, boolean wrap)
+	public static List<String> splitString(String str, Font font, int lineWidth, boolean wrap)
 	{
+		FontMetrics metrics = getFontMetrics(font);
 		List<String> lines = new ArrayList<String>();
 		String line = "";
 		char[] chars = str.toCharArray();
@@ -235,12 +244,12 @@ public class GraphicsUtils
 		return lines;
 	}
 	
-	public static List<String> splitStrings(List<String> strs, FontMetrics metrics, int lineWidth, boolean wrap)
+	public static List<String> splitStrings(List<String> strs, Font font, int lineWidth, boolean wrap)
 	{
 		List<String> lines = new ArrayList<String>();
 		for (String str : strs)
 		{
-			lines.addAll(splitString(str, metrics, lineWidth, wrap));
+			lines.addAll(splitString(str, font, lineWidth, wrap));
 		}
 		return lines;
 	}

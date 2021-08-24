@@ -6,8 +6,6 @@ import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import javax.swing.JComponent;
-
 import oldmana.md.client.MDClient;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardAction;

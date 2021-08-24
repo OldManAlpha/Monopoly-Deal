@@ -5,7 +5,8 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.LayoutManager;
+import java.awt.GraphicsEnvironment;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
@@ -17,10 +18,12 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.Timer;
 
 import oldmana.md.client.MDClient;
+import oldmana.md.client.gui.screen.FirstRunScreen;
 import oldmana.md.client.gui.screen.MainMenuScreen;
 import oldmana.md.client.gui.screen.TableScreen;
 import oldmana.md.client.gui.util.GraphicsUtils;
@@ -29,22 +32,24 @@ import oldmana.md.client.gui.util.TextPainter.Alignment;
 
 public class MDFrame extends JFrame
 {
+	private JComponent visibleScreen;
+	
 	private TableScreen tableScreen;
 	private MainMenuScreen menuScreen;
+	private FirstRunScreen firstRunScreen;
 	
 	private List<BufferedImage> normalIcons;
 	private List<BufferedImage> alertIcons;
 	
 	private Timer flashTimer;
 	
-	public MDFrame()
+	public MDFrame(boolean firstRun)
 	{
 		super("Monopoly Deal");
-		
 		GraphicsUtils.setScale(MDClient.getInstance().getSettings().getDoubleSetting("Scale"), false);
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.addWindowListener(new WindowAdapter()
+		addWindowListener(new WindowAdapter()
 		{
 			@Override
 			public void windowClosing(WindowEvent event)
@@ -52,11 +57,8 @@ public class MDFrame extends JFrame
 				MDClient.getInstance().disconnect("closing", true);
 			}
 		});
-		setLayout(new LayoutManager()
+		setLayout(new LayoutAdapter()
 		{
-			@Override
-			public void addLayoutComponent(String name, Component comp) {}
-			
 			@Override
 			public void layoutContainer(Container parent)
 			{
@@ -71,20 +73,25 @@ public class MDFrame extends JFrame
 			{
 				return new Dimension(200, 200);
 			}
-			
-			@Override
-			public Dimension preferredLayoutSize(Container parent) { return null; }
-			
-			@Override
-			public void removeLayoutComponent(Component comp) {}
 		});
 		tableScreen = new TableScreen();
 		tableScreen.setVisible(false);
 		menuScreen = new MainMenuScreen();
+		menuScreen.setVisible(false);
+		firstRunScreen = new FirstRunScreen();
+		firstRunScreen.setVisible(false);
 		getContentPane().add(tableScreen);
 		getContentPane().add(menuScreen);
+		getContentPane().add(firstRunScreen);
 		setVisible(true);
-		displayMenu();
+		if (firstRun)
+		{
+			displayFirstRunScreen();
+		}
+		else
+		{
+			displayMenu();
+		}
 		
 		normalIcons = new ArrayList<BufferedImage>();
 		alertIcons = new ArrayList<BufferedImage>();
@@ -185,25 +192,51 @@ public class MDFrame extends JFrame
 		tp.paint(g);
 	}
 	
+	private void setScreen(JComponent screen)
+	{
+		if (visibleScreen != null)
+		{
+			visibleScreen.setVisible(false);
+		}
+		screen.setVisible(true);
+		visibleScreen = screen;
+	}
+	
 	public void displayTable()
 	{
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		getContentPane().setPreferredSize(new Dimension((int) Math.min(GraphicsUtils.scale(1600), screen.getWidth() - 200), 
 				(int) Math.min(GraphicsUtils.scale(900), screen.getHeight() - 180)));
 		pack();
-		setLocation((int) (screen.getWidth() - getWidth()) / 2, (int) (screen.getHeight() - getHeight()) / 2);
-		tableScreen.setVisible(true);
-		menuScreen.setVisible(false);
+		centerWindow();
+		setScreen(tableScreen);
 	}
 	
 	public void displayMenu()
 	{
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		getContentPane().setPreferredSize(new Dimension(GraphicsUtils.scale(600), GraphicsUtils.scale(400)));
 		pack();
-		setLocation((int) (screen.getWidth() - getWidth()) / 2, (int) (screen.getHeight() - getHeight()) / 2);
-		tableScreen.setVisible(false);
-		menuScreen.setVisible(true);
+		centerWindow();
+		setScreen(menuScreen);
+	}
+	
+	public void displayFirstRunScreen()
+	{
+		getContentPane().setPreferredSize(new Dimension(GraphicsUtils.scale(600), GraphicsUtils.scale(400)));
+		pack();
+		centerWindow();
+		setScreen(firstRunScreen);
+	}
+	
+	private Point getScreenCenter()
+	{
+		return GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
+	}
+	
+	public void centerWindow()
+	{
+		Point center = getScreenCenter();
+		setLocation(center.x - (getWidth() / 2), center.y - (getHeight() / 2));
 	}
 	
 	public TableScreen getTableScreen()
