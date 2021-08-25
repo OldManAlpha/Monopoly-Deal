@@ -17,6 +17,7 @@ public class CommandPlaySound extends Command
 			if (getServer().doesSoundExist(args[0]))
 			{
 				getServer().playSound(args[0]);
+				sender.sendMessage("Playing sound: " + args[0], true);
 			}
 			else
 			{

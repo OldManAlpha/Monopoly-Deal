@@ -1,12 +1,10 @@
-package oldmana.md.server.command;
+package oldmana.md.server;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import oldmana.md.server.CommandSender;
-import oldmana.md.server.MDServer;
-import oldmana.md.server.Player;
+import oldmana.md.server.command.*;
 import oldmana.md.server.event.CommandExecutedEvent;
 import oldmana.md.server.event.PreCommandExecuteEvent;
 

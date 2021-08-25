@@ -14,5 +14,6 @@ public class CommandSetTurns extends Command
 	{
 		getServer().getGameState().setTurns(Integer.parseInt(args[0]));
 		getServer().getGameState().nextNaturalActionState();
+		sender.sendMessage("Set number of turns to " + args[0], true);
 	}
 }

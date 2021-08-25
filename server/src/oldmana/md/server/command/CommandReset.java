@@ -66,6 +66,8 @@ public class CommandReset extends Command
 		}
 		
 		deck.shuffle();
+		
+		sender.sendMessage("The game has been reset", true);
 	}
 	
 	public void putCardAway(Card card)

@@ -13,5 +13,6 @@ public class CommandNextTurn extends Command
 	public void executeCommand(CommandSender sender, String[] args)
 	{
 		getServer().getGameState().nextTurn();
+		sender.sendMessage("Now " + getServer().getGameState().getActivePlayer().getName() + "'s turn", true);
 	}
 }

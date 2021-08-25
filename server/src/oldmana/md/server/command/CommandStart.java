@@ -1,7 +1,6 @@
 package oldmana.md.server.command;
 
 import oldmana.md.server.CommandSender;
-import oldmana.md.server.Console;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.state.GameState;
@@ -16,11 +15,7 @@ public class CommandStart extends Command
 	@Override
 	public void executeCommand(CommandSender sender, String[] args)
 	{
-		System.out.println("Starting game");
-		if (!(sender instanceof Console))
-		{
-			sender.sendMessage("Starting game");
-		}
+		sender.sendMessage("Starting game", true);
 		MDServer server = getServer();
 		for (int i = 0 ; i < 5 ; i++)
 		{

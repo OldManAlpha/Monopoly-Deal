@@ -1,6 +1,5 @@
 package oldmana.md.server.command;
 
-import oldmana.md.net.packet.server.PacketDestroyPlayer;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
@@ -34,7 +33,7 @@ public class CommandKickPlayer extends Command
 		{
 			reason = getFullStringArgument(args, 1);
 		}
-		player.sendMessage("Kicked player " + player.getName() + " (ID: " + player.getID() + ") for '" + reason + "'", true);
+		sender.sendMessage("Kicked player " + player.getName() + " (ID: " + player.getID() + ") for '" + reason + "'", true);
 		getServer().kickPlayer(player, reason);
 	}
 }

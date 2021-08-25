@@ -46,7 +46,6 @@ import oldmana.md.server.card.collection.VoidCollection;
 import oldmana.md.server.card.collection.deck.CustomDeck;
 import oldmana.md.server.card.collection.deck.DeckStack;
 import oldmana.md.server.card.collection.deck.VanillaDeck;
-import oldmana.md.server.command.CommandHandler;
 import oldmana.md.server.event.EventManager;
 import oldmana.md.server.net.IncomingConnectionsThread;
 import oldmana.md.server.net.NetServerHandler;

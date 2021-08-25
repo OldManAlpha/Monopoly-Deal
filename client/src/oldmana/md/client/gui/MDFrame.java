@@ -186,7 +186,7 @@ public class MDFrame extends JFrame
 		g.setColor(Color.BLACK);
 		g.drawOval((int) (width * 0.2), (int) (width * 0.2), (int) (width * 0.6), (int) (width * 0.6));
 		g.setColor(Color.RED);
-		TextPainter tp = new TextPainter("!", GraphicsUtils.getBoldMDFont((int) (width / 1.5)), new Rectangle(0, height / 20, width, height));
+		TextPainter tp = new TextPainter("!", GraphicsUtils.getBoldMDFont((int) (width / 1.5)), new Rectangle(0, height / 10, width, height));
 		tp.setHorizontalAlignment(Alignment.CENTER);
 		tp.setVerticalAlignment(Alignment.CENTER);
 		tp.paint(g);
