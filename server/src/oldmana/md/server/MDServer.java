@@ -98,6 +98,8 @@ public class MDServer
 	
 	private int tickCount;
 	
+	private boolean verbose;
+	
 	private Map<String, MDSound> sounds = new HashMap<String, MDSound>();
 	
 	private IncomingConnectionsThread threadIncConnect;
@@ -119,6 +121,7 @@ public class MDServer
 		discardPile = new DiscardPile();
 		netHandler.registerPackets();
 		config.loadConfig();
+		verbose = Boolean.parseBoolean(config.getSetting("Verbose"));
 		int port = Integer.parseInt(config.getSetting("Server-Port"));
 		try
 		{
@@ -755,6 +758,11 @@ public class MDServer
 		{
 			System.out.println(message);
 		}
+	}
+	
+	public boolean isVerbose()
+	{
+		return verbose;
 	}
 	
 	public static MDServer getInstance()

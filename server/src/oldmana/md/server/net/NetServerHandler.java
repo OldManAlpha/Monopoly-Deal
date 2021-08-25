@@ -164,7 +164,7 @@ public class NetServerHandler
 			if (client instanceof Player)
 			{
 				Player player = (Player) client;
-				if (!(packet instanceof PacketKeepConnected))
+				if (server.isVerbose() && !(packet instanceof PacketKeepConnected))
 				{
 					System.out.println("Processing: " + packetName + " (" + player.getName() + ")");
 				}
@@ -179,7 +179,10 @@ public class NetServerHandler
 			}
 			else
 			{
-				System.out.println("Processing: " + packetName + " (Connecting Client)");
+				if (server.isVerbose())
+				{
+					System.out.println("Processing: " + packetName + " (Connecting Client)");
+				}
 				if (packet instanceof PacketLogin)
 				{
 					handleLogin(client, (PacketLogin) packet);
