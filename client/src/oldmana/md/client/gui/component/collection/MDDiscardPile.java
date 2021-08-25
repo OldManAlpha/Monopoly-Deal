@@ -216,7 +216,7 @@ public class MDDiscardPile extends MDCardCollection
 	
 	public Card getMainPileFace()
 	{
-		return getCollection().getCardAt(Math.min(getCardCount() - 1, getCurrentCardCount() - 1 - scrollPos + (animTicks > 0 && !animDir ? -1 : 0)));
+		return getCollection().getCardAt(Math.min(getCardCount() - 1, Math.max(getCurrentCardCount() - 1 - scrollPos + (animTicks > 0 && !animDir ? -1 : 0), 0)));
 	}
 	
 	public int getMainPileCardCount()
