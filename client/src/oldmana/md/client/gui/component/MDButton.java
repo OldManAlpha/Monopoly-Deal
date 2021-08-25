@@ -95,27 +95,35 @@ public class MDButton extends MDComponent
 		Color color = isEnabled() ? (hovered ? colors.hoveredColor : colors.color) : colors.disabledColor;
 		Color shineColor = GraphicsUtils.getLighterColor(color, colors.topLightFactor);
 		Color insideBorderColor = GraphicsUtils.getLighterColor(color, colors.innerBorderLightFactor);
-		g.setColor(insideBorderColor);
 		
-		g.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, scale(5), scale(5));
+		int borderWidth = (int) Math.max(GraphicsUtils.SCALE + 0.3, 1); // Start scaling the border at 1.7x scale
+		
+		// Draw Outline
+		g.setColor(isEnabled() ? (hovered ? colors.hoveredOutlineColor : colors.outlineColor) : colors.disabledOutlineColor);
+		g.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, scale(7), scale(7));
+		
+		// Draw Inside Border
+		g.setColor(insideBorderColor);
+		g.fillRoundRect(borderWidth, borderWidth, getWidth() - (borderWidth * 2) - 1, getHeight() - (borderWidth * 2) - 1, scale(5), scale(5));
 		
 		int lightHeight = (int) (0.48 * getHeight());
 		
+		// Draw bottom gradient
 		GradientPaint paint = new GradientPaint(0, getHeight() / 2, GraphicsUtils.getLighterColor(color, colors.bottomLightGradient), 0, getHeight(), color);
 		g.setColor(color);
 		g.setPaint(paint);
-		g.fillRoundRect(2, lightHeight, getWidth() - 4, getHeight() - lightHeight - 2, scale(5), scale(5));
-		g.fillRect(2, lightHeight, getWidth() - 4, scale(6));
+		g.fillRoundRect((borderWidth * 2), lightHeight, getWidth() - (borderWidth * 4) - 1, getHeight() - lightHeight - (borderWidth * 2) - 1, scale(5), scale(5));
+		g.fillRect((borderWidth * 2), lightHeight, getWidth() - (borderWidth * 4) - 1, scale(6));
 		
+		// Draw top gradient
 		g.setColor(shineColor);
 		paint = new GradientPaint(0, 0, GraphicsUtils.getLighterColor(color, colors.topLightFactor + colors.topLightGradient), 0, getHeight() / 2, 
 				GraphicsUtils.getLighterColor(color, colors.topLightFactor));
 		g.setPaint(paint);
-		g.fillRoundRect(2, 2, getWidth() - 4, lightHeight - 2, scale(5), scale(5));
-		g.fillRect(2, lightHeight - scale(6), getWidth() - 4, scale(6));
+		g.fillRoundRect((borderWidth * 2), (borderWidth * 2), getWidth() - (borderWidth * 4) - 1, lightHeight - (borderWidth * 2) - 1, scale(5), scale(5));
+		g.fillRect((borderWidth * 2), lightHeight - scale(6), getWidth() - (borderWidth * 4) - 1, scale(6));
 		
-		g.setColor(isEnabled() ? (hovered ? colors.hoveredOutlineColor : colors.outlineColor) : colors.disabledOutlineColor);
-		g.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, scale(5), scale(5));
+		// Draw Text
 		g.setColor(isEnabled() ? (hovered ? colors.hoveredTextColor : colors.textColor) : colors.disabledTextColor);
 		g.setFont(GraphicsUtils.getThinMDFont(Font.PLAIN, scale(fontSize)));
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
@@ -123,18 +131,6 @@ public class MDButton extends MDComponent
 		tp.setHorizontalAlignment(Alignment.CENTER);
 		tp.setVerticalAlignment(Alignment.CENTER);
 		tp.paint(g);
-		
-		/*
-		Polygon p = new Polygon();
-		p.addPoint(0, getHeight());
-		p.addPoint(scale(20), 0);
-		p.addPoint(scale(40), 0);
-		p.addPoint(scale(20), getHeight());
-		LinearGradientPaint lp = new LinearGradientPaint(new Point2D.Float(scale(10), getHeight() / 2), new Point2D.Float(scale(30), getHeight() / 2), 
-				new float[] {0, 0.5F, 1}, new Color[] {new Color(255, 255, 255, 0), new Color(255, 255, 255, 200), new Color(255, 255, 255, 0)});
-		g.setPaint(lp);
-		g.fillPolygon(p);
-		*/
 	}
 	
 	
