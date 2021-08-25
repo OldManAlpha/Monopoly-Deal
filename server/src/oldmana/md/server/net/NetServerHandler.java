@@ -14,6 +14,7 @@ import oldmana.md.net.packet.server.*;
 import oldmana.md.net.packet.server.actionstate.*;
 import oldmana.md.net.packet.universal.PacketChat;
 import oldmana.md.net.packet.universal.PacketKeepConnected;
+import oldmana.md.net.packet.universal.PacketPing;
 import oldmana.md.server.ChatLinkHandler.ChatLink;
 import oldmana.md.server.Client;
 import oldmana.md.server.MDServer;
@@ -48,7 +49,7 @@ import oldmana.md.server.state.GameState;
 
 public class NetServerHandler
 {
-	public static int PROTOCOL_VERSION = 12;
+	public static int PROTOCOL_VERSION = 13;
 	public static int PROTOCOL_MINIMUM = PROTOCOL_VERSION;
 	
 	private MDServer server;
@@ -63,6 +64,9 @@ public class NetServerHandler
 	@SuppressWarnings("unchecked")
 	public void registerPackets()
 	{
+		// Client <-> Server
+		Packet.registerPacket(PacketPing.class);
+		
 		// Client -> Server
 		Packet.registerPacket(PacketLogin.class);
 		
@@ -73,11 +77,11 @@ public class NetServerHandler
 		// Client -> Server
 		Packet.registerPacket(PacketQuit.class);
 		
-		// ^ Ideally common protocol among future versions ^
-		
 		// Client <-> Server
 		Packet.registerPacket(PacketChat.class);
 		Packet.registerPacket(PacketKeepConnected.class);
+		
+		// ^ Ideally common protocol among future versions ^
 		
 		// Server -> Client
 		Packet.registerPacket(PacketPropertyColors.class);

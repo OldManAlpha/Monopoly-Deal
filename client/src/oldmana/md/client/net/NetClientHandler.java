@@ -62,10 +62,11 @@ import oldmana.md.net.packet.server.actionstate.*;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
 import oldmana.md.net.packet.universal.PacketChat;
 import oldmana.md.net.packet.universal.PacketKeepConnected;
+import oldmana.md.net.packet.universal.PacketPing;
 
 public class NetClientHandler
 {
-	public static int PROTOCOL_VERSION = 12;
+	public static int PROTOCOL_VERSION = 13;
 	
 	private MDClient client;
 	
@@ -79,6 +80,9 @@ public class NetClientHandler
 	@SuppressWarnings("unchecked")
 	public void registerPackets()
 	{
+		// Client <-> Server
+		Packet.registerPacket(PacketPing.class);
+		
 		// Client -> Server
 		Packet.registerPacket(PacketLogin.class);
 		
@@ -89,11 +93,11 @@ public class NetClientHandler
 		// Client -> Server
 		Packet.registerPacket(PacketQuit.class);
 		
-		// ^ Ideally common protocol among future versions ^
-		
 		// Client <-> Server
 		Packet.registerPacket(PacketChat.class);
 		Packet.registerPacket(PacketKeepConnected.class);
+		
+		// ^ Ideally common protocol among future versions ^
 		
 		// Server -> Client
 		Packet.registerPacket(PacketPropertyColors.class);
