@@ -65,30 +65,22 @@ public abstract class Packet
 	//public abstract byte[] toBytes(MJPacketBuffer data);
 	
 	
-	public static Packet toPacket(int id, byte[] b)
+	public static Packet toPacket(int id, byte[] b) throws Exception
 	{
-		try
+		MJPacketBuffer data = new MJPacketBuffer(b);
+		Class<? extends Packet> c = packets.get(id);
+		
+		Packet p = c.newInstance();
+		for (Field field : c.getDeclaredFields())
 		{
-			MJPacketBuffer data = new MJPacketBuffer(b);
-			Class<? extends Packet> c = packets.get(id);
-			
-			Packet p = c.newInstance();
-			for (Field field : c.getDeclaredFields())
+			FieldTypeHandler handler = getFieldTypeHandler(field.getType());
+			if (handler != null)
 			{
-				FieldTypeHandler handler = getFieldTypeHandler(field.getType());
-				if (handler != null)
-				{
-					handler.fromBytes(field, p, data);
-				}
+				handler.fromBytes(field, p, data);
 			}
-			//p.fromBytes(data);
-			return p;
 		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-		return null;
+		//p.fromBytes(data);
+		return p;
 	}
 	
 	public static void toBytes(Packet p, MJPacketBuffer buffer)
