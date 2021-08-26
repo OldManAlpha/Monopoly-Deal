@@ -1,15 +1,15 @@
 # Monopoly Deal
 
-## Screenshots (Slightly Outdated)
+## Screenshots
 
 <details>
   <summary>Click To View</summary>
-  <img src="https://i.imgur.com/LOzbxPM.png">
-  <img src="https://i.imgur.com/riEtxI9.png">
-  <img src="https://i.imgur.com/55eDAzy.png">
-  <img src="https://i.imgur.com/PReVrNn.png">
-  <img src="https://i.imgur.com/xuIQRYO.png">
-  <img src="https://i.imgur.com/tH9nKLW.png">
+  <img src="https://i.imgur.com/wFofRPc.gif">
+  <img src="https://i.imgur.com/WTkj40P.gif">
+  <img src="https://i.imgur.com/5zGVma4.gif">
+  <img src="https://i.imgur.com/lgUowtD.png">
+  <img src="https://i.imgur.com/PvUhhll.gif">
+  <img src="https://i.imgur.com/5xLT48Z.gif">
 </details>
 
 ## Introduction
@@ -47,10 +47,13 @@ Additional undocumented commands may be seen by using the `help` command.
 
 ### Client Setup
 
-1. [Download the latest client version](https://github.com/OldManAlpha/Monopoly-Deal/releases) and put the .exe or .jar file in its own folder(it will generate a file inside the same folder it's in).
-2. Connect to the host's server with [their IPv4 address](https://whatismyipaddress.com/) and forwarded port(Example: `12.345.67.89:27599` or if you're the host, `localhost:27599`).
-3. Input the User ID the host has assigned to you.
-4. Connect and play.
+1. [Download the latest client version](https://github.com/OldManAlpha/Monopoly-Deal/releases)
+2. Run the client .exe or .jar and decide whether you want the game data to be stored in the application data folder or where you're running the game from(former is recommended unless you know what you're doing)
+3. Connect to the host's server with [their IPv4 address](https://whatismyipaddress.com/) and forwarded port(Example: `12.345.67.89:27599` or if you're the host, `localhost:27599`).
+4. Input the User ID the host has assigned to you.
+5. Connect and play.
+
+**Note:** The .exe versions of the game are more than likely to trigger antiviruses. Either make an exception for the file or use the .jar version instead.
 
 ### Video Tutorial (Slightly Outdated)
 
