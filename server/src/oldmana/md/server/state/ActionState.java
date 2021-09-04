@@ -137,6 +137,23 @@ public abstract class ActionState
 		return refused;
 	}
 	
+	public boolean canRefuse(Player player, Player target)
+	{
+		return (isTarget(player) && getActionOwner() == target && !isRefused(player)) || (getActionOwner() == player && isTarget(target) && isRefused(target));
+	}
+	
+	public void refuse(Player player, Player target)
+	{
+		if (isTarget(player) && getActionOwner() == target && !isRefused(player))
+		{
+			setRefused(player, true);
+		}
+		else if (getActionOwner() == player && isTarget(target) && isRefused(target))
+		{
+			setRefused(target, false);
+		}
+	}
+	
 	public void setAccepted(Player player, boolean accepted)
 	{
 		getActionTarget(player).setAccepted(accepted);

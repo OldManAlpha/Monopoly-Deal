@@ -203,6 +203,17 @@ public class Card
 		}
 	}
 	
+	/**
+	 * Called right before a player discards this card.
+	 * 
+	 * @param player - The player discarding this card
+	 * @return Whether or not this card should be discarded
+	 */
+	public boolean onDiscard(Player player)
+	{
+		return true;
+	}
+	
 	public CardType getType()
 	{
 		return CardType.MONEY;

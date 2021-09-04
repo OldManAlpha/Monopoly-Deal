@@ -421,9 +421,12 @@ public class NetServerHandler
 		Card card = Card.getCard(packet.card);
 		if (checkIntegrity(player, card, true))
 		{
-			card.transfer(server.getDiscardPile());
-			server.getGameState().nextNaturalActionState();
-			server.getEventManager().callEvent(new CardDiscardEvent(player, card));
+			if (card.onDiscard(player))
+			{
+				card.transfer(server.getDiscardPile());
+				server.getGameState().nextNaturalActionState();
+				server.getEventManager().callEvent(new CardDiscardEvent(player, card));
+			}
 		}
 		else
 		{

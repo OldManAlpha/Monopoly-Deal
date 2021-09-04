@@ -8,24 +8,41 @@ public class CardRegistry
 	private List<RegisteredCard> actionCards = new LinkedList<RegisteredCard>();
 	private List<RegisteredCard> specialCards = new LinkedList<RegisteredCard>();
 	
-	public void registerActionCard(Class<? extends Card> clazz, String name, String... aliases)
+	public void registerActionCard(Class<? extends Card> type, String name, String... aliases)
 	{
-		actionCards.add(new RegisteredCard(clazz, name, aliases));
+		actionCards.add(new RegisteredCard(type, name, aliases));
 	}
 	
-	public void registerActionCard(CardConstructor<?> constructor, String name, String... aliases)
+	public void registerActionCard(Class<? extends Card> type, CardConstructor<? extends Card> constructor, String name, String... aliases)
 	{
-		actionCards.add(new RegisteredCard(constructor, name, aliases));
+		actionCards.add(new RegisteredCard(type, constructor, name, aliases));
 	}
 	
-	public void registerSpecialCard(Class<? extends Card> clazz, String name, String... aliases)
+	public void registerSpecialCard(Class<? extends Card> type, String name, String... aliases)
 	{
-		specialCards.add(new RegisteredCard(clazz, name, aliases));
+		specialCards.add(new RegisteredCard(type, name, aliases));
 	}
 	
-	public void registerSpecialCard(CardConstructor<?> constructor, String name, String... aliases)
+	public void registerSpecialCard(Class<? extends Card> type, CardConstructor<? extends Card> constructor, String name, String... aliases)
 	{
-		specialCards.add(new RegisteredCard(constructor, name, aliases));
+		specialCards.add(new RegisteredCard(type, constructor, name, aliases));
+	}
+	
+	/**
+	 * Multiple cards may be registered under the same class, so this method may return an ambiguous card.
+	 * @param clazz - The class type of the card
+	 * @return A RegisteredCard with the given type
+	 */
+	public RegisteredCard getRegisteredActionCardByClass(Class<? extends Card> clazz)
+	{
+		for (RegisteredCard card : actionCards)
+		{
+			if (card.getType() == clazz)
+			{
+				return card;
+			}
+		}
+		return null;
 	}
 	
 	public RegisteredCard getRegisteredActionCardByName(String name)
@@ -33,6 +50,23 @@ public class CardRegistry
 		for (RegisteredCard card : actionCards)
 		{
 			if (card.isReferringToThis(name))
+			{
+				return card;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Multiple cards may be registered under the same class, so this method may return an ambiguous card.
+	 * @param clazz - The class type of the card
+	 * @return A RegisteredCard with the given type
+	 */
+	public RegisteredCard getRegisteredSpecialCardByClass(Class<? extends Card> clazz)
+	{
+		for (RegisteredCard card : specialCards)
+		{
+			if (card.getType() == clazz)
 			{
 				return card;
 			}
@@ -69,18 +103,19 @@ public class CardRegistry
 	
 	public class RegisteredCard
 	{
+		private Class<? extends Card> type;
 		private CardConstructor<?> constructor;
 		
 		private String name;
 		private String[] aliases;
 		
-		public RegisteredCard(Class<? extends Card> clazz, String name, String[] aliases)
+		public RegisteredCard(Class<? extends Card> type, String name, String[] aliases)
 		{
-			this(() ->
+			this(type, () ->
 			{
 				try
 				{
-					return clazz.newInstance();
+					return type.newInstance();
 				}
 				catch (Exception e)
 				{
@@ -90,12 +125,18 @@ public class CardRegistry
 			}, name, aliases);
 		}
 		
-		public RegisteredCard(CardConstructor<?> constructor, String name, String[] aliases)
+		public RegisteredCard(Class<? extends Card> type, CardConstructor<? extends Card> constructor, String name, String[] aliases)
 		{
+			this.type = type;
 			this.constructor = constructor;
 			
 			this.name = name;
 			this.aliases = aliases;
+		}
+		
+		public Class<? extends Card> getType()
+		{
+			return type;
 		}
 		
 		public String getName()
