@@ -73,6 +73,7 @@ There's a ton of custom cards I made that I'll probably release as a mod at some
 - [ ] Implement action cards from other editions
 - [ ] Better document server commands
 - [ ] Server UI?
+- [ ] Implement Monopoly Bid mode
 
 ## <img src="https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png" width="80" height="80"> Discord
 
