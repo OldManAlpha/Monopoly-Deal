@@ -570,7 +570,7 @@ public class MDChat extends MDComponent
 			
 			for (int i = 0 ; i < chars.length ; i++)
 			{
-				while (chars[i] == 'ง')
+				while (chars[i] == 'ยง')
 				{
 					// 0 = Print next character
 					// 1 = Chat color [Color {2 chars}]

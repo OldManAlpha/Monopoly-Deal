@@ -62,7 +62,7 @@ public class MessageBuilder
 		buffer.putInt(link.getID());
 		buffer.putShort((short) str.length());
 		buffer.position(0);
-		message.append("ง2" + buffer.getChar() + buffer.getChar() + buffer.getChar() + str);
+		message.append("ยง2" + buffer.getChar() + buffer.getChar() + buffer.getChar() + str);
 		return link;
 	}
 	
@@ -79,7 +79,7 @@ public class MessageBuilder
 		{
 			
 		}
-		message.insert(hoverTextPos, "ง3");
+		message.insert(hoverTextPos, "ยง3");
 	}
 	
 	@Override
