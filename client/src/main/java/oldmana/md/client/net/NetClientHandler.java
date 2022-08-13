@@ -458,21 +458,17 @@ public class NetClientHandler
 	
 	public void handleActionStateRent(PacketActionStateRent packet)
 	{
-		queueTask(new EventTask()
+		queueTask(() ->
 		{
-			@Override
-			public void start()
+			client.setAwaitingResponse(false);
+			Map<Player, Integer> charges = new HashMap<Player, Integer>();
+			List<Player> players = client.getPlayersByIDs(packet.rented);
+			for (int i = 0 ; i < players.size() ; i++)
 			{
-				client.setAwaitingResponse(false);
-				Map<Player, Integer> charges = new HashMap<Player, Integer>();
-				List<Player> players = client.getPlayersByIDs(packet.rented);
-				for (int i = 0 ; i < players.size() ; i++)
-				{
-					charges.put(players.get(i), packet.amounts[i]);
-				}
-				client.getGameState().setActionState(new ActionStateRent(client.getPlayerByID(packet.renter), charges));
-				client.getTableScreen().repaint();
+				charges.put(players.get(i), packet.amounts[i]);
 			}
+			client.getGameState().setActionState(new ActionStateRent(client.getPlayerByID(packet.renter), charges));
+			client.getTableScreen().repaint();
 		});
 	}
 	
