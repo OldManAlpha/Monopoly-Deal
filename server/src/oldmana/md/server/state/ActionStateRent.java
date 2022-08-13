@@ -192,6 +192,11 @@ public class ActionStateRent extends ActionState
 		return charges.get(player);
 	}
 	
+	public void setPlayerRent(Player player, int charge)
+	{
+		charges.put(player, charge);
+	}
+	
 	public void playerPaid(Player player, List<Card> cards)
 	{
 		Player renter = getActionOwner();

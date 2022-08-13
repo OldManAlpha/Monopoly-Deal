@@ -626,7 +626,7 @@ public class Player extends Client implements CommandSender
 	{
 		for (PlayerButton[] bs : buttonPerspectives.values())
 		{
-			bs[0].setBlank();
+			bs[index].setBlank();
 		}
 	}
 	

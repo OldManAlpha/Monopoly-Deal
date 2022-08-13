@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+//import org.json.JSONObject;
+
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardDescription;
 import oldmana.md.net.packet.server.PacketDestroyPlayer;
@@ -57,7 +59,7 @@ public class MDServer
 {
 	private static MDServer instance;
 	
-	public static final String VERSION = "0.6.3.1";
+	public static final String VERSION = "0.7 Dev";
 	
 	private List<MDMod> mods = new ArrayList<MDMod>();
 	
@@ -115,6 +117,33 @@ public class MDServer
 		System.setErr(new MDPrintStream(System.err));
 		
 		System.out.println("Starting Monopoly Deal Server Version " + VERSION);
+		
+		
+		
+		/*
+		List<GameRule> rules = new ArrayList<GameRule>();
+		
+		GameRule gr1 = new GameRule("Turns", "Turn Count", "The amount of turns", 3);
+		GameRule gr2 = new GameRule("Win-Condition", "Win Condition", "What causes someone to win");
+		gr2.addRule(new GameRule("Type", "Type", "The type of win condition", "Monopoly"));
+		gr2.addRule(new GameRule("Value", "Value", "The amount", 3));
+		rules.add(gr1);
+		rules.add(gr2.clone());
+		
+		JSONObject json = new JSONObject();
+		for (GameRule rule : rules)
+		{
+			json.put(rule.getName(), rule.toJSON());
+		}
+		System.out.println(json.toString());
+		*/
+		
+		
+		
+		
+		
+		
+		
 		voidCollection = new VoidCollection();
 		decks.put("vanilla", new VanillaDeck());
 		deck = new Deck(decks.get("vanilla"));
@@ -396,13 +425,20 @@ public class MDServer
 		cardRegistry.registerActionCard(CardActionDebtCollector.class, "Debt Collector");
 		
 		// Rents
-		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.BROWN, PropertyColor.LIGHT_BLUE), "Brown/Light Blue Rent", "B/LB Rent");
-		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.MAGENTA, PropertyColor.ORANGE), "Magenta/Orange Rent", "M/O Rent");
-		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.RED, PropertyColor.YELLOW), "Red/Yellow Rent", "R/Y Rent");
-		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.GREEN, PropertyColor.DARK_BLUE), "Green/Dark Blue Rent", "G/DB Rent");
-		cardRegistry.registerActionCard(() -> new CardActionRent(1, PropertyColor.RAILROAD, PropertyColor.UTILITY), "Railroad/Utility Rent", "RR/U Rent");
-		cardRegistry.registerActionCard(() -> new CardActionRent(3, PropertyColor.getVanillaColors()), "10-Color Rent", "Rent");
-		cardRegistry.registerActionCard(() -> new CardActionRent(3, PropertyColor.getAllColors()), "All-Color Rent", "All Rent");
+		cardRegistry.registerActionCard(CardActionRent.class, () -> new CardActionRent(1, PropertyColor.BROWN, PropertyColor.LIGHT_BLUE), 
+				"Brown/Light Blue Rent", "B/LB Rent");
+		cardRegistry.registerActionCard(CardActionRent.class, () -> new CardActionRent(1, PropertyColor.MAGENTA, PropertyColor.ORANGE), 
+				"Magenta/Orange Rent", "M/O Rent");
+		cardRegistry.registerActionCard(CardActionRent.class, () -> new CardActionRent(1, PropertyColor.RED, PropertyColor.YELLOW), 
+				"Red/Yellow Rent", "R/Y Rent");
+		cardRegistry.registerActionCard(CardActionRent.class, () -> new CardActionRent(1, PropertyColor.GREEN, PropertyColor.DARK_BLUE), 
+				"Green/Dark Blue Rent", "G/DB Rent");
+		cardRegistry.registerActionCard(CardActionRent.class, () -> new CardActionRent(1, PropertyColor.RAILROAD, PropertyColor.UTILITY), 
+				"Railroad/Utility Rent", "RR/U Rent");
+		cardRegistry.registerActionCard(CardActionRent.class, () -> new CardActionRent(3, PropertyColor.getVanillaColors()), 
+				"10-Color Rent", "Rent");
+		cardRegistry.registerActionCard(CardActionRent.class, () -> new CardActionRent(3, PropertyColor.getAllColors()), 
+				"All-Color Rent", "All Rent");
 		
 		cardRegistry.registerActionCard(CardActionHouse.class, "House");
 		cardRegistry.registerActionCard(CardActionHotel.class, "Hotel");
