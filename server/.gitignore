@@ -33,3 +33,9 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Monopoly Deal ###
+/mods/
+players.dat
+config.txt
+server/src/oldmana/md/server/command/CommandTest.java
