@@ -130,15 +130,11 @@ public class ConnectionThread extends Thread
 			}
 			catch (InterruptedException e) {}
 		}
-		SwingUtilities.invokeLater(new Runnable()
+		SwingUtilities.invokeLater(() ->
 		{
-			@Override
-			public void run()
-			{
-				TableScreen ts = MDClient.getInstance().getTableScreen();
-				ts.getTopbar().setText("Lost Connection");
-				ts.repaint();
-			}
+			TableScreen ts = MDClient.getInstance().getTableScreen();
+			ts.getTopbar().setText("Lost Connection");
+			ts.repaint();
 		});
 	}
 }

@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import oldmana.md.server.state.ActionStateTargetPlayer;
 import org.json.JSONObject;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
@@ -55,7 +54,6 @@ import oldmana.md.server.net.IncomingConnectionsThread;
 import oldmana.md.server.net.NetServerHandler;
 import oldmana.md.server.rules.GameRules;
 import oldmana.md.server.rules.win.PropertySetCondition;
-import oldmana.md.server.rules.win.WinCondition;
 import oldmana.md.server.state.ActionState;
 import oldmana.md.server.state.ActionStateDoNothing;
 import oldmana.md.server.state.GameState;
