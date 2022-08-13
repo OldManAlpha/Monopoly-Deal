@@ -33,3 +33,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Monopoly Deal ###
+/cache/
+settings.dat
