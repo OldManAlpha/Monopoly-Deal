@@ -148,7 +148,6 @@ public class MDServer
 		decks.put("vanilla", new VanillaDeck());
 		deck = new Deck(decks.get("vanilla"));
 		discardPile = new DiscardPile();
-		netHandler.registerPackets();
 		config.loadConfig();
 		verbose = Boolean.parseBoolean(config.getSetting("Verbose"));
 		int port = Integer.parseInt(config.getSetting("Server-Port"));

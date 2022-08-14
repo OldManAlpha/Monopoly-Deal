@@ -6,15 +6,14 @@ import java.util.List;
 import java.util.Map;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.net.NetHandler;
 import oldmana.md.net.packet.client.PacketLogin;
 import oldmana.md.net.packet.client.PacketQuit;
 import oldmana.md.net.packet.client.PacketSoundCache;
 import oldmana.md.net.packet.client.action.*;
 import oldmana.md.net.packet.server.*;
-import oldmana.md.net.packet.server.actionstate.*;
 import oldmana.md.net.packet.universal.PacketChat;
 import oldmana.md.net.packet.universal.PacketKeepConnected;
-import oldmana.md.net.packet.universal.PacketPing;
 import oldmana.md.server.ChatLinkHandler.ChatLink;
 import oldmana.md.server.Client;
 import oldmana.md.server.MDServer;
@@ -47,100 +46,16 @@ import oldmana.md.server.state.ActionStateTargetPlayerProperty;
 import oldmana.md.server.state.ActionStateTargetSelfPlayerProperty;
 import oldmana.md.server.state.GameState;
 
-public class NetServerHandler
+public class NetServerHandler extends NetHandler
 {
-	public static int PROTOCOL_VERSION = 14;
-	public static int PROTOCOL_MINIMUM = PROTOCOL_VERSION;
-	
 	private MDServer server;
 	
 	private Map<Class<? extends Packet>, Method> packetHandlers = new HashMap<Class<? extends Packet>, Method>();
 	
+	@SuppressWarnings("unchecked")
 	public NetServerHandler(MDServer server)
 	{
 		this.server = server;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public void registerPackets()
-	{
-		// Client <-> Server
-		Packet.registerPacket(PacketPing.class);
-		
-		// Client -> Server
-		Packet.registerPacket(PacketLogin.class);
-		
-		// Server -> Client
-		Packet.registerPacket(PacketHandshake.class);
-		Packet.registerPacket(PacketKick.class);
-		
-		// Client -> Server
-		Packet.registerPacket(PacketQuit.class);
-		
-		// Client <-> Server
-		Packet.registerPacket(PacketChat.class);
-		Packet.registerPacket(PacketKeepConnected.class);
-		
-		// ^ Ideally common protocol among future versions ^
-		
-		// Server -> Client
-		Packet.registerPacket(PacketPropertyColors.class);
-		Packet.registerPacket(PacketCardCollectionData.class);
-		Packet.registerPacket(PacketCardData.class);
-		Packet.registerPacket(PacketCardActionRentData.class);
-		Packet.registerPacket(PacketCardDescription.class);
-		Packet.registerPacket(PacketCardPropertyData.class);
-		Packet.registerPacket(PacketCardBuildingData.class);
-		Packet.registerPacket(PacketDestroyCardCollection.class);
-		Packet.registerPacket(PacketPropertySetColor.class);
-		Packet.registerPacket(PacketStatus.class);
-		Packet.registerPacket(PacketMoveCard.class);
-		Packet.registerPacket(PacketMovePropertySet.class);
-		Packet.registerPacket(PacketMoveRevealCard.class);
-		Packet.registerPacket(PacketMoveUnknownCard.class);
-		Packet.registerPacket(PacketPlayerInfo.class);
-		Packet.registerPacket(PacketPropertySetData.class);
-		Packet.registerPacket(PacketPlayerStatus.class);
-		Packet.registerPacket(PacketDestroyPlayer.class);
-		Packet.registerPacket(PacketRefresh.class);
-		Packet.registerPacket(PacketUnknownCardCollectionData.class);
-		Packet.registerPacket(PacketUndoCardStatus.class);
-		Packet.registerPacket(PacketSoundData.class);
-		Packet.registerPacket(PacketPlaySound.class);
-		Packet.registerPacket(PacketButton.class);
-		Packet.registerPacket(PacketDestroyButton.class);
-		
-		// Client -> Server
-		Packet.registerPacket(PacketActionAccept.class);
-		Packet.registerPacket(PacketActionDraw.class);
-		Packet.registerPacket(PacketActionEndTurn.class);
-		Packet.registerPacket(PacketActionMoveProperty.class);
-		Packet.registerPacket(PacketActionChangeSetColor.class);
-		Packet.registerPacket(PacketActionPay.class);
-		Packet.registerPacket(PacketActionPlayCardAction.class);
-		Packet.registerPacket(PacketActionPlayCardBank.class);
-		Packet.registerPacket(PacketActionPlayCardProperty.class);
-		Packet.registerPacket(PacketActionPlayCardSpecial.class);
-		Packet.registerPacket(PacketActionPlayCardBuilding.class);
-		Packet.registerPacket(PacketActionPlayMultiCardAction.class);
-		Packet.registerPacket(PacketActionDiscard.class);
-		Packet.registerPacket(PacketActionSelectPlayer.class);
-		Packet.registerPacket(PacketActionSelectProperties.class);
-		Packet.registerPacket(PacketActionSelectPlayerMonopoly.class);
-		Packet.registerPacket(PacketActionUndoCard.class);
-		Packet.registerPacket(PacketActionClickLink.class);
-		Packet.registerPacket(PacketActionButtonClick.class);
-		
-		Packet.registerPacket(PacketSoundCache.class);
-		
-		// Server -> Client
-		Packet.registerPacket(PacketActionStateBasic.class);
-		Packet.registerPacket(PacketActionStateRent.class);
-		Packet.registerPacket(PacketActionStatePropertiesSelected.class);
-		Packet.registerPacket(PacketActionStateStealMonopoly.class);
-		Packet.registerPacket(PacketUpdateActionStateAccepted.class);
-		Packet.registerPacket(PacketUpdateActionStateRefusal.class);
-		Packet.registerPacket(PacketUpdateActionStateTarget.class);
 		
 		// Find Packet Handlers
 		for (Method m : getClass().getDeclaredMethods())
@@ -203,7 +118,7 @@ public class NetServerHandler
 	public void handleLogin(Client client, PacketLogin packet)
 	{
 		int version = packet.getProtocolVersion();
-		if (version >= PROTOCOL_MINIMUM && version <= PROTOCOL_VERSION)
+		if (version == NetHandler.PROTOCOL_VERSION)
 		{
 			PlayerRegistry registry = server.getPlayerRegistry();
 			int uid = packet.getUID();

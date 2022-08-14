@@ -123,7 +123,6 @@ public class MDClient
 		eventQueue = new MDEventQueue();
 		
 		netHandler = new NetClientHandler(this);
-		netHandler.registerPackets();
 		
 		gameState = new GameState();
 		

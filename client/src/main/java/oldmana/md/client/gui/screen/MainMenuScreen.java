@@ -16,6 +16,7 @@ import oldmana.md.client.gui.component.MDText;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
 import oldmana.md.client.net.NetClientHandler;
+import oldmana.md.net.NetHandler;
 import oldmana.md.net.packet.client.PacketLogin;
 
 public class MainMenuScreen extends MDComponent
@@ -80,7 +81,7 @@ public class MainMenuScreen extends MDComponent
 				settings.setSetting("Last-IP", ip.getText());
 				settings.setSetting("Last-ID", id.getText());
 				settings.saveSettings();
-				client.sendPacket(new PacketLogin(NetClientHandler.PROTOCOL_VERSION, Integer.parseInt(id.getText())));
+				client.sendPacket(new PacketLogin(NetHandler.PROTOCOL_VERSION, Integer.parseInt(id.getText())));
 				client.getWindow().displayTable();
 			}
 		});
