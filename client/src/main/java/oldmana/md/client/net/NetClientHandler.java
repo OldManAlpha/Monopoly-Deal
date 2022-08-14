@@ -1,6 +1,10 @@
 package oldmana.md.client.net;
 
 import java.awt.Color;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -183,7 +187,26 @@ public class NetClientHandler
 			
 			try
 			{
-				packetHandlers.get(packet.getClass()).invoke(this, packet);
+				Method handler = packetHandlers.get(packet.getClass());
+				if (handler.isAnnotationPresent(Queued.class))
+				{
+					queueTask(() ->
+					{
+						try
+						{
+							handler.invoke(this, packet);
+						}
+						catch (Exception e)
+						{
+							System.err.println("Error processing queued packet type " + packet.getClass().getName());
+							e.printStackTrace();
+						}
+					});
+				}
+				else
+				{
+					packetHandlers.get(packet.getClass()).invoke(this, packet);
+				}
 			}
 			catch (Exception e)
 			{
@@ -310,13 +333,11 @@ public class NetClientHandler
 		player.getUI().repaint();
 	}
 	
+	@Queued
 	public void handleDestroyPlayer(PacketDestroyPlayer packet)
 	{
-		queueTask(() ->
-		{
-			Player player = client.getPlayerByID(packet.player);
-			client.destroyPlayer(player);
-		});
+		Player player = client.getPlayerByID(packet.player);
+		client.destroyPlayer(player);
 	}
 	
 	public void handleCardCollectionData(PacketCardCollectionData packet)
@@ -371,13 +392,11 @@ public class NetClientHandler
 		owner.addPropertySet(set);
 	}
 	
+	@Queued
 	public void handleStatus(PacketStatus packet)
 	{
-		queueTask(() ->
-		{
-			client.getTableScreen().getTopbar().setText(packet.text);
-			client.getTableScreen().getTopbar().repaint();
-		});
+		client.getTableScreen().getTopbar().setText(packet.text);
+		client.getTableScreen().getTopbar().repaint();
 	}
 	
 	public void handleMoveCard(PacketMoveCard packet)
@@ -401,75 +420,71 @@ public class NetClientHandler
 		from.transferCardTo(null, to, -1, packet.speed);
 	}
 	
+	@Queued
 	public void handleActionStateBasic(PacketActionStateBasic packet)
 	{
-		queueTask(() ->
+		System.out.println("BASIC ACTION STATE " + packet.type);
+		Player player = client.getPlayerByID(packet.player);
+		if (packet.type == BasicActionState.DO_NOTHING.getID())
 		{
-			System.out.println("BASIC ACTION STATE " + packet.type);
-			Player player = client.getPlayerByID(packet.player);
-			if (packet.type == BasicActionState.DO_NOTHING.getID())
-			{
-				client.getGameState().setActionState(new ActionStateDoNothing());
-			}
-			else if (packet.type == BasicActionState.DRAW.getID())
-			{
-				client.getGameState().setActionState(new ActionStateDraw(player));
-			}
-			else if (packet.type == BasicActionState.PLAY.getID())
-			{
-				client.getGameState().setActionState(new ActionStatePlay(player, packet.data));
-			}
-			else if (packet.type == BasicActionState.DISCARD.getID())
-			{
-				client.getGameState().setActionState(new ActionStateDiscard(player));
-			}
-			else if (packet.type == BasicActionState.FINISH_TURN.getID())
-			{
-				client.getGameState().setActionState(new ActionStateFinishTurn(player));
-			}
-			else if (packet.type == BasicActionState.TARGET_PLAYER.getID())
-			{
-				client.getGameState().setActionState(new ActionStateTargetPlayer(player));
-			}
-			else if (packet.type == BasicActionState.TARGET_PLAYER_PROPERTY.getID())
-			{
-				client.getGameState().setActionState(new ActionStateTargetPlayerProperty(player));
-			}
-			else if (packet.type == BasicActionState.TARGET_SELF_PLAYER_PROPERTY.getID())
-			{
-				client.getGameState().setActionState(new ActionStateTargetSelfPlayerProperty(player));
-			}
-			else if (packet.type == BasicActionState.TARGET_ANY_PROPERTY.getID())
-			{
-				client.getGameState().setActionState(new ActionStateTargetAnyProperty(player));
-			}
-			else if (packet.type == BasicActionState.TARGET_PLAYER_MONOPOLY.getID())
-			{
-				client.getGameState().setActionState(new ActionStateTargetPlayerMonopoly(player));
-			}
-			else if (packet.type == BasicActionState.PLAYER_TARGETED.getID())
-			{
-				client.getGameState().setActionState(new ActionStatePlayerTargeted(player, client.getPlayerByID(packet.data)));
-			}
-			client.setAwaitingResponse(false);
-			client.getTableScreen().repaint();
-		});
+			client.getGameState().setActionState(new ActionStateDoNothing());
+		}
+		else if (packet.type == BasicActionState.DRAW.getID())
+		{
+			client.getGameState().setActionState(new ActionStateDraw(player));
+		}
+		else if (packet.type == BasicActionState.PLAY.getID())
+		{
+			client.getGameState().setActionState(new ActionStatePlay(player, packet.data));
+		}
+		else if (packet.type == BasicActionState.DISCARD.getID())
+		{
+			client.getGameState().setActionState(new ActionStateDiscard(player));
+		}
+		else if (packet.type == BasicActionState.FINISH_TURN.getID())
+		{
+			client.getGameState().setActionState(new ActionStateFinishTurn(player));
+		}
+		else if (packet.type == BasicActionState.TARGET_PLAYER.getID())
+		{
+			client.getGameState().setActionState(new ActionStateTargetPlayer(player));
+		}
+		else if (packet.type == BasicActionState.TARGET_PLAYER_PROPERTY.getID())
+		{
+			client.getGameState().setActionState(new ActionStateTargetPlayerProperty(player));
+		}
+		else if (packet.type == BasicActionState.TARGET_SELF_PLAYER_PROPERTY.getID())
+		{
+			client.getGameState().setActionState(new ActionStateTargetSelfPlayerProperty(player));
+		}
+		else if (packet.type == BasicActionState.TARGET_ANY_PROPERTY.getID())
+		{
+			client.getGameState().setActionState(new ActionStateTargetAnyProperty(player));
+		}
+		else if (packet.type == BasicActionState.TARGET_PLAYER_MONOPOLY.getID())
+		{
+			client.getGameState().setActionState(new ActionStateTargetPlayerMonopoly(player));
+		}
+		else if (packet.type == BasicActionState.PLAYER_TARGETED.getID())
+		{
+			client.getGameState().setActionState(new ActionStatePlayerTargeted(player, client.getPlayerByID(packet.data)));
+		}
+		client.setAwaitingResponse(false);
+		client.getTableScreen().repaint();
 	}
 	
+	@Queued
 	public void handleActionStateRent(PacketActionStateRent packet)
 	{
-		queueTask(() ->
+		client.setAwaitingResponse(false);
+		Map<Player, Integer> charges = new HashMap<Player, Integer>();
+		List<Player> players = client.getPlayersByIDs(packet.rented);
+		for (int i = 0 ; i < players.size() ; i++)
 		{
-			client.setAwaitingResponse(false);
-			Map<Player, Integer> charges = new HashMap<Player, Integer>();
-			List<Player> players = client.getPlayersByIDs(packet.rented);
-			for (int i = 0 ; i < players.size() ; i++)
-			{
-				charges.put(players.get(i), packet.amounts[i]);
-			}
-			client.getGameState().setActionState(new ActionStateRent(client.getPlayerByID(packet.renter), charges));
-			client.getTableScreen().repaint();
-		});
+			charges.put(players.get(i), packet.amounts[i]);
+		}
+		client.getGameState().setActionState(new ActionStateRent(client.getPlayerByID(packet.renter), charges));
+		client.getTableScreen().repaint();
 	}
 	
 	public void handleDestroyCardCollection(PacketDestroyCardCollection packet)
@@ -486,99 +501,87 @@ public class NetClientHandler
 		}
 	}
 	
+	@Queued
 	public void handlePropertySetColor(PacketPropertySetColor packet)
 	{
 		PropertySet set = (PropertySet) CardCollection.getCardCollection(packet.id);
-		queueTask(() ->
-		{
-			set.setEffectiveColor(packet.color > -1 ? PropertyColor.fromID(packet.color) : null);
-			set.getUI().repaint();
-		});
+		set.setEffectiveColor(packet.color > -1 ? PropertyColor.fromID(packet.color) : null);
+		set.getUI().repaint();
 	}
 	
+	@Queued
 	public void handleActionStatePropertiesSelected(PacketActionStatePropertiesSelected packet)
 	{
-		queueTask(() ->
-		{
-			client.setAwaitingResponse(false);
-			client.getGameState().setActionState(new ActionStatePropertiesSelected(client.getPlayerByID(packet.owner),
-					client.getPlayerByID(packet.target), Card.getPropertyCards(packet.cards)));
-			client.getTableScreen().repaint();
-		});
+		client.setAwaitingResponse(false);
+		client.getGameState().setActionState(new ActionStatePropertiesSelected(client.getPlayerByID(packet.owner),
+				client.getPlayerByID(packet.target), Card.getPropertyCards(packet.cards)));
+		client.getTableScreen().repaint();
 	}
 	
+	@Queued
 	public void handleActionStateStealMonopoly(PacketActionStateStealMonopoly packet)
 	{
-		queueTask(() ->
-		{
-			client.setAwaitingResponse(false);
-			client.getGameState().setActionState(new ActionStateStealMonopoly(client.getPlayerByID(packet.thief),
-					(PropertySet) CardCollection.getCardCollection(packet.collection)));
-			client.getTableScreen().repaint();
-		});
+		client.setAwaitingResponse(false);
+		client.getGameState().setActionState(new ActionStateStealMonopoly(client.getPlayerByID(packet.thief),
+				(PropertySet) CardCollection.getCardCollection(packet.collection)));
+		client.getTableScreen().repaint();
 	}
 	
+	@Queued
 	public void handleUpdateActionStateAccepted(PacketUpdateActionStateAccepted packet)
 	{
-		queueTask(() ->
+		ActionState state = client.getGameState().getActionState();
+		Player player = client.getPlayerByID(packet.target);
+		if (state != null && state.isTarget(player))
 		{
-			ActionState state = client.getGameState().getActionState();
-			Player player = client.getPlayerByID(packet.target);
-			if (state != null && state.isTarget(player))
-			{
-				client.setAwaitingResponse(false);
-				state.setAccepted(player, packet.accepted);
-				player.getUI().repaint();
-			}
-			else
-			{
-				System.err.println("Server sent illegal action state update (acceptance)");
-			}
-		});
+			client.setAwaitingResponse(false);
+			state.setAccepted(player, packet.accepted);
+			player.getUI().repaint();
+		}
+		else
+		{
+			System.err.println("Server sent illegal action state update (acceptance)");
+		}
 	}
 	
+	@Queued
 	public void handleUpdateActionStateRefusal(PacketUpdateActionStateRefusal packet)
 	{
-		queueTask(() ->
+		ActionState state = client.getGameState().getActionState();
+		Player player = client.getPlayerByID(packet.target);
+		if (state != null && state.isTarget(player))
 		{
-			ActionState state = client.getGameState().getActionState();
-			Player player = client.getPlayerByID(packet.target);
-			if (state != null && state.isTarget(player))
+			client.setAwaitingResponse(false);
+			state.setRefused(player, packet.refused);
+			player.getUI().repaint();
+			if ((packet.refused && state.getActionOwner() == client.getThePlayer()) || (!packet.refused && player == client.getThePlayer()))
 			{
-				client.setAwaitingResponse(false);
-				state.setRefused(player, packet.refused);
-				player.getUI().repaint();
-				if ((packet.refused && state.getActionOwner() == client.getThePlayer()) || (!packet.refused && player == client.getThePlayer()))
-				{
-					client.getWindow().setAlert(true);
-				}
+				client.getWindow().setAlert(true);
 			}
-			else
-			{
-				System.err.println("Server sent illegal action state update (refusal)");
-			}
-		});
+		}
+		else
+		{
+			System.err.println("Server sent illegal action state update (refusal)");
+		}
 	}
 	
+	@Queued
 	public void handleUpdateActionStateTarget(PacketUpdateActionStateTarget packet)
 	{
-		queueTask(() ->
+		ActionState state = client.getGameState().getActionState();
+		if (state != null)
 		{
-			ActionState state = client.getGameState().getActionState();
-			if (state != null)
+			client.setAwaitingResponse(false);
+			Player player = client.getPlayerByID(packet.target);
+			if (!packet.isTarget)
 			{
-				client.setAwaitingResponse(false);
-				Player player = client.getPlayerByID(packet.target);
-				if (!packet.isTarget)
-				{
-					state.setTarget(player, false);
-				}
+				state.setTarget(player, false);
 			}
-			else
-			{
-				System.err.println("Server sent illegal action state update (target)");
-			}
-		});
+		}
+		else
+		{
+			System.err.println("Server sent illegal action state update (target)");
+		}
 	}
 	
 	public void handleUndoCardStatus(PacketUndoCardStatus packet)
@@ -615,25 +618,30 @@ public class NetClientHandler
 		MDSoundSystem.playSound(packet.name);
 	}
 	
+	@Queued
 	public void handleButton(PacketButton packet)
 	{
-		queueTask(() ->
+		Player player = client.getPlayerByID(packet.playerID);
+		MDPlayerButton b = player.getUI().getButtons()[packet.id];
+		b.setEnabled(packet.enabled);
+		b.setColorScheme(packet.color == 0 ? ButtonColorScheme.NORMAL : ButtonColorScheme.ALERT);
+		ButtonType type;
+		switch (packet.type)
 		{
-			Player player = client.getPlayerByID(packet.playerID);
-			MDPlayerButton b = player.getUI().getButtons()[packet.id];
-			b.setEnabled(packet.enabled);
-			b.setColorScheme(packet.color == 0 ? ButtonColorScheme.NORMAL : ButtonColorScheme.ALERT);
-			ButtonType type;
-			switch (packet.type)
-			{
-				case 0: type = ButtonType.NORMAL; break;
-				case 1: type = ButtonType.RENT; break;
-				case 2: type = ButtonType.REFUSABLE; break;
-				default: type = ButtonType.NORMAL;
-			}
-			b.setType(type);
-			b.setText(packet.name);
-			b.repaint();
-		});
+			case 0: type = ButtonType.NORMAL; break;
+			case 1: type = ButtonType.RENT; break;
+			case 2: type = ButtonType.REFUSABLE; break;
+			default: type = ButtonType.NORMAL;
+		}
+		b.setType(type);
+		b.setText(packet.name);
+		b.repaint();
 	}
+	
+	/**
+	 * Indicates that the packet handler should be ran in the event queue.
+	 */
+	@Retention (RetentionPolicy.RUNTIME)
+	@Target (ElementType.METHOD)
+	private @interface Queued {}
 }
