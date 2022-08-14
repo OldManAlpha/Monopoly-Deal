@@ -4,14 +4,12 @@ import oldmana.general.mjnetworkingapi.packet.Packet;
 
 public class PacketActionButtonClick extends Packet
 {
-	public byte id;
-	public int playerID;
+	public int id;
 	
 	public PacketActionButtonClick() {}
 	
-	public PacketActionButtonClick(int id, int playerID)
+	public PacketActionButtonClick(int id)
 	{
-		this.id = (byte) id;
-		this.playerID = playerID;
+		this.id = id;
 	}
 }

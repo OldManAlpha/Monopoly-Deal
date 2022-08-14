@@ -71,53 +71,6 @@ public class ActionStateRent extends ActionState
 		broadcastStatus();
 	}
 	
-//	@Override
-//	public void updateActionButtons()
-//	{
-//		PlayerButtonSlot slot = getActionButtonSlot();
-//		slot.clearButtons();
-//		if (getActionOwner() != null) // Buttons aren't applied when the server charges rent, the client will still use the multibutton
-//		{
-//			for (ActionTarget target : getActionTargets())
-//			{
-//				if (target.isAccepted()) // Paid players don't have a rent button
-//				{
-//					continue;
-//				}
-//				if (target.isRefused())
-//				{
-//					applyRentButtonTo(slot, target.getPlayer(), false); // Disable rent button for refused rented player
-//					applyRefusalButtonFor(slot, target.getPlayer()); // Send the acceptance button to the renter
-//				}
-//				else
-//				{
-//					applyRentButtonTo(slot, target.getPlayer(), true); // Send rent button to rented player that hasn't refused
-//				}
-//			}
-//		}
-//		slot.sendUpdate();
-//	}
-//	
-//	private void applyRefusalButtonFor(PlayerButtonSlot slot, Player p)
-//	{
-//		Player renter = getActionOwner();
-//		if (renter != null)
-//		{
-//			PlayerButton b = slot.getButton(renter, p);
-//			b.build("Accept`Refuse", ButtonColorScheme.ALERT);
-//			b.setType(PlayerButtonType.REFUSABLE);
-//		}
-//	}
-//	
-//	private void applyRentButtonTo(PlayerButtonSlot slot, Player p, boolean enabled)
-//	{
-//		PlayerButton b = slot.getButton(p, getActionOwner());
-//		b.setColor(ButtonColorScheme.ALERT);
-//		b.setEnabled(enabled);
-//		b.setText("View Charge");
-//		b.setType(PlayerButtonType.RENT);
-//	}
-	
 	public void broadcastStatus()
 	{
 		if (getNumberOfTargets() > 0)
@@ -239,12 +192,8 @@ public class ActionStateRent extends ActionState
 	{
 		List<Player> targets = new ArrayList<Player>(charges.keySet());
 		List<Integer> rents = new ArrayList<Integer>(charges.values());
-		List<Player> refusedPlayers = getRefused();
-		List<Player> accepted = getAccepted();
 		int[] rented = new int[targets.size()];
 		int[] amounts = new int[targets.size()];
-		int[] paid = new int[accepted.size()];
-		int[] refused = new int[refusedPlayers.size()];
 		for (int i = 0 ; i < rented.length ; i++)
 		{
 			rented[i] = targets.get(i).getID();
@@ -252,14 +201,6 @@ public class ActionStateRent extends ActionState
 		for (int i = 0 ; i < amounts.length ; i++)
 		{
 			amounts[i] = rents.get(i);
-		}
-		for (int i = 0 ; i < paid.length ; i++)
-		{
-			paid[i] = accepted.get(i).getID();
-		}
-		for (int i = 0 ; i < refused.length ; i++)
-		{
-			refused[i] = refusedPlayers.get(i).getID();
 		}
 		return new PacketActionStateRent(getActionOwner() != null ? getActionOwner().getID() : -1, rented, amounts);
 	}

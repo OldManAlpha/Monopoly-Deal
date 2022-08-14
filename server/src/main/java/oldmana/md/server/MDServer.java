@@ -88,8 +88,6 @@ public class MDServer
 	private EventManager eventManager = new EventManager();
 	private ChatLinkHandler linkHandler = new ChatLinkHandler();
 	
-	private ButtonManager buttonManager = new ButtonManager(this);
-	
 	private Console consoleSender = new Console();
 	private CommandHandler cmdHandler = new CommandHandler();
 	
@@ -499,11 +497,6 @@ public class MDServer
 		return linkHandler;
 	}
 	
-	public ButtonManager getButtonManager()
-	{
-		return buttonManager;
-	}
-	
 	public MDScheduler getScheduler()
 	{
 		return scheduler;
@@ -561,11 +554,6 @@ public class MDServer
 	public void addPlayer(Player player)
 	{
 		players.add(player);
-		for (Player p : getPlayers())
-		{
-			p.createButtons(player);
-			player.createButtons(p);
-		}
 	}
 	
 	public void kickPlayer(Player player)

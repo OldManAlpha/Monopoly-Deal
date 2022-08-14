@@ -61,12 +61,12 @@ public class MDSelection extends MDComponent
 		for (int i = -1 ; i - 1 < getWidth() / lineSize ; i++)
 		{
 			g.fillRect((i * lineSize) + pos, 0, lineSize / 2, scale(4));
-			g.fillRect(getWidth() - ((i * lineSize) + pos), getHeight() - 1 - scale(4), lineSize / 2, scale(4));
+			g.fillRect(getWidth() - ((i * lineSize) + pos), getHeight() - scale(4), lineSize / 2, scale(4));
 		}
 		for (int i = -1 ; i - 1 < getHeight() / lineSize ; i++)
 		{
 			g.fillRect(0, getHeight() - ((i * lineSize) + pos), scale(4), lineSize / 2);
-			g.fillRect(getWidth() - 1 - scale(4), (i * lineSize) + pos, scale(4), lineSize / 2);
+			g.fillRect(getWidth() - scale(4), (i * lineSize) + pos, scale(4), lineSize / 2);
 		}
 	}
 }

@@ -1,5 +1,6 @@
 package oldmana.md.server.state;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -176,7 +177,6 @@ public class GameState
 					{
 						server.broadcastPacket(new PacketUpdateActionStateAccepted(player.getID(), true));
 					}
-					this.state.updateActionButtons();
 					ActionStateChangedEvent changedEvent = new ActionStateChangedEvent(lastState, state);
 					server.getEventManager().callEvent(changedEvent);
 				}

@@ -78,13 +78,18 @@ public class MDComponent extends JComponent
 		MouseAdapter listener = new MouseAdapter()
 		{
 			@Override
-			public void mouseClicked(MouseEvent event)
+			public void mouseReleased(MouseEvent event)
 			{
 				func.accept(event);
 			}
 		};
 		addMouseListener(listener);
 		return listener;
+	}
+	
+	public MouseAdapter addClickListener(Runnable func)
+	{
+		return addClickListener(event -> func.run());
 	}
 	
 	public MDClient getClient()

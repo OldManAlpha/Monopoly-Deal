@@ -8,13 +8,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.net.packet.server.PacketDestroyButton;
 import oldmana.md.net.packet.server.PacketDestroyCardCollection;
 import oldmana.md.net.packet.server.PacketKick;
 import oldmana.md.net.packet.server.PacketPlayerInfo;
 import oldmana.md.net.packet.server.PacketPlayerStatus;
 import oldmana.md.net.packet.server.PacketUndoCardStatus;
 import oldmana.md.net.packet.universal.PacketChat;
-import oldmana.md.server.ButtonManager.PlayerButton;
+import oldmana.md.server.ClientButton.ButtonTag;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardProperty;
@@ -53,7 +54,7 @@ public class Player extends Client implements CommandSender
 	
 	private List<StatusEffect> statusEffects = new ArrayList<StatusEffect>();
 	
-	private Map<Player, PlayerButton[]> buttonPerspectives = new HashMap<Player, PlayerButton[]>();
+	private Map<Player, List<ClientButton>> buttons = new HashMap<Player, List<ClientButton>>();
 	
 	private boolean online = false;
 	private int lastPing;
@@ -602,76 +603,110 @@ public class Player extends Client implements CommandSender
 		}
 	}
 	
-	protected void createButtons(Player player)
+	/**
+	 * Register a button that this player will see on the provided Player.
+	 * @param button The button to register
+	 * @param view The player the button will be shown on
+	 */
+	public void registerButton(ClientButton button, Player view)
 	{
-		PlayerButton[] buttons = new PlayerButton[3];
-		for (int i = 0 ; i < buttons.length ; i++)
+		getButtonsFor(view).add(button);
+		button.setOwner(this);
+		button.setView(view);
+		button.sendUpdate();
+	}
+	
+	public void removeButton(ClientButton button)
+	{
+		getButtonsFor(button.getView()).remove(button);
+		sendPacket(new PacketDestroyButton(button.getID()));
+	}
+	
+	public List<ClientButton> getButtonsFor(Player view)
+	{
+		return buttons.computeIfAbsent(view, key -> new ArrayList<ClientButton>());
+	}
+	
+	public ClientButton getButton(int id)
+	{
+		for (List<ClientButton> view : buttons.values())
 		{
-			buttons[i] = new PlayerButton(this, player, i);
+			for (ClientButton button : view)
+			{
+				if (button.getID() == id)
+				{
+					return button;
+				}
+			}
 		}
-		buttonPerspectives.put(player, buttons);
+		return null;
+	}
+	
+	public ClientButton getButton(Player view, ButtonTag tag)
+	{
+		for (ClientButton button : getButtonsFor(view))
+		{
+			if (button.getTag() == tag)
+			{
+				return button;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Button tags do not have guaranteed unique names, so this method of getting buttons is discouraged.
+	 */
+	public ClientButton getButton(Player view, String tagName)
+	{
+		for (ClientButton button : getButtonsFor(view))
+		{
+			if (button.getTag() != null && button.getTag().getName().equals(tagName))
+			{
+				return button;
+			}
+		}
+		return null;
+	}
+	
+	public boolean hasButton(Player view, ButtonTag tag)
+	{
+		return getButton(view, tag) != null;
 	}
 	
 	protected void removeButtons(Player player)
 	{
-		buttonPerspectives.remove(player);
-	}
-	
-	public PlayerButton[] getButtonsFor(Player player)
-	{
-		return buttonPerspectives.get(player);
-	}
-	
-	public PlayerButton getButtonView(Player player, int index)
-	{
-		return buttonPerspectives.get(player)[index];
-	}
-	
-	public void clearActionButtons()
-	{
-		clearButtons(0);
-	}
-	
-	public void clearButtons(int index)
-	{
-		for (PlayerButton[] bs : buttonPerspectives.values())
+		for (ClientButton button : buttons.get(player))
 		{
-			bs[index].setBlank();
+			sendPacket(new PacketDestroyButton(button.getID()));
 		}
+		buttons.remove(player);
 	}
 	
 	public void clearAllButtons()
 	{
-		for (PlayerButton[] bs : buttonPerspectives.values())
+		for (ClientButton button : getAllButtons())
 		{
-			for (PlayerButton b : bs)
-			{
-				b.setBlank();
-			}
-		}
-	}
-	
-	public void sendButtonPackets(int index)
-	{
-		for (Entry<Player, PlayerButton[]> entry : buttonPerspectives.entrySet())
-		{
-			PlayerButton[] bs = entry.getValue();
-			
-			bs[index].sendUpdate();
+			button.remove();
 		}
 	}
 	
 	public void sendButtonPackets()
 	{
-		for (Entry<Player, PlayerButton[]> entry : buttonPerspectives.entrySet())
+		for (ClientButton button : getAllButtons())
 		{
-			PlayerButton[] bs = entry.getValue();
-			
-			for (int i = 0 ; i < bs.length ; i++)
-			{
-				bs[i].sendUpdate();
-			}
+			button.sendUpdate();
 		}
+	}
+	
+	public List<ClientButton> getAllButtons()
+	{
+		List<ClientButton> all = new ArrayList<ClientButton>();
+		for (List<ClientButton> view : buttons.values())
+		{
+			all.addAll(view);
+		}
+		return all;
 	}
 	
 	public void draw()

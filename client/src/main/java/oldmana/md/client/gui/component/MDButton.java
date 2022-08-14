@@ -77,6 +77,18 @@ public class MDButton extends MDComponent
 		this.listener = listener;
 	}
 	
+	public void setListener(Runnable task)
+	{
+		setListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseReleased(MouseEvent event)
+			{
+				task.run();
+			}
+		});
+	}
+	
 	public void removeListener()
 	{
 		if (listener != null)

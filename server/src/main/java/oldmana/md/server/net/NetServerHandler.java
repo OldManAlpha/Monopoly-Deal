@@ -49,7 +49,7 @@ import oldmana.md.server.state.GameState;
 
 public class NetServerHandler
 {
-	public static int PROTOCOL_VERSION = 13;
+	public static int PROTOCOL_VERSION = 14;
 	public static int PROTOCOL_MINIMUM = PROTOCOL_VERSION;
 	
 	private MDServer server;
@@ -108,6 +108,7 @@ public class NetServerHandler
 		Packet.registerPacket(PacketSoundData.class);
 		Packet.registerPacket(PacketPlaySound.class);
 		Packet.registerPacket(PacketButton.class);
+		Packet.registerPacket(PacketDestroyButton.class);
 		
 		// Client -> Server
 		Packet.registerPacket(PacketActionAccept.class);
@@ -560,7 +561,7 @@ public class NetServerHandler
 	
 	public void handleButtonClick(Player player, PacketActionButtonClick packet)
 	{
-		player.getButtonView(server.getPlayerByID(packet.playerID), packet.id).buttonClicked();
+		player.getButton(packet.id).buttonClicked();
 	}
 	
 	public void handleChat(Player player, PacketChat packet)

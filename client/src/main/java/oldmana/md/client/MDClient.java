@@ -435,7 +435,29 @@ public class MDClient
 	
 	public void removeTableComponent(JComponent component)
 	{
-		getTableScreen().remove(component);
+		if (component != null)
+		{
+			getTableScreen().remove(component);
+		}
+	}
+	
+	public void removeTableComponents(List<? extends JComponent> components)
+	{
+		if (components != null)
+		{
+			for (JComponent component : components)
+			{
+				removeTableComponent(component);
+			}
+		}
+	}
+	
+	public void removeTableComponents(JComponent... components)
+	{
+		for (JComponent component : components)
+		{
+			removeTableComponent(component);
+		}
 	}
 	
 	public void disconnect()

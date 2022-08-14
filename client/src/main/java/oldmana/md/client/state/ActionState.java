@@ -1,20 +1,15 @@
 package oldmana.md.client.state;
 
-import java.awt.Color;
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.card.CardActionActionCounter;
 import oldmana.md.client.gui.component.MDButton;
-import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.component.MDButton.ButtonColorScheme;
-import oldmana.md.client.gui.component.collection.MDHand;
-import oldmana.md.client.gui.util.GraphicsUtils;
+import oldmana.md.client.state.client.ActionStateClientCounterPlayer;
 import oldmana.md.net.packet.client.action.PacketActionAccept;
 import oldmana.md.net.packet.client.action.PacketActionPlayCardSpecial;
 
@@ -24,9 +19,6 @@ public class ActionState
 	private List<ActionTarget> targets;
 	
 	private CardActionActionCounter jsn;
-	
-	private MDSelection counterSelect;
-	private MDButton counterCancel;
 	
 	public ActionState(Player actionOwner)
 	{
@@ -56,7 +48,7 @@ public class ActionState
 	{
 		if (isTarget(getClient().getThePlayer()) && getActionTargets().size() == 1)
 		{
-			applyButtonAccept(getActionOwner());
+			applyButtonAccept();
 		}
 	}
 	
@@ -68,24 +60,23 @@ public class ActionState
 		removeButton();
 	};
 	
-	private void applyButtonAccept(Player player)
+	private void applyButtonAccept()
 	{
 		MDButton button = getClient().getTableScreen().getMultiButton();
 		button.setColorScheme(ButtonColorScheme.ALERT);
-		button.setText("Accept");
+		button.setText("Accept" + ((getRefusableTargets().size() > 1 ? " All" : "")));
 		button.setEnabled(true);
-		button.setListener(new MouseAdapter()
+		button.setListener(() ->
 		{
-			@Override
-			public void mouseReleased(MouseEvent event)
+			if (!getClient().isAwaitingResponse())
 			{
-				if (!getClient().isAwaitingResponse())
+				for (Player target : getRefusableTargets())
 				{
-					getClient().sendPacket(new PacketActionAccept(player.getID()));
-					button.removeListener();
-					button.setEnabled(false);
-					getClient().setAwaitingResponse(true);
+					getClient().sendPacket(new PacketActionAccept(target.getID()));
 				}
+				button.removeListener();
+				button.setEnabled(false);
+				getClient().setAwaitingResponse(true);
 			}
 		});
 		button.repaint();
@@ -122,52 +113,15 @@ public class ActionState
 			else if (getNumberOfRefused() > 1)
 			{
 				jsn = card;
-				setupActionCounterOverlay();
-				for (Player p : getClient().getOtherPlayers())
-				{
-					p.getUI().getButtons()[0].updateRefusableText();
-				}
+				getGameState().setClientActionState(new ActionStateClientCounterPlayer(jsn));
 			}
 		}
-	}
-	
-	public void setupActionCounterOverlay()
-	{
-		Point propLoc = ((MDHand) getClient().getThePlayer().getHand().getUI()).getScreenLocationOf(jsn);
-		counterSelect = new MDSelection(Color.BLUE);
-		counterSelect.setLocation(propLoc);
-		counterSelect.setSize(GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2));
-		getClient().addTableComponent(counterSelect, 90);
-		
-		counterCancel = new MDButton("Cancel");
-		counterCancel.setSize((int) (counterSelect.getWidth() * 0.8), (int) (counterSelect.getHeight() * 0.2));
-		counterCancel.setLocation((int) (counterSelect.getWidth() * 0.1) + counterSelect.getX(), (int) (counterSelect.getHeight() * 0.4) + counterSelect.getY());
-		counterCancel.setListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseReleased(MouseEvent event)
-			{
-				removeActionCounter();
-			}
-		});
-		getClient().addTableComponent(counterCancel, 91);
-	}
-	
-	public void cleanupActionCounterOverlay()
-	{
-		getClient().removeTableComponent(counterSelect);
-		getClient().removeTableComponent(counterCancel);
-		getClient().getTableScreen().getHand().repaint();
 	}
 	
 	public void removeActionCounter()
 	{
 		jsn = null;
-		cleanupActionCounterOverlay();
-		for (Player p : getClient().getOtherPlayers())
-		{
-			p.getUI().getButtons()[0].updateRefusableText();
-		}
+		evaluateAcceptButton();
 	}
 	
 	public boolean isUsingActionCounter()
@@ -199,11 +153,11 @@ public class ActionState
 	
 	private void evaluateAcceptButton()
 	{
-		if (getActionOwner() == getClient().getThePlayer())
+		if (getActionOwner() == getClient().getThePlayer() && !isUsingActionCounter())
 		{
-			if (getNumberOfRefused() == 1) // Apply the accept button for the one refusal
+			if (getNumberOfRefused() > 0)
 			{
-				applyButtonAccept(getRefused().get(0));
+				applyButtonAccept();
 			}
 			else
 			{
@@ -326,6 +280,19 @@ public class ActionState
 			}
 		}
 		return refused;
+	}
+	
+	public List<Player> getRefusableTargets()
+	{
+		if (getActionOwner() == getClient().getThePlayer())
+		{
+			return getRefused();
+		}
+		else if (!isRefused(getClient().getThePlayer()))
+		{
+			return Collections.singletonList(getActionOwner());
+		}
+		return Collections.emptyList();
 	}
 	
 	public List<Player> getAccepted()

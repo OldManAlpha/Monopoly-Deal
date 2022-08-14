@@ -58,14 +58,7 @@ public class ActionStateRent extends ActionState
 		if (thePlayer == player && isTarget(player))
 		{
 			MDButton button = getClient().getTableScreen().getMultiButton();
-			if (refused)
-			{
-				button.setEnabled(false);
-			}
-			else
-			{
-				button.setEnabled(true);
-			}
+			button.setEnabled(!refused);
 		}
 	}
 	

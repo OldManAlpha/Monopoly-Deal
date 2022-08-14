@@ -258,6 +258,7 @@ public class Card
 		
 		public CardDescription(int id, String... description)
 		{
+			this.id = id;
 			this.description = description;
 			descriptionMap.put(id, this);
 		}
@@ -278,11 +279,11 @@ public class Card
 		}
 	}
 	
-	public static enum CardType
+	public enum CardType
 	{
 		MONEY(0), PROPERTY(1), ACTION(2), JUST_SAY_NO(3), DOUBLE_THE_RENT(4), SPECIAL(5), RENT_COUNTER(6), BUILDING(7);
 		
-		private int id;
+		private final int id;
 		
 		CardType(int id)
 		{
@@ -295,12 +296,19 @@ public class Card
 		}
 	}
 	
-	public static enum CardValueColor
+	public enum CardValueColor
 	{
-		ZERO(Color.LIGHT_GRAY), ONE(new Color(243, 237, 159)), TWO(new Color(237, 209, 178)), THREE(new Color(230, 242, 203)), FOUR(new Color(194, 224, 233)), 
-		FIVE(new Color(193, 161, 203)), TEN(new Color(247, 210, 82)), GREATER_THAN_TEN(new Color(132, 240, 255)), OTHER(new Color(225, 170, 160));
+		ZERO(Color.LIGHT_GRAY),
+		ONE(new Color(243, 237, 159)),
+		TWO(new Color(237, 209, 178)),
+		THREE(new Color(230, 242, 203)),
+		FOUR(new Color(194, 224, 233)),
+		FIVE(new Color(193, 161, 203)),
+		TEN(new Color(247, 210, 82)),
+		GREATER_THAN_TEN(new Color(132, 240, 255)),
+		OTHER(new Color(225, 170, 160));
 		
-		private Color color;
+		private final Color color;
 		
 		CardValueColor(Color color)
 		{

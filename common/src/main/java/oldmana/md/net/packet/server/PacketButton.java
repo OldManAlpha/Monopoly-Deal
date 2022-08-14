@@ -4,22 +4,25 @@ import oldmana.general.mjnetworkingapi.packet.Packet;
 
 public class PacketButton extends Packet
 {
-	public byte id;
+	public int id;
 	public int playerID;
 	public String name;
 	public boolean enabled;
 	public byte type;
 	public byte color;
+	public short priority;
+	public float maxSize;
 	
 	public PacketButton() {}
 
-	public PacketButton(int id, int playerID, String name, boolean enabled, byte type, byte color)
+	public PacketButton(int id, int playerID, String name, boolean enabled, byte color, int priority, double maxSize)
 	{
-		this.id = (byte) id;
+		this.id = id;
 		this.playerID = playerID;
 		this.name = name;
 		this.enabled = enabled;
-		this.type = type;
 		this.color = color;
+		this.priority = (short) priority;
+		this.maxSize = (float) maxSize;
 	}
 }

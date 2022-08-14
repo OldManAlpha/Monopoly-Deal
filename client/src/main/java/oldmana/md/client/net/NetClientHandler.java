@@ -37,10 +37,10 @@ import oldmana.md.client.card.collection.DiscardPile;
 import oldmana.md.client.card.collection.Hand;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.card.collection.VoidCollection;
+import oldmana.md.client.gui.component.MDChat;
 import oldmana.md.client.gui.component.MDUndoButton;
 import oldmana.md.client.gui.component.MDButton.ButtonColorScheme;
-import oldmana.md.client.gui.component.MDPlayerButton;
-import oldmana.md.client.gui.component.MDPlayerButton.ButtonType;
+import oldmana.md.client.gui.component.MDClientButton;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.ActionStateDiscard;
 import oldmana.md.client.state.ActionStateDoNothing;
@@ -70,7 +70,7 @@ import oldmana.md.net.packet.universal.PacketPing;
 
 public class NetClientHandler
 {
-	public static int PROTOCOL_VERSION = 13;
+	public static int PROTOCOL_VERSION = 14;
 	
 	private MDClient client;
 	
@@ -128,6 +128,7 @@ public class NetClientHandler
 		Packet.registerPacket(PacketSoundData.class);
 		Packet.registerPacket(PacketPlaySound.class);
 		Packet.registerPacket(PacketButton.class);
+		Packet.registerPacket(PacketDestroyButton.class);
 		
 		// Client -> Server
 		Packet.registerPacket(PacketActionAccept.class);
@@ -622,20 +623,28 @@ public class NetClientHandler
 	public void handleButton(PacketButton packet)
 	{
 		Player player = client.getPlayerByID(packet.playerID);
-		MDPlayerButton b = player.getUI().getButtons()[packet.id];
+		MDClientButton b = player.getUI().getAndCreateButton(player, packet.id);
 		b.setEnabled(packet.enabled);
 		b.setColorScheme(packet.color == 0 ? ButtonColorScheme.NORMAL : ButtonColorScheme.ALERT);
-		ButtonType type;
-		switch (packet.type)
-		{
-			case 0: type = ButtonType.NORMAL; break;
-			case 1: type = ButtonType.RENT; break;
-			case 2: type = ButtonType.REFUSABLE; break;
-			default: type = ButtonType.NORMAL;
-		}
-		b.setType(type);
 		b.setText(packet.name);
+		b.setPriority(packet.priority);
+		b.setMaxSize(packet.maxSize);
 		b.repaint();
+		player.getUI().validate();
+	}
+	
+	@Queued
+	public void handleDestroyButton(PacketDestroyButton packet)
+	{
+		for (Player player : client.getAllPlayers())
+		{
+			if (player.getUI().removeButton(packet.id))
+			{
+				player.getUI().validate();
+				player.getUI().repaint();
+				return;
+			}
+		}
 	}
 	
 	/**

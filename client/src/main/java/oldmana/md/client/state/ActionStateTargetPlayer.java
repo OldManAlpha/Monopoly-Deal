@@ -1,8 +1,6 @@
 package oldmana.md.client.state;
 
 import java.awt.Color;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,20 +32,16 @@ public class ActionStateTargetPlayer extends ActionState
 				MDSelection select = new MDSelection();
 				select.setLocation(other.getUI().getLocation());
 				select.setSize(other.getUI().getSize());
-				select.addMouseListener(new MouseAdapter()
+				select.addClickListener(() ->
 				{
-					@Override
-					public void mouseReleased(MouseEvent event)
+					if (selectedPlayer != null)
 					{
-						if (selectedPlayer != null)
-						{
-							selectedPlayerUI.setColor(MDSelection.DEFAULT_COLOR);
-						}
-						selectedPlayer = other;
-						selectedPlayerUI = select;
-						selectedPlayerUI.setColor(Color.BLUE);
-						updateButton();
+						selectedPlayerUI.setColor(MDSelection.DEFAULT_COLOR);
 					}
+					selectedPlayer = other;
+					selectedPlayerUI = select;
+					selectedPlayerUI.setColor(Color.BLUE);
+					updateButton();
 				});
 				getClient().addTableComponent(select, 100);
 				selects.add(select);
@@ -64,17 +58,13 @@ public class ActionStateTargetPlayer extends ActionState
 			if (selectedPlayer != null)
 			{
 				button.setEnabled(true);
-				button.setListener(new MouseAdapter()
+				button.setListener(() ->
 				{
-					@Override
-					public void mouseReleased(MouseEvent event)
-					{
-						getClient().sendPacket(new PacketActionSelectPlayer(selectedPlayer.getID()));
-						cleanup();
-						getClient().setAwaitingResponse(true);
-						button.setEnabled(false);
-						button.removeListener();
-					}
+					getClient().sendPacket(new PacketActionSelectPlayer(selectedPlayer.getID()));
+					cleanup();
+					getClient().setAwaitingResponse(true);
+					button.setEnabled(false);
+					button.removeListener();
 				});
 			}
 			else
