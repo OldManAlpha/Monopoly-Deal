@@ -676,11 +676,14 @@ public class Player extends Client implements CommandSender
 	
 	protected void removeButtons(Player player)
 	{
-		for (ClientButton button : buttons.get(player))
+		if (buttons.containsKey(player))
 		{
-			sendPacket(new PacketDestroyButton(button.getID()));
+			for (ClientButton button : buttons.get(player))
+			{
+				sendPacket(new PacketDestroyButton(button.getID()));
+			}
+			buttons.remove(player);
 		}
-		buttons.remove(player);
 	}
 	
 	public void clearAllButtons()
