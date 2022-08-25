@@ -2,20 +2,13 @@ package oldmana.md.server.card.action;
 
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;
+import oldmana.md.server.card.CardTemplate;
+import oldmana.md.server.card.type.CardType;
 import oldmana.md.server.state.ActionStateRent;
 import oldmana.md.server.state.ActionStateTargetDebtCollector;
 
 public class CardActionDebtCollector extends CardAction
 {
-	public CardActionDebtCollector()
-	{
-		super(3, "Debt Collector");
-		setDisplayName("DEBT", "COLLECTOR");
-		setFontSize(6);
-		setDisplayOffsetY(1);
-		setDescription("Select a player and charge 5M against them.");
-	}
-	
 	@Override
 	public void playCard(Player player)
 	{
@@ -28,5 +21,20 @@ public class CardActionDebtCollector extends CardAction
 		{
 			getServer().getGameState().setActionState(new ActionStateTargetDebtCollector(player));
 		}
+	}
+	
+	private static CardType<CardActionDebtCollector> createType()
+	{
+		CardType<CardActionDebtCollector> type = new CardType<CardActionDebtCollector>(CardActionDebtCollector.class, "Debt Collector");
+		CardTemplate template = type.getDefaultTemplate();
+		template.put("value", 3);
+		template.put("name", "Debt Collector");
+		template.putStrings("displayName", "DEBT", "COLLECTOR");
+		template.put("fontSize", 6);
+		template.put("displayOffsetY", 1);
+		template.putStrings("description", "Select a player and charge 5M against them.");
+		template.put("revocable", true);
+		template.put("clearsRevocableCards", false);
+		return type;
 	}
 }

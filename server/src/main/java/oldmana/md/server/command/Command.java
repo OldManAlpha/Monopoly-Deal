@@ -116,15 +116,22 @@ public abstract class Command
 	
 	protected String getFullStringArgument(String[] args, int start)
 	{
-		String str = args[start];
+		String str = "";
 		if (args.length > start)
 		{
+			str = args[start];
 			for (int i = start + 1 ; i < args.length ; i++)
 			{
 				str += " " + args[i];
 			}
 		}
 		return str;
+	}
+	
+	protected String[] getQuotedArguments(String[] args)
+	{
+		
+		return null;
 	}
 	
 	protected MDServer getServer()

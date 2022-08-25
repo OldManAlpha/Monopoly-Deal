@@ -31,12 +31,22 @@ public class MDScheduler
 		});
 	}
 	
+	public void scheduleTask(int interval, boolean repeats, Consumer<MDTask> task)
+	{
+		tasks.add(new MDTask(interval, repeats)
+		{
+			@Override
+			public void run()
+			{
+				task.accept(this);
+			}
+		});
+	}
+	
 	public void runTick()
 	{
-		Iterator<MDTask> it = new ArrayList<MDTask>(tasks).iterator();
-		while (it.hasNext())
+		for (MDTask task : new ArrayList<MDTask>(tasks))
 		{
-			MDTask task = it.next();
 			try
 			{
 				if (task.tick())

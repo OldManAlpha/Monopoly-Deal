@@ -1,12 +1,10 @@
 package oldmana.md.server.command;
 
 import java.io.File;
+import java.io.IOException;
 
+import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
-import oldmana.md.server.card.CardProperty;
-import oldmana.md.server.card.CardProperty.PropertyColor;
-import oldmana.md.server.card.action.CardActionDealBreaker;
-import oldmana.md.server.card.action.CardActionPassGo;
 import oldmana.md.server.card.collection.deck.CustomDeck;
 
 public class CommandCreateDeck extends Command
@@ -19,11 +17,29 @@ public class CommandCreateDeck extends Command
 	@Override
 	public void executeCommand(CommandSender sender, String[] args)
 	{
-		CustomDeck deck = new CustomDeck("customdeck");
-		deck.addCard(new CardActionDealBreaker());
-		deck.addCard(new CardActionPassGo());
-		deck.addCard(new CardProperty(new PropertyColor[] {PropertyColor.BROWN, PropertyColor.LIGHT_BLUE, PropertyColor.UTILITY}, 6, "OP Property", true));
-		getServer().getDeckStacks().put("customdeck", deck);
-		deck.writeDeck(new File("decks" + File.separator + "customdeck.json"));
+		if (args.length == 0)
+		{
+			sender.sendMessage("You must specify a name for the deck.");
+			return;
+		}
+		String name = args[0];
+		if (getServer().getDeckStacks().containsKey(name) && !(getServer().getDeckStacks().get(name) instanceof CustomDeck))
+		{
+			sender.sendMessage(ChatColor.PREFIX_ALERT + "That deck name is reserved.");
+			return;
+		}
+		CustomDeck deck = new CustomDeck(name, getServer().getDeck().getCards());
+		try
+		{
+			deck.writeDeck(new File("decks" + File.separator + name + ".json"));
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+			sender.sendMessage(ChatColor.PREFIX_ALERT + "Error saving deck: " + e.getMessage());
+			return;
+		}
+		getServer().getDeckStacks().put(name, deck);
+		sender.sendMessage("Saved deck as '" + name + "'");
 	}
 }

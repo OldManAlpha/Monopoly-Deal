@@ -2,21 +2,13 @@ package oldmana.md.server.card.action;
 
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;
+import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.collection.PropertySet;
+import oldmana.md.server.card.type.CardType;
 import oldmana.md.server.state.ActionStateTargetForcedDeal;
 
 public class CardActionForcedDeal extends CardAction
 {
-	public CardActionForcedDeal()
-	{
-		super(3, "Forced Deal");
-		setDisplayName("FORCED", "DEAL");
-		setFontSize(8);
-		setDisplayOffsetY(2);
-		setDescription("Trade one of your properties for one of another player's properties that is not part of a full set. "
-				+ "10-Color property wild cards cannot be stolen with this card.");
-	}
-	
 	@Override
 	public void playCard(Player player)
 	{
@@ -50,5 +42,21 @@ public class CardActionForcedDeal extends CardAction
 			}
 		}
 		return ownerHasProp && otherHasProp;
+	}
+	
+	private static CardType<CardActionForcedDeal> createType()
+	{
+		CardType<CardActionForcedDeal> type = new CardType<CardActionForcedDeal>(CardActionForcedDeal.class, "Forced Deal");
+		CardTemplate template = type.getDefaultTemplate();
+		template.put("value", 3);
+		template.put("name", "Forced Deal");
+		template.putStrings("displayName", "FORCED", "DEAL");
+		template.put("fontSize", 8);
+		template.put("displayOffsetY", 2);
+		template.putStrings("description", "Trade one of your properties for one of another player's properties that is " +
+				"not part of a full set. 10-Color property wild cards cannot be stolen with this card.");
+		template.put("revocable", true);
+		template.put("clearsRevocableCards", false);
+		return type;
 	}
 }

@@ -1,13 +1,11 @@
 package oldmana.md.server.card;
 
 import oldmana.md.server.Player;
+import oldmana.md.server.card.type.CardType;
 
 public class CardAction extends Card
 {
-	public CardAction(int value, String name)
-	{
-		super(value, name);
-	}
+	public CardAction() {}
 	
 	public void playCard(Player player) {}
 	
@@ -17,14 +15,19 @@ public class CardAction extends Card
 	}
 	
 	@Override
-	public CardType getType()
+	public CardTypeLegacy getTypeLegacy()
 	{
-		return CardType.ACTION;
+		return CardTypeLegacy.ACTION;
 	}
 	
 	@Override
 	public String toString()
 	{
 		return getClass().getSimpleName() + " (" + getValue() + "M)";
+	}
+	
+	private static CardType<CardAction> createType()
+	{
+		return new CardType<CardAction>(CardAction.class, "Action Card", false);
 	}
 }

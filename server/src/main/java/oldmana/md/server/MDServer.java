@@ -24,7 +24,13 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.json.JSONObject;
+import oldmana.md.server.card.CardAction;
+import oldmana.md.server.card.CardMoney;
+import oldmana.md.server.card.CardProperty;
+import oldmana.md.server.card.CardRegistry;
+import oldmana.md.server.card.CardSpecial;
+import oldmana.md.server.card.collection.deck.CustomDeck.DeckLoadFailureException;
+import oldmana.md.server.card.type.CardType;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardDescription;
@@ -37,11 +43,9 @@ import oldmana.md.net.packet.server.PacketStatus;
 import oldmana.md.net.packet.universal.PacketChat;
 import oldmana.md.net.packet.universal.PacketKeepConnected;
 import oldmana.md.server.MDScheduler.MDTask;
-import oldmana.md.server.ai.BasicAI;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.Card.CardDescription;
-import oldmana.md.server.card.CardProperty.PropertyColor;
-import oldmana.md.server.card.CardRegistry;
+import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.action.*;
 import oldmana.md.server.card.collection.Deck;
 import oldmana.md.server.card.collection.DiscardPile;
@@ -65,8 +69,6 @@ public class MDServer
 	public static final String VERSION = "0.6.4 Dev";
 	
 	private List<MDMod> mods = new ArrayList<MDMod>();
-	
-	private CardRegistry cardRegistry = new CardRegistry();
 	
 	private ServerConfig config = new ServerConfig();
 	private PlayerRegistry playerRegistry = new PlayerRegistry();
@@ -93,7 +95,7 @@ public class MDServer
 	
 	private MDScheduler scheduler = new MDScheduler();
 	
-	private List<String> cmdQueue = Collections.synchronizedList(new ArrayList<String>());
+	private final List<String> cmdQueue = Collections.synchronizedList(new ArrayList<String>());
 	
 	private boolean shutdown = false;
 	
@@ -119,30 +121,7 @@ public class MDServer
 		
 		System.out.println("Starting Monopoly Deal Server Version " + VERSION);
 		
-		
-		
-		
-		List<GameRule> grs = new ArrayList<GameRule>();
-		
-		GameRule gr1 = new GameRule("Turns", "Turn Count", "The amount of turns", 3);
-		GameRule gr2 = new GameRule("Win-Condition", "Win Condition", "What causes someone to win");
-		gr2.addRule(new GameRule("Type", "Type", "The type of win condition", "Monopoly"));
-		gr2.addRule(new GameRule("Value", "Value", "The amount", 3));
-		grs.add(gr1);
-		grs.add(gr2.clone());
-		
-		JSONObject json = new JSONObject();
-		for (GameRule rule : grs)
-		{
-			json.put(rule.getName(), rule.toJSON());
-		}
-		System.out.println(json.toString());
-		
-		
-		
-		
-		
-		
+		registerDefaultCards();
 		
 		voidCollection = new VoidCollection();
 		decks.put("vanilla", new VanillaDeck());
@@ -167,35 +146,29 @@ public class MDServer
 		gameState.setActionState(new ActionStateDoNothing());
 		cmdHandler.registerDefaultCommands();
 		playerRegistry.loadPlayers();
-		registerDefaultActionCards();
 		
 		// Keep connected checker
-		scheduler.scheduleTask(new MDTask(20, true)
+		scheduler.scheduleTask(20, true, task ->
 		{
-			@Override
-			public void run()
+			for (Player player : getPlayers())
 			{
-				for (Player player : getPlayers())
+				if (player.isOnline())
 				{
-					if (player.isOnline())
+					if (!player.hasSentPing() && player.getLastPing() + (20 * 20) <= tickCount)
 					{
-						if (!player.hasSentPing() && player.getLastPing() + (20 * 20) <= tickCount)
+						player.sendPacket(new PacketKeepConnected());
+						player.setSentPing(true);
+					}
+					else if (player.getLastPing() + (40 * 20) <= tickCount)
+					{
+						player.setOnline(false);
+						player.setSentPing(false);
+						if (player.getNet() != null)
 						{
-							player.sendPacket(new PacketKeepConnected());
-							player.setSentPing(true);
+							player.getNet().close();
+							player.setNet(null);
 						}
-						else if (player.getLastPing() + (40 * 20) <= tickCount)
-						{
-							player.setOnline(false);
-							player.setSentPing(false);
-							if (player.getNet() != null)
-							{
-								player.getNet().close();
-								player.setNet(null);
-							}
-							broadcastPacket(new PacketPlayerStatus(player.getID(), false));
-							System.out.println(player.getName() + " (ID: " + player.getID() + ") timed out");
-						}
+						System.out.println(player.getName() + " (ID: " + player.getID() + ") timed out");
 					}
 				}
 			}
@@ -241,15 +214,9 @@ public class MDServer
 				}
 			}
 		}.start();
-		System.out.println("Finished initialization");
-		
-		BasicAI.registerDefaultStateHandlers();
-		
-		//addPlayer(new Bot(this, "Alpha Bot"));
-		//addPlayer(new Bot(this, "Oldmana's BOB"));
 		
 		// AI ticking task
-		getScheduler().scheduleTask(new MDTask(30, true)
+		getScheduler().scheduleTask(new MDTask(50, true)
 		{
 			@Override
 			public void run()
@@ -264,10 +231,7 @@ public class MDServer
 			}
 		});
 		
-		
-		
-		
-		
+		System.out.println("Finished initialization");
 		
 		while (!shutdown)
 		{
@@ -435,50 +399,48 @@ public class MDServer
 		{
 			folder.mkdir();
 		}
+		if (!folder.isDirectory())
+		{
+			System.out.println("Failed to load decks. Non-directory file named decks in server folder?");
+			return;
+		}
 		for (File f : folder.listFiles())
 		{
 			String name = f.getName();
 			if (!f.isDirectory() && name.endsWith(".json"))
 			{
-				decks.put(f.getName().substring(0, name.length() - 5), new CustomDeck(f));
+				String deckName = f.getName().substring(0, name.length() - 5);
+				try
+				{
+					decks.put(deckName, new CustomDeck(deckName, f));
+				}
+				catch (DeckLoadFailureException e)
+				{
+					System.out.println("Failed to load deck file " + name);
+					e.printStackTrace();
+				}
 			}
 		}
 	}
 	
-	public CardRegistry getCardRegistry()
+	private void registerDefaultCards()
 	{
-		return cardRegistry;
-	}
-	
-	private void registerDefaultActionCards()
-	{
-		cardRegistry.registerActionCard(CardActionDealBreaker.class, "Deal Breaker");
-		cardRegistry.registerActionCard(CardActionPassGo.class, "Pass Go", "Go");
-		cardRegistry.registerActionCard(CardActionForcedDeal.class, "Forced Deal");
-		cardRegistry.registerActionCard(CardActionSlyDeal.class, "Sly Deal");
-		cardRegistry.registerActionCard(CardActionJustSayNo.class, "Just Say No!", "JSN");
-		cardRegistry.registerActionCard(CardActionDoubleTheRent.class, "Double The Rent!", "Double Rent");
-		cardRegistry.registerActionCard(CardActionItsMyBirthday.class, "It's My Birthday", "Birthday");
-		cardRegistry.registerActionCard(CardActionDebtCollector.class, "Debt Collector");
+		CardType.CARD = CardRegistry.registerCardType(Card.class);
+		CardType.ACTION = CardRegistry.registerCardType(CardAction.class);
+		CardType.MONEY = CardRegistry.registerCardType(CardMoney.class);
+		CardType.PROPERTY = CardRegistry.registerCardType(CardProperty.class);
+		CardRegistry.registerCardType(CardSpecial.class);
+		//CardRegistry.registerCardType(CardBuilding.class);
 		
-		// Rents
-		cardRegistry.registerActionCard(CardActionRent.class, () -> new CardActionRent(1, PropertyColor.BROWN, PropertyColor.LIGHT_BLUE), 
-				"Brown/Light Blue Rent", "B/LB Rent");
-		cardRegistry.registerActionCard(CardActionRent.class, () -> new CardActionRent(1, PropertyColor.MAGENTA, PropertyColor.ORANGE), 
-				"Magenta/Orange Rent", "M/O Rent");
-		cardRegistry.registerActionCard(CardActionRent.class, () -> new CardActionRent(1, PropertyColor.RED, PropertyColor.YELLOW), 
-				"Red/Yellow Rent", "R/Y Rent");
-		cardRegistry.registerActionCard(CardActionRent.class, () -> new CardActionRent(1, PropertyColor.GREEN, PropertyColor.DARK_BLUE), 
-				"Green/Dark Blue Rent", "G/DB Rent");
-		cardRegistry.registerActionCard(CardActionRent.class, () -> new CardActionRent(1, PropertyColor.RAILROAD, PropertyColor.UTILITY), 
-				"Railroad/Utility Rent", "RR/U Rent");
-		cardRegistry.registerActionCard(CardActionRent.class, () -> new CardActionRent(3, PropertyColor.getVanillaColors()), 
-				"10-Color Rent", "Rent");
-		cardRegistry.registerActionCard(CardActionRent.class, () -> new CardActionRent(3, PropertyColor.getAllColors()), 
-				"All-Color Rent", "All Rent");
-		
-		cardRegistry.registerActionCard(CardActionHouse.class, "House");
-		cardRegistry.registerActionCard(CardActionHotel.class, "Hotel");
+		CardType.DEAL_BREAKER = CardRegistry.registerCardType(CardActionDealBreaker.class);
+		CardType.DEBT_COLLECTOR = CardRegistry.registerCardType(CardActionDebtCollector.class);
+		CardType.DOUBLE_THE_RENT = CardRegistry.registerCardType(CardActionDoubleTheRent.class);
+		CardType.FORCED_DEAL = CardRegistry.registerCardType(CardActionForcedDeal.class);
+		CardType.ITS_MY_BIRTHDAY = CardRegistry.registerCardType(CardActionItsMyBirthday.class);
+		CardType.JUST_SAY_NO = CardRegistry.registerCardType(CardActionJustSayNo.class);
+		CardType.PASS_GO = CardRegistry.registerCardType(CardActionPassGo.class);
+		CardType.RENT = CardRegistry.registerCardType(CardActionRent.class);
+		CardType.SLY_DEAL = CardRegistry.registerCardType(CardActionSlyDeal.class);
 	}
 	
 	public CommandHandler getCommandHandler()
@@ -864,32 +826,4 @@ public class MDServer
 		}
 	}
 	
-	public static class MDSound
-	{
-		private String name;
-		private byte[] data;
-		private int hash;
-		
-		public MDSound(String name, byte[] data, int hash)
-		{
-			this.name = name;
-			this.data = data;
-			this.hash = hash;
-		}
-		
-		public String getName()
-		{
-			return name;
-		}
-		
-		public byte[] getData()
-		{
-			return data;
-		}
-		
-		public int getHash()
-		{
-			return hash;
-		}
-	}
 }

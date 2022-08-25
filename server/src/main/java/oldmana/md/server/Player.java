@@ -19,7 +19,7 @@ import oldmana.md.server.ClientButton.ButtonTag;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardProperty;
-import oldmana.md.server.card.CardProperty.PropertyColor;
+import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.collection.Bank;
 import oldmana.md.server.card.collection.Hand;
 import oldmana.md.server.card.collection.PropertySet;

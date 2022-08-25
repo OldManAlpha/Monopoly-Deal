@@ -2,21 +2,12 @@ package oldmana.md.server.card.action;
 
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;
+import oldmana.md.server.card.CardTemplate;
+import oldmana.md.server.card.type.CardType;
 import oldmana.md.server.state.ActionStateTargetPlayerMonopoly;
 
 public class CardActionDealBreaker extends CardAction
 {
-	public CardActionDealBreaker()
-	{
-		super(5, "Deal Breaker");
-		setDisplayName("DEAL", "BREAKER");
-		setFontSize(7);
-		setDisplayOffsetY(2);
-		setRevocable(false);
-		setClearsRevocableCards(true);
-		setDescription("Steal an entire full property set from another player. Cannot be used to steal partial sets.");
-	}
-	
 	@Override
 	public void playCard(Player player)
 	{
@@ -34,5 +25,20 @@ public class CardActionDealBreaker extends CardAction
 			}
 		}
 		return false;
+	}
+	
+	private static CardType<CardActionDealBreaker> createType()
+	{
+		CardType<CardActionDealBreaker> type = new CardType<CardActionDealBreaker>(CardActionDealBreaker.class, "Deal Breaker");
+		CardTemplate template = type.getDefaultTemplate();
+		template.put("value", 5);
+		template.put("name", "Deal Breaker");
+		template.putStrings("displayName", "DEAL", "BREAKER");
+		template.put("fontSize", 7);
+		template.put("displayOffsetY", 2);
+		template.putStrings("description", "Steal an entire full property set from another player. Cannot be used to steal partial sets.");
+		template.put("revocable", false);
+		template.put("clearsRevocableCards", true);
+		return type;
 	}
 }

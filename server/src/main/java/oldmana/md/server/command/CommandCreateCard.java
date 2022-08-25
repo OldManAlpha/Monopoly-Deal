@@ -7,11 +7,16 @@ import oldmana.md.server.MDScheduler.MDTask;
 import oldmana.md.server.MessageBuilder;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
-import oldmana.md.server.card.CardMoney;
+import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardProperty;
-import oldmana.md.server.card.CardProperty.PropertyColor;
-import oldmana.md.server.card.CardRegistry.RegisteredCard;
+import oldmana.md.server.card.CardRegistry;
+import oldmana.md.server.card.CardSpecial;
+import oldmana.md.server.card.CardTemplate;
+import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.action.CardActionRent;
+import oldmana.md.server.card.type.CardType;
+
+import java.util.List;
 
 public class CommandCreateCard extends Command
 {
@@ -27,20 +32,36 @@ public class CommandCreateCard extends Command
 		Card card = null;
 		if (args[0].equalsIgnoreCase("money"))
 		{
-			card = new CardMoney(Integer.parseInt(args[1]));
-			sender.sendMessage("Created money card with value " + card.getValue() + "M with ID " + card.getID(), true);
+			if (verifyInt(args[1]))
+			{
+				int value = Integer.parseInt(args[1]);
+				CardTemplate template = CardType.MONEY.getDefaultTemplate().clone();
+				template.put("value", value);
+				card = CardType.MONEY.createCard(template);
+				sender.sendMessage("Created money card with value " + card.getValue() + "M with ID " + card.getID(), true);
+			}
 		}
 		else if (args[0].equalsIgnoreCase("action"))
 		{
 			try
 			{
-				RegisteredCard rc = getServer().getCardRegistry().getRegisteredActionCardByName(args[1]);
-				if (rc == null)
+				List<CardType<?>> types = CardRegistry.getRegisteredCards();
+				for (CardType<?> type : types)
+				{
+					if (type.getPrimitive() != null)
+					{
+						Class<?> primitive = type.getPrimitive().getCardClass();
+						if ((primitive == CardAction.class || primitive == CardSpecial.class) && type.isReferringToThis(args[1]))
+						{
+							card = type.createCard();
+						}
+					}
+				}
+				if (card == null)
 				{
 					sender.sendMessage("Could not find card '" + args[1] + "'");
 					return;
 				}
-				card = rc.createCard();
 				sender.sendMessage("Created action card " + card.getName() + " with ID " + card.getID(), true);
 			}
 			catch (Exception e)
@@ -62,7 +83,7 @@ public class CommandCreateCard extends Command
 			{
 				colors[i - 2] = Byte.parseByte(args[i]);
 			}
-			card = new CardActionRent(value, PropertyColor.fromIDs(colors).toArray(new PropertyColor[colors.length]));
+			card = CardActionRent.create(value, PropertyColor.fromIDs(colors).toArray(new PropertyColor[0]));
 			sender.sendMessage("Created rent card with ID " + card.getID(), true);
 		}
 		else if (args[0].equalsIgnoreCase("property"))
@@ -80,13 +101,11 @@ public class CommandCreateCard extends Command
 			{
 				colors[i - 4] = Byte.parseByte(args[i]);
 			}
-			card = new CardProperty(PropertyColor.fromIDs(colors), value, name, base);
+			card = CardProperty.create(value, name, base, PropertyColor.fromIDs(colors).toArray(new PropertyColor[0]));
 			sender.sendMessage("Created property card with ID " + card.getID(), true);
 		}
 		if (card != null)
 		{
-			getServer().broadcastPacket(card.getCardDataPacket());
-			getServer().getVoidCollection().addCard(card);
 			if (sender instanceof Player)
 			{
 				Player player = (Player) sender;

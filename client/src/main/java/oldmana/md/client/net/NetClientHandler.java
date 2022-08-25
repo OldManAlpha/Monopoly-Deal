@@ -179,29 +179,37 @@ public class NetClientHandler extends NetHandler
 	public void handleCardData(PacketCardData packet)
 	{
 		Card card = null;
-		if (packet.type == CardType.ACTION.getID())
+		if ((card = Card.getCard(packet.id)) != null)
 		{
-			card = new CardAction(packet.id, packet.value, packet.name);
-		}
-		else if (packet.type == CardType.JUST_SAY_NO.getID())
-		{
-			card = new CardActionActionCounter(packet.id, packet.value, packet.name);
-		}
-		else if (packet.type == CardType.DOUBLE_THE_RENT.getID())
-		{
-			card = new CardActionDoubleTheRent(packet.id, packet.value, packet.name);
-		}
-		else if (packet.type == CardType.SPECIAL.getID())
-		{
-			card = new CardSpecial(packet.id, packet.value, packet.name);
-		}
-		else if (packet.type == CardType.RENT_COUNTER.getID())
-		{
-			card = new CardActionRentCounter(packet.id, packet.value, packet.name);
+			card.setValue(packet.value);
+			card.setName(packet.name);
 		}
 		else
 		{
-			card = new CardMoney(packet.id, packet.value);
+			if (packet.type == CardType.ACTION.getID())
+			{
+				card = new CardAction(packet.id, packet.value, packet.name);
+			}
+			else if (packet.type == CardType.JUST_SAY_NO.getID())
+			{
+				card = new CardActionActionCounter(packet.id, packet.value, packet.name);
+			}
+			else if (packet.type == CardType.DOUBLE_THE_RENT.getID())
+			{
+				card = new CardActionDoubleTheRent(packet.id, packet.value, packet.name);
+			}
+			else if (packet.type == CardType.SPECIAL.getID())
+			{
+				card = new CardSpecial(packet.id, packet.value, packet.name);
+			}
+			else if (packet.type == CardType.RENT_COUNTER.getID())
+			{
+				card = new CardActionRentCounter(packet.id, packet.value, packet.name);
+			}
+			else
+			{
+				card = new CardMoney(packet.id, packet.value);
+			}
 		}
 		card.setDisplayName(packet.displayName);
 		card.setFontSize(packet.fontSize);

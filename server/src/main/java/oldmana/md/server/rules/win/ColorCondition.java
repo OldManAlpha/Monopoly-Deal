@@ -5,7 +5,7 @@ import java.util.List;
 
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardProperty;
-import oldmana.md.server.card.CardProperty.PropertyColor;
+import oldmana.md.server.card.PropertyColor;
 
 public class ColorCondition extends WinCondition
 {

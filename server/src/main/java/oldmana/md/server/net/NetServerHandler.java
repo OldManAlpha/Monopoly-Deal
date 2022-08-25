@@ -23,7 +23,7 @@ import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardBuilding;
 import oldmana.md.server.card.CardProperty;
-import oldmana.md.server.card.CardProperty.PropertyColor;
+import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.CardSpecial;
 import oldmana.md.server.card.action.CardActionDoubleTheRent;
 import oldmana.md.server.card.action.CardActionRent;
@@ -422,7 +422,7 @@ public class NetServerHandler extends NetHandler
 		if (state instanceof ActionStateTargetPlayerMonopoly)
 		{
 			player.clearRevocableCards();
-			server.getGameState().setActionState(new ActionStateStealMonopoly(player, (PropertySet) CardCollection.getCardCollection(packet.id)));
+			((ActionStateTargetPlayerMonopoly) state).onSetSelected((PropertySet) CardCollection.getCardCollection(packet.id));
 		}
 		else
 		{

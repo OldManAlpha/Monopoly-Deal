@@ -1,17 +1,18 @@
 package oldmana.md.server.ai;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
-import java.util.Set;
 
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
+import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardProperty;
-import oldmana.md.server.card.CardProperty.PropertyColor;
+import oldmana.md.server.card.PropertyColor;
 
 public abstract class PlayerAI
 {
@@ -42,6 +43,87 @@ public abstract class PlayerAI
 	public List<Map<PropertyColor, Integer>> getPossibleCombos(Player player)
 	{
 		return getPossibleCombos(player.getAllPropertyCards());
+	}
+	
+	/**
+	 * A terrible, lazy method to get the possible combos given a list of cards. Randomly generates 100 combos,
+	 * perhaps missing possible combos.
+	 */
+	public List<Map<PropertyColor, List<CardProperty>>> getPossibleCombosNew(List<CardProperty> cards)
+	{
+		List<CardProperty> wilds = new ArrayList<CardProperty>();
+		Map<PropertyColor, List<CardProperty>> solidProps = new HashMap<PropertyColor, List<CardProperty>>();
+		List<PropertyColor> validColors = new ArrayList<PropertyColor>();
+		for (CardProperty card : cards)
+		{
+			if (card.isSingleColor())
+			{
+				PropertyColor color = card.getColor();
+				solidProps.computeIfAbsent(color, key -> new ArrayList<CardProperty>());
+				solidProps.get(color).add(card);
+			}
+			else
+			{
+				wilds.add(card);
+			}
+			// Add colors as valid if the card is a base
+			if (card.isBase())
+			{
+				for (PropertyColor color : card.getColors())
+				{
+					if (!validColors.contains(color))
+					{
+						validColors.add(color);
+					}
+				}
+			}
+		}
+		List<Map<PropertyColor, List<CardProperty>>> possibleCombos = new ArrayList<Map<PropertyColor, List<CardProperty>>>();
+		
+		if (validColors.isEmpty())
+		{
+			return possibleCombos;
+		}
+		
+		Random r = getRandom();
+		for (int iter = 0 ; iter < 100 ; iter++)
+		{
+			Map<PropertyColor, List<CardProperty>> combo = new HashMap<PropertyColor, List<CardProperty>>();
+			solidProps.forEach((color, props) -> combo.put(color, new ArrayList<CardProperty>(props)));
+			for (PropertyColor color : validColors)
+			{
+				combo.computeIfAbsent(color, key -> new ArrayList<CardProperty>());
+			}
+			
+			List<CardProperty> shuffledWilds = new ArrayList<CardProperty>(wilds);
+			Collections.shuffle(shuffledWilds);
+			
+			for (CardProperty wild : shuffledWilds)
+			{
+				List<PropertyColor> possibleColors = new ArrayList<PropertyColor>();
+				for (PropertyColor color : wild.getColors())
+				{
+					if (combo.containsKey(color))
+					{
+						List<CardProperty> colorProps = combo.get(color);
+						if (colorProps.size() < color.getMaxProperties() && (wild.isBase() || !colorProps.isEmpty()))
+						{
+							possibleColors.add(color);
+						}
+					}
+				}
+				if (!possibleColors.isEmpty())
+				{
+					combo.get(possibleColors.get(r.nextInt(possibleColors.size()))).add(wild);
+				}
+			}
+			for (Map<PropertyColor, List<CardProperty>> prevCombo : possibleCombos)
+			{
+				// TODO: Don't add combo if it's exactly the same as an already created one
+			}
+			possibleCombos.add(combo);
+		}
+		return possibleCombos;
 	}
 	
 	public List<Map<PropertyColor, Integer>> getPossibleCombos(List<CardProperty> cards)

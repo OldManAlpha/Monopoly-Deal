@@ -6,29 +6,32 @@ import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardActionRentData;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;
-import oldmana.md.server.card.CardProperty.PropertyColor;
+import oldmana.md.server.card.PropertyColor;
+import oldmana.md.server.card.CardTemplate;
+import oldmana.md.server.card.type.CardType;
 import oldmana.md.server.state.ActionStateRent;
 import oldmana.md.server.state.ActionStateTargetRent;
 
 public class CardActionRent extends CardAction
 {
+	public static CardTemplate RAINBOW;
+	public static CardTemplate BROWN_LIGHT_BLUE;
+	public static CardTemplate MAGENTA_ORANGE;
+	public static CardTemplate RED_YELLOW;
+	public static CardTemplate GREEN_DARK_BLUE;
+	public static CardTemplate RAILROAD_UTILITY;
+	
+	
 	private PropertyColor[] colors;
 	
-	public CardActionRent(int value, PropertyColor... colors)
-	{
-		super(value, getName(colors));
-		
-		this.colors = colors;
-		
-		setRevocable(false);
-		setClearsRevocableCards(true);
-		setDescription("Charge rent to all players on the properties that match the colors on the card. "
-				+ "Only properties put down on your table are valid to rent on. Highest rent possible is automatically calculated.");
-	}
+	public CardActionRent() {}
 	
-	public CardActionRent(int value, List<PropertyColor> colors)
+	@Override
+	public void applyTemplate(CardTemplate template)
 	{
-		this(value, colors.toArray(new PropertyColor[0]));
+		super.applyTemplate(template);
+		this.colors = template.getColorArray("colors");
+		setName(getName(colors));
 	}
 	
 	public PropertyColor[] getRentColors()
@@ -96,5 +99,63 @@ public class CardActionRent extends CardAction
 		str = str.substring(0, str.length() - 1);
 		str += ") (" + getValue() + "M)";
 		return str;
+	}
+	
+	/**
+	 * Shortcut utility for creating rent cards easily.
+	 */
+	public static CardActionRent create(int value, PropertyColor... colors)
+	{
+		return CardType.RENT.createCard(createTemplate(value, colors));
+	}
+	
+	public static CardTemplate createTemplate(int value, PropertyColor... colors)
+	{
+		CardTemplate template = CardType.PROPERTY.getDefaultTemplate().clone();
+		template.put("value", value);
+		template.putColors("colors", colors);
+		return template;
+	}
+	
+	private static CardType<CardActionRent> createType()
+	{
+		CardType<CardActionRent> type = new CardType<CardActionRent>(CardActionRent.class, "Rent");
+		type.addExemptReduction("colors");
+		type.addExemptReduction("value");
+		CardTemplate dt = type.getDefaultTemplate();
+		dt.put("value", 3);
+		dt.put("name", "Rent");
+		dt.putStrings("displayName", "RENT");
+		dt.putStrings("description", "Charge rent to all players on the properties that match the colors on the card. "
+				+ "Only properties put down on your table are valid to rent on. Highest rent possible is automatically calculated.");
+		dt.putColors("colors", PropertyColor.getVanillaColors());
+		dt.put("revocable", false);
+		dt.put("clearsRevocableCards", true);
+		RAINBOW = dt;
+		
+		CardTemplate oneMilValue = new CardTemplate(dt);
+		oneMilValue.put("value", 1);
+		
+		BROWN_LIGHT_BLUE = new CardTemplate(oneMilValue);
+		BROWN_LIGHT_BLUE.putColors("colors", PropertyColor.BROWN, PropertyColor.LIGHT_BLUE);
+		type.addTemplate(BROWN_LIGHT_BLUE, "Brown/Light Blue Rent", "B/LB Rent");
+		
+		MAGENTA_ORANGE = new CardTemplate(oneMilValue);
+		MAGENTA_ORANGE.putColors("colors", PropertyColor.MAGENTA, PropertyColor.ORANGE);
+		type.addTemplate(MAGENTA_ORANGE, "Magenta/Orange Rent", "M/O Rent");
+		
+		RED_YELLOW = new CardTemplate(oneMilValue);
+		RED_YELLOW.putColors("colors", PropertyColor.RED, PropertyColor.YELLOW);
+		type.addTemplate(RED_YELLOW, "Red/Yellow Rent", "R/Y Rent");
+		
+		GREEN_DARK_BLUE = new CardTemplate(oneMilValue);
+		GREEN_DARK_BLUE.putColors("colors", PropertyColor.GREEN, PropertyColor.DARK_BLUE);
+		type.addTemplate(GREEN_DARK_BLUE, "Green/Dark Blue Rent", "G/DB Rent");
+		
+		RAILROAD_UTILITY = new CardTemplate(oneMilValue);
+		RAILROAD_UTILITY.putColors("colors", PropertyColor.RAILROAD, PropertyColor.UTILITY);
+		type.addTemplate(RAILROAD_UTILITY, "Railroad/Utility Rent", "R/U Rent");
+		
+		return type;
 	}
 }

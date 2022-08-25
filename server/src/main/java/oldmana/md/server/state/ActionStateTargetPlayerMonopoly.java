@@ -4,6 +4,8 @@ import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
 import oldmana.md.server.Player;
+import oldmana.md.server.card.collection.CardCollection;
+import oldmana.md.server.card.collection.PropertySet;
 
 public class ActionStateTargetPlayerMonopoly extends ActionState
 {
@@ -11,6 +13,11 @@ public class ActionStateTargetPlayerMonopoly extends ActionState
 	{
 		super(player);
 		getServer().getGameState().setStatus(player.getName() + " used Deal Breaker");
+	}
+	
+	public void onSetSelected(PropertySet set)
+	{
+		getGameState().setActionState(new ActionStateStealMonopoly(getActionOwner(), set));
 	}
 	
 	@Override

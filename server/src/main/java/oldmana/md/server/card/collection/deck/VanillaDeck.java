@@ -2,137 +2,137 @@ package oldmana.md.server.card.collection.deck;
 
 import oldmana.md.server.card.CardMoney;
 import oldmana.md.server.card.CardProperty;
-import oldmana.md.server.card.CardProperty.PropertyColor;
+import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.action.*;
-import oldmana.md.server.card.property.CardPropertyRainbowWildCard;
+import oldmana.md.server.card.type.CardType;
 
 public class VanillaDeck extends DeckStack
 {
 	@Override
 	public void createDeck()
 	{
-		addCard(new CardProperty(PropertyColor.BROWN, 1, "Baltic Avenue"));
-		addCard(new CardProperty(PropertyColor.BROWN, 1, "Mediterranean Avenue"));
-		addCard(new CardProperty(PropertyColor.LIGHT_BLUE, 1, "Connecticut Avenue"));
-		addCard(new CardProperty(PropertyColor.LIGHT_BLUE, 1, "Oriental Avenue"));
-		addCard(new CardProperty(PropertyColor.LIGHT_BLUE, 1, "Vermont Avenue"));
-		addCard(new CardProperty(PropertyColor.MAGENTA, 2, "States Avenue"));
-		addCard(new CardProperty(PropertyColor.MAGENTA, 2, "St. Charles Place"));
-		addCard(new CardProperty(PropertyColor.MAGENTA, 2, "Virginia Avenue"));
-		addCard(new CardProperty(PropertyColor.ORANGE, 2, "New York Avenue"));
-		addCard(new CardProperty(PropertyColor.ORANGE, 2, "St. James Place"));
-		addCard(new CardProperty(PropertyColor.ORANGE, 2, "Tennessee Avenue"));
-		addCard(new CardProperty(PropertyColor.RED, 3, "Illinois Avenue"));
-		addCard(new CardProperty(PropertyColor.RED, 3, "Indiana Avenue"));
-		addCard(new CardProperty(PropertyColor.RED, 3, "Kentucky Avenue"));
-		addCard(new CardProperty(PropertyColor.YELLOW, 3, "Marvin Gardens"));
-		addCard(new CardProperty(PropertyColor.YELLOW, 3, "Ventnor Avenue"));
-		addCard(new CardProperty(PropertyColor.YELLOW, 3, "Atlantic Avenue"));
-		addCard(new CardProperty(PropertyColor.GREEN, 4, "Pacific Avenue"));
-		addCard(new CardProperty(PropertyColor.GREEN, 4, "North Carolina Avenue"));
-		addCard(new CardProperty(PropertyColor.GREEN, 4, "Pennsylyvania Avenue"));
-		addCard(new CardProperty(PropertyColor.DARK_BLUE, 4, "Park Place"));
-		addCard(new CardProperty(PropertyColor.DARK_BLUE, 4, "Boardwalk"));
-		addCard(new CardProperty(PropertyColor.RAILROAD, 2, "Short Line"));
-		addCard(new CardProperty(PropertyColor.RAILROAD, 2, "Reading Railroad"));
-		addCard(new CardProperty(PropertyColor.RAILROAD, 2, "B. & O. Railroad"));
-		addCard(new CardProperty(PropertyColor.RAILROAD, 2, "Pennsylvania Railroad"));
-		addCard(new CardProperty(PropertyColor.UTILITY, 2, "Electric Company"));
-		addCard(new CardProperty(PropertyColor.UTILITY, 2, "Water Works"));
+		addCard(CardProperty.create(1, "Baltic Avenue", PropertyColor.BROWN));
+		addCard(CardProperty.create(1, "Mediterranean Avenue", PropertyColor.BROWN));
+		addCard(CardProperty.create(1, "Connecticut Avenue", PropertyColor.LIGHT_BLUE));
+		addCard(CardProperty.create(1, "Oriental Avenue", PropertyColor.LIGHT_BLUE));
+		addCard(CardProperty.create(1, "Vermont Avenue", PropertyColor.LIGHT_BLUE));
+		addCard(CardProperty.create(2, "States Avenue", PropertyColor.MAGENTA));
+		addCard(CardProperty.create(2, "St. Charles Place", PropertyColor.MAGENTA));
+		addCard(CardProperty.create(2, "Virginia Avenue", PropertyColor.MAGENTA));
+		addCard(CardProperty.create(2, "New York Avenue", PropertyColor.ORANGE));
+		addCard(CardProperty.create(2, "St. James Place", PropertyColor.ORANGE));
+		addCard(CardProperty.create(2, "Tennessee Avenue", PropertyColor.ORANGE));
+		addCard(CardProperty.create(3, "Illinois Avenue", PropertyColor.RED));
+		addCard(CardProperty.create(3, "Indiana Avenue", PropertyColor.RED));
+		addCard(CardProperty.create(3, "Kentucky Avenue", PropertyColor.RED));
+		addCard(CardProperty.create(3, "Marvin Gardens", PropertyColor.YELLOW));
+		addCard(CardProperty.create(3, "Ventnor Avenue", PropertyColor.YELLOW));
+		addCard(CardProperty.create(3, "Atlantic Avenue", PropertyColor.YELLOW));
+		addCard(CardProperty.create(4, "Pacific Avenue", PropertyColor.GREEN));
+		addCard(CardProperty.create(4, "North Carolina Avenue", PropertyColor.GREEN));
+		addCard(CardProperty.create(4, "Pennsylvania Avenue", PropertyColor.GREEN));
+		addCard(CardProperty.create(4, "Park Place", PropertyColor.DARK_BLUE));
+		addCard(CardProperty.create(4, "Boardwalk", PropertyColor.DARK_BLUE));
+		addCard(CardProperty.create(2, "Short Line", PropertyColor.RAILROAD));
+		addCard(CardProperty.create(2, "Reading Railroad", PropertyColor.RAILROAD));
+		addCard(CardProperty.create(2, "B. & O. Railroad", PropertyColor.RAILROAD));
+		addCard(CardProperty.create(2, "Pennsylvania Railroad", PropertyColor.RAILROAD));
+		addCard(CardProperty.create(2, "Electric Company", PropertyColor.UTILITY));
+		addCard(CardProperty.create(2, "Water Works", PropertyColor.UTILITY));
 		
-		addCard(new CardProperty(new PropertyColor[] {PropertyColor.BROWN, PropertyColor.LIGHT_BLUE}, 1, "Property Wild Card", true));
+		addCard(CardProperty.create(1, "Property Wild Card", PropertyColor.BROWN, PropertyColor.LIGHT_BLUE));
 		for (int i = 0 ; i < 2 ; i++)
 		{
-			addCard(new CardProperty(new PropertyColor[] {PropertyColor.MAGENTA, PropertyColor.ORANGE}, 2, "Property Wild Card", true));
-			addCard(new CardProperty(new PropertyColor[] {PropertyColor.RED, PropertyColor.YELLOW}, 3, "Property Wild Card", true));
+			addCard(CardProperty.create(2, "Property Wild Card", PropertyColor.MAGENTA, PropertyColor.ORANGE));
+			addCard(CardProperty.create(3, "Property Wild Card", PropertyColor.RED, PropertyColor.YELLOW));
 		}
-		addCard(new CardProperty(new PropertyColor[] {PropertyColor.GREEN, PropertyColor.DARK_BLUE}, 4, "Property Wild Card", true));
-		addCard(new CardProperty(new PropertyColor[] {PropertyColor.LIGHT_BLUE, PropertyColor.RAILROAD}, 4, "Property Wild Card", true));
-		addCard(new CardProperty(new PropertyColor[] {PropertyColor.GREEN, PropertyColor.RAILROAD}, 4, "Property Wild Card", true));
-		addCard(new CardProperty(new PropertyColor[] {PropertyColor.RAILROAD, PropertyColor.UTILITY}, 2, "Property Wild Card", true));
+		addCard(CardProperty.create(4, "Property Wild Card", PropertyColor.GREEN, PropertyColor.DARK_BLUE));
+		addCard(CardProperty.create(4, "Property Wild Card", PropertyColor.LIGHT_BLUE, PropertyColor.RAILROAD));
+		addCard(CardProperty.create(4, "Property Wild Card", PropertyColor.GREEN, PropertyColor.RAILROAD));
+		addCard(CardProperty.create(2, "Property Wild Card", PropertyColor.RAILROAD, PropertyColor.UTILITY));
 		for (int i = 0 ; i < 2 ; i++)
 		{
-			addCard(new CardPropertyRainbowWildCard());
+			addCard(CardProperty.RAINBOW_WILD.createCard());
 		}
 		
 		for (int i = 0 ; i < 2 ; i++)
 		{
-			addCard(new CardActionDealBreaker());
+			addCard(CardType.DEAL_BREAKER.createCard());
 		}
 		for (int i = 0 ; i < 3 ; i++)
 		{
-			addCard(new CardActionForcedDeal());
+			addCard(CardType.FORCED_DEAL.createCard());
 		}
 		for (int i = 0 ; i < 3 ; i++)
 		{
-			addCard(new CardActionSlyDeal());
+			addCard(CardType.SLY_DEAL.createCard());
 		}
 		for (int i = 0 ; i < 3 ; i++)
 		{
-			addCard(new CardActionJustSayNo());
+			addCard(CardType.JUST_SAY_NO.createCard());
 		}
 		for (int i = 0 ; i < 3 ; i++)
 		{
-			addCard(new CardActionDebtCollector());
+			addCard(CardType.DEBT_COLLECTOR.createCard());
 		}
 		for (int i = 0 ; i < 3 ; i++)
 		{
-			addCard(new CardActionItsMyBirthday());
+			addCard(CardType.ITS_MY_BIRTHDAY.createCard());
 		}
 		for (int i = 0 ; i < 2 ; i++)
 		{
-			addCard(new CardActionDoubleTheRent());
+			addCard(CardType.DOUBLE_THE_RENT.createCard());
 		}
 		for (int i = 0 ; i < 10 ; i++)
 		{
-			addCard(new CardActionPassGo());
+			addCard(CardType.PASS_GO.createCard());
 		}
 		
 		for (int i = 0 ; i < 2 ; i++)
 		{
-			addCard(new CardActionRent(1, PropertyColor.TIER_1));
+			addCard(CardActionRent.BROWN_LIGHT_BLUE.createCard());
 		}
 		for (int i = 0 ; i < 2 ; i++)
 		{
-			addCard(new CardActionRent(1, PropertyColor.TIER_2));
+			addCard(CardActionRent.MAGENTA_ORANGE.createCard());
 		}
 		for (int i = 0 ; i < 2 ; i++)
 		{
-			addCard(new CardActionRent(1, PropertyColor.TIER_3));
+			addCard(CardActionRent.RED_YELLOW.createCard());
 		}
 		for (int i = 0 ; i < 2 ; i++)
 		{
-			addCard(new CardActionRent(1, PropertyColor.TIER_4));
+			addCard(CardActionRent.GREEN_DARK_BLUE.createCard());
 		}
 		for (int i = 0 ; i < 2 ; i++)
 		{
-			addCard(new CardActionRent(1, PropertyColor.TIER_OTHER));
+			addCard(CardActionRent.RAILROAD_UTILITY.createCard());
 		}
 		for (int i = 0 ; i < 3 ; i++)
 		{
-			addCard(new CardActionRent(3, PropertyColor.getAllColors()));
+			addCard(CardActionRent.RAINBOW.createCard());
 		}
 		
 		for (int i = 0 ; i < 6 ; i++)
 		{
-			addCard(new CardMoney(1));
+			addCard(CardMoney.ONE_MIL.createCard());
 		}
 		for (int i = 0 ; i < 5 ; i++)
 		{
-			addCard(new CardMoney(2));
+			addCard(CardMoney.TWO_MIL.createCard());
 		}
 		for (int i = 0 ; i < 3 + 3 ; i++) // +3 to compensate for houses
 		{
-			addCard(new CardMoney(3));
+			addCard(CardMoney.THREE_MIL.createCard());
 		}
 		for (int i = 0 ; i < 3 + 2 ; i++) // +2 to compensate for hotels
 		{
-			addCard(new CardMoney(4));
+			addCard(CardMoney.FOUR_MIL.createCard());
 		}
 		for (int i = 0 ; i < 2 ; i++)
 		{
-			addCard(new CardMoney(5));
+			addCard(CardMoney.FIVE_MIL.createCard());
 		}
-		addCard(new CardMoney(10));
+		addCard(CardMoney.TEN_MIL.createCard());
 	}
 }

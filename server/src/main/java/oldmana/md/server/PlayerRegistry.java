@@ -79,9 +79,26 @@ public class PlayerRegistry
 		return null;
 	}
 	
+	public RegisteredPlayer getRegisteredPlayerByName(String name)
+	{
+		for (RegisteredPlayer rp : players)
+		{
+			if (rp.name.equalsIgnoreCase(name))
+			{
+				return rp;
+			}
+		}
+		return null;
+	}
+	
 	public boolean isUIDRegistered(int uid)
 	{
 		return getRegisteredPlayerByUID(uid) != null;
+	}
+	
+	public boolean isNameRegistered(String name)
+	{
+		return getRegisteredPlayerByName(name) != null;
 	}
 	
 	public String getNameOf(int uid)

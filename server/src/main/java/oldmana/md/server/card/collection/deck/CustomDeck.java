@@ -2,13 +2,11 @@ package oldmana.md.server.card.collection.deck;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -16,72 +14,78 @@ import oldmana.md.server.card.Card;
 
 public class CustomDeck extends DeckStack
 {
+	private static int MIN_VERSION = 1;
+	private static int VERSION = 1;
+	
 	private String name;
 	private File file;
+	
+	public CustomDeck(String name, DeckStack stack)
+	{
+		this(name, stack.getCards());
+	}
+	
+	public CustomDeck(String name, List<Card> cards)
+	{
+		this.name = name;
+		for (Card card : cards)
+		{
+			addCard(card.getTemplate().createCard());
+		}
+	}
 	
 	public CustomDeck(String name)
 	{
 		this.name = name;
 	}
 	
-	public CustomDeck(File f)
+	public CustomDeck(String name, File f)
 	{
+		this.name = name;
 		file = f;
+		createDeck();
 	}
 	
 	public void readDeck(File f)
 	{
 		try
 		{
-			JSONArray arr = new JSONArray(new JSONTokener(new FileInputStream(f)));
-			for (Object o1 : arr.toList())
+			JSONObject object = new JSONObject(new JSONTokener(new FileInputStream(f)));
+			int version = object.getInt("version");
+			if (version < MIN_VERSION)
 			{
-				if (o1 instanceof JSONObject)
-				{
-					JSONObject obj = (JSONObject) o1;
-					String className = obj.getString("Class");
-					addCard((Card) Class.forName(className).newInstance());
-					
-					/*
-					for (Object o2 : ((JSONArray) o1).toList())
-					{
-						if (o2 instanceof JSONObject)
-						{
-							JSONObject obj = (JSONObject) o2;
-							if (obj.g)
-						}
-					}*/
-				}
+				throw new DeckLoadFailureException("Deck format version(" + version + ") is not supported. Minimum required is " +
+						MIN_VERSION);
 			}
+			if (version > VERSION)
+			{
+				System.out.println("Warning: Loading deck from a newer version of Monopoly Deal.");
+			}
+			
+			JSONArray array = object.getJSONArray("cards");
+			DeckSerializer.deserialize(array).forEach((template, amount) ->
+			{
+				for (int i = 0 ; i < amount ; i++)
+				{
+					addCard(template.createCard());
+				}
+			});
 		}
 		catch (Exception e)
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new DeckLoadFailureException("Failed to load deck");
 		}
 	}
 	
-	public void writeDeck(File f)
+	public void writeDeck(File f) throws IOException
 	{
-		JSONArray array = new JSONArray();
-		for (Card card : getCards())
-		{
-			//JSONObject obj = new JSONObject(card.toJSONString());
-			//array.put(obj);
-		}
-		try
-		{
-			JSONObject obj;
-			System.out.println(array.toString());
-			FileWriter w = new FileWriter(file == null ? new File("decks" + File.separator + name + ".json") : file);
-			array.write(w, 2, 0);
-			w.close();
-		}
-		catch (Exception e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		JSONArray array = DeckSerializer.serialize(this);
+		JSONObject obj = new JSONObject();
+		obj.put("version", VERSION);
+		obj.put("cards", array);
+		FileWriter w = new FileWriter(file == null ? new File("decks" + File.separator + name + ".json") : file);
+		obj.write(w, 2, 0);
+		w.close();
 	}
 	
 	@Override
@@ -90,6 +94,14 @@ public class CustomDeck extends DeckStack
 		if (file != null)
 		{
 			readDeck(file);
+		}
+	}
+	
+	public static class DeckLoadFailureException extends RuntimeException
+	{
+		public DeckLoadFailureException(String msg)
+		{
+			super(msg);
 		}
 	}
 }

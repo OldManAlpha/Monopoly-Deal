@@ -1,6 +1,5 @@
 package oldmana.md.server.state;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 

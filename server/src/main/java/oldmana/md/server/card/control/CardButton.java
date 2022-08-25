@@ -1,8 +1,14 @@
 package oldmana.md.server.card.control;
 
+import oldmana.md.server.card.control.condition.ButtonCondition;
+
+import java.util.List;
+
 public class CardButton
 {
 	private String text;
+	
+	private List<ButtonCondition> conditions;
 	
 	public CardButton(String text)
 	{
@@ -12,6 +18,11 @@ public class CardButton
 	public String getText()
 	{
 		return text;
+	}
+	
+	public void addCondition(ButtonCondition condition)
+	{
+		conditions.add(condition);
 	}
 	
 	public static enum CardButtonType

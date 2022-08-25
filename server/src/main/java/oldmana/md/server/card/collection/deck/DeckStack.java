@@ -19,7 +19,6 @@ public abstract class DeckStack
 	
 	public void addCard(Card card)
 	{
-		getServer().getVoidCollection().addCard(card);
 		cards.add(card);
 	}
 	
@@ -36,14 +35,6 @@ public abstract class DeckStack
 	public List<Card> getCards()
 	{
 		return cards;
-	}
-	
-	public void broadcastCardPackets()
-	{
-		for (Card card : cards)
-		{
-			getServer().broadcastPacket(card.getCardDataPacket());
-		}
 	}
 	
 	public MDServer getServer()

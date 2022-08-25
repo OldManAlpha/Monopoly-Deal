@@ -10,7 +10,7 @@ public class CardBuilding extends Card
 	
 	public CardBuilding(int value, String name, int tier, int rentAddition)
 	{
-		super(value, name);
+		//super(value, name);
 		this.tier = tier;
 		this.rentAddition = rentAddition;
 		setRevocable(true);
@@ -28,9 +28,9 @@ public class CardBuilding extends Card
 	}
 	
 	@Override
-	public CardType getType()
+	public CardTypeLegacy getTypeLegacy()
 	{
-		return CardType.BUILDING;
+		return CardTypeLegacy.BUILDING;
 	}
 	
 	@Override

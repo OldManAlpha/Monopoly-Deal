@@ -13,6 +13,7 @@ import oldmana.md.net.packet.server.PacketCardDescription;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.collection.CardCollection;
+import oldmana.md.server.card.type.CardType;
 
 public class Card
 {
@@ -20,12 +21,13 @@ public class Card
 	
 	private static int nextID;
 	
-	private static CardDescription defaultDescription = new CardDescription("Missing card description");
-	
 	
 	private int id = -1;
 	
 	private CardCollection collection;
+	
+	private CardType<?> type;
+	private CardTemplate template;
 	
 	private int value;
 	private String name;
@@ -33,22 +35,33 @@ public class Card
 	private String[] displayName;
 	private int fontSize = 8;
 	private int displayOffsetY = 0;
-	private CardDescription description = defaultDescription;
+	private CardDescription description;
 	
 	private boolean revocable = true;
 	private boolean clearsRevocableCards = false;
 	
-	public Card() {}
-	
-	public Card(int value, String name)
+	public Card()
 	{
 		id = nextID++;
 		registerCard(this);
-		
-		this.value = value;
-		this.name = name;
-		
-		displayName = new String[] {name.toUpperCase()};
+	}
+	
+	public void applyTemplate(CardTemplate template)
+	{
+		this.template = template.clone();
+		value = template.getInt("value");
+		name = template.getString("name");
+		displayName = template.getStringArray("displayName");
+		fontSize = template.getInt("fontSize");
+		displayOffsetY = template.getInt("displayOffsetY");
+		description = CardDescription.getDescription(template.getStringArray("description"));
+		revocable = template.getBoolean("revocable");
+		clearsRevocableCards = template.getBoolean("clearsRevocableCards");
+	}
+	
+	public CardTemplate getTemplate()
+	{
+		return template;
 	}
 	
 	public void registerCard()
@@ -161,10 +174,6 @@ public class Card
 		return displayOffsetY;
 	}
 	
-	/**Might be removed in the future in favor of setDescription(CardDescription)
-	 * 
-	 * @param description
-	 */
 	public void setDescription(String... description)
 	{
 		CardDescription desc = CardDescription.getDescriptionByText(description);
@@ -207,16 +216,26 @@ public class Card
 	 * Called right before a player discards this card.
 	 * 
 	 * @param player - The player discarding this card
-	 * @return Whether or not this card should be discarded
+	 * @return Whether this card should be discarded
 	 */
 	public boolean onDiscard(Player player)
 	{
 		return true;
 	}
 	
-	public CardType getType()
+	public CardType<?> getType()
 	{
-		return CardType.MONEY;
+		return type;
+	}
+	
+	public void setType(CardType<?> type)
+	{
+		this.type = type;
+	}
+	
+	public CardTypeLegacy getTypeLegacy()
+	{
+		return CardTypeLegacy.MONEY;
 	}
 	
 	protected MDServer getServer()
@@ -226,17 +245,32 @@ public class Card
 	
 	public Packet getCardDataPacket()
 	{
-		return new PacketCardData(id, name, value, getType().getID(), revocable, clearsRevocableCards, displayName, (byte) fontSize, 
+		return new PacketCardData(id, name, value, getTypeLegacy().getID(), revocable, clearsRevocableCards, displayName, (byte) fontSize,
 				(byte) displayOffsetY, description.getID());
 	}
 	
-	public static enum CardType
+	@Override
+	public String toString()
+	{
+		return getName() + " (" + getValue() + "M)";
+	}
+	
+	
+	private static CardType<Card> createType()
+	{
+		CardType<Card> type = new CardType<Card>(Card.class, "Card", false);
+		type.setDefaultTemplate(new CardTemplate());
+		return type;
+	}
+	
+	
+	public static enum CardTypeLegacy
 	{
 		MONEY(0), PROPERTY(1), ACTION(2), ACTION_COUNTER(3), DOUBLE_THE_RENT(4), SPECIAL(5), RENT_COUNTER(6), BUILDING(7);
 		
 		private int id;
 		
-		CardType(int id)
+		CardTypeLegacy(int id)
 		{
 			this.id = id;
 		}
@@ -290,12 +324,16 @@ public class Card
 			int hash = Arrays.hashCode(text);
 			return hashMap.get(hash);
 		}
-	}
-	
-	@Override
-	public String toString()
-	{
-		return getName() + " (" + getValue() + "M)";
+		
+		public static CardDescription getDescription(String... text)
+		{
+			CardDescription desc = getDescriptionByText(text);
+			if (desc == null)
+			{
+				desc = new CardDescription(text);
+			}
+			return desc;
+		}
 	}
 	
 	

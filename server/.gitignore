@@ -36,6 +36,7 @@ build/
 
 ### Monopoly Deal ###
 /mods/
+/decks/
 players.dat
 config.txt
-server/src/oldmana/md/server/command/CommandTest.java
+/src/main/java/oldmana/md/server/command/CommandTest.java

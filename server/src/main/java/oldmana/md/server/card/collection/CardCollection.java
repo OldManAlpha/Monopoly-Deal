@@ -3,6 +3,7 @@ package oldmana.md.server.card.collection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +16,7 @@ import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.event.CardMovedEvent;
 
-public abstract class CardCollection
+public abstract class CardCollection implements Iterable<Card>
 {
 	private static Map<Integer, CardCollection> collections = new HashMap<Integer, CardCollection>();
 	
@@ -74,6 +75,12 @@ public abstract class CardCollection
 	public boolean hasCard(Card card)
 	{
 		return cards.contains(card);
+	}
+	
+	@Override
+	public Iterator<Card> iterator()
+	{
+		return cards.iterator();
 	}
 	
 	public List<Card> getCards()

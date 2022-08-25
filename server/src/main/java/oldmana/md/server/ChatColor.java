@@ -3,7 +3,7 @@ package oldmana.md.server;
 import java.awt.Color;
 import java.nio.ByteBuffer;
 
-import oldmana.md.server.card.CardProperty.PropertyColor;
+import oldmana.md.server.card.PropertyColor;
 
 public enum ChatColor
 {
@@ -55,5 +55,10 @@ public enum ChatColor
 			sb.replace(index, index + 4, "");
 		}
 		return sb.toString();
+	}
+	
+	public static String of(int r, int g, int b)
+	{
+		return toChatColor(new Color(r, g, b));
 	}
 }
