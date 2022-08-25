@@ -453,7 +453,7 @@ public class BasicAI extends PlayerAI
 					return;
 				}
 			}
-			getServer().getGameState().nextTurn();
+			player.endTurn();
 		});
 		
 		registerSelfStateHandler(ActionStateTargetSlyDeal.class, state ->
@@ -519,15 +519,14 @@ public class BasicAI extends PlayerAI
 		{
 			if (!checkWin())
 			{
-				getServer().getGameState().nextTurn();
+				player.endTurn();
 			}
 		});
 		registerSelfStateHandler(ActionStateDiscard.class, state ->
 		{
 			List<Card> hand = player.getHand().getCards();
 			List<Card> nonProps = hand.stream().filter(card -> !(card instanceof CardProperty)).collect(Collectors.toList());
-			getRandomCard(nonProps.isEmpty() ? hand : nonProps).transfer(getServer().getDiscardPile());
-			getServer().getGameState().nextNaturalActionState();
+			player.discard(getRandomCard(nonProps.isEmpty() ? hand : nonProps));
 		});
 		registerSelfStateHandler(ActionStateTradeProperties.class, state ->
 		{

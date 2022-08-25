@@ -23,6 +23,8 @@ import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.collection.Bank;
 import oldmana.md.server.card.collection.Hand;
 import oldmana.md.server.card.collection.PropertySet;
+import oldmana.md.server.event.CardDiscardEvent;
+import oldmana.md.server.event.DeckDrawEvent;
 import oldmana.md.server.event.PostActionCardPlayedEvent;
 import oldmana.md.server.event.PostCardBankedEvent;
 import oldmana.md.server.event.PreActionCardPlayedEvent;
@@ -717,6 +719,7 @@ public class Player extends Client implements CommandSender
 		server.getDeck().drawCards(this, 2);
 		server.getGameState().markDrawn();
 		server.getGameState().nextNaturalActionState();
+		server.getEventManager().callEvent(new DeckDrawEvent(this));
 	}
 	
 	public void playCardBank(Card card)
@@ -801,6 +804,23 @@ public class Player extends Client implements CommandSender
 		server.getEventManager().callEvent(new PostActionCardPlayedEvent(this, card));
 		
 		checkEmptyHand();
+	}
+	
+	public boolean discard(Card card)
+	{
+		if (getHand().hasCard(card) && card.onDiscard(this))
+		{
+			card.transfer(server.getDiscardPile());
+			server.getGameState().nextNaturalActionState();
+			server.getEventManager().callEvent(new CardDiscardEvent(this, card));
+			return true;
+		}
+		return false;
+	}
+	
+	public void endTurn()
+	{
+		server.getGameState().nextTurn();
 	}
 	
 	public void executeCommand(String raw)

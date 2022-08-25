@@ -187,7 +187,6 @@ public class NetServerHandler extends NetHandler
 		if (state instanceof ActionStateDraw && state.getActionOwner() == player)
 		{
 			player.draw();
-			server.getEventManager().callEvent(new DeckDrawEvent(player));
 		}
 		else
 		{
@@ -302,11 +301,9 @@ public class NetServerHandler extends NetHandler
 		Card card = Card.getCard(packet.card);
 		if (checkIntegrity(player, card, true))
 		{
-			if (card.onDiscard(player))
+			if (player.discard(card))
 			{
-				card.transfer(server.getDiscardPile());
-				server.getGameState().nextNaturalActionState();
-				server.getEventManager().callEvent(new CardDiscardEvent(player, card));
+				server.getGameState().resendActionState(player);
 			}
 		}
 		else
@@ -339,7 +336,7 @@ public class NetServerHandler extends NetHandler
 	{
 		if (server.getGameState().getActivePlayer() == player)
 		{
-			server.getGameState().nextTurn();
+			player.endTurn();
 		}
 		else
 		{
