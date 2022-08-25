@@ -67,8 +67,9 @@ There's a ton of custom cards I made that I'll probably release as a mod at some
 
 ## To-do
 
+- [ ] Implement customizable decks [Will be in next release]
+- [ ] Implement basic bots [Will be in next release]
 - [ ] Implement Houses/Hotels [Planned for v0.7]
-- [ ] Implement customizable decks [Planned for v0.7]
 - [ ] Allow for the customization of game rules [Planned for v0.7]
 - [ ] Implement action cards from other editions
 - [ ] Better document server commands
