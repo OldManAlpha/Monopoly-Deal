@@ -432,6 +432,11 @@ public class NetServerHandler extends NetHandler
 	
 	public void handleActionUndoCard(Player player, PacketActionUndoCard packet)
 	{
+		if (!player.canRevokeCard())
+		{
+			player.sendUndoStatus();
+			return;
+		}
 		UndoCardEvent event = new UndoCardEvent(player, player.getLastRevocableCard());
 		server.getEventManager().callEvent(event);
 		if (!event.isCanceled())

@@ -49,10 +49,7 @@ public class ChatLinkHandler
 			this(id);
 			if (deleteTimer > 0)
 			{
-				MDServer.getInstance().getScheduler().scheduleTask(deleteTimer, task ->
-				{
-				
-				});
+				MDServer.getInstance().getScheduler().scheduleTask(deleteTimer, task -> links.remove(id));
 			}
 			this.deleteTimer = deleteTimer;
 		}
