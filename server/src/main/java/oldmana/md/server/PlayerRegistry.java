@@ -16,7 +16,7 @@ public class PlayerRegistry
 	{
 		try
 		{
-			File f = new File("players.dat");
+			File f = new File(MDServer.getInstance().getDataFolder(), "players.dat");
 			if (!f.exists())
 			{
 				System.out.println("Player data doesn't exist, generating file.");
@@ -42,7 +42,7 @@ public class PlayerRegistry
 	{
 		try
 		{
-			File f = new File("players.dat");
+			File f = new File(MDServer.getInstance().getDataFolder(), "players.dat");
 			PrintWriter pw = new PrintWriter(new FileOutputStream(f));
 			for (RegisteredPlayer player : players)
 			{

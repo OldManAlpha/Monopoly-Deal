@@ -38,8 +38,16 @@ public class MDPropertySet extends MDCardCollection
 	public void update()
 	{
 		int outlineWidth = (int) Math.max(GraphicsUtils.SCALE + 0.3, 1) * 2;
-		setSize(GraphicsUtils.getCardWidth() + outlineWidth, GraphicsUtils.getCardHeight() + (getInterval() * (getCollection().getCardCount() - 1)) + outlineWidth);
+		setSize(GraphicsUtils.getCardWidth() + outlineWidth, GraphicsUtils.getCardHeight() +
+				(getInterval() * (getCollection().getCardCount() - 1 + (isCardBeingRemoved() ? 1 : 0))) + outlineWidth);
 		repaint();
+	}
+	
+	@Override
+	public void modificationFinished()
+	{
+		super.modificationFinished();
+		update();
 	}
 	
 	public void enableSelection()
@@ -142,8 +150,30 @@ public class MDPropertySet extends MDCardCollection
 		if (effectiveColor != null && set.getCardCount() > 0 && !(set.getCardCount() == 1 && isCardIncoming()))
 		{
 			g.setColor(effectiveColor.getColor());
-			g.fillRoundRect(0, 0, getWidth(), getHeight() - (isCardIncoming() ? getInterval() : 0), scale(12), scale(12));
-			// TODO: Account for cards going into indices not at the end (might require bigger rework)
+			int shiftOffset = 0;
+			if (isCardIncoming())
+			{
+				if (getModIndex() < getCardCount() - 1)
+				{
+					shiftOffset = (int) -(getInterval() - (getVisibleShiftProgress() * getInterval()));
+				}
+				else
+				{
+					shiftOffset = -getInterval();
+				}
+			}
+			else if (isCardBeingRemoved())
+			{
+				if (getModIndex() < getCardCount())
+				{
+					shiftOffset = (int) -(getVisibleShiftProgress() * getInterval());
+				}
+				else
+				{
+					shiftOffset = -getInterval();
+				}
+			}
+			g.fillRoundRect(0, 0, getWidth(), getHeight() + shiftOffset, scale(12), scale(12));
 		}
 		if (!(set.getCardCount() == 1 && isCardIncoming()))
 		{

@@ -3,7 +3,7 @@ package oldmana.md.server.card.action;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardTemplate;
-import oldmana.md.server.card.type.CardType;
+import oldmana.md.server.card.CardType;
 
 public class CardActionDoubleTheRent extends CardAction
 {
@@ -11,12 +11,6 @@ public class CardActionDoubleTheRent extends CardAction
 	public boolean canPlayCard(Player player)
 	{
 		return false;
-	}
-	
-	@Override
-	public CardTypeLegacy getTypeLegacy()
-	{
-		return CardTypeLegacy.DOUBLE_THE_RENT;
 	}
 	
 	private static CardType<CardActionDoubleTheRent> createType()

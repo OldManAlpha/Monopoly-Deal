@@ -18,6 +18,16 @@ public class PropertySetCondition extends WinCondition
 		this.unique = unique;
 	}
 	
+	public int getSetCount()
+	{
+		return sets;
+	}
+	
+	public boolean needsUnique()
+	{
+		return unique;
+	}
+	
 	@Override
 	public boolean isWinner(Player player)
 	{

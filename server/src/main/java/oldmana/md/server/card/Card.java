@@ -8,14 +8,16 @@ import java.util.List;
 import java.util.Map;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.PacketCardData;
 import oldmana.md.net.packet.server.PacketCardDescription;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.collection.CardCollection;
-import oldmana.md.server.card.type.CardType;
+import oldmana.md.server.card.control.CardControls;
+import oldmana.md.server.card.control.CardButton;
+import oldmana.md.server.state.ActionStateDiscard;
+import oldmana.md.server.state.GameState;
 
-public class Card
+public abstract class Card
 {
 	private static Map<Integer, Card> cards = new HashMap<Integer, Card>();
 	
@@ -40,10 +42,13 @@ public class Card
 	private boolean revocable = true;
 	private boolean clearsRevocableCards = false;
 	
+	private CardControls controls;
+	
 	public Card()
 	{
 		id = nextID++;
 		registerCard(this);
+		controls = createControls();
 	}
 	
 	public void applyTemplate(CardTemplate template)
@@ -62,6 +67,32 @@ public class Card
 	public CardTemplate getTemplate()
 	{
 		return template;
+	}
+	
+	public CardControls createControls()
+	{
+		CardButton discard = new CardButton("Discard", CardButton.CENTER);
+		discard.setCondition((player, card) ->
+		{
+			GameState gs = getServer().getGameState();
+			return gs.getActivePlayer() == player && gs.getActionState() instanceof ActionStateDiscard &&
+					(!(card instanceof CardProperty) || player.getHand().hasAllProperties());
+		});
+		discard.setListener((player, card, data) ->
+		{
+			player.discard(card);
+		});
+		return new CardControls(this, discard);
+	}
+	
+	public CardControls getControls()
+	{
+		return controls;
+	}
+	
+	public void updateButtons()
+	{
+		controls.updateButtons();
 	}
 	
 	public void registerCard()
@@ -233,21 +264,12 @@ public class Card
 		this.type = type;
 	}
 	
-	public CardTypeLegacy getTypeLegacy()
-	{
-		return CardTypeLegacy.MONEY;
-	}
-	
 	protected MDServer getServer()
 	{
 		return MDServer.getInstance();
 	}
 	
-	public Packet getCardDataPacket()
-	{
-		return new PacketCardData(id, name, value, getTypeLegacy().getID(), revocable, clearsRevocableCards, displayName, (byte) fontSize,
-				(byte) displayOffsetY, description.getID());
-	}
+	public abstract Packet getCardDataPacket();
 	
 	@Override
 	public String toString()
@@ -261,24 +283,6 @@ public class Card
 		CardType<Card> type = new CardType<Card>(Card.class, "Card", false);
 		type.setDefaultTemplate(new CardTemplate());
 		return type;
-	}
-	
-	
-	public static enum CardTypeLegacy
-	{
-		MONEY(0), PROPERTY(1), ACTION(2), ACTION_COUNTER(3), DOUBLE_THE_RENT(4), SPECIAL(5), RENT_COUNTER(6), BUILDING(7);
-		
-		private int id;
-		
-		CardTypeLegacy(int id)
-		{
-			this.id = id;
-		}
-		
-		public int getID()
-		{
-			return id;
-		}
 	}
 	
 	public static class CardDescription

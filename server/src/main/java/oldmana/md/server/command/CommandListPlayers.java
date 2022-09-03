@@ -17,7 +17,8 @@ public class CommandListPlayers extends Command
 		sender.sendMessage("");
 		for (Player player : getServer().getPlayers())
 		{
-			sender.sendMessage("- " + player.getName() + "(ID: " + player.getID() + ")" + (player.isOnline() ? "" : " (Offline)"));
+			sender.sendMessage("- " + player.getName() + "(ID: " + player.getID() + ")" + (player.isBot() ? " (Bot)" :
+					(player.isOnline() ? "" : " (Offline)")));
 			sender.sendMessage("Hand ID: " + player.getHand().getID());
 			sender.sendMessage("Bank ID: " + player.getBank().getID());
 		}

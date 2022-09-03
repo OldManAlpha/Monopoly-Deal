@@ -1,6 +1,11 @@
 package oldmana.md.server.card;
 
-import oldmana.md.server.card.type.CardType;
+import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.net.packet.server.PacketCardData;
+import oldmana.md.server.card.control.CardButton;
+import oldmana.md.server.card.control.CardControls;
+import oldmana.md.server.state.ActionStatePlay;
+import oldmana.md.server.state.GameState;
 
 public class CardMoney extends Card
 {
@@ -17,6 +22,30 @@ public class CardMoney extends Card
 		super.applyTemplate(template);
 		setName(getValue() + "M");
 		setDisplayName(getValue() + "M");
+	}
+	
+	@Override
+	public CardControls createControls()
+	{
+		CardControls actions = super.createControls();
+		
+		CardButton bank = new CardButton("Bank", CardButton.BOTTOM);
+		bank.setCondition((player, card) ->
+		{
+			GameState gs = getServer().getGameState();
+			return gs.getActivePlayer() == player && gs.getActionState() instanceof ActionStatePlay;
+		});
+		bank.setListener((player, card, data) -> player.playCardBank(card));
+		actions.addButton(bank);
+		
+		return actions;
+	}
+	
+	@Override
+	public Packet getCardDataPacket()
+	{
+		return new PacketCardData(getID(), getName(), getValue(), 1, isRevocable(), clearsRevocableCards(),
+				getDisplayName(), (byte) getFontSize(), (byte) getDisplayOffsetY(), getDescription().getID());
 	}
 	
 	@Override

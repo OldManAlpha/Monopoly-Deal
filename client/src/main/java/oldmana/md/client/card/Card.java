@@ -12,6 +12,7 @@ import java.util.Map;
 
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
+import oldmana.md.client.card.CardButton.CardButtonPosition;
 import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.util.CardPainter;
@@ -36,6 +37,8 @@ public class Card
 	
 	private boolean revocable = true;
 	private boolean marksPreviousCardsUnrevocable = false;
+	
+	private Map<CardButtonPosition, CardButton> buttons = new HashMap<CardButtonPosition, CardButton>();
 	
 	private BufferedImage graphics;
 	private Map<Double, Image> graphicsCache = new HashMap<Double, Image>();
@@ -153,6 +156,26 @@ public class Card
 	public CardDescription getDescription()
 	{
 		return description;
+	}
+	
+	public Map<CardButtonPosition, CardButton> getButtons()
+	{
+		return buttons;
+	}
+	
+	public void setButton(CardButtonPosition pos, CardButton button)
+	{
+		buttons.put(pos, button);
+	}
+	
+	public void removeButton(CardButtonPosition pos)
+	{
+		buttons.remove(pos);
+	}
+	
+	public void clearButtons()
+	{
+		buttons.clear();
 	}
 	
 	public Image getGraphics(double scale)
@@ -286,23 +309,6 @@ public class Card
 		public static CardDescription getDescriptionByID(int id)
 		{
 			return descriptionMap.get(id);
-		}
-	}
-	
-	public enum CardType
-	{
-		MONEY(0), PROPERTY(1), ACTION(2), JUST_SAY_NO(3), DOUBLE_THE_RENT(4), SPECIAL(5), RENT_COUNTER(6), BUILDING(7);
-		
-		private final int id;
-		
-		CardType(int id)
-		{
-			this.id = id;
-		}
-		
-		public int getID()
-		{
-			return id;
 		}
 	}
 	

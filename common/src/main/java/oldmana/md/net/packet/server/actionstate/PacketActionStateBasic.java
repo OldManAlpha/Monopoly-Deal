@@ -1,6 +1,7 @@
 package oldmana.md.net.packet.server.actionstate;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.net.packet.server.PacketCardCollectionData.CardCollectionType;
 
 public class PacketActionStateBasic extends Packet
 {
@@ -32,6 +33,18 @@ public class PacketActionStateBasic extends Packet
 		public int getID()
 		{
 			return id;
+		}
+		
+		public static BasicActionState fromID(int id)
+		{
+			for (BasicActionState type : values())
+			{
+				if (type.getID() == id)
+				{
+					return type;
+				}
+			}
+			return null;
 		}
 	}
 }

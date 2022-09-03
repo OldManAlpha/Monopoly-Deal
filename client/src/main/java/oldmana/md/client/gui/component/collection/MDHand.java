@@ -2,32 +2,22 @@ package oldmana.md.client.gui.component.collection;
 
 import java.awt.AWTEvent;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import javax.swing.SwingUtilities;
 
-import oldmana.md.client.Player;
 import oldmana.md.client.card.Card;
-import oldmana.md.client.card.CardActionActionCounter;
-import oldmana.md.client.card.CardActionRentCounter;
-import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.card.collection.Hand;
-import oldmana.md.client.gui.component.MDChat;
 import oldmana.md.client.gui.component.MDOverlayHand;
 import oldmana.md.client.gui.util.GraphicsUtils;
-import oldmana.md.client.state.ActionState;
-import oldmana.md.client.state.ActionStateDiscard;
-import oldmana.md.client.state.ActionStateRent;
 
 public class MDHand extends MDCardCollection
 {
@@ -41,24 +31,20 @@ public class MDHand extends MDCardCollection
 		listener = new MDHandListener();
 		addMouseListener(listener);
 		addMouseMotionListener(listener);
-		Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener()
+		Toolkit.getDefaultToolkit().addAWTEventListener(event ->
 		{
-			@Override
-			public void eventDispatched(AWTEvent event)
+			if (overlay == null)
 			{
-				if (overlay == null)
+				return;
+			}
+			if (event instanceof MouseEvent)
+			{
+				MouseEvent me = (MouseEvent) event;
+				if (me.getID() == MouseEvent.MOUSE_MOVED)
 				{
-					return;
-				}
-				if (event instanceof MouseEvent)
-				{
-					MouseEvent me = (MouseEvent) event;
-					if (me.getID() == MouseEvent.MOUSE_MOVED)
+					if (me.getComponent() != MDHand.this && !SwingUtilities.isDescendingFrom(me.getComponent(), overlay))
 					{
-						if (me.getComponent() != MDHand.this && !SwingUtilities.isDescendingFrom(me.getComponent(), overlay))
-						{
-							removeOverlay();
-						}
+						removeOverlay();
 					}
 				}
 			}
@@ -171,18 +157,8 @@ public class MDHand extends MDCardCollection
 		{
 			if (getCollection() != null)
 			{
-				Player player = getClient().getThePlayer();
-				ActionState state = getClient().getGameState().getActionState();
 				Card curHover = getCardAt(event.getX(), 0);
-				boolean canPlayJSN = curHover instanceof CardActionActionCounter && state != null && ((state.isTarget(player) && 
-						!state.isRefused(player) && !state.isAccepted(player)) || (state.getActionOwner() == player && state.getNumberOfRefused() > 0)) 
-						&& !state.isUsingActionCounter();
-				boolean canPlayRentCounter = curHover instanceof CardActionRentCounter && state != null && state instanceof ActionStateRent && 
-						state.isTarget(player) && !state.isRefused(player) && !state.isAccepted(player);
-				boolean discard = state instanceof ActionStateDiscard;
-				boolean property = curHover instanceof CardProperty;
-				if (!getClient().isInputBlocked() && (getClient().canPlayCard() || canPlayJSN || canPlayRentCounter || (discard && state.getActionOwner() == player && 
-						(!property || player.hasAllPropertiesInHand()))))
+				if (!getClient().isInputBlocked())
 				{
 					if ((curHover == null && hovered != null) || (hovered != null && curHover != hovered))
 					{
@@ -197,7 +173,7 @@ public class MDHand extends MDCardCollection
 						repaint();
 					}
 				}
-				else if (getClient().isInputBlocked() || (!getClient().canPlayCard() && !canPlayJSN))
+				else if (getClient().isInputBlocked())
 				{
 					removeOverlay();
 				}

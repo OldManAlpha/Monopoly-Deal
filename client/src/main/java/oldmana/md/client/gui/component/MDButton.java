@@ -146,7 +146,7 @@ public class MDButton extends MDComponent
 	}
 	
 	
-	public static enum ButtonColorScheme
+	public enum ButtonColorScheme
 	{
 		NORMAL(new Color(212, 212, 212), new Color(112, 112, 112), new Color(0, 0, 0), 
 				new Color(167, 217, 245), new Color(60, 127, 177), new Color(0, 0, 0),
@@ -198,6 +198,18 @@ public class MDButton extends MDComponent
 			this.topLightFactor = topLightFactor;
 			this.topLightGradient = topLightGradient;
 			this.innerBorderLightFactor = innerBorderLightFactor;
+		}
+		
+		public static ButtonColorScheme fromID(int id)
+		{
+			for (ButtonColorScheme colors : values())
+			{
+				if (colors.ordinal() == id)
+				{
+					return colors;
+				}
+			}
+			return values()[0];
 		}
 	}
 }

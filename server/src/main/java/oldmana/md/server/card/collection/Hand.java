@@ -6,6 +6,7 @@ import oldmana.md.net.packet.server.PacketUnknownCardCollectionData;
 import oldmana.md.net.packet.server.PacketCardCollectionData.CardCollectionType;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
+import oldmana.md.server.card.CardProperty;
 
 public class Hand extends CardCollection
 {
@@ -24,10 +25,39 @@ public class Hand extends CardCollection
 		return getCardCount() > 7;
 	}
 	
+	public boolean hasAllProperties()
+	{
+		for (Card card : this)
+		{
+			if (!(card instanceof CardProperty))
+			{
+				return false;
+			}
+		}
+		return getCardCount() > 0;
+	}
+	
+	public void updateCardButtons()
+	{
+		for (Card card : this)
+		{
+			card.updateButtons();
+		}
+	}
+	
+	public void resendCardButtons()
+	{
+		for (Card card : this)
+		{
+			card.getControls().resendButtons();
+		}
+	}
+	
 	@Override
 	public void transferCard(Card card, CardCollection to, int index, double speed)
 	{
 		super.transferCard(card, to, index, speed);
+		card.getControls().resetButtons();
 	}
 	
 	@Override

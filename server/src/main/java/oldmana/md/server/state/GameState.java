@@ -32,6 +32,8 @@ public class GameState
 	private int deferredWinTurns;
 	private Player deferredWinPlayer;
 	
+	private boolean stateChanged;
+	
 	public GameState(MDServer server)
 	{
 		this.server = server;
@@ -154,6 +156,7 @@ public class GameState
 	
 	public void setActionState(ActionState state)
 	{
+		setStateChanged();
 		if (state instanceof ActionStateDoNothing)
 		{
 			this.state = state;
@@ -305,6 +308,35 @@ public class GameState
 	public void sendStatus(Player player)
 	{
 		player.sendPacket(new PacketStatus(status));
+	}
+	
+	/**
+	 * Indicates if something important has changed during this game tick. Currently, this only causes a reevaluation
+	 * of card buttons at the end of a tick.
+	 */
+	public boolean hasStateChanged()
+	{
+		return stateChanged;
+	}
+	
+	/**
+	 * Mark that something important in the game has changed this tick.
+	 */
+	public void setStateChanged()
+	{
+		stateChanged = true;
+	}
+	
+	public void tick()
+	{
+		if (stateChanged)
+		{
+			for (Player player : server.getPlayers())
+			{
+				player.getHand().updateCardButtons();
+			}
+			stateChanged = false;
+		}
 	}
 	
 	public void setWinningEnabled(boolean winningEnabled)

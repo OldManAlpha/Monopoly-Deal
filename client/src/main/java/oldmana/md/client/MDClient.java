@@ -2,8 +2,6 @@ package oldmana.md.client;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -92,6 +90,7 @@ public class MDClient
 		catch (Exception e)
 		{
 			e.printStackTrace();
+			throw new RuntimeException("Could not load fonts");
 		}
 		
 		scheduler = new MDScheduler();
@@ -129,6 +128,18 @@ public class MDClient
 		settings = new Settings();
 		
 		File folder = findUserData();
+		
+		if (folder == null)
+		{
+			// If there's a local runtime folder, then this must be installed
+			if (new File("runtime").exists())
+			{
+				folder = getLocalFolder();
+				folder.mkdirs();
+				setDataFolder(folder);
+				getSettings().setLocation(folder);
+			}
+		}
 		
 		if (folder != null)
 		{
@@ -197,7 +208,7 @@ public class MDClient
 	
 	public File getLocalFolder()
 	{
-		String dirPath = null;
+		String dirPath;
 		
 		String os = System.getProperty("os.name").toLowerCase();
 		if (os.contains("win"))

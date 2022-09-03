@@ -9,7 +9,7 @@ import oldmana.md.net.packet.universal.*;
 
 public class NetHandler
 {
-	public static int PROTOCOL_VERSION = 14;
+	public static int PROTOCOL_VERSION = 16;
 	
 	public NetHandler()
 	{
@@ -63,6 +63,8 @@ public class NetHandler
 		Packet.registerPacket(PacketPlaySound.class);
 		Packet.registerPacket(PacketButton.class);
 		Packet.registerPacket(PacketDestroyButton.class);
+		Packet.registerPacket(PacketCardButton.class);
+		Packet.registerPacket(PacketDestroyCardButton.class);
 		
 		// Client -> Server
 		Packet.registerPacket(PacketActionAccept.class);
@@ -71,12 +73,7 @@ public class NetHandler
 		Packet.registerPacket(PacketActionMoveProperty.class);
 		Packet.registerPacket(PacketActionChangeSetColor.class);
 		Packet.registerPacket(PacketActionPay.class);
-		Packet.registerPacket(PacketActionPlayCardAction.class);
-		Packet.registerPacket(PacketActionPlayCardBank.class);
-		Packet.registerPacket(PacketActionPlayCardProperty.class);
-		Packet.registerPacket(PacketActionPlayCardSpecial.class);
 		Packet.registerPacket(PacketActionPlayCardBuilding.class);
-		Packet.registerPacket(PacketActionPlayMultiCardAction.class);
 		Packet.registerPacket(PacketActionDiscard.class);
 		Packet.registerPacket(PacketActionSelectPlayer.class);
 		Packet.registerPacket(PacketActionSelectProperties.class);
@@ -84,6 +81,7 @@ public class NetHandler
 		Packet.registerPacket(PacketActionUndoCard.class);
 		Packet.registerPacket(PacketActionClickLink.class);
 		Packet.registerPacket(PacketActionButtonClick.class);
+		Packet.registerPacket(PacketActionUseCardButton.class);
 		
 		Packet.registerPacket(PacketSoundCache.class);
 		

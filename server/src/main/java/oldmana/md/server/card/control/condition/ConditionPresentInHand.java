@@ -2,35 +2,35 @@ package oldmana.md.server.card.control.condition;
 
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
-import oldmana.md.server.card.Card.CardTypeLegacy;
+import oldmana.md.server.card.CardType;
 
-public class ConditionPresentInHand extends ButtonCondition
+public class ConditionPresentInHand extends AbstractButtonCondition
 {
-	private CardTypeLegacy type;
+	private CardType<?> type;
 	private boolean present;
 	
-	public ConditionPresentInHand(CardTypeLegacy type)
+	public ConditionPresentInHand(CardType<?> type)
 	{
 		this.type = type;
 		this.present = true;
 	}
 	
-	public ConditionPresentInHand(CardTypeLegacy type, boolean present)
+	public ConditionPresentInHand(CardType<?> type, boolean present)
 	{
 		this.type = type;
 		this.present = present;
 	}
 	
 	@Override
-	public boolean isTrue(Player player, Card card)
+	public boolean evaluate(Player player, Card card)
 	{
 		for (Card c : player.getHand())
 		{
-			if (c.getTypeLegacy() == type)
+			if (c.getType() == type)
 			{
-				return true;
+				return present;
 			}
 		}
-		return false;
+		return !present;
 	}
 }

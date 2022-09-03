@@ -6,19 +6,20 @@ import java.util.List;
 
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
-import oldmana.md.client.card.CardActionActionCounter;
+import oldmana.md.client.card.Card;
+import oldmana.md.client.card.CardButton;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDButton.ButtonColorScheme;
 import oldmana.md.client.state.client.ActionStateClientCounterPlayer;
 import oldmana.md.net.packet.client.action.PacketActionAccept;
-import oldmana.md.net.packet.client.action.PacketActionPlayCardSpecial;
+import oldmana.md.net.packet.client.action.PacketActionUseCardButton;
 
 public class ActionState
 {
 	private Player actionOwner;
 	private List<ActionTarget> targets;
 	
-	private CardActionActionCounter jsn;
+	private Card jsn;
 	
 	public ActionState(Player actionOwner)
 	{
@@ -94,12 +95,13 @@ public class ActionState
 	
 	public void updateUI() {}
 	
-	public void onActionCounter(CardActionActionCounter card)
+	public void onActionCounter(Card card, CardButton button)
 	{
 		Player player = getClient().getThePlayer();
 		if (isTarget(player) && !isAccepted(player) && !isRefused(player))
 		{
-			getClient().sendPacket(new PacketActionPlayCardSpecial(card.getID(), getActionOwner().getID()));
+			getClient().sendPacket(new PacketActionUseCardButton(card.getID(),
+					button.getPosition().getID(), getActionOwner().getID()));
 			disableButton();
 			getClient().setAwaitingResponse(true);
 		}
@@ -107,13 +109,14 @@ public class ActionState
 		{
 			if (getNumberOfRefused() == 1)
 			{
-				getClient().sendPacket(new PacketActionPlayCardSpecial(card.getID(), getRefused().get(0).getID()));
+				getClient().sendPacket(new PacketActionUseCardButton(card.getID(),
+						button.getPosition().getID(), getRefused().get(0).getID()));
 				getClient().setAwaitingResponse(true);
 			}
 			else if (getNumberOfRefused() > 1)
 			{
 				jsn = card;
-				getGameState().setClientActionState(new ActionStateClientCounterPlayer(jsn));
+				getGameState().setClientActionState(new ActionStateClientCounterPlayer(jsn, button));
 			}
 		}
 	}
@@ -166,7 +169,7 @@ public class ActionState
 		}
 	}
 	
-	public CardActionActionCounter getActionCounterCard()
+	public Card getActionCounterCard()
 	{
 		return jsn;
 	}

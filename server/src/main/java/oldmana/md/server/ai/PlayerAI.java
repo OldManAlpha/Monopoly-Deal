@@ -1,24 +1,32 @@
 package oldmana.md.server.ai;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Random;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.PropertyColor;
+import oldmana.md.server.rules.win.PropertySetCondition;
+import oldmana.md.server.rules.win.WinCondition;
 
 public abstract class PlayerAI
 {
 	private Player player;
 	
 	private Random rand = new Random();
+	
+	private static Map<List<CardProperty>, List<PropertyCombo>> comboCache = new HashMap<List<CardProperty>, List<PropertyCombo>>();
+	private static Queue<List<CardProperty>> comboCacheOrder = new ArrayDeque<List<CardProperty>>();
 	
 	public PlayerAI(Player player)
 	{
@@ -40,247 +48,243 @@ public abstract class PlayerAI
 		return MDServer.getInstance();
 	}
 	
-	public List<Map<PropertyColor, Integer>> getPossibleCombos(Player player)
-	{
-		return getPossibleCombos(player.getAllPropertyCards());
-	}
 	
 	/**
-	 * A terrible, lazy method to get the possible combos given a list of cards. Randomly generates 100 combos,
-	 * perhaps missing possible combos.
+	 * Get a List of possible set combinations that the given property list can produce. Note that the sets returned
+	 * might be over the maximum properties for a given color.
+	 * @param cards The cards to arrange
+	 * @return An exhaustive List of combinations
 	 */
-	public List<Map<PropertyColor, List<CardProperty>>> getPossibleCombosNew(List<CardProperty> cards)
+	public List<PropertyCombo> getPossibleCombos(List<CardProperty> cards)
 	{
-		List<CardProperty> wilds = new ArrayList<CardProperty>();
-		Map<PropertyColor, List<CardProperty>> solidProps = new HashMap<PropertyColor, List<CardProperty>>();
-		List<PropertyColor> validColors = new ArrayList<PropertyColor>();
-		for (CardProperty card : cards)
+		if (comboCache.containsKey(cards))
 		{
-			if (card.isSingleColor())
+			return comboCache.get(cards);
+		}
+		
+		List<PropertyCombo> possibleCombos = new ArrayList<PropertyCombo>();
+		
+		List<CardProperty> solids = new ArrayList<CardProperty>();
+		List<CardProperty> basedWilds = new ArrayList<CardProperty>();
+		List<CardProperty> unbasedWilds = new ArrayList<CardProperty>();
+		
+		for (CardProperty prop : cards)
+		{
+			if (prop.isSingleColor())
 			{
-				PropertyColor color = card.getColor();
-				solidProps.computeIfAbsent(color, key -> new ArrayList<CardProperty>());
-				solidProps.get(color).add(card);
+				solids.add(prop);
+			}
+			else if (prop.isBase())
+			{
+				basedWilds.add(prop);
 			}
 			else
 			{
-				wilds.add(card);
-			}
-			// Add colors as valid if the card is a base
-			if (card.isBase())
-			{
-				for (PropertyColor color : card.getColors())
-				{
-					if (!validColors.contains(color))
-					{
-						validColors.add(color);
-					}
-				}
+				unbasedWilds.add(prop);
 			}
 		}
-		List<Map<PropertyColor, List<CardProperty>>> possibleCombos = new ArrayList<Map<PropertyColor, List<CardProperty>>>();
 		
-		if (validColors.isEmpty())
+		PropertyCombo baseCombo = new PropertyCombo();
+		
+		if (solids.isEmpty() && basedWilds.isEmpty())
 		{
+			baseCombo.addProperties(null, unbasedWilds);
+			possibleCombos.add(baseCombo);
 			return possibleCombos;
 		}
 		
-		Random r = getRandom();
-		for (int iter = 0 ; iter < 100 ; iter++)
+		// Create the base combo, which only has solids colors
+		for (CardProperty prop : solids)
 		{
-			Map<PropertyColor, List<CardProperty>> combo = new HashMap<PropertyColor, List<CardProperty>>();
-			solidProps.forEach((color, props) -> combo.put(color, new ArrayList<CardProperty>(props)));
-			for (PropertyColor color : validColors)
-			{
-				combo.computeIfAbsent(color, key -> new ArrayList<CardProperty>());
-			}
-			
-			List<CardProperty> shuffledWilds = new ArrayList<CardProperty>(wilds);
-			Collections.shuffle(shuffledWilds);
-			
-			for (CardProperty wild : shuffledWilds)
-			{
-				List<PropertyColor> possibleColors = new ArrayList<PropertyColor>();
-				for (PropertyColor color : wild.getColors())
-				{
-					if (combo.containsKey(color))
-					{
-						List<CardProperty> colorProps = combo.get(color);
-						if (colorProps.size() < color.getMaxProperties() && (wild.isBase() || !colorProps.isEmpty()))
-						{
-							possibleColors.add(color);
-						}
-					}
-				}
-				if (!possibleColors.isEmpty())
-				{
-					combo.get(possibleColors.get(r.nextInt(possibleColors.size()))).add(wild);
-				}
-			}
-			for (Map<PropertyColor, List<CardProperty>> prevCombo : possibleCombos)
-			{
-				// TODO: Don't add combo if it's exactly the same as an already created one
-			}
-			possibleCombos.add(combo);
+			baseCombo.addProperty(prop.getColor(), prop);
+		}
+		possibleCombos.add(baseCombo);
+		
+		applyCombos(possibleCombos, basedWilds, true);
+		applyCombos(possibleCombos, unbasedWilds, false);
+		
+		comboCache.put(cards, possibleCombos);
+		comboCacheOrder.offer(cards);
+		if (comboCacheOrder.size() > 200)
+		{
+			comboCache.remove(comboCacheOrder.poll());
 		}
 		return possibleCombos;
 	}
 	
-	public List<Map<PropertyColor, Integer>> getPossibleCombos(List<CardProperty> cards)
+	public void applyCombos(List<PropertyCombo> combos, List<CardProperty> properties, boolean base)
 	{
-		List<CardProperty> wilds = new ArrayList<CardProperty>();
-		Map<PropertyColor, Integer> baseProps = new HashMap<PropertyColor, Integer>();
-		List<PropertyColor> validColors = new ArrayList<PropertyColor>();
-		for (CardProperty card : cards)
+		for (CardProperty prop : properties)
 		{
-			if (card.isSingleColor())
+			int originalSize = combos.size();
+			// Add the based wild to all previous combos, for each valid color it could be
+			for (PropertyColor color : prop.getColors())
 			{
-				PropertyColor color = card.getColor();
-				if (!baseProps.containsKey(color))
+				for (int i = 0 ; i < originalSize ; i++)
 				{
-					baseProps.put(color, 1);
-				}
-				else
-				{
-					baseProps.put(color, baseProps.get(color) + 1);
-				}
-			}
-			else
-			{
-				wilds.add(card);
-			}
-			// Add colors as valid if the card is a base
-			if (card.isBase())
-			{
-				for (PropertyColor color : card.getColors())
-				{
-					if (!validColors.contains(color))
+					PropertyCombo combo = combos.get(i);
+					if (!base && !combo.hasColor(color))
 					{
-						validColors.add(color);
+						continue;
+					}
+					PropertyCombo comboCopy = new PropertyCombo(combo);
+					comboCopy.addProperty(color, prop);
+					combos.add(comboCopy);
+					if (combos.size() >= 100000)
+					{
+						System.out.println("WARNING: AI didn't complete calculating all property combinations because" +
+								"there's over 100,000!");
+						return;
 					}
 				}
 			}
 		}
-		
-		List<Map<PropertyColor, Integer>> possibleCombos = new ArrayList<Map<PropertyColor, Integer>>();
-		
-		Map<CardProperty, Integer> prog = new HashMap<CardProperty, Integer>();
-		
-		for (CardProperty card : wilds)
-		{
-			prog.put(card, 0);
-		}
-		
-		while (true)
-		{
-			Map<PropertyColor, Integer> possibility = new HashMap<PropertyColor, Integer>(baseProps);
-			
-			boolean validCombo = true;
-			// Iterate through all wild cards and their current color in iteration
-			for (Entry<CardProperty, Integer> wild : prog.entrySet())
-			{
-				PropertyColor color = wild.getKey().getColors().get(wild.getValue());
-				if (!validColors.contains(color))
-				{
-					validCombo = false;
-					break;
-				}
-				possibility.put(color, possibility.containsKey(color) ? possibility.get(color) + 1 : 1);
-			}
-			if (validCombo)
-			{
-				possibleCombos.add(possibility);
-			}
-			
-			// Find next color combination
-			boolean complete = true;
-			@SuppressWarnings("unchecked")
-			Entry<CardProperty, Integer>[] sets = (Entry<CardProperty, Integer>[]) prog.entrySet().toArray(new Entry[prog.size()]);
-			for (int i = 0 ; i < sets.length ; i++)
-			{ // TODO: BUSTED: Need to account for non-base
-				CardProperty prop = sets[i].getKey();
-				int pos = sets[i].getValue();
-				// If not already at last color for the wild card, otherwise continue to next card
-				if (prop.getColors().size() != pos + 1)
-				{
-					// Add 1 to color index
-					sets[i].setValue(pos + 1);
-					// Set previous color indices to 0
-					if (i >= 0)
-					{
-						for (i-- ; i >= 0 ; i--)
-						{
-							sets[i].setValue(0);
-						}
-					}
-					complete = false;
-					break;
-				}
-			}
-			
-			if (complete)
-			{
-				break;
-			}
-		}
-		return possibleCombos;
 	}
 	
 	public int getCardsNeededToWin(Player player)
 	{
-		List<Map<PropertyColor, Integer>> combos = getPossibleCombos(player);
-		
-		int leastCardsNeeded = 1000;
-		for (Map<PropertyColor, Integer> combo : combos)
-		{
-			Map<PropertyColor, Integer> neededCards = new HashMap<PropertyColor, Integer>();
-			for (Entry<PropertyColor, Integer> entry : combo.entrySet())
-			{
-				neededCards.put(entry.getKey(), Math.max(0, entry.getKey().getMaxProperties() - entry.getValue()));
-			}
-			// TODO: Check real win condition
-			int win = 3;//getServer().getGameRules().getMonopoliesRequiredToWin();
-			int[] comboLeastNeeded = new int[win];
-			for (int i = 0 ; i < comboLeastNeeded.length ; i++)
-			{
-				comboLeastNeeded[i] = 2;
-			}
-			for (Entry<PropertyColor, Integer> entry : neededCards.entrySet())
-			{
-				for (int i = 0 ; i < comboLeastNeeded.length ; i++)
-				{
-					if (comboLeastNeeded[i] > entry.getValue())
-					{
-						comboLeastNeeded[i] = entry.getValue();
-						break;
-					}
-				}
-			}
-			int neededCardsCount = 0;
-			for (int i = 0 ; i < comboLeastNeeded.length ; i++)
-			{
-				neededCardsCount += comboLeastNeeded[i];
-			}
-			if (leastCardsNeeded > neededCardsCount)
-			{
-				leastCardsNeeded = neededCardsCount;
-			}
-		}
-		
-		getServer().broadcastMessage("COMBOS: " + combos.size());
-		for (Map<PropertyColor, Integer> combo : combos)
-		{
-			System.out.println("--- Combo:");
-			for (Entry<PropertyColor, Integer> e : combo.entrySet())
-			{
-				System.out.println(e.getKey().toString() + ": " + e.getValue());
-			}
-		}
-		
-		
-		return leastCardsNeeded;
+		return getCardsNeededToWin(player.getAllPropertyCards());
 	}
 	
+	public int getCardsNeededToWin(List<CardProperty> properties)
+	{
+		List<PropertyCombo> combos = getPossibleCombos(properties);
+		
+		int leastNeededCombo = 7;
+		
+		for (PropertyCombo combo : combos)
+		{
+			Map<PropertyColor, Integer> needed = new HashMap<PropertyColor, Integer>();
+			for (PropertyColor color : PropertyColor.getAllColors())
+			{
+				needed.put(color, color.getMaxProperties());
+			}
+			combo.forEach((color, props) ->
+			{
+				if (color == null)
+				{
+					return;
+				}
+				needed.put(color, Math.max(color.getMaxProperties() - props.size(), 0));
+			});
+			WinCondition condition = getServer().getGameRules().getWinCondition();
+			int setsNeeded = condition instanceof PropertySetCondition ?
+					((PropertySetCondition) condition).getSetCount() : 3;
+			
+			Map<PropertyColor, Integer> leastNeeded = new HashMap<PropertyColor, Integer>();
+			// Iterate through all colors
+			needed.forEach((color, amount) ->
+			{
+				Entry<PropertyColor, Integer> mostLeastNeeded = null;
+				for (Entry<PropertyColor, Integer> entry : leastNeeded.entrySet())
+				{
+					if (mostLeastNeeded == null || entry.getValue() > mostLeastNeeded.getValue())
+					{
+						mostLeastNeeded = entry;
+					}
+				}
+				if (setsNeeded > leastNeeded.size())
+				{
+					leastNeeded.put(color, amount);
+				}
+				else if (mostLeastNeeded.getValue() > amount)
+				{
+					leastNeeded.remove(mostLeastNeeded.getKey());
+					leastNeeded.put(color, amount);
+				}
+			});
+			int comboNeeded = 0;
+			for (int n : leastNeeded.values())
+			{
+				comboNeeded += n;
+			}
+			if (comboNeeded < leastNeededCombo)
+			{
+				leastNeededCombo = comboNeeded;
+			}
+		}
+		return leastNeededCombo;
+	}
+	
+	public int getCardsNeededToWinWith(List<CardProperty> properties, CardProperty with)
+	{
+		properties.add(with);
+		return getCardsNeededToWin(properties);
+	}
+	
+	public int getCardsNeededToWinWithWithout(List<CardProperty> properties, CardProperty with, CardProperty without)
+	{
+		properties.add(with);
+		properties.remove(without);
+		return getCardsNeededToWin(properties);
+	}
+	
+	
+	public List<RentCombo> getRentCombosFull(List<Card> cards, int rent)
+	{
+		return getRentCombosFullInternal(cards.stream().filter(card -> card.getValue() > 0)
+				.collect(Collectors.toCollection(ArrayList::new)), new ArrayList<Card>(), rent);
+	}
+	
+	public List<RentCombo> getRentCombosFullInternal(List<Card> cards, List<Card> selected, int rent)
+	{
+		List<RentCombo> combos = new ArrayList<RentCombo>();
+		for (int i = 0 ; i < cards.size() ; i++)
+		{
+			Card card = cards.get(i);
+			RentCombo combo = new RentCombo(selected, card);
+			if (combo.getValue() >= rent)
+			{
+				combos.add(combo);
+			}
+			else if (cards.size() > 1)
+			{
+				combos.addAll(getRentCombosFullInternal(cards.subList(i + 1, cards.size()), combo.getCards(), rent));
+			}
+		}
+		return combos;
+	}
+	
+	public List<RentCombo> getRentCombos(List<Card> cards, int rent)
+	{
+		return getRentCombosInternal(cards.stream().filter(card -> card.getValue() > 0)
+				.collect(Collectors.toCollection(ArrayList::new)), new ArrayList<Card>(), rent);
+	}
+	
+	public List<RentCombo> getRentCombosInternal(List<Card> cards, List<Card> selected, int rent)
+	{
+		List<Card> accepted = new ArrayList<Card>();
+		for (Card card : cards)
+		{
+			// If none of the currently accepted are the same value or are a property with the same colors, add to accepted
+			if (accepted.stream().noneMatch(c -> (c.getValue() == card.getValue() && !(c instanceof CardProperty)) ||
+					(c instanceof CardProperty && c.getValue() == card.getValue() && card instanceof CardProperty &&
+							((CardProperty) c).isBase() == ((CardProperty) card).isBase() &&
+							((CardProperty) c).getColors().equals(((CardProperty) card).getColors()))))
+			{
+				accepted.add(card);
+			}
+		}
+		List<RentCombo> combos = new ArrayList<RentCombo>();
+		for (int i = 0 ; i < cards.size() ; i++)
+		{
+			Card card = cards.get(i);
+			if (!accepted.contains(card))
+			{
+				continue;
+			}
+			RentCombo combo = new RentCombo(selected, card);
+			if (combo.getValue() >= rent)
+			{
+				combos.add(combo);
+			}
+			else if (cards.size() > 1)
+			{
+				combos.addAll(getRentCombosInternal(cards.subList(i + 1, cards.size()), combo.getCards(), rent));
+			}
+		}
+		return combos;
+	}
 	
 	
 	public abstract void doAction();
@@ -288,4 +292,114 @@ public abstract class PlayerAI
 	public abstract double getWinThreat(Player player);
 	
 	public abstract double getRentThreat(Player player);
+	
+	public static class PropertyCombo
+	{
+		private Map<PropertyColor, List<CardProperty>> combo = new HashMap<PropertyColor, List<CardProperty>>();
+		
+		public PropertyCombo() {}
+		
+		public PropertyCombo(PropertyCombo toCopy)
+		{
+			toCopy.getMap().forEach((color, props) -> combo.put(color, new ArrayList<CardProperty>(props)));
+		}
+		
+		public Map<PropertyColor, List<CardProperty>> getMap()
+		{
+			return combo;
+		}
+		
+		public void addProperty(PropertyColor color, CardProperty property)
+		{
+			combo.computeIfAbsent(color, key -> new ArrayList<CardProperty>());
+			combo.get(color).add(property);
+		}
+		
+		public void addProperties(PropertyColor color, List<CardProperty> properties)
+		{
+			combo.computeIfAbsent(color, key -> new ArrayList<CardProperty>());
+			combo.get(color).addAll(properties);
+		}
+		
+		public List<CardProperty> getProperties(PropertyColor color)
+		{
+			return combo.get(color);
+		}
+		
+		public boolean hasColor(PropertyColor color)
+		{
+			return combo.containsKey(color);
+		}
+		
+		public int getAmount(PropertyColor color)
+		{
+			return combo.get(color).size();
+		}
+		
+		public void forEach(BiConsumer<PropertyColor, List<CardProperty>> action)
+		{
+			combo.forEach(action);
+		}
+	}
+	
+	public static class RentCombo
+	{
+		private List<Card> cards;
+		
+		public RentCombo()
+		{
+			cards = new ArrayList<Card>();
+		}
+		
+		public RentCombo(List<Card> base, Card addition)
+		{
+			cards = new ArrayList<Card>(base);
+			cards.add(addition);
+		}
+		
+		public List<Card> getCards()
+		{
+			return cards;
+		}
+		
+		public void addCard(Card card)
+		{
+			cards.add(card);
+		}
+		
+		public boolean hasProperties()
+		{
+			for (Card card : cards)
+			{
+				if (card instanceof CardProperty)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public List<CardProperty> getProperties()
+		{
+			List<CardProperty> properties = new ArrayList<CardProperty>();
+			for (Card card : cards)
+			{
+				if (card instanceof CardProperty)
+				{
+					properties.add((CardProperty) card);
+				}
+			}
+			return properties;
+		}
+		
+		public int getValue()
+		{
+			int value = 0;
+			for (Card card : cards)
+			{
+				value += card.getValue();
+			}
+			return value;
+		}
+	}
 }

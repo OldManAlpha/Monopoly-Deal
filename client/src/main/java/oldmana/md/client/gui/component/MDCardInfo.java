@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.LinearGradientPaint;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.util.Arrays;
@@ -50,7 +51,29 @@ public class MDCardInfo extends MDComponent
 		g.setFont(GraphicsUtils.getBoldMDFont(scale(24)));
 		Color cc = card instanceof CardProperty ? new Color(240, 240, 240) : card.getValueColor();
 		g.setColor(cc);
+		LinearGradientPaint propPaint = null;
+		if (card instanceof CardProperty)
+		{
+			CardProperty prop = (CardProperty) card;
+			int colorCount = prop.getColors().size();
+			float[] fractions = new float[colorCount * 2];
+			Color[] colors = new Color[colorCount * 2];
+			for (int i = 0 ; i < colorCount * 2 ; i++)
+			{
+				fractions[i] = (i + (i % 2 == 0 ? 0.2F : 0.8F)) / (float) (colorCount * 2);
+				colors[i] = GraphicsUtils.getLighterColor(prop.getColors().get(i / 2).getColor(), 1);
+			}
+			propPaint = new LinearGradientPaint(0, 0, getWidth(), 0,
+					fractions, colors);
+		}
 		g.fillRoundRect(0, 0, getWidth(), getHeight(), scale(20), scale(20));
+		if (card instanceof CardProperty)
+		{
+			g.setPaint(propPaint);
+			g.fillRoundRect(0, 0, getWidth(), scale(28), scale(20), scale(20));
+			g.fillRect(0, scale(18), getWidth(), scale(10));
+			g.setPaint(null);
+		}
 		
 		// Draw divider
 		g.setColor(Color.BLACK);

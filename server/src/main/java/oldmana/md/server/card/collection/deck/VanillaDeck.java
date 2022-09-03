@@ -4,7 +4,7 @@ import oldmana.md.server.card.CardMoney;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.action.*;
-import oldmana.md.server.card.type.CardType;
+import oldmana.md.server.card.CardType;
 
 public class VanillaDeck extends DeckStack
 {

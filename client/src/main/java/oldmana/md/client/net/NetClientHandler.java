@@ -20,15 +20,13 @@ import oldmana.md.client.MDSoundSystem.MDSound;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.Card.CardDescription;
 import oldmana.md.client.card.CardAction;
-import oldmana.md.client.card.CardActionDoubleTheRent;
-import oldmana.md.client.card.CardActionActionCounter;
 import oldmana.md.client.card.CardActionRent;
-import oldmana.md.client.card.CardActionRentCounter;
 import oldmana.md.client.card.CardBuilding;
+import oldmana.md.client.card.CardButton;
+import oldmana.md.client.card.CardButton.CardButtonPosition;
+import oldmana.md.client.card.CardButton.CardButtonType;
 import oldmana.md.client.card.CardMoney;
 import oldmana.md.client.card.CardProperty;
-import oldmana.md.client.card.CardSpecial;
-import oldmana.md.client.card.Card.CardType;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.Bank;
 import oldmana.md.client.card.collection.CardCollection;
@@ -161,7 +159,7 @@ public class NetClientHandler extends NetHandler
 		System.out.println(packet.rents.length);
 		for (int i = 0 ; i < len ; i++)
 		{
-			new PropertyColor(i, packet.name[i], packet.label[i], new Color(packet.color[i]), packet.buildable[i], packet.rents[i]);
+			PropertyColor.create(i, packet.name[i], packet.label[i], new Color(packet.color[i]), packet.buildable[i], packet.rents[i]);
 		}
 	}
 	
@@ -178,7 +176,7 @@ public class NetClientHandler extends NetHandler
 	
 	public void handleCardData(PacketCardData packet)
 	{
-		Card card = null;
+		Card card;
 		if ((card = Card.getCard(packet.id)) != null)
 		{
 			card.setValue(packet.value);
@@ -186,25 +184,9 @@ public class NetClientHandler extends NetHandler
 		}
 		else
 		{
-			if (packet.type == CardType.ACTION.getID())
+			if (packet.type == 0)
 			{
 				card = new CardAction(packet.id, packet.value, packet.name);
-			}
-			else if (packet.type == CardType.JUST_SAY_NO.getID())
-			{
-				card = new CardActionActionCounter(packet.id, packet.value, packet.name);
-			}
-			else if (packet.type == CardType.DOUBLE_THE_RENT.getID())
-			{
-				card = new CardActionDoubleTheRent(packet.id, packet.value, packet.name);
-			}
-			else if (packet.type == CardType.SPECIAL.getID())
-			{
-				card = new CardSpecial(packet.id, packet.value, packet.name);
-			}
-			else if (packet.type == CardType.RENT_COUNTER.getID())
-			{
-				card = new CardActionRentCounter(packet.id, packet.value, packet.name);
 			}
 			else
 			{
@@ -264,7 +246,9 @@ public class NetClientHandler extends NetHandler
 	
 	public void handleCardCollectionData(PacketCardCollectionData packet)
 	{
-		if (packet.type == CardCollectionType.BANK.getID())
+		CardCollectionType type = CardCollectionType.fromID(packet.type);
+		
+		if (type == CardCollectionType.BANK)
 		{
 			Player owner = client.getPlayerByID(packet.owner);
 			Bank bank = new Bank(packet.id, owner);
@@ -274,7 +258,7 @@ public class NetClientHandler extends NetHandler
 			}
 			owner.setBank(bank);
 		}
-		else if (packet.type == CardCollectionType.HAND.getID())
+		else if (type == CardCollectionType.HAND)
 		{
 			Player player = client.getPlayerByID(packet.owner);
 			Hand hand = new Hand(packet.id, player);
@@ -284,7 +268,7 @@ public class NetClientHandler extends NetHandler
 			}
 			player.setHand(hand);
 		}
-		else if (packet.type == CardCollectionType.DISCARD_PILE.getID())
+		else if (type == CardCollectionType.DISCARD_PILE)
 		{
 			client.setDiscardPile(new DiscardPile(packet.id, Card.getCards(packet.cardIds)));
 		}
@@ -292,16 +276,18 @@ public class NetClientHandler extends NetHandler
 	
 	public void handleUnknownCardCollectionData(PacketUnknownCardCollectionData packet)
 	{
-		if (packet.type == CardCollectionType.HAND.getID())
+		CardCollectionType type = CardCollectionType.fromID(packet.type);
+		
+		if (type == CardCollectionType.HAND)
 		{
 			Player owner = client.getPlayerByID(packet.owner);
 			owner.setHand(new Hand(packet.id, owner, packet.cardCount));
 		}
-		else if (packet.type == CardCollectionType.DECK.getID())
+		else if (type == CardCollectionType.DECK)
 		{
 			client.setDeck(new Deck(packet.id, packet.cardCount));
 		}
-		else if (packet.type == CardCollectionType.VOID.getID())
+		else if (type == CardCollectionType.VOID)
 		{
 			client.setVoidCollection(new VoidCollection(packet.id));
 		}
@@ -345,49 +331,51 @@ public class NetClientHandler extends NetHandler
 	@Queued
 	public void handleActionStateBasic(PacketActionStateBasic packet)
 	{
+		BasicActionState type = BasicActionState.fromID(packet.type);
+		
 		System.out.println("BASIC ACTION STATE " + packet.type);
 		Player player = client.getPlayerByID(packet.player);
-		if (packet.type == BasicActionState.DO_NOTHING.getID())
+		if (type == BasicActionState.DO_NOTHING)
 		{
 			client.getGameState().setActionState(new ActionStateDoNothing());
 		}
-		else if (packet.type == BasicActionState.DRAW.getID())
+		else if (type == BasicActionState.DRAW)
 		{
 			client.getGameState().setActionState(new ActionStateDraw(player));
 		}
-		else if (packet.type == BasicActionState.PLAY.getID())
+		else if (type == BasicActionState.PLAY)
 		{
 			client.getGameState().setActionState(new ActionStatePlay(player, packet.data));
 		}
-		else if (packet.type == BasicActionState.DISCARD.getID())
+		else if (type == BasicActionState.DISCARD)
 		{
 			client.getGameState().setActionState(new ActionStateDiscard(player));
 		}
-		else if (packet.type == BasicActionState.FINISH_TURN.getID())
+		else if (type == BasicActionState.FINISH_TURN)
 		{
 			client.getGameState().setActionState(new ActionStateFinishTurn(player));
 		}
-		else if (packet.type == BasicActionState.TARGET_PLAYER.getID())
+		else if (type == BasicActionState.TARGET_PLAYER)
 		{
 			client.getGameState().setActionState(new ActionStateTargetPlayer(player));
 		}
-		else if (packet.type == BasicActionState.TARGET_PLAYER_PROPERTY.getID())
+		else if (type == BasicActionState.TARGET_PLAYER_PROPERTY)
 		{
 			client.getGameState().setActionState(new ActionStateTargetPlayerProperty(player));
 		}
-		else if (packet.type == BasicActionState.TARGET_SELF_PLAYER_PROPERTY.getID())
+		else if (type == BasicActionState.TARGET_SELF_PLAYER_PROPERTY)
 		{
 			client.getGameState().setActionState(new ActionStateTargetSelfPlayerProperty(player));
 		}
-		else if (packet.type == BasicActionState.TARGET_ANY_PROPERTY.getID())
+		else if (type == BasicActionState.TARGET_ANY_PROPERTY)
 		{
 			client.getGameState().setActionState(new ActionStateTargetAnyProperty(player));
 		}
-		else if (packet.type == BasicActionState.TARGET_PLAYER_MONOPOLY.getID())
+		else if (type == BasicActionState.TARGET_PLAYER_MONOPOLY)
 		{
 			client.getGameState().setActionState(new ActionStateTargetPlayerMonopoly(player));
 		}
-		else if (packet.type == BasicActionState.PLAYER_TARGETED.getID())
+		else if (type == BasicActionState.PLAYER_TARGETED)
 		{
 			client.getGameState().setActionState(new ActionStatePlayerTargeted(player, client.getPlayerByID(packet.data)));
 		}
@@ -546,7 +534,7 @@ public class NetClientHandler extends NetHandler
 		Player player = client.getPlayerByID(packet.playerID);
 		MDClientButton b = player.getUI().getAndCreateButton(player, packet.id);
 		b.setEnabled(packet.enabled);
-		b.setColorScheme(packet.color == 0 ? ButtonColorScheme.NORMAL : ButtonColorScheme.ALERT);
+		b.setColorScheme(ButtonColorScheme.fromID(packet.color));
 		b.setText(packet.name);
 		b.setPriority(packet.priority);
 		b.setMaxSize(packet.maxSize);
@@ -566,6 +554,20 @@ public class NetClientHandler extends NetHandler
 				return;
 			}
 		}
+	}
+	
+	public void handleCardButton(PacketCardButton packet)
+	{
+		Card card = Card.getCard(packet.cardID);
+		CardButtonPosition pos = CardButtonPosition.fromID(packet.pos);
+		card.setButton(pos, new CardButton(packet.text, pos, CardButtonType.fromID(packet.type),
+				ButtonColorScheme.fromID(packet.color)));
+	}
+	
+	public void handleDestroyCardButton(PacketDestroyCardButton packet)
+	{
+		Card card = Card.getCard(packet.cardID);
+		card.removeButton(CardButtonPosition.fromID(packet.pos));
 	}
 	
 	/**

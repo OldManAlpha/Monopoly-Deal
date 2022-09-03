@@ -1,6 +1,5 @@
 package oldmana.md.server.card;
 
-import oldmana.md.server.card.type.CardType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

@@ -1,6 +1,5 @@
 package oldmana.md.server.card.collection;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -75,7 +74,7 @@ public class Deck extends CardCollection
 		}
 		else
 		{
-			List<Card> cards = new ArrayList<Card>(getServer().getDiscardPile().getCards());
+			List<Card> cards = getServer().getDiscardPile().getCards(true);
 			Collections.reverse(cards);
 			for (Card card : cards)
 			{
@@ -85,6 +84,7 @@ public class Deck extends CardCollection
 			getServer().getEventManager().callEvent(new DeckReshuffledEvent(this));
 			if (getCardCount() == 0) // That'd be kinda bad..
 			{
+				System.out.println("Deck and discard pile are out of cards!");
 				return null;
 			}
 			return drawCard(player, speed);

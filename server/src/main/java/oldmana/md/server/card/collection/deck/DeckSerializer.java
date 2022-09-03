@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 
 import oldmana.md.server.card.CardRegistry;
 import oldmana.md.server.card.CardTemplate;
-import oldmana.md.server.card.type.CardType;
+import oldmana.md.server.card.CardType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

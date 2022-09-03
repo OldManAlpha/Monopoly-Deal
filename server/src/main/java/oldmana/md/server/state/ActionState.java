@@ -133,7 +133,13 @@ public abstract class ActionState
 	
 	public boolean canRefuse(Player player, Player target)
 	{
-		return (isTarget(player) && getActionOwner() == target && !isRefused(player)) || (getActionOwner() == player && isTarget(target) && isRefused(target));
+		return (isTarget(player) && getActionOwner() == target && !isRefused(player)) ||
+				(getActionOwner() == player && isTarget(target) && isRefused(target));
+	}
+	
+	public boolean canRefuseAny(Player player)
+	{
+		return (isTarget(player) && !isRefused(player)) || (getActionOwner() == player && getNumberOfRefused() > 0);
 	}
 	
 	public void refuse(Player player, Player target)

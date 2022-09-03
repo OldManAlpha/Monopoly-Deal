@@ -10,7 +10,8 @@ public class CommandGameRule extends Command
 {
 	public CommandGameRule()
 	{
-		super("gamerule", null, new String[] {"/gamerule setwin [Monopoly Count]", "/gamerule rentall [true/false]", "/gamerule dealbreakerdiscard [true/false]"}, 
+		super("gamerule", null, new String[] {"/gamerule setwin monopoly [Monopoly Count]",
+						"/gamerule rentall [true/false]", "/gamerule dealbreakerdiscard [true/false]"},
 				true);
 	}
 	

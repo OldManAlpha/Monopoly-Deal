@@ -4,15 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oldmana.md.client.card.Card;
-import oldmana.md.client.card.CardActionDoubleTheRent;
-import oldmana.md.client.card.CardActionActionCounter;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.Bank;
 import oldmana.md.client.card.collection.Hand;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.component.collection.MDBank;
-import oldmana.md.client.gui.component.collection.MDHand;
 import oldmana.md.client.gui.component.collection.MDInvisibleHand;
 import oldmana.md.client.gui.component.large.MDPlayer;
 
@@ -94,51 +91,6 @@ public class Player
 	public Bank getBank()
 	{
 		return bank;
-	}
-	
-	public boolean hasJustSayNo()
-	{
-		if (this instanceof ThePlayer)
-		{
-			for (Card card : getHand().getCards())
-			{
-				if (card instanceof CardActionActionCounter)
-				{
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	public boolean hasDoubleTheRent()
-	{
-		if (this instanceof ThePlayer)
-		{
-			for (Card card : getHand().getCards())
-			{
-				if (card instanceof CardActionDoubleTheRent)
-				{
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	public CardActionDoubleTheRent getFirstDoubleTheRent()
-	{
-		if (this instanceof ThePlayer)
-		{
-			for (Card card : getHand().getCards())
-			{
-				if (card instanceof CardActionDoubleTheRent)
-				{
-					return (CardActionDoubleTheRent) card;
-				}
-			}
-		}
-		return null;
 	}
 	
 	public boolean hasAllPropertiesInHand()

@@ -8,7 +8,6 @@ import java.util.Map;
 
 import oldmana.md.client.Player;
 import oldmana.md.client.card.Card;
-import oldmana.md.client.card.CardActionActionCounter;
 import oldmana.md.client.gui.action.ActionScreenRent;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDButton.ButtonColorScheme;
@@ -42,12 +41,6 @@ public class ActionStateRent extends ActionState
 		{
 			super.onPreTargetRemoved(player);
 		}
-	}
-	
-	@Override
-	public void onActionCounter(CardActionActionCounter jsn)
-	{
-		super.onActionCounter(jsn);
 	}
 	
 	@Override

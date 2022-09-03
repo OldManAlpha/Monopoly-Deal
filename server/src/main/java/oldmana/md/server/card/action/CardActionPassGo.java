@@ -4,7 +4,7 @@ import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.collection.Deck;
-import oldmana.md.server.card.type.CardType;
+import oldmana.md.server.card.CardType;
 
 public class CardActionPassGo extends CardAction
 {

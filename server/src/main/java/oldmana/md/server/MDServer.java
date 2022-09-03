@@ -5,13 +5,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,9 +26,8 @@ import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardMoney;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.CardRegistry;
-import oldmana.md.server.card.CardSpecial;
 import oldmana.md.server.card.collection.deck.CustomDeck.DeckLoadFailureException;
-import oldmana.md.server.card.type.CardType;
+import oldmana.md.server.card.CardType;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardDescription;
@@ -54,6 +51,7 @@ import oldmana.md.server.card.collection.deck.CustomDeck;
 import oldmana.md.server.card.collection.deck.DeckStack;
 import oldmana.md.server.card.collection.deck.VanillaDeck;
 import oldmana.md.server.event.EventManager;
+import oldmana.md.server.event.PlayerRemovedEvent;
 import oldmana.md.server.net.IncomingConnectionsThread;
 import oldmana.md.server.net.NetServerHandler;
 import oldmana.md.server.rules.GameRules;
@@ -68,10 +66,12 @@ public class MDServer
 	
 	public static final String VERSION = "0.6.4 Dev";
 	
+	private File dataFolder;
+	
 	private List<MDMod> mods = new ArrayList<MDMod>();
 	
-	private ServerConfig config = new ServerConfig();
-	private PlayerRegistry playerRegistry = new PlayerRegistry();
+	private ServerConfig config;
+	private PlayerRegistry playerRegistry;
 	
 	private List<Client> newClients = new ArrayList<Client>();
 	
@@ -92,15 +92,15 @@ public class MDServer
 	
 	private Console consoleSender = new Console();
 	private CommandHandler cmdHandler = new CommandHandler();
-	
+
 	private MDScheduler scheduler = new MDScheduler();
-	
+
 	private final List<String> cmdQueue = Collections.synchronizedList(new ArrayList<String>());
-	
-	private boolean shutdown = false;
-	
+
+	private volatile boolean shutdown = false;
+
 	private GameRules rules = new GameRules();
-	
+
 	private int tickCount;
 	
 	private boolean verbose;
@@ -111,7 +111,15 @@ public class MDServer
 	
 	public MDServer()
 	{
+		this(new File(System.getProperty("user.dir")));
+	}
+	
+	public MDServer(File dataFolder)
+	{
 		instance = this;
+		this.dataFolder = dataFolder;
+		config = new ServerConfig();
+		playerRegistry = new PlayerRegistry();
 	}
 	
 	public void startServer()
@@ -122,6 +130,9 @@ public class MDServer
 		System.out.println("Starting Monopoly Deal Server Version " + VERSION);
 		
 		registerDefaultCards();
+		
+		gameState = new GameState(this);
+		gameState.setActionState(new ActionStateDoNothing());
 		
 		voidCollection = new VoidCollection();
 		decks.put("vanilla", new VanillaDeck());
@@ -142,8 +153,6 @@ public class MDServer
 		}
 		System.out.println("Using port " + port);
 		rules.setWinCondition(new PropertySetCondition(3));
-		gameState = new GameState(this);
-		gameState.setActionState(new ActionStateDoNothing());
 		cmdHandler.registerDefaultCommands();
 		playerRegistry.loadPlayers();
 		
@@ -223,9 +232,9 @@ public class MDServer
 			{
 				for (Player player : getPlayers())
 				{
-					if (player instanceof Bot)
+					if (player.isBot())
 					{
-						((Bot) player).doAIAction();
+						player.doAIAction();
 					}
 				}
 			}
@@ -292,7 +301,7 @@ public class MDServer
 		// Process packets
 		for (Player player : getPlayers())
 		{
-			if (!(player instanceof Bot) && player.isConnected())
+			if (player.isConnected())
 			{
 				if (player.getNet().isClosed())
 				{
@@ -317,7 +326,14 @@ public class MDServer
 		
 		scheduler.runTick();
 		
+		gameState.tick();
+		
 		tickCount++;
+	}
+	
+	public File getDataFolder()
+	{
+		return dataFolder;
 	}
 	
 	public void shutdown()
@@ -332,7 +348,7 @@ public class MDServer
 	
 	public void loadMods()
 	{
-		File modsFolder = new File("mods");
+		File modsFolder = new File(getDataFolder(), "mods");
 		if (!modsFolder.exists())
 		{
 			modsFolder.mkdir();
@@ -394,7 +410,7 @@ public class MDServer
 	
 	public void loadDecks()
 	{
-		File folder = new File("decks");
+		File folder = new File(getDataFolder(), "decks");
 		if (!folder.exists())
 		{
 			folder.mkdir();
@@ -429,8 +445,7 @@ public class MDServer
 		CardType.ACTION = CardRegistry.registerCardType(CardAction.class);
 		CardType.MONEY = CardRegistry.registerCardType(CardMoney.class);
 		CardType.PROPERTY = CardRegistry.registerCardType(CardProperty.class);
-		CardRegistry.registerCardType(CardSpecial.class);
-		//CardRegistry.registerCardType(CardBuilding.class);
+		//CardRegistry.registerCardType(CardBuilding.class); Soon(TM)
 		
 		CardType.DEAL_BREAKER = CardRegistry.registerCardType(CardActionDealBreaker.class);
 		CardType.DEBT_COLLECTOR = CardRegistry.registerCardType(CardActionDebtCollector.class);
@@ -535,6 +550,7 @@ public class MDServer
 		{
 			p.removeButtons(player);
 		}
+		eventManager.callEvent(new PlayerRemovedEvent(player));
 		broadcastPacket(new PacketDestroyPlayer(player.getID()));
 	}
 	
@@ -614,7 +630,7 @@ public class MDServer
 	
 	public void loadSounds()
 	{
-		File soundsFolder = new File("sounds");
+		File soundsFolder = new File(getDataFolder(), "sounds");
 		if (!soundsFolder.exists())
 		{
 			soundsFolder.mkdir();
@@ -733,7 +749,8 @@ public class MDServer
 			player.sendPacket(other.getBank().getCollectionDataPacket());
 			player.sendPacket(player == other ? other.getHand().getOwnerHandDataPacket() : other.getHand().getCollectionDataPacket());
 		}
-		getGameState().resendActionState(player);
+		player.resendActionState();
+		player.resendCardButtons();
 		player.sendButtonPackets();
 		player.sendUndoStatus();
 		getGameState().sendStatus(player);
@@ -795,35 +812,4 @@ public class MDServer
 	{
 		return instance;
 	}
-	
-	public class MDPrintStream extends PrintStream
-	{
-		private PrintStream wrapped;
-		
-		public MDPrintStream(PrintStream out)
-		{
-			super(out);
-			wrapped = out;
-		}
-
-		@Override
-		public void println(String str)
-		{
-			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss"); 
-			wrapped.println("[" + dtf.format(LocalDateTime.now()) + "] " + str);
-		}
-		
-		@Override
-		public void println(boolean b)
-		{
-			println("" + b);
-		}
-		
-		@Override
-		public void println(int i)
-		{
-			println("" + i);
-		}
-	}
-	
 }

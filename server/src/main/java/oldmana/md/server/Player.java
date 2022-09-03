@@ -16,6 +16,8 @@ import oldmana.md.net.packet.server.PacketPlayerStatus;
 import oldmana.md.net.packet.server.PacketUndoCardStatus;
 import oldmana.md.net.packet.universal.PacketChat;
 import oldmana.md.server.ClientButton.ButtonTag;
+import oldmana.md.server.ai.BasicAI;
+import oldmana.md.server.ai.PlayerAI;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardProperty;
@@ -30,6 +32,8 @@ import oldmana.md.server.event.PostCardBankedEvent;
 import oldmana.md.server.event.PreActionCardPlayedEvent;
 import oldmana.md.server.event.PreCardBankedEvent;
 import oldmana.md.server.net.ConnectionThread;
+import oldmana.md.server.state.ActionStatePlay;
+import oldmana.md.server.state.GameState;
 import oldmana.md.server.status.StatusEffect;
 
 public class Player extends Client implements CommandSender
@@ -62,6 +66,9 @@ public class Player extends Client implements CommandSender
 	private int lastPing;
 	private boolean sentPing = false;
 	
+	private boolean bot;
+	private PlayerAI ai;
+	
 	public Player(MDServer server, int uid, ConnectionThread net, String name, boolean op)
 	{
 		super(net);
@@ -77,6 +84,17 @@ public class Player extends Client implements CommandSender
 		propertySets = new ArrayList<PropertySet>();
 		
 		lastPing = server.getTickCount();
+		
+		setAI(new BasicAI(this));
+	}
+	
+	/**
+	 * Bot constructor
+	 */
+	public Player(MDServer server, String name)
+	{
+		this(server, -(nextID + 1), null, name, false);
+		bot = true;
 	}
 	
 	public int getUID()
@@ -94,6 +112,10 @@ public class Player extends Client implements CommandSender
 		return name;
 	}
 	
+	/**
+	 * Returns a description of the player formatted like: "{Name} (ID: {Id})"
+	 * @return The description of the player
+	 */
 	public String getDescription()
 	{
 		return name + " (ID: " + id + ")";
@@ -250,6 +272,13 @@ public class Player extends Client implements CommandSender
 	{
 		List<CardProperty> cards = new ArrayList<CardProperty>();
 		getPropertySets().forEach((set) -> cards.addAll(set.getPropertyCards()));
+		return cards;
+	}
+	
+	public List<Card> getAllTableCards()
+	{
+		List<Card> cards = new ArrayList<Card>(getBank().getCards());
+		getPropertySets().forEach((set) -> cards.addAll(set.getCards()));
 		return cards;
 	}
 	
@@ -714,6 +743,21 @@ public class Player extends Client implements CommandSender
 		return all;
 	}
 	
+	public void resendCardButtons()
+	{
+		getHand().resendCardButtons();
+	}
+	
+	/**
+	 * This returns true when it's the player's turn and the current state allows playing cards.
+	 * @return Whether the player can play cards
+	 */
+	public boolean canPlayCards()
+	{
+		GameState gs = getServer().getGameState();
+		return gs.getActivePlayer() == this && gs.getActionState() instanceof ActionStatePlay;
+	}
+	
 	public void draw()
 	{
 		server.getDeck().drawCards(this, 2);
@@ -740,7 +784,7 @@ public class Player extends Client implements CommandSender
 		}
 		else
 		{
-			server.getGameState().resendActionState(this);
+			resendActionState();
 		}
 	}
 	
@@ -781,6 +825,23 @@ public class Player extends Client implements CommandSender
 	
 	public void playCardAction(CardAction card)
 	{
+		playCardAction(card, false);
+	}
+	
+	/**
+	 * A sneaky play will bypass turn checks and not consume a turn.
+	 */
+	public void playCardAction(CardAction card, boolean sneaky)
+	{
+		if (!sneaky && (!(server.getGameState().getActionState() instanceof ActionStatePlay)
+				|| server.getGameState().getActivePlayer() != this))
+		{
+			System.out.println("Warning: " + getName() + " tried to play " + card.getName() +
+					" (ID: " + card.getID() + ") without being able to!");
+			resendActionState();
+			return;
+		}
+		
 		PreActionCardPlayedEvent event = new PreActionCardPlayedEvent(this, card);
 		server.getEventManager().callEvent(event);
 		if (event.isCanceled())
@@ -788,15 +849,18 @@ public class Player extends Client implements CommandSender
 			return;
 		}
 		card.transfer(server.getDiscardPile());
-		if (card.clearsRevocableCards())
+		if (!sneaky)
 		{
-			clearRevocableCards();
+			if (card.clearsRevocableCards())
+			{
+				clearRevocableCards();
+			}
+			if (card.isRevocable())
+			{
+				addRevocableCard(card);
+			}
+			server.getGameState().decrementTurn();
 		}
-		if (card.isRevocable())
-		{
-			addRevocableCard(card);
-		}
-		server.getGameState().decrementTurn();
 		card.playCard(this);
 		
 		System.out.println(getName() + " plays action card " + card.getName());
@@ -833,6 +897,11 @@ public class Player extends Client implements CommandSender
 		server.broadcastMessage(getName() + ": " + msg, true);
 	}
 	
+	public void resendActionState()
+	{
+		server.getGameState().resendActionState(this);
+	}
+	
 	public Packet[] getPropertySetPackets()
 	{
 		Packet[] packets = new Packet[propertySets.size()];
@@ -845,7 +914,7 @@ public class Player extends Client implements CommandSender
 	
 	public Packet getInfoPacket()
 	{
-		return new PacketPlayerInfo(getID(), getName(), isConnected());
+		return new PacketPlayerInfo(getID(), getName(), isConnected() || isBot());
 	}
 	
 	@Override
@@ -883,6 +952,31 @@ public class Player extends Client implements CommandSender
 		sendPacket(new PacketKick(reason));
 		setOnline(false);
 		System.out.println("Player " + getName() + " (ID: " + getID() + ") was disconnected for '" + reason + "'");
+	}
+	
+	public boolean isBot()
+	{
+		return bot;
+	}
+	
+	public void setBot(boolean bot)
+	{
+		this.bot = bot;
+	}
+	
+	public void setAI(PlayerAI ai)
+	{
+		this.ai = ai;
+	}
+	
+	public PlayerAI getAI()
+	{
+		return ai;
+	}
+	
+	public void doAIAction()
+	{
+		ai.doAction();
 	}
 	
 	protected MDServer getServer()

@@ -1,17 +1,18 @@
 package oldmana.md.server.card.action;
 
 import oldmana.md.server.Player;
-import oldmana.md.server.card.CardSpecial;
+import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardTemplate;
-import oldmana.md.server.card.type.CardType;
+import oldmana.md.server.card.control.CardButton;
+import oldmana.md.server.card.control.CardButton.CardButtonType;
+import oldmana.md.server.card.control.CardControls;
+import oldmana.md.server.card.CardType;
 import oldmana.md.server.state.ActionState;
 
-public class CardActionJustSayNo extends CardSpecial
+public class CardActionJustSayNo extends CardAction
 {
-	@Override
-	public void playCard(Player player, int data)
+	public void playCard(Player player, Player target)
 	{
-		Player target = getServer().getPlayerByID(data);
 		ActionState state = getServer().getGameState().getActionState();
 		if (state.getActionOwner() == player && state.isTarget(target) && state.getActionTarget(target).isRefused())
 		{
@@ -31,9 +32,29 @@ public class CardActionJustSayNo extends CardSpecial
 	}
 	
 	@Override
-	public CardTypeLegacy getTypeLegacy()
+	public boolean canPlayCard(Player player)
 	{
-		return CardTypeLegacy.ACTION_COUNTER;
+		return false;
+	}
+	
+	@Override
+	public CardControls createControls()
+	{
+		CardControls controls = super.createControls();
+		CardButton play = new CardButton("Play", CardButton.TOP, CardButtonType.ACTION_COUNTER);
+		play.setCondition((player, card) -> getServer().getGameState().getActionState().canRefuseAny(player));
+		play.setListener((player, card, data) ->
+		{
+			Player target = getServer().getPlayerByID(data);
+			ActionState state = getServer().getGameState().getActionState();
+			if (state.canRefuse(player, target))
+			{
+				((CardActionJustSayNo) card).playCard(player, target);
+			}
+		});
+		controls.addButton(play);
+		
+		return controls;
 	}
 	
 	@Override

@@ -9,8 +9,8 @@ import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.CardRegistry;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.collection.Hand;
-import oldmana.md.server.card.type.CardType;
-import oldmana.md.server.card.type.CardType.CardTemplateInfo;
+import oldmana.md.server.card.CardType;
+import oldmana.md.server.card.CardType.CardTemplateInfo;
 
 import java.util.List;
 import java.util.Map.Entry;

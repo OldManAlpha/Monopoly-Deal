@@ -10,11 +10,10 @@ import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.CardRegistry;
-import oldmana.md.server.card.CardSpecial;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.action.CardActionRent;
-import oldmana.md.server.card.type.CardType;
+import oldmana.md.server.card.CardType;
 
 import java.util.List;
 
@@ -51,7 +50,7 @@ public class CommandCreateCard extends Command
 					if (type.getPrimitive() != null)
 					{
 						Class<?> primitive = type.getPrimitive().getCardClass();
-						if ((primitive == CardAction.class || primitive == CardSpecial.class) && type.isReferringToThis(args[1]))
+						if (primitive == CardAction.class && type.isReferringToThis(args[1]))
 						{
 							card = type.createCard();
 						}

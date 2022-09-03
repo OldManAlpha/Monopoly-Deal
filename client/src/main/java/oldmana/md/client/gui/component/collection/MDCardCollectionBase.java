@@ -116,12 +116,17 @@ public abstract class MDCardCollectionBase extends MDComponent
 	
 	public Point getLocationOf(int cardIndex)
 	{
-		return getLocationOf(cardIndex, getCollection().getCardCount());
+		return getLocationOf(cardIndex, getCardCount());
 	}
 	
 	public Point getScreenLocationOf(int cardIndex)
 	{
-		return SwingUtilities.convertPoint(this, getLocationOf(cardIndex), getClient().getWindow().getTableScreen());
+		return getScreenLocationOf(cardIndex, getCardCount());
+	}
+	
+	public Point getScreenLocationOf(int cardIndex, int cardCount)
+	{
+		return SwingUtilities.convertPoint(this, getLocationOf(cardIndex, cardCount), getClient().getWindow().getTableScreen());
 	}
 	
 	public abstract void update();

@@ -2,7 +2,9 @@ package oldmana.md.client.card;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CardProperty extends Card
 {
@@ -63,7 +65,7 @@ public class CardProperty extends Card
 	public static class PropertyColor
 	{
 		private static List<PropertyColor> colors = new ArrayList<PropertyColor>();
-		
+		private static Map<Integer, PropertyColor> idColorMap = new HashMap<Integer, PropertyColor>();
 		
 		private int id;
 		
@@ -76,21 +78,30 @@ public class CardProperty extends Card
 		
 		private byte[] rent;
 		
+		public PropertyColor() {}
 		
-		public PropertyColor(int id, String name, String label, Color color, boolean buildable, byte... rent)
+		public static PropertyColor create(int id, String name, String label, Color color, boolean buildable, byte... rent)
 		{
-			this.id = id;
+			PropertyColor theColor = fromID(id);
+			if (theColor == null)
+			{
+				theColor = new PropertyColor();
+				colors.add(theColor);
+				idColorMap.put(id, theColor);
+			}
 			
-			this.name = name;
-			this.label = label;
+			theColor.id = id;
 			
-			this.color = color;
+			theColor.name = name;
+			theColor.label = label;
 			
-			this.buildable = buildable;
+			theColor.color = color;
 			
-			this.rent = rent;
+			theColor.buildable = buildable;
 			
-			colors.add(this);
+			theColor.rent = rent;
+			
+			return theColor;
 		}
 		
 		public int getRent(int propertyCount)
@@ -130,14 +141,7 @@ public class CardProperty extends Card
 		
 		public static PropertyColor fromID(int id)
 		{
-			for (PropertyColor color : getAllColors())
-			{
-				if (color.getID() == id)
-				{
-					return color;
-				}
-			}
-			return null;
+			return idColorMap.get(id);
 		}
 		
 		public static List<PropertyColor> fromIDs(byte[] ids)
@@ -158,6 +162,7 @@ public class CardProperty extends Card
 		public static void clearColors()
 		{
 			colors.clear();
+			idColorMap.clear();
 		}
 	}
 }

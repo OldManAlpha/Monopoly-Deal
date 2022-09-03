@@ -22,7 +22,7 @@ public class ServerConfig
 	
 	public ServerConfig()
 	{
-		file = new File("config.txt");
+		file = new File(MDServer.getInstance().getDataFolder(), "config.txt");
 	}
 	
 	public void loadConfig()

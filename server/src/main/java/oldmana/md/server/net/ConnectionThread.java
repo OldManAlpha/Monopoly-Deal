@@ -24,6 +24,7 @@ public class ConnectionThread extends Thread
 		inPackets = Collections.synchronizedList(new ArrayList<Packet>());
 		outPackets = Collections.synchronizedList(new ArrayList<Packet>());
 		
+		setDaemon(true);
 		start();
 	}
 	

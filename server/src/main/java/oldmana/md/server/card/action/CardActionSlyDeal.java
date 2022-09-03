@@ -4,7 +4,7 @@ import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.collection.PropertySet;
-import oldmana.md.server.card.type.CardType;
+import oldmana.md.server.card.CardType;
 import oldmana.md.server.state.ActionStateTargetSlyDeal;
 
 public class CardActionSlyDeal extends CardAction
@@ -42,8 +42,8 @@ public class CardActionSlyDeal extends CardAction
 		template.put("displayOffsetY", 2);
 		template.putStrings("description", "Steal a property from another player that is not part of a full set. " +
 				"10-Color property wild cards cannot be stolen with this card.");
-		template.put("revocable", false);
-		template.put("clearsRevocableCards", true);
+		template.put("revocable", true);
+		template.put("clearsRevocableCards", false);
 		return type;
 	}
 }

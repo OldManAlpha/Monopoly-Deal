@@ -1,14 +1,15 @@
 package oldmana.md.client.state.client;
 
 import oldmana.md.client.Player;
-import oldmana.md.client.card.CardActionActionCounter;
+import oldmana.md.client.card.Card;
+import oldmana.md.client.card.CardButton;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDComponent;
 import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.component.collection.MDHand;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.state.ActionState;
-import oldmana.md.net.packet.client.action.PacketActionPlayCardSpecial;
+import oldmana.md.net.packet.client.action.PacketActionUseCardButton;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -17,7 +18,8 @@ import java.util.List;
 
 public class ActionStateClientCounterPlayer extends ActionStateClient
 {
-	private CardActionActionCounter card;
+	private Card card;
+	private CardButton cardButton;
 	
 	private List<MDComponent> cardSelect;
 	private List<MDSelection> selects;
@@ -27,9 +29,10 @@ public class ActionStateClientCounterPlayer extends ActionStateClient
 	private MDSelection selectedPlayerUI;
 	
 	
-	public ActionStateClientCounterPlayer(CardActionActionCounter card)
+	public ActionStateClientCounterPlayer(Card card, CardButton cardButton)
 	{
 		this.card = card;
+		this.cardButton = cardButton;
 	}
 	
 	@Override
@@ -82,7 +85,8 @@ public class ActionStateClientCounterPlayer extends ActionStateClient
 				button.setEnabled(true);
 				button.setListener(() ->
 				{
-					getClient().sendPacket(new PacketActionPlayCardSpecial(card.getID(), selectedPlayer.getID()));
+					getClient().sendPacket(new PacketActionUseCardButton(card.getID(),
+							cardButton.getPosition().getID(), selectedPlayer.getID()));
 					cleanup();
 					getClient().setAwaitingResponse(true);
 					button.setEnabled(false);

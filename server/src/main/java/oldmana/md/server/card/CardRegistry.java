@@ -1,7 +1,5 @@
 package oldmana.md.server.card;
 
-import oldmana.md.server.card.type.CardType;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,9 +65,13 @@ public class CardRegistry
 			registerCardType(type);
 			return type;
 		}
-		catch (ReflectiveOperationException e)
+		catch (NoSuchMethodException e)
 		{
 			throw new RuntimeException("Class " + cardClass.getName() + " does not contain static createType method", e);
+		}
+		catch (ReflectiveOperationException e)
+		{
+			throw new RuntimeException("Error while creating the card type in class " + cardClass.getName());
 		}
 	}
 }

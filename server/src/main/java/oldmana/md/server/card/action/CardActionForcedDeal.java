@@ -4,7 +4,7 @@ import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.collection.PropertySet;
-import oldmana.md.server.card.type.CardType;
+import oldmana.md.server.card.CardType;
 import oldmana.md.server.state.ActionStateTargetForcedDeal;
 
 public class CardActionForcedDeal extends CardAction

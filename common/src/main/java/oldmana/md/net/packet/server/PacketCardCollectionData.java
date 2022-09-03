@@ -27,7 +27,7 @@ public class PacketCardCollectionData extends Packet
 		this.type = (byte) type.getID();
 	}
 	
-	public static enum CardCollectionType
+	public enum CardCollectionType
 	{
 		DECK(0), DISCARD_PILE(1), BANK(2), HAND(3), VOID(4);
 		
@@ -41,6 +41,18 @@ public class PacketCardCollectionData extends Packet
 		public int getID()
 		{
 			return id;
+		}
+		
+		public static CardCollectionType fromID(int id)
+		{
+			for (CardCollectionType type : values())
+			{
+				if (type.getID() == id)
+				{
+					return type;
+				}
+			}
+			return null;
 		}
 	}
 }

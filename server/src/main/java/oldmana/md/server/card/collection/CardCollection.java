@@ -175,6 +175,7 @@ public abstract class CardCollection implements Iterable<Card>
 			player.sendPacket(packet);
 		}
 		getServer().getEventManager().callEvent(new CardMovedEvent(card, this, to, index, speed));
+		getServer().getGameState().setStateChanged();
 	}
 	
 	public void setOwner(Player player)

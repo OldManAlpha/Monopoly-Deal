@@ -11,7 +11,7 @@ public class Client
 	public Client(ConnectionThread net)
 	{
 		this.net = net;
-		connected = true;
+		connected = net != null;
 	}
 	
 	public void setNet(ConnectionThread net)

@@ -1,14 +1,15 @@
 package oldmana.md.server.card.action;
 
-import java.util.List;
-
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardActionRentData;
 import oldmana.md.server.Player;
+import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.CardTemplate;
-import oldmana.md.server.card.type.CardType;
+import oldmana.md.server.card.control.CardButton;
+import oldmana.md.server.card.control.CardControls;
+import oldmana.md.server.card.CardType;
 import oldmana.md.server.state.ActionStateRent;
 import oldmana.md.server.state.ActionStateTargetRent;
 
@@ -32,6 +33,51 @@ public class CardActionRent extends CardAction
 		super.applyTemplate(template);
 		this.colors = template.getColorArray("colors");
 		setName(getName(colors));
+	}
+	
+	@Override
+	public CardControls createControls()
+	{
+		CardControls controls = super.createControls();
+		CardButton doubleButton = new CardButton("Double Rent", CardButton.CENTER);
+		doubleButton.setCondition((player, card) ->
+		{
+			if (!player.canPlayCards() || getServer().getGameState().getTurnsRemaining() < 2)
+			{
+				return false;
+			}
+			for (Card c : player.getHand())
+			{
+				if (c instanceof CardActionDoubleTheRent)
+				{
+					return true;
+				}
+			}
+			return false;
+		});
+		doubleButton.setListener((player, card, data) ->
+		{
+			Card doubleRent = null;
+			for (Card c : player.getHand())
+			{
+				if (c instanceof CardActionDoubleTheRent)
+				{
+					doubleRent = c;
+					break;
+				}
+			}
+			if (doubleRent == null)
+			{
+				player.resendActionState();
+				return;
+			}
+			card.transfer(getServer().getDiscardPile());
+			doubleRent.transfer(getServer().getDiscardPile());
+			getServer().getGameState().decrementTurns(2);
+			((CardActionRent) card).playCard(player, 2);
+		});
+		controls.addButton(doubleButton);
+		return controls;
 	}
 	
 	public PropertyColor[] getRentColors()

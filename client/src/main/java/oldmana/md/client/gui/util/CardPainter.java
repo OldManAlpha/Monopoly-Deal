@@ -15,7 +15,6 @@ import oldmana.md.client.card.CardAction;
 import oldmana.md.client.card.CardActionRent;
 import oldmana.md.client.card.CardMoney;
 import oldmana.md.client.card.CardProperty;
-import oldmana.md.client.card.CardSpecial;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
@@ -58,7 +57,6 @@ public class CardPainter
 		boolean money = card instanceof CardMoney;
 		boolean property = card instanceof CardProperty;
 		boolean action = card instanceof CardAction;
-		boolean special = card instanceof CardSpecial;
 		
 		Graphics2D g = (Graphics2D) gr;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -143,7 +141,7 @@ public class CardPainter
 						g.fillOval(scale(4), scale(4), scale(12), scale(12));
 						g.fillOval(scale(56 - 12) - 1, scale(86 - 12) - 1, scale(12), scale(12));
 					}
-					if (action || special)
+					if (action)
 					{
 						g.setColor(new Color(200, 0, 0));
 					}

@@ -1,14 +1,7 @@
-package oldmana.md.server.card.type;
+package oldmana.md.server.card;
 
 import oldmana.md.server.MDServer;
-import oldmana.md.server.card.Card;
 import oldmana.md.server.card.Card.CardDescription;
-import oldmana.md.server.card.CardAction;
-import oldmana.md.server.card.CardBuilding;
-import oldmana.md.server.card.CardMoney;
-import oldmana.md.server.card.CardProperty;
-import oldmana.md.server.card.CardRegistry;
-import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.action.CardActionDealBreaker;
 import oldmana.md.server.card.action.CardActionDebtCollector;
 import oldmana.md.server.card.action.CardActionDoubleTheRent;
@@ -332,9 +325,8 @@ public class CardType<T extends Card>
 	}
 	
 	/**
-	 * Create a card of this type with the provided template. The returned Card will not yet have been added to a
-	 * collection, not been sent to clients, and have no type and template. Should only be used if you know what
-	 * you're doing.
+	 * Create a card of this type. The returned Card will not yet have been added to a collection, not been
+	 * sent to clients, and have no type and template. Should only be used if you know what you're doing.
 	 * @return A newly created Card
 	 */
 	public T createCardRaw()

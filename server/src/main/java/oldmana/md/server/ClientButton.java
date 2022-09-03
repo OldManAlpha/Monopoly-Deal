@@ -29,13 +29,12 @@ public class ClientButton
 		setBlank();
 	}
 	
-	public ClientButton(String text, ButtonColorScheme color, Consumer<ClientButton> listener)
+	public ClientButton(String text)
 	{
 		id = nextID++;
 		this.text = text;
 		this.enabled = true;
-		this.color = color;
-		this.listener = listener;
+		this.color = ButtonColorScheme.NORMAL;
 	}
 	
 	public ClientButton(String text, Consumer<ClientButton> listener)
@@ -44,6 +43,15 @@ public class ClientButton
 		this.text = text;
 		this.enabled = true;
 		this.color = ButtonColorScheme.NORMAL;
+		this.listener = listener;
+	}
+	
+	public ClientButton(String text, ButtonColorScheme color, Consumer<ClientButton> listener)
+	{
+		id = nextID++;
+		this.text = text;
+		this.enabled = true;
+		this.color = color;
 		this.listener = listener;
 	}
 	
@@ -188,23 +196,6 @@ public class ClientButton
 	public void sendUpdate()
 	{
 		owner.sendPacket(new PacketButton(getID(), view.getID(), getText(), isEnabled(), getColor().getID(), getPriority(), getMaxSize()));
-	}
-	
-	public enum ButtonColorScheme
-	{
-		NORMAL(0), ALERT(1);
-		
-		private final int id;
-		
-		ButtonColorScheme(int id)
-		{
-			this.id = id;
-		}
-		
-		public byte getID()
-		{
-			return (byte) id;
-		}
 	}
 	
 	public static class ButtonTag

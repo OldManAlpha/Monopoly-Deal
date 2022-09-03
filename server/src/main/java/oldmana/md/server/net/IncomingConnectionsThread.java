@@ -14,6 +14,7 @@ public class IncomingConnectionsThread extends Thread
 	public IncomingConnectionsThread(int port) throws IOException
 	{
 		server = new MJServer(port);
+		setDaemon(true);
 		start();
 	}
 	

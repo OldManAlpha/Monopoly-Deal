@@ -6,7 +6,11 @@ import java.util.List;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardPropertyData;
-import oldmana.md.server.card.type.CardType;
+import oldmana.md.server.card.control.CardButton;
+import oldmana.md.server.card.control.CardButton.CardButtonType;
+import oldmana.md.server.card.control.CardControls;
+import oldmana.md.server.state.ActionStatePlay;
+import oldmana.md.server.state.GameState;
 
 public class CardProperty extends Card
 {
@@ -21,6 +25,29 @@ public class CardProperty extends Card
 		super.applyTemplate(template);
 		colors = template.getColorList("colors");
 		base = template.getBoolean("base");
+	}
+	
+	@Override
+	public CardControls createControls()
+	{
+		CardControls actions = super.createControls();
+		CardButton play = new CardButton("Play", CardButton.TOP, CardButtonType.PROPERTY);
+		play.setCondition((player, card) ->
+		{
+			GameState gs = getServer().getGameState();
+			return gs.getActivePlayer() == player && gs.getActionState() instanceof ActionStatePlay;
+		});
+		play.setListener((player, card, data) ->
+		{
+			if (!player.getHand().hasCard(card))
+			{
+				player.resendActionState();
+				return;
+			}
+			player.playCardProperty((CardProperty) card, data);
+		});
+		actions.addButton(play);
+		return actions;
 	}
 	
 	public boolean isSingleColor()
@@ -75,12 +102,6 @@ public class CardProperty extends Card
 			types[i] = colors.get(i).getID();
 		}
 		return new PacketCardPropertyData(getID(), getName(), getValue(), types, isBase(), getDescription().getID());
-	}
-	
-	@Override
-	public CardTypeLegacy getTypeLegacy()
-	{
-		return CardTypeLegacy.PROPERTY;
 	}
 	
 	@Override

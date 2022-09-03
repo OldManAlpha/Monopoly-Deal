@@ -28,12 +28,6 @@ public class CardBuilding extends Card
 	}
 	
 	@Override
-	public CardTypeLegacy getTypeLegacy()
-	{
-		return CardTypeLegacy.BUILDING;
-	}
-	
-	@Override
 	public Packet getCardDataPacket()
 	{
 		return new PacketCardBuildingData(getID(), getName(), getValue(), tier, rentAddition, isRevocable(), clearsRevocableCards(), getDisplayName(), 

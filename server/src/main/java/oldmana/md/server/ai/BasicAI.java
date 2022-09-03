@@ -1,7 +1,11 @@
 package oldmana.md.server.ai;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,9 +17,11 @@ import oldmana.md.server.card.CardMoney;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.action.CardActionJustSayNo;
+import oldmana.md.server.card.action.CardActionPassGo;
 import oldmana.md.server.card.action.CardActionRent;
 import oldmana.md.server.card.collection.PropertySet;
-import oldmana.md.server.card.type.CardType;
+import oldmana.md.server.card.CardType;
+import oldmana.md.server.rules.win.PropertySetCondition;
 import oldmana.md.server.state.ActionState;
 import oldmana.md.server.state.ActionStateDiscard;
 import oldmana.md.server.state.ActionStateDoNothing;
@@ -26,6 +32,7 @@ import oldmana.md.server.state.ActionStateRent;
 import oldmana.md.server.state.ActionStateStealMonopoly;
 import oldmana.md.server.state.ActionStateStealProperty;
 import oldmana.md.server.state.ActionStateTargetDebtCollector;
+import oldmana.md.server.state.ActionStateTargetForcedDeal;
 import oldmana.md.server.state.ActionStateTargetPlayerMonopoly;
 import oldmana.md.server.state.ActionStateTargetSlyDeal;
 import oldmana.md.server.state.ActionStateTradeProperties;
@@ -132,18 +139,18 @@ public class BasicAI extends PlayerAI
 	
 	public boolean checkWin()
 	{
-		List<Map<PropertyColor, List<CardProperty>>> combos = getPossibleCombosNew(getPlayer().getAllPropertyCards());
-		for (Map<PropertyColor, List<CardProperty>> combo : combos)
+		List<PropertyCombo> combos = getPossibleCombos(getPlayer().getAllPropertyCards());
+		for (PropertyCombo combo : combos)
 		{
 			Map<PropertyColor, List<CardProperty>> winningSets = new HashMap<PropertyColor, List<CardProperty>>();
 			combo.forEach((color, props) ->
 			{
-				if (color.getMaxProperties() == props.size())
+				if (color != null && color.getMaxProperties() == props.size())
 				{
 					winningSets.put(color, props);
 				}
 			});
-			if (winningSets.size() >= 3)
+			if (winningSets.size() >= ((PropertySetCondition) getServer().getGameRules().getWinCondition()).getSetCount())
 			{
 				winningSets.forEach((color, winningSet) ->
 				{
@@ -171,10 +178,11 @@ public class BasicAI extends PlayerAI
 	private boolean playJSN(ActionState state)
 	{
 		Player player = getPlayer();
+		
 		if (hasCard(player.getHand().getCards(), CardType.JUST_SAY_NO))
 		{
 			CardActionJustSayNo jsn = getCard(player.getHand().getCards(), CardType.JUST_SAY_NO);
-			jsn.playCard(player, state.getActionOwner() == player ? state.getRefused().get(0).getID() : state.getActionOwner().getID());
+			jsn.playCard(player, state.getActionOwner() == player ? state.getRefused().get(0) : state.getActionOwner());
 			return true;
 		}
 		return false;
@@ -212,95 +220,199 @@ public class BasicAI extends PlayerAI
 		}
 	}
 	
-	private List<Card> selectRentPayment(List<Card> bank, List<Card> properties, int rent)
+	public List<Card> selectRentPayment(Player to, List<Card> cards, int rent)
 	{
-		List<Card> payment = new ArrayList<Card>();
-		while (rent > 0)
+		cards.removeIf(card -> card.getValue() == 0);
+		// Don't go through combinations and return all assets if the rent is less than or equal to what we have
+		if (getPlayer().getTotalMonetaryAssets() <= rent)
 		{
-			boolean hasCards = false;
-			for (Card c : bank)
+			return cards;
+		}
+		
+		List<RentCombo> combos = getRentCombos(cards, rent);
+		combos.sort(Comparator.comparingInt(combo -> combo.getValue()));
+		
+		List<RentCombo> propertyless = new ArrayList<RentCombo>();
+		for (RentCombo combo : combos)
+		{
+			if (!combo.hasProperties())
 			{
-				if (c.getValue() > 0)
+				propertyless.add(combo);
+			}
+		}
+		propertyless.sort(Comparator.comparingInt(combo -> (combo.getValue() * 100) + combo.getCards().size()));
+		
+		// If no properties must be forfeited, then just return the cheapest payment
+		if (!propertyless.isEmpty())
+		{
+			return propertyless.get(0).getCards();
+		}
+		
+		List<CardProperty> opponentProps = to.getAllPropertyCards();
+		List<CardProperty> selfProps = getPlayer().getAllPropertyCards();
+		
+		int opponentNeeded = getCardsNeededToWin(opponentProps);
+		int selfNeeded = getCardsNeededToWin(selfProps);
+		
+		Map<Integer, List<RentCombo>> netMap = new HashMap<Integer, List<RentCombo>>();
+		List<RentCombo> losses = new ArrayList<RentCombo>();
+		for (RentCombo combo : combos)
+		{
+			List<CardProperty> comboProps = combo.getProperties();
+			
+			// The properties the opponent will have with this combo
+			List<CardProperty> comboOpponentProps = new ArrayList<CardProperty>(opponentProps);
+			comboOpponentProps.addAll(comboProps);
+			int comboOpponentNeeded = getCardsNeededToWin(comboOpponentProps);
+			if (comboOpponentNeeded == 0) // The opponent will win if we give up these properties!
+			{
+				losses.add(combo);
+			}
+			
+			// The properties the self player will have with this combo
+			List<CardProperty> comboSelfProps = new ArrayList<CardProperty>(selfProps);
+			comboSelfProps.removeAll(comboProps);
+			int comboSelfNeeded = getCardsNeededToWin(comboSelfProps);
+			
+			// Selfish trait could be added here by multiplying self net loss
+			int net = (selfNeeded - comboSelfNeeded) + (comboOpponentNeeded - opponentNeeded);
+			netMap.computeIfAbsent(net, key -> new ArrayList<RentCombo>());
+			netMap.get(net).add(combo);
+		}
+		for (int i = 0 ; i > -20 ; i--)
+		{
+			if (netMap.containsKey(i))
+			{
+				List<RentCombo> bestCombos = netMap.get(i);
+				List<RentCombo> betterBestCombos = new ArrayList<RentCombo>();
+				for (RentCombo combo : bestCombos)
 				{
-					hasCards = true;
-					break;
+					if (!losses.contains(combo))
+					{
+						betterBestCombos.add(combo);
+					}
+				}
+				if (!betterBestCombos.isEmpty())
+				{
+					// Of the best nets, we're going to forfeit the smallest number of properties
+					betterBestCombos.sort(Comparator.comparingInt(combo -> combo.getProperties().size()));
+					return betterBestCombos.get(0).getCards();
 				}
 			}
-			if (!hasCards)
+		}
+		// Admit defeat
+		System.out.println(getPlayer().getName() + " was forced to give a losing payment");
+		return combos.get(0).getCards();
+	}
+	
+	public List<CardProperty> getStealableProperties()
+	{
+		List<CardProperty> stealable = new ArrayList<CardProperty>();
+		for (Player p : getServer().getPlayersExcluding(getPlayer()))
+		{
+			for (PropertySet set : p.getPropertySets())
 			{
-				for (Card c : properties)
+				if (!set.isMonopoly())
 				{
-					if (c.getValue() > 0)
+					for (CardProperty prop : set.getPropertyCards())
 					{
-						hasCards = true;
-						break;
+						if (prop.isBase())
+						{
+							stealable.add(prop);
+						}
 					}
 				}
 			}
-			if (!hasCards)
-			{
-				return payment;
-			}
-			
-			Card match = selectPaymentFrom(bank, rent);
-			
-			if (match != null)
-			{
-				rent -= match.getValue();
-				payment.add(match);
-				bank.remove(match);
-				continue;
-			}
-			
-			match = selectPaymentFrom(properties, rent);
-			
-			if (match != null)
-			{
-				rent -= match.getValue();
-				payment.add(match);
-				properties.remove(match);
-				continue;
-			}
-			return payment;
 		}
-		return payment;
+		return stealable;
 	}
 	
-	private Card selectPaymentFrom(List<Card> cards, int rent)
+	public List<CardProperty> getTradableProperties()
 	{
-		Card match = null;
-		for (Card card : cards)
+		List<CardProperty> tradable = new ArrayList<CardProperty>();
+		for (PropertySet set : getPlayer().getPropertySets())
 		{
-			if (card.getValue() == 0)
+			for (CardProperty prop : set.getPropertyCards())
 			{
-				continue;
-			}
-			
-			// Immediately select the card if it's the perfect value
-			if (card.getValue() == rent)
-			{
-				match = card;
-				break;
-			}
-			
-			if (match == null)
-			{
-				match = card;
-				continue;
-			}
-			
-			// Choose a lower value card if we're already overpaying
-			if (card.getValue() > rent && match.getValue() > card.getValue())
-			{
-				match = card;
-			}
-			// Choose a higher value card if we're already underpaying
-			else if (card.getValue() < rent && match.getValue() < card.getValue())
-			{
-				match = card;
+				if (prop.isBase())
+				{
+					tradable.add(prop);
+				}
 			}
 		}
-		return match;
+		return tradable;
+	}
+	
+	public CardProperty getBestCardToSteal()
+	{
+		int currentNeededToWin = getCardsNeededToWin(getPlayer());
+		List<CardProperty> targets = new ArrayList<CardProperty>();
+		int targetValue = -1;
+		for (CardProperty prop : getStealableProperties())
+		{
+			if (getCardsNeededToWinWith(getPlayer().getAllPropertyCards(), prop) < currentNeededToWin)
+			{
+				if (prop.getValue() > targetValue)
+				{
+					targets.clear();
+					targets.add(prop);
+					targetValue = prop.getValue();
+				}
+				else if (prop.getValue() == targetValue)
+				{
+					targets.add(prop);
+				}
+			}
+		}
+		Collections.shuffle(targets);
+		// Sort by net color gain
+		targets.sort((Comparator.<CardProperty>comparingInt(target -> target.getColors().size())).reversed());
+		return targets.size() > 0 ? targets.get(0) : null;
+	}
+	
+	public CardTrade getBestCardTrade()
+	{
+		int currentNeededToWin = getCardsNeededToWin(getPlayer());
+		List<CardTrade> targets = new ArrayList<CardTrade>();
+		for (CardProperty stealable : getStealableProperties())
+		{
+			for (CardProperty tradable : getTradableProperties())
+			{
+				if (getCardsNeededToWinWithWithout(getPlayer().getAllPropertyCards(), stealable, tradable) < currentNeededToWin)
+				{
+					if (currentNeededToWin > 1)
+					{
+						// Skip this trade if the player would win this property
+						if (getCardsNeededToWinWithWithout(stealable.getOwner().getAllPropertyCards(), tradable, stealable) == 0)
+						{
+							continue;
+						}
+					}
+					targets.add(new CardTrade(stealable, tradable));
+				}
+			}
+		}
+		Collections.shuffle(targets);
+		// Sort by net color gain
+		targets.sort(Comparator.comparingInt(trade -> trade.give.getColors().size() - trade.take.getColors().size()));
+		return targets.size() > 0 ? targets.get(0) : null;
+	}
+	
+	public static class CardTrade
+	{
+		public CardProperty take;
+		public CardProperty give;
+		
+		public CardTrade(CardProperty take, CardProperty give)
+		{
+			this.take = take;
+			this.give = give;
+		}
+	}
+	
+	private int getTurnsRemaining()
+	{
+		return getServer().getGameState().getTurnsRemaining();
 	}
 	
 	public void registerDefaultStateHandlers()
@@ -309,7 +421,7 @@ public class BasicAI extends PlayerAI
 		
 		registerDesire(CardType.PASS_GO, card ->
 		{
-			return 51 - (15 * Math.max(0, getHandCount() - 6));
+			return 51 - (20 * Math.max(0, getHandCount() - 5 - getTurnsRemaining()));
 		});
 		registerDesire(CardType.PROPERTY, card ->
 		{
@@ -317,9 +429,15 @@ public class BasicAI extends PlayerAI
 			{
 				return 100;
 			}
+			int needed = getCardsNeededToWin(getPlayer());
+			int neededWith = getCardsNeededToWinWith(getPlayer().getAllPropertyCards(), card);
+			if (neededWith == 0)
+			{
+				return 100;
+			}
 			double security = getBankSecurity();
 			
-			return Math.min(security * 5, 50);
+			return Math.max(Math.min(security * 5, 50), neededWith < needed ? 65 - (neededWith * (20 - Math.min(security, 16))) : 0);
 		});
 		registerDesire(CardType.ITS_MY_BIRTHDAY, card ->
 		{
@@ -340,7 +458,27 @@ public class BasicAI extends PlayerAI
 		});
 		registerDesire(CardType.SLY_DEAL, card ->
 		{
-			return card.canPlayCard(player) ? 25 : -1;
+			if (!card.canPlayCard(player))
+			{
+				return -1;
+			}
+			int neededToWin = getCardsNeededToWin(player);
+			CardProperty bestToSteal = getBestCardToSteal();
+			return bestToSteal != null ? 80 - (neededToWin * 12) : 10;
+		});
+		registerDesire(CardType.FORCED_DEAL, card ->
+		{
+			if (!card.canPlayCard(player))
+			{
+				return -1;
+			}
+			int neededToWin = getCardsNeededToWin(player);
+			CardTrade bestTrade = getBestCardTrade();
+			if (bestTrade == null)
+			{
+				return -1;
+			}
+			return 80 - (neededToWin * 10);
 		});
 		registerDesire(CardType.DEAL_BREAKER, card ->
 		{
@@ -352,7 +490,7 @@ public class BasicAI extends PlayerAI
 			double security = getBankSecurity();
 			if (card instanceof CardMoney)
 			{
-				return Math.max(90 - (security * 6), 25);
+				return Math.max(90 - (security * 6), 30);
 			}
 			else if (card instanceof CardAction)
 			{
@@ -458,6 +596,12 @@ public class BasicAI extends PlayerAI
 		
 		registerSelfStateHandler(ActionStateTargetSlyDeal.class, state ->
 		{
+			CardProperty best = getBestCardToSteal();
+			if (best != null)
+			{
+				state.onCardSelected(best);
+				return;
+			}
 			List<CardProperty> choices = new ArrayList<CardProperty>();
 			for (Player p : getServer().getPlayersExcluding(player))
 			{
@@ -476,6 +620,17 @@ public class BasicAI extends PlayerAI
 				}
 			}
 			state.onCardSelected(getRandomCard(choices));
+		});
+		
+		registerSelfStateHandler(ActionStateTargetForcedDeal.class, state ->
+		{
+			CardTrade best = getBestCardTrade();
+			if (best == null)
+			{
+				getServer().getGameState().nextNaturalActionState();
+				return;
+			}
+			state.onCardsSelected(best.give, best.take);
 		});
 		
 		registerSelfStateHandler(ActionStateTargetPlayerMonopoly.class, state ->
@@ -525,8 +680,14 @@ public class BasicAI extends PlayerAI
 		registerSelfStateHandler(ActionStateDiscard.class, state ->
 		{
 			List<Card> hand = player.getHand().getCards();
-			List<Card> nonProps = hand.stream().filter(card -> !(card instanceof CardProperty)).collect(Collectors.toList());
-			player.discard(getRandomCard(nonProps.isEmpty() ? hand : nonProps));
+			List<Card> nonProps = hand.stream()
+					.filter(card -> !(card instanceof CardProperty))
+					.sorted(Comparator.comparingInt(card -> card.getValue()))
+					.collect(Collectors.toList());
+			List<Card> preferred = nonProps.stream()
+					.filter(card -> !(card instanceof CardAction) || card instanceof CardActionPassGo)
+					.collect(Collectors.toList());
+			player.discard(preferred.isEmpty() ? (nonProps.isEmpty() ? getRandomCard(hand) : nonProps.get(0)) : preferred.get(0));
 		});
 		registerSelfStateHandler(ActionStateTradeProperties.class, state ->
 		{
@@ -560,8 +721,7 @@ public class BasicAI extends PlayerAI
 					}
 				}
 				
-				List<Card> payment = selectRentPayment(player.getBank().getCards(true),
-						new ArrayList<Card>(player.getAllPropertyCards()), rent);
+				List<Card> payment = selectRentPayment(state.getActionOwner(), player.getAllTableCards(), rent);
 				
 				state.playerPaid(player, payment);
 			}
@@ -608,8 +768,11 @@ public class BasicAI extends PlayerAI
 				selfHandlers.get(state.getClass()) : otherHandlers.get(state.getClass());
 		if (handler == null)
 		{
-			//System.out.println("Basic AI does not have a handler for " + state.getClass().getSimpleName() +
-			//		"! Cannot perform any action!");
+			return;
+		}
+		if (!(getServer().getGameRules().getWinCondition() instanceof PropertySetCondition))
+		{
+			System.out.println("Basic AI only supports Monopoly win conditions! Cannot perform any action!");
 			return;
 		}
 		handler.doAction(state);
@@ -639,5 +802,42 @@ public class BasicAI extends PlayerAI
 		 * -1 indicates the card cannot be played under any circumstance
 		 */
 		double getDesire(T card);
+	}
+	
+	public static class Plan
+	{
+		private List<PlanStage> stages = new LinkedList<PlanStage>();
+		
+		public Plan() {}
+		
+		public Plan(PlanStage... stages)
+		{
+			this.stages.addAll(Arrays.asList(stages));
+		}
+		
+		public void addStage(PlanStage stage)
+		{
+			stages.add(stage);
+		}
+		
+		public PlanStage getNextStage()
+		{
+			return stages.get(0);
+		}
+		
+		public void completeStage()
+		{
+			stages.remove(0);
+		}
+		
+		public boolean isDone()
+		{
+			return stages.isEmpty();
+		}
+	}
+	
+	public static class PlanStage
+	{
+	
 	}
 }
