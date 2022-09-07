@@ -42,7 +42,8 @@ public class CardActionRent extends CardAction
 		CardButton doubleButton = new CardButton("Double Rent", CardButton.CENTER);
 		doubleButton.setCondition((player, card) ->
 		{
-			if (!player.canPlayCards() || getServer().getGameState().getTurnsRemaining() < 2)
+			if (!((CardActionRent) card).canPlayCard(player) || !player.canPlayCards() ||
+					getServer().getGameState().getTurnsRemaining() < 2)
 			{
 				return false;
 			}
