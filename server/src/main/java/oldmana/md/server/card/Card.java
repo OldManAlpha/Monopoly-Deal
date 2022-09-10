@@ -235,12 +235,85 @@ public abstract class Card
 		transfer(to, index, 1);
 	}
 	
-	public void transfer(CardCollection to, int index, double speed)
+	public void transfer(CardCollection to, int index, double time)
+	{
+		transfer(to, index, time, false);
+	}
+	
+	public void transfer(CardCollection to, int index, CardAnimationType anim)
 	{
 		if (collection != null)
 		{
-			collection.transferCard(this, to, index, speed);
+			collection.transferCard(this, to, index, anim);
 		}
+	}
+	
+	public void transfer(CardCollection to, int index, CardAnimationType anim, boolean flash)
+	{
+		if (collection != null)
+		{
+			collection.transferCard(this, to, index, anim, flash);
+		}
+	}
+	
+	public void transfer(CardCollection to, int index, double time, CardAnimationType anim)
+	{
+		if (collection != null)
+		{
+			collection.transferCard(this, to, index, time, anim);
+		}
+	}
+	
+	public void transfer(CardCollection to, int index, double time, boolean flash)
+	{
+		if (collection != null)
+		{
+			collection.transferCard(this, to, index, time, flash);
+		}
+	}
+	
+	public void transfer(CardCollection to, int index, double time, CardAnimationType anim, boolean flash)
+	{
+		if (collection != null)
+		{
+			collection.transferCard(this, to, index, time, anim, flash);
+		}
+	}
+	
+	/**
+	 * Reveals the card to all players using the IMPORTANT animation.
+	 */
+	public void flash()
+	{
+		flash(2.5);
+	}
+	
+	/**
+	 * Reveals the card to all players using the IMPORTANT animation.
+	 * @param time The time at which to animate the card
+	 */
+	public void flash(double time)
+	{
+		flash(time, CardAnimationType.IMPORTANT);
+	}
+	
+	/**
+	 * Reveals the card to all players using the provided animation.
+	 * @param time The time at which to animate the card
+	 * @param anim The animation type for the flash
+	 */
+	public void flash(double time, CardAnimationType anim)
+	{
+		if (collection != null)
+		{
+			collection.flashCard(this, time, anim);
+		}
+	}
+	
+	
+	public CardAnimationType getPlayAnimation()
+	{
+		return CardAnimationType.NORMAL;
 	}
 	
 	/**

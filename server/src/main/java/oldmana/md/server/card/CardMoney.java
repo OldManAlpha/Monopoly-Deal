@@ -4,8 +4,6 @@ import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardData;
 import oldmana.md.server.card.control.CardButton;
 import oldmana.md.server.card.control.CardControls;
-import oldmana.md.server.state.ActionStatePlay;
-import oldmana.md.server.state.GameState;
 
 public class CardMoney extends Card
 {
@@ -30,11 +28,7 @@ public class CardMoney extends Card
 		CardControls actions = super.createControls();
 		
 		CardButton bank = new CardButton("Bank", CardButton.BOTTOM);
-		bank.setCondition((player, card) ->
-		{
-			GameState gs = getServer().getGameState();
-			return gs.getActivePlayer() == player && gs.getActionState() instanceof ActionStatePlay;
-		});
+		bank.setCondition((player, card) -> player.canPlayCards());
 		bank.setListener((player, card, data) -> player.playCardBank(card));
 		actions.addButton(bank);
 		

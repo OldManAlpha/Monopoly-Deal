@@ -7,14 +7,14 @@ import java.awt.Graphics2D;
 import javax.swing.SwingUtilities;
 
 import oldmana.md.client.MDClient;
-import oldmana.md.client.MDScheduler.MDTask;
+import oldmana.md.client.MDScheduler;
 
 public class MDSelection extends MDComponent
 {
 	public static Color DEFAULT_COLOR = new Color(240, 240, 0);
 	
 	private int lineSize = 20;
-	private int pos;
+	private double pos;
 	
 	private Color color;
 	
@@ -27,20 +27,16 @@ public class MDSelection extends MDComponent
 	{
 		super();
 		this.color = color;
-		MDClient.getInstance().getScheduler().scheduleTask(new MDTask(1, true)
+		MDClient.getInstance().getScheduler().scheduleFrameboundTask(task ->
 		{
-			@Override
-			public void run()
+			if (SwingUtilities.getUnwrappedParent(MDSelection.this) == null)
 			{
-				if (SwingUtilities.getUnwrappedParent(MDSelection.this) == null)
-				{
-					cancel();
-				}
-				else
-				{
-					pos = (pos + 1) % lineSize;
-					repaint();
-				}
+				task.cancel();
+			}
+			else
+			{
+				pos = (pos + (MDScheduler.getFrameDelay() / 16.0)) % lineSize;
+				repaint();
 			}
 		});
 	}

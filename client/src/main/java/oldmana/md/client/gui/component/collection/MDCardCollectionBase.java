@@ -60,19 +60,19 @@ public abstract class MDCardCollectionBase extends MDComponent
 	
 	public void startAddition(int index)
 	{
-		mod = CollectionMod.ADDITION;
+		setModification(CollectionMod.ADDITION);
 		modIndex = index;
 	}
 	
 	public void startRemoval(int index)
 	{
-		mod = CollectionMod.REMOVAL;
+		setModification(CollectionMod.REMOVAL);
 		modIndex = index;
 	}
 	
 	public void modificationFinished()
 	{
-		mod = null;
+		setModification(null);
 		modIndex = -1;
 		moveProgress = 0;
 	}
@@ -109,6 +109,11 @@ public abstract class MDCardCollectionBase extends MDComponent
 		return mod;
 	}
 	
+	public boolean isBeingModified()
+	{
+		return mod != null;
+	}
+	
 	public void setModification(CollectionMod mod)
 	{
 		this.mod = mod;
@@ -134,7 +139,7 @@ public abstract class MDCardCollectionBase extends MDComponent
 	public abstract Point getLocationOf(int cardIndex, int cardCount);
 	
 	
-	public static enum CollectionMod
+	public enum CollectionMod
 	{
 		ADDITION, REMOVAL
 	}

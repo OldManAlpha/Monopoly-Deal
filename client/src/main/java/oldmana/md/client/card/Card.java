@@ -15,6 +15,7 @@ import oldmana.md.client.Player;
 import oldmana.md.client.card.CardButton.CardButtonPosition;
 import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.gui.component.MDCard;
+import oldmana.md.client.gui.component.collection.MDHand;
 import oldmana.md.client.gui.util.CardPainter;
 import oldmana.md.client.gui.util.GraphicsUtils;
 
@@ -166,11 +167,13 @@ public class Card
 	public void setButton(CardButtonPosition pos, CardButton button)
 	{
 		buttons.put(pos, button);
+		((MDHand) getClient().getThePlayer().getHand().getUI()).removeOverlay();
 	}
 	
 	public void removeButton(CardButtonPosition pos)
 	{
 		buttons.remove(pos);
+		((MDHand) getClient().getThePlayer().getHand().getUI()).removeOverlay();
 	}
 	
 	public void clearButtons()
@@ -232,6 +235,16 @@ public class Card
 		cp.paint(img.createGraphics());
 		backGraphicsCache.put(scale, img);
 		return getBackGraphics(scale);
+	}
+	
+	public static BufferedImage getMysteryGraphics(double scale)
+	{
+		int width = (int) Math.round(MDCard.CARD_SIZE.width * scale);
+		int height = (int) Math.round(MDCard.CARD_SIZE.height * scale);
+		BufferedImage img = GraphicsUtils.createImage(width, height);
+		CardPainter cp = new CardPainter(null, scale);
+		cp.paintMystery(img.createGraphics());
+		return img;
 	}
 	
 	public Color getValueColor()

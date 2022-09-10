@@ -21,6 +21,7 @@ import oldmana.md.net.packet.client.action.PacketActionUseCardButton;
 public class MDOverlayHand extends MDComponent
 {
 	private Card card;
+	private MDInfoIcon icon;
 	
 	private boolean hasButtons;
 	
@@ -31,9 +32,14 @@ public class MDOverlayHand extends MDComponent
 		setSize(GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2));
 		Player player = client.getThePlayer();
 		
-		MDInfoIcon icon = new MDInfoIcon(card);
+		icon = new MDInfoIcon(card);
 		icon.setLocation(getWidth() - scale(24), scale(2));
 		add(icon);
+		
+		if (getClient().isInputBlocked())
+		{
+			return;
+		}
 		
 		Map<CardButtonPosition, CardButton> buttons = card.getButtons();
 		
@@ -85,9 +91,15 @@ public class MDOverlayHand extends MDComponent
 		return card;
 	}
 	
+	public void removeCardInfo()
+	{
+		icon.removeCardInfo();
+	}
+	
 	@Override
 	public void paintComponent(Graphics g)
 	{
+		g.drawImage(card.getGraphics(getScale() * 2), 0, 0, null);
 		if (hasButtons)
 		{
 			g.setColor(new Color(0, 0, 0, 60));

@@ -9,6 +9,7 @@ import oldmana.md.net.packet.server.PacketPropertySetColor;
 import oldmana.md.net.packet.server.PacketPropertySetData;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
+import oldmana.md.server.card.CardAnimationType;
 import oldmana.md.server.card.CardBuilding;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.PropertyColor;
@@ -313,29 +314,9 @@ public class PropertySet extends CardCollection
 	}
 	
 	@Override
-	public void transferCard(Card card, CardCollection to, int index, double speed)
+	public void transferCard(Card card, CardCollection to, int index, double time, CardAnimationType anim, boolean flash)
 	{
-		super.transferCard(card, to, index, speed);
-		if (getCardCount() == 0)
-		{
-			getOwner().destroyPropertySet(this);
-		}
-	}
-	
-	@Override
-	public void transferCard(Card card, CardCollection to, int index)
-	{
-		super.transferCard(card, to, index);
-		if (getCardCount() == 0)
-		{
-			getOwner().destroyPropertySet(this);
-		}
-	}
-	
-	@Override
-	public void transferCard(Card card, CardCollection to)
-	{
-		super.transferCard(card, to);
+		super.transferCard(card, to, index, time, anim, flash);
 		if (getCardCount() == 0)
 		{
 			getOwner().destroyPropertySet(this);

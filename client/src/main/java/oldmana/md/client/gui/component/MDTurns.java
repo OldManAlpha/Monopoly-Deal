@@ -10,7 +10,7 @@ import java.awt.RenderingHints;
 import java.util.ArrayList;
 import java.util.List;
 
-import oldmana.md.client.MDScheduler.MDTask;
+import oldmana.md.client.MDScheduler;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
@@ -29,50 +29,48 @@ public class MDTurns extends MDComponent
 	{
 		super();
 		
-		getClient().getScheduler().scheduleTask(new MDTask(1, true)
+		getClient().getScheduler().scheduleFrameboundTask(task ->
 		{
-			@Override
-			public void run()
+			int turns = getTurns();
+			
+			double fps = MDScheduler.getFPS();
+			
+			if (visibleTurns > turns + 1 || visibleTurns < turns - 1)
 			{
-				int turns = getTurns();
-				
-				if (visibleTurns > turns + 1 || visibleTurns < turns - 1)
+				rush = true;
+			}
+			
+			if (visibleTurns > turns)
+			{
+				visibleTurns -= rush ? 6 / fps : 3 / fps;
+				if (visibleTurns < turns)
 				{
-					rush = true;
+					visibleTurns = turns;
 				}
-				
+				repaint();
+			}
+			else if (visibleTurns < turns)
+			{
+				visibleTurns += rush ? 6 / fps : 3 / fps;
 				if (visibleTurns > turns)
 				{
-					visibleTurns -= rush ? 0.1 : 0.05;
-					if (visibleTurns < turns)
-					{
-						visibleTurns = turns;
-					}
-					repaint();
+					visibleTurns = turns;
 				}
-				else if (visibleTurns < turns)
-				{
-					visibleTurns += rush ? 0.1 : 0.05;
-					if (visibleTurns > turns)
-					{
-						visibleTurns = turns;
-					}
-					repaint();
-				}
-				else
-				{
-					rush = false;
-				}
-				if (visibleTurns > visibleMaxTurns)
-				{
-					visibleMaxTurns++;
-					repaint();
-				}
-				if (visibleMaxTurns > maxTurns && visibleTurns <= maxTurns)
-				{
-					visibleMaxTurns--;
-					repaint();
-				}
+				repaint();
+			}
+			else
+			{
+				rush = false;
+			}
+			if (visibleTurns > visibleMaxTurns)
+			{
+				visibleMaxTurns++;
+				repaint();
+			}
+			if (visibleMaxTurns > maxTurns && visibleTurns <= maxTurns)
+			{
+				visibleMaxTurns--;
+				repaint();
 			}
 		});
 	}

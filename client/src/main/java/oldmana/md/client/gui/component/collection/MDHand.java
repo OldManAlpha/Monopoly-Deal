@@ -62,6 +62,7 @@ public class MDHand extends MDCardCollection
 	{
 		if (hovered != null)
 		{
+			overlay.removeCardInfo();
 			remove(overlay);
 			hovered = null;
 			overlay = null;
@@ -69,23 +70,37 @@ public class MDHand extends MDCardCollection
 		}
 	}
 	
+	private int getCardX(int cardIndex, int cardCount)
+	{
+		if (getWidth() <= GraphicsUtils.getCardWidth(2))
+		{
+			return 0;
+		}
+		double cardsWidth = GraphicsUtils.getCardWidth(2) * cardCount;
+		double padding = (getWidth() - cardsWidth) / (double) (cardCount + 1);
+		boolean negativePadding = padding < 0;
+		padding = Math.max(padding, 0);
+		
+		double start = padding - ((padding / cardCount) * cardIndex);
+		
+		double room = getWidth() - cardsWidth;
+		double interval = room / (cardCount - (negativePadding ? 1 : 0));
+		
+		return (int) (start + ((GraphicsUtils.getCardWidth(2) + interval) * cardIndex));
+	}
+	
 	@Override
 	public Point getLocationOf(int cardIndex, int cardCount)
 	{
-		double interval = getWidth() / (double) cardCount;
-		double start = (getWidth() / (cardCount * 2.0)) - GraphicsUtils.getCardWidth();
-		int x = (int) (start + (interval * cardIndex));
-		return new Point(x, 0);
+		return new Point(getCardX(cardIndex, cardCount), 0);
 	}
 	
 	public Card getCardAt(int x, int y)
 	{
 		CardCollection hand = getCollection();
-		double interval = getWidth() / (double) hand.getCardCount();
-		double start = (getWidth() / (hand.getCardCount() * 2.0)) - GraphicsUtils.getCardWidth();
 		for (int i = 0 ; i < hand.getCardCount() ; i++)
 		{
-			int low = (int) (start + (interval * i));
+			int low = getCardX(i, getCardCount());
 			int high = low + GraphicsUtils.getCardWidth(2);
 			if (x >= low && x < high)
 			{
@@ -98,11 +113,9 @@ public class MDHand extends MDCardCollection
 	public int getCardStartX(int x)
 	{
 		CardCollection hand = getCollection();
-		double interval = getWidth() / (double) hand.getCardCount();
-		double start = (getWidth() / (hand.getCardCount() * 2.0)) - GraphicsUtils.getCardWidth();
 		for (int i = 0 ; i < hand.getCardCount() ; i++)
 		{
-			int low = (int) (start + (interval * i));
+			int low = getCardX(i, getCardCount());
 			int high = low + GraphicsUtils.getCardWidth(2);
 			if (x >= low && x < high)
 			{
@@ -110,6 +123,13 @@ public class MDHand extends MDCardCollection
 			}
 		}
 		return -1;
+	}
+	
+	@Override
+	public void setModification(CollectionMod mod)
+	{
+		super.setModification(mod);
+		removeOverlay();
 	}
 	
 	@Override
@@ -158,7 +178,7 @@ public class MDHand extends MDCardCollection
 			if (getCollection() != null)
 			{
 				Card curHover = getCardAt(event.getX(), 0);
-				if (!getClient().isInputBlocked())
+				if (!isBeingModified())
 				{
 					if ((curHover == null && hovered != null) || (hovered != null && curHover != hovered))
 					{
@@ -173,7 +193,7 @@ public class MDHand extends MDCardCollection
 						repaint();
 					}
 				}
-				else if (getClient().isInputBlocked())
+				else
 				{
 					removeOverlay();
 				}
@@ -218,12 +238,7 @@ public class MDHand extends MDCardCollection
 				{
 					if (hovered != null)
 					{
-						hovered = null;
-						if (overlay != null)
-						{
-							remove(overlay);
-							overlay = null;
-						}
+						removeOverlay();
 					}
 				}
 				repaint();

@@ -10,10 +10,8 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 
-import oldmana.md.client.MDScheduler.MDTask;
+import oldmana.md.client.MDScheduler;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.DiscardPile;
 import oldmana.md.client.gui.component.MDInfoIcon;
@@ -27,7 +25,7 @@ public class MDDiscardPile extends MDCardCollection
 	
 	public int scrollPos;
 	
-	private int animTicks;
+	private double animDuration;
 	private boolean animDir;
 	private boolean collapsing;
 	
@@ -36,73 +34,62 @@ public class MDDiscardPile extends MDCardCollection
 		super(discard, 2);
 		update();
 		addMouseListener(new MDDiscardListener());
-		addMouseWheelListener(new MouseWheelListener()
+		addMouseWheelListener(event ->
 		{
-			@Override
-			public void mouseWheelMoved(MouseWheelEvent event)
+			if (event.getUnitsToScroll() > 0)
 			{
-				if (event.getUnitsToScroll() > 0)
+				if (scrollPos < getCurrentCardCount() - 1)
 				{
-					if (scrollPos < getCurrentCardCount() - 1)
+					scrollPos++;
+					if (scrollPos == 1 || scrollPos == 2)
 					{
-						scrollPos++;
-						if (scrollPos == 1)
-						{
-							getParent().invalidate();
-						}
-						animDir = true;
-						animTicks = 15;
-						constructInfoIcon();
-						repaint();
+						getParent().invalidate();
 					}
+					animDir = true;
+					animDuration = 250;
+					constructInfoIcon();
+					repaint();
 				}
-				else if (event.getUnitsToScroll() < 0)
+			}
+			else if (event.getUnitsToScroll() < 0)
+			{
+				if (scrollPos > 0)
 				{
-					if (scrollPos > 0)
-					{
-						scrollPos--;
-						if (scrollPos == 0)
-						{
-							getParent().invalidate();
-						}
-						animDir = false;
-						animTicks = 15;
-						constructInfoIcon();
-						repaint();
-					}
+					scrollPos--;
+					animDir = false;
+					animDuration = 250;
+					constructInfoIcon();
+					repaint();
 				}
 			}
 		});
-		getClient().getScheduler().scheduleTask(new MDTask(1, true)
+		getClient().getScheduler().scheduleFrameboundTask(task ->
 		{
-			@Override
-			public void run()
+			if (animDuration > 0)
 			{
-				if (animTicks > 0)
+				animDuration -= MDScheduler.getFrameDelay();
+				repaint();
+				if (scrollPos == 0 || scrollPos == 1)
 				{
-					animTicks--;
-					repaint();
+					getParent().invalidate();
 				}
-				if (collapsing)
+			}
+			if (collapsing)
+			{
+				for (int i = 0 ; i < 3 ; i++)
 				{
-					for (int i = 0 ; i < 4 ; i++)
+					animDuration -= MDScheduler.getFrameDelay();
+					if (animDuration <= 0)
 					{
-						if (animTicks == 0)
+						if (--scrollPos == 0)
 						{
-							if (--scrollPos == 0)
-							{
-								getParent().invalidate();
-								collapsing = false;
-								break;
-							}
-							else
-							{
-								animTicks = 15;
-							}
+							getParent().invalidate();
+							collapsing = false;
+							break;
 						}
 						else
 						{
-							animTicks--;
+							animDuration += 250;
 						}
 					}
 				}
@@ -127,7 +114,7 @@ public class MDDiscardPile extends MDCardCollection
 			{
 				getParent().invalidate();
 				collapsing = false;
-				animTicks = 0;
+				animDuration = 0;
 			}
 		}
 	}
@@ -155,7 +142,7 @@ public class MDDiscardPile extends MDCardCollection
 						.getGraphics(getScale() * 2), 0, 0, GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2), null);
 				if (scrollPos > 0)
 				{
-					if (getCurrentCardCount() > getCurrentCardCount() - scrollPos + (animTicks > 0 && animDir ? 1 : 0))
+					if (getCurrentCardCount() > getCurrentCardCount() - scrollPos + (animDuration > 0 && animDir ? 1 : 0))
 					{
 						g.fillRoundRect(scale(60), scale(186), scale(60) + (int) Math.floor(getOtherPileCardCount() * (0.3 * GraphicsUtils.SCALE)), 
 								scale(180), scale(20), scale(20));
@@ -163,9 +150,9 @@ public class MDDiscardPile extends MDCardCollection
 								null);
 					}
 				}
-				if (animTicks > 0)
+				if (animDuration > 0)
 				{
-					double prog = (double) animTicks / 15;
+					double prog = animDuration / 250;
 					g.drawImage(getMovingCard().getGraphics(getScale() * 2), 0, scale(!animDir ? prog * 186 : 186 - (prog * 186)), GraphicsUtils.getCardWidth(2), 
 							GraphicsUtils.getCardHeight(2), null);
 				}
@@ -216,22 +203,22 @@ public class MDDiscardPile extends MDCardCollection
 	
 	public Card getMainPileFace()
 	{
-		return getCollection().getCardAt(Math.min(getCardCount() - 1, Math.max(getCurrentCardCount() - 1 - scrollPos + (animTicks > 0 && !animDir ? -1 : 0), 0)));
+		return getCollection().getCardAt(Math.min(getCardCount() - 1, Math.max(getCurrentCardCount() - 1 - scrollPos + (animDuration > 0 && !animDir ? -1 : 0), 0)));
 	}
 	
 	public int getMainPileCardCount()
 	{
-		return getCurrentCardCount() - scrollPos - (animTicks > 0 && !animDir ? 1 : 0);
+		return getCurrentCardCount() - scrollPos - (animDuration > 0 && !animDir ? 1 : 0);
 	}
 	
 	public Card getOtherPileFace()
 	{
-		return getCollection().getCardAt(Math.max(0, Math.min(getCurrentCardCount() - 1, getCurrentCardCount() - scrollPos + (animTicks > 0 && animDir ? 1 : 0))));
+		return getCollection().getCardAt(Math.max(0, Math.min(getCurrentCardCount() - 1, getCurrentCardCount() - scrollPos + (animDuration > 0 && animDir ? 1 : 0))));
 	}
 	
 	public int getOtherPileCardCount()
 	{
-		return scrollPos + (animTicks > 0 && animDir ? -1 : 0);
+		return scrollPos + (animDuration > 0 && animDir ? -1 : 0);
 	}
 	
 	public Card getMovingCard()
@@ -247,7 +234,20 @@ public class MDDiscardPile extends MDCardCollection
 	@Override
 	public Dimension getPreferredSize()
 	{
-		return new Dimension(scale(120 + 40), scale(scrollPos > 0 ? 366 : 180));
+		double height = 180;
+		if (scrollPos == 0 && animDuration > 0)
+		{
+			height += 186 * (animDuration / 250);
+		}
+		else if (scrollPos == 1 && animDir && animDuration > 0)
+		{
+			height += 186 - (186 * (animDuration / 250));
+		}
+		else if (scrollPos > 0)
+		{
+			height += 186;
+		}
+		return new Dimension(scale(120 + 40), scale(height));
 	}
 	
 	@Override

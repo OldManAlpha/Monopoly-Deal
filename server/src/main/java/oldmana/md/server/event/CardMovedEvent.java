@@ -9,15 +9,15 @@ public class CardMovedEvent extends Event
 	private CardCollection from;
 	private CardCollection to;
 	private int index;
-	private double speed;
+	private double time;
 	
-	public CardMovedEvent(Card card, CardCollection from, CardCollection to, int index, double speed)
+	public CardMovedEvent(Card card, CardCollection from, CardCollection to, int index, double time)
 	{
 		this.card = card;
 		this.from = from;
 		this.to = to;
 		this.index = index;
-		this.speed = speed;
+		this.time = time;
 	}
 	
 	public Card getCard()
@@ -40,8 +40,8 @@ public class CardMovedEvent extends Event
 		return index;
 	}
 	
-	public double getSpeed()
+	public double getTime()
 	{
-		return speed;
+		return time;
 	}
 }

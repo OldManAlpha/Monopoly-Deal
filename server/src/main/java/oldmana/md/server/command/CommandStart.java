@@ -21,7 +21,7 @@ public class CommandStart extends Command
 		{
 			for (Player player : server.getPlayers())
 			{
-				server.getDeck().drawCard(player, 1.8);
+				server.getDeck().drawCard(player, 0.6);
 			}
 		}
 		GameState gs = server.getGameState();

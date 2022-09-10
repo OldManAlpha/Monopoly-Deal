@@ -1,5 +1,6 @@
 package oldmana.md.server.card.control;
 
+import oldmana.md.net.packet.server.PacketDestroyCardButton;
 import oldmana.md.server.card.Card;
 
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ public class CardControls
 		buttons.add(button);
 	}
 	
-	public CardButton getButton(int slot)
+	public CardButton getEnabledButton(int slot)
 	{
 		for (CardButton button : buttons)
 		{
@@ -53,6 +54,28 @@ public class CardControls
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * This will return a List with 3 elements. If there is no button enabled corresponding to the index, there will
+	 * be a null element.
+	 * @return The List of buttons
+	 */
+	public List<CardButton> getEnabledButtons()
+	{
+		List<CardButton> enabled = new ArrayList<CardButton>();
+		for (int i = 0 ; i < 3 ; i++)
+		{
+			enabled.add(null);
+		}
+		for (CardButton button : buttons)
+		{
+			if (button.isEnabled())
+			{
+				enabled.set(button.getPosition() - 1, button);
+			}
+		}
+		return enabled;
 	}
 	
 	/**
@@ -77,10 +100,10 @@ public class CardControls
 		}
 		for (int slot : updatedSlots)
 		{
-			CardButton button = getButton(slot);
+			CardButton button = getEnabledButton(slot);
 			if (button != null)
 			{
-				getButton(slot).sendPacket();
+				getEnabledButton(slot).sendPacket();
 			}
 		}
 	}
@@ -98,15 +121,17 @@ public class CardControls
 	
 	public void resendButtons()
 	{
-		for (CardButton button : buttons)
+		List<CardButton> buttons = getEnabledButtons();
+		for (int i = 0 ; i < buttons.size() ; i++)
 		{
-			if (button.isEnabled())
+			CardButton button = buttons.get(i);
+			if (button != null)
 			{
 				button.sendPacket();
 			}
 			else
 			{
-				button.sendDestroy();
+				card.getOwner().sendPacket(new PacketDestroyCardButton(card.getID(), i + 1));
 			}
 		}
 	}

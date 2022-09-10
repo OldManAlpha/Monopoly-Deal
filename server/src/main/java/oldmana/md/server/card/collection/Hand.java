@@ -6,6 +6,7 @@ import oldmana.md.net.packet.server.PacketUnknownCardCollectionData;
 import oldmana.md.net.packet.server.PacketCardCollectionData.CardCollectionType;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
+import oldmana.md.server.card.CardAnimationType;
 import oldmana.md.server.card.CardProperty;
 
 public class Hand extends CardCollection
@@ -54,9 +55,9 @@ public class Hand extends CardCollection
 	}
 	
 	@Override
-	public void transferCard(Card card, CardCollection to, int index, double speed)
+	public void transferCard(Card card, CardCollection to, int index, double time, CardAnimationType anim, boolean flash)
 	{
-		super.transferCard(card, to, index, speed);
+		super.transferCard(card, to, index, time, anim, flash);
 		card.getControls().resetButtons();
 	}
 	

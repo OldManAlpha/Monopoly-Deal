@@ -35,13 +35,13 @@ public class Deck extends CardCollection
 		{
 			for (Card card : this.stack.getCards())
 			{
-				card.transfer(getServer().getVoidCollection(), -1, 15);
+				card.transfer(getServer().getVoidCollection(), -1, 0.06);
 			}
 		}
 		this.stack = stack;
 		for (Card card : stack.getCards())
 		{
-			card.transfer(this, -1, 15);
+			card.transfer(this, -1, 0.06);
 		}
 		if (shuffle)
 		{
@@ -64,12 +64,12 @@ public class Deck extends CardCollection
 		return drawCard(player, 1);
 	}
 	
-	public Card drawCard(Player player, double speed)
+	public Card drawCard(Player player, double time)
 	{
 		if (getCardCount() > 0)
 		{
 			Card card = getCards().get(0);
-			transferCard(card, player.getHand(), 0, speed);
+			transferCard(card, player.getHand(), 0, time);
 			return card;
 		}
 		else
@@ -87,7 +87,7 @@ public class Deck extends CardCollection
 				System.out.println("Deck and discard pile are out of cards!");
 				return null;
 			}
-			return drawCard(player, speed);
+			return drawCard(player, time);
 		}
 	}
 	
@@ -96,11 +96,11 @@ public class Deck extends CardCollection
 		drawCards(player, amount, 1);
 	}
 	
-	public void drawCards(Player player, int amount, double speed)
+	public void drawCards(Player player, int amount, double time)
 	{
 		for (int i = 0 ; i < amount ; i++)
 		{
-			drawCard(player, speed);
+			drawCard(player, time);
 		}
 	}
 	
@@ -109,9 +109,9 @@ public class Deck extends CardCollection
 		insertCardRandomly(card, 1);
 	}
 	
-	public void insertCardRandomly(Card card, double speed)
+	public void insertCardRandomly(Card card, double time)
 	{
-		card.transfer(this, rand.nextInt(getCardCount()), speed);
+		card.transfer(this, rand.nextInt(getCardCount()), time);
 	}
 	
 	@Override

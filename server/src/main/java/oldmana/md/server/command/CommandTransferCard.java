@@ -11,8 +11,8 @@ public class CommandTransferCard extends Command
 {
 	public CommandTransferCard()
 	{
-		super("transfercard", new String[] {"transfer", "movecard"}, new String[] {"/transfercard [Card ID] [Set ID] <Index> <Speed>", 
-				"/transfercard [Set ID] [-1] [Player ID] <Speed>"}, true);
+		super("transfercard", new String[] {"transfer", "movecard"}, new String[] {"/transfercard [Card ID] [Set ID] <Index> <Time>",
+				"/transfercard [Card ID] [-1] [Player ID] <Time>"}, true);
 	}
 	
 	@Override
@@ -32,10 +32,10 @@ public class CommandTransferCard extends Command
 		//                   -1 indicates new set
 		if (args.length >= 2)
 		{
-			double speed = 1;
+			double time = 1;
 			if (args.length >= 4 && verifyDouble(args[3]))
 			{
-				speed = parseDouble(args[3]);
+				time = parseDouble(args[3]);
 			}
 			Card card = Card.getCard(Integer.parseInt(args[0]));
 			int setId = Integer.parseInt(args[1]);
@@ -49,7 +49,7 @@ public class CommandTransferCard extends Command
 					{
 						index = Integer.parseInt(args[2]);
 					}
-					card.transfer(collection, index, speed);
+					card.transfer(collection, index, time);
 					sender.sendMessage("Transferred card");
 				}
 				else
@@ -65,7 +65,7 @@ public class CommandTransferCard extends Command
 					{
 						Player owner = getServer().getPlayerByID(Integer.parseInt(args[2]));
 						PropertySet set = owner.createPropertySet();
-						card.transfer(set, -1, speed);
+						card.transfer(set, -1, time);
 						sender.sendMessage("Created new set and transferred card");
 					}
 				}

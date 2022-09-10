@@ -55,11 +55,11 @@ public class PropertyColor
 	 * Invoking this constructor automatically registers the color for use by the server. Clients joined before registering a color will not know of the color.
 	 * In mods, it is highly recommended to register colors during the loading process.
 	 *
-	 * @param name      - Name of the property color
-	 * @param label     - Abbreviation of the name
-	 * @param color     - The RGB color
-	 * @param buildable - Whether or not buildings can be applied to property sets of this color
-	 * @param rent      - Rent values for the amount of properties with the color you have; The amount of values indicates the max set size
+	 * @param name Name of the property color
+	 * @param label Abbreviation of the name
+	 * @param color The RGB color
+	 * @param buildable Whether or not buildings can be applied to property sets of this color
+	 * @param rent Rent values for the amount of properties with the color you have; The amount of values indicates the max set size
 	 */
 	public PropertyColor(String name, String label, Color color, boolean buildable, int... rent)
 	{

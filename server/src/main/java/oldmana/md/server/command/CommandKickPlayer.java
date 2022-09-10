@@ -20,7 +20,7 @@ public class CommandKickPlayer extends Command
 		Deck deck = getServer().getDeck();
 		for (Card card : player.getAllCards())
 		{
-			card.transfer(deck, -1, 6);
+			card.transfer(deck, -1, 0.2);
 		}
 		deck.shuffle();
 		GameState gs = getServer().getGameState();

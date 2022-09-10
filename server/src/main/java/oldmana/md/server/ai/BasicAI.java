@@ -88,7 +88,7 @@ public class BasicAI extends PlayerAI
 	
 	private double getBankSecurity()
 	{
-		return getPlayer().getBank().getTotalValue() * (getPlayer().getBank().getCardCount() * 0.5);
+		return getPlayer().getBank().getTotalValue() * (getPlayer().getBank().getCardCount() * 0.4);
 	}
 	
 	private double getHandCount()

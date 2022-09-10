@@ -1,5 +1,6 @@
 package oldmana.md.client.gui.component;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GradientPaint;
@@ -11,6 +12,7 @@ import java.awt.RenderingHints;
 import java.util.Arrays;
 import java.util.List;
 
+import oldmana.md.client.MDScheduler;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardMoney;
 import oldmana.md.client.card.CardProperty;
@@ -21,6 +23,8 @@ import oldmana.md.client.gui.util.TextPainter.Alignment;
 public class MDCardInfo extends MDComponent
 {
 	private Card card;
+	
+	private int existTime;
 	
 	public MDCardInfo(Card card)
 	{
@@ -39,12 +43,27 @@ public class MDCardInfo extends MDComponent
 		{
 			e.printStackTrace();
 		}
+		
+		getClient().getScheduler().scheduleFrameboundTask(task ->
+		{
+			if (!isDisplayable())
+			{
+				task.cancel();
+				return;
+			}
+			existTime = (int) Math.min(existTime + MDScheduler.getFrameDelay(), 200);
+			repaint();
+		});
 	}
 	
 	@Override
 	public void paintComponent(Graphics gr)
 	{
 		Graphics2D g = (Graphics2D) gr;
+		if (existTime < 200)
+		{
+			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, existTime / 200F));
+		}
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
 		// Draw base

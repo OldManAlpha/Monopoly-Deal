@@ -64,7 +64,7 @@ public class MDServer
 {
 	private static MDServer instance;
 	
-	public static final String VERSION = "0.6.4";
+	public static final String VERSION = "0.6.5 Dev";
 	
 	private File dataFolder;
 	
@@ -200,29 +200,27 @@ public class MDServer
 		System.out.println("Loading Decks");
 		loadDecks();
 		
-		new Thread("Console Reader Thread")
+		Thread consoleReader = new Thread(() ->
 		{
-			@Override
-			public void run()
+			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+			while (!shutdown)
 			{
-				BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-				while (true)
+				try
 				{
-					try
+					String line = reader.readLine();
+					synchronized (cmdQueue)
 					{
-						String line = reader.readLine();
-						synchronized (cmdQueue)
-						{
-							cmdQueue.add(line);
-						}
-					}
-					catch (IOException e)
-					{
-						e.printStackTrace();
+						cmdQueue.add(line);
 					}
 				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
 			}
-		}.start();
+		}, "Console Reader Thread");
+		consoleReader.setDaemon(true);
+		consoleReader.start();
 		
 		// AI ticking task
 		getScheduler().scheduleTask(new MDTask(50, true)

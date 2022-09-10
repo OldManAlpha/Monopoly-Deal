@@ -84,7 +84,7 @@ public class PropertySet extends CardCollection
 	public List<PropertyColor> getPossibleColors()
 	{
 		List<CardProperty> props = getPropertyCards();
-		List<PropertyColor> colors = new ArrayList<PropertyColor>(((CardProperty) props.get(0)).getColors());
+		List<PropertyColor> colors = new ArrayList<PropertyColor>(props.get(0).getColors());
 		if (props.size() > 1)
 		{
 			for (int i = 1 ; i < props.size() ; i++)

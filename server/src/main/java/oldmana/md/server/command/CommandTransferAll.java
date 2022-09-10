@@ -10,7 +10,7 @@ public class CommandTransferAll extends Command
 {
 	public CommandTransferAll()
 	{
-		super("transferall", null, new String[] {"/transferall [From Collection] [To Collection] <Transfer Speed>"}, true);
+		super("transferall", null, new String[] {"/transferall [From Collection] [To Collection] <Transfer Time>"}, true);
 	}
 	
 	@Override
@@ -18,14 +18,14 @@ public class CommandTransferAll extends Command
 	{
 		CardCollection from = CardCollection.getCardCollection(Integer.parseInt(args[0]));
 		CardCollection to = CardCollection.getCardCollection(Integer.parseInt(args[1]));
-		double speed = 1;
+		double time = 1;
 		if (args.length >= 3)
 		{
-			speed = Double.parseDouble(args[2]);
+			time = Double.parseDouble(args[2]);
 		}
 		for (Card card : new ArrayList<Card>(from.getCards()))
 		{
-			card.transfer(to, -1, speed);
+			card.transfer(to, -1, time);
 		}
 		sender.sendMessage("Transferred the cards in collection ID " + from.getID() + " to collection ID " + to.getID());
 	}

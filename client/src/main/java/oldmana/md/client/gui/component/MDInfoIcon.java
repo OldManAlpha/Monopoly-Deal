@@ -7,8 +7,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 import javax.swing.SwingUtilities;
 
@@ -19,28 +17,27 @@ import oldmana.md.client.gui.util.TextPainter.Alignment;
 
 public class MDInfoIcon extends MDComponent
 {
+	private Card card;
 	private MDCardInfo cardInfo;
 	
 	public MDInfoIcon(Card card)
 	{
 		setSize(scale(22), scale(22));
-		
+		this.card = card;
+		getClient().getScheduler().scheduleTask(task ->
+		{
+			if (isDisplayable())
+			{
+				createCardInfo();
+			}
+		}, 250, false);
+		/*
 		addMouseListener(new MouseAdapter()
 		{
 			@Override
 			public void mouseEntered(MouseEvent event)
 			{
-				if (cardInfo != null)
-				{
-					getClient().removeTableComponent(cardInfo);
-				}
-				cardInfo = new MDCardInfo(card);
-				Point pos = SwingUtilities.convertPoint(MDInfoIcon.this, new Point(getWidth() / 2, -cardInfo.getHeight() - scale(5)), getClient().getTableScreen());
-				pos.x = Math.max(scale(2), Math.min(pos.x - (cardInfo.getWidth() / 2), getClient().getTableScreen().getWidth() - cardInfo.getWidth() - scale(2)));
-				pos.y = Math.max(scale(2), pos.y);
-				
-				cardInfo.setLocation(pos.x, pos.y);
-				getClient().addTableComponent(cardInfo, 110);
+				createCardInfo();
 			}
 			
 			@Override
@@ -49,6 +46,22 @@ public class MDInfoIcon extends MDComponent
 				removeCardInfo();
 			}
 		});
+		 */
+	}
+	
+	public void createCardInfo()
+	{
+		if (cardInfo != null)
+		{
+			getClient().removeTableComponent(cardInfo);
+		}
+		cardInfo = new MDCardInfo(card);
+		Point pos = SwingUtilities.convertPoint(MDInfoIcon.this, new Point(getWidth() / 2, -cardInfo.getHeight() - scale(5)), getClient().getTableScreen());
+		pos.x = Math.max(scale(2), Math.min(pos.x - (cardInfo.getWidth() / 2), getClient().getTableScreen().getWidth() - cardInfo.getWidth() - scale(2)));
+		pos.y = Math.max(scale(2), pos.y);
+		
+		cardInfo.setLocation(pos.x, pos.y);
+		getClient().addTableComponent(cardInfo, 110);
 	}
 	
 	public void removeCardInfo()

@@ -2,6 +2,7 @@ package oldmana.md.server.card.action;
 
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;
+import oldmana.md.server.card.CardAnimationType;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.control.CardButton;
 import oldmana.md.server.card.control.CardButton.CardButtonType;
@@ -17,12 +18,12 @@ public class CardActionJustSayNo extends CardAction
 		if (state.getActionOwner() == player && state.isTarget(target) && state.getActionTarget(target).isRefused())
 		{
 			state.setRefused(target, false);
-			transfer(getServer().getDiscardPile());
+			transfer(getServer().getDiscardPile(), -1, CardAnimationType.IMPORTANT);
 		}
 		else if (state.isTarget(player) && !state.getActionTarget(player).isRefused())
 		{
 			state.setRefused(player, true);
-			transfer(getServer().getDiscardPile());
+			transfer(getServer().getDiscardPile(), -1, CardAnimationType.IMPORTANT);
 		}
 		player.checkEmptyHand();
 		if (state.isFinished())

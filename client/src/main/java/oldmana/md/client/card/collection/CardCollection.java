@@ -9,6 +9,7 @@ import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.MDEventQueue.CardMove;
 import oldmana.md.client.card.Card;
+import oldmana.md.client.gui.component.MDMovingCard.CardAnimationType;
 import oldmana.md.client.gui.component.collection.MDCardCollectionBase;
 
 public abstract class CardCollection
@@ -148,30 +149,19 @@ public abstract class CardCollection
 		getClient().getEventQueue().addTask(new CardMove(card, this, to, index));
 	}
 	
-	public void transferCardTo(Card card, CardCollection to, int index, double speed)
+	public void transferCardTo(Card card, CardCollection to, int index, double time, CardAnimationType anim)
 	{
-		getClient().getEventQueue().addTask(new CardMove(card, this, to, index, speed));
+		getClient().getEventQueue().addTask(new CardMove(card, this, to, index, time, anim));
 	}
 	
 	public void transferCard(Card card, int index)
 	{
-		transferCard(card, index, 1);
+		transferCard(card, index, 1, CardAnimationType.NORMAL);
 	}
 	
-	public void transferCard(Card card, int index, double speed)
+	public void transferCard(Card card, int index, double time, CardAnimationType anim)
 	{
-		//CardCollection from = card.getOwningCollection();
-		
-		/*
-		if (from == null)
-		{
-			addCard(card);
-		}
-		else
-		*/
-		{
-			getClient().getEventQueue().addTask(new CardMove(card, null, this, index, speed));
-		}
+		getClient().getEventQueue().addTask(new CardMove(card, null, this, index, time, anim));
 	}
 	
 	public void setOwner(Player player)

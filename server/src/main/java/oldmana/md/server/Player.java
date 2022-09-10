@@ -256,18 +256,6 @@ public class Player extends Client implements CommandSender
 		return null;
 	}
 	
-	public PropertySet findPropertyCardOwner(CardProperty card)
-	{
-		for (PropertySet set : propertySets)
-		{
-			if (set.hasCard(card))
-			{
-				return set;
-			}
-		}
-		return null;
-	}
-	
 	public List<CardProperty> getAllPropertyCards()
 	{
 		List<CardProperty> cards = new ArrayList<CardProperty>();
@@ -312,7 +300,7 @@ public class Player extends Client implements CommandSender
 		compatible.retainAll(card.getColors());
 		if (!compatible.isEmpty())
 		{
-			PropertySet prevSet = findPropertyCardOwner(card);
+			PropertySet prevSet = (PropertySet) card.getOwningCollection();
 			prevSet.transferCard(card, set);
 			if (prevSet.getCardCount() == 0)
 			{
@@ -325,7 +313,7 @@ public class Player extends Client implements CommandSender
 	
 	public PropertySet transferPropertyCardNewSet(CardProperty card)
 	{
-		PropertySet prevSet = findPropertyCardOwner(card);
+		PropertySet prevSet = (PropertySet) card.getOwningCollection();
 		PropertySet set = createPropertySet();
 		prevSet.transferCard(card, set);
 		if (prevSet.getCardCount() == 0)
@@ -532,7 +520,7 @@ public class Player extends Client implements CommandSender
 		if (getHand().getCardCount() == 0)
 		{
 			clearRevocableCards();
-			server.getDeck().drawCards(this, 5, 1.2);
+			server.getDeck().drawCards(this, 5, 0.8);
 			return true;
 		}
 		return false;
@@ -848,7 +836,7 @@ public class Player extends Client implements CommandSender
 		{
 			return;
 		}
-		card.transfer(server.getDiscardPile());
+		card.transfer(server.getDiscardPile(), -1, card.getPlayAnimation());
 		if (!sneaky)
 		{
 			if (card.clearsRevocableCards())

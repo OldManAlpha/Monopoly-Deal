@@ -4,7 +4,6 @@ import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
 import oldmana.md.server.Player;
-import oldmana.md.server.card.collection.CardCollection;
 import oldmana.md.server.card.collection.PropertySet;
 
 public class ActionStateTargetPlayerMonopoly extends ActionState
@@ -17,6 +16,7 @@ public class ActionStateTargetPlayerMonopoly extends ActionState
 	
 	public void onSetSelected(PropertySet set)
 	{
+		getActionOwner().clearRevocableCards();
 		getGameState().setActionState(new ActionStateStealMonopoly(getActionOwner(), set));
 	}
 	

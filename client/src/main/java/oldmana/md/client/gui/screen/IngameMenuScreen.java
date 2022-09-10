@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import oldmana.md.client.MDScheduler;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.gui.LayoutAdapter;
 import oldmana.md.client.gui.component.MDButton;
@@ -32,30 +33,31 @@ public class IngameMenuScreen extends MDComponent
 	private MDButton enlargeUI;
 	private MDButton shrinkUI;
 	
+	private MDText fpsText;
+	private MDText fps;
+	private MDButton increaseFPS;
+	private MDButton decreaseFPS;
+	
 	private MDButton debug;
 	
 	public IngameMenuScreen()
 	{
 		setVisible(false);
-		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher()
+		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(event ->
 		{
-			@Override
-			public boolean dispatchKeyEvent(KeyEvent event)
+			if (getClient().getTableScreen().isVisible())
 			{
-				if (getClient().getTableScreen().isVisible())
+				if (!getClient().getTableScreen().getChat().isChatOpen() && !isVisible() && event.getID() == KeyEvent.KEY_PRESSED)
 				{
-					if (!getClient().getTableScreen().getChat().isChatOpen() && !isVisible() && event.getID() == KeyEvent.KEY_PRESSED)
+					if (event.getKeyCode() == KeyEvent.VK_ESCAPE)
 					{
-						if (event.getKeyCode() == KeyEvent.VK_ESCAPE)
-						{
-							setVisible(true);
-							requestFocus();
-							return true;
-						}
+						setVisible(true);
+						requestFocus();
+						return true;
 					}
 				}
-				return false;
 			}
+			return false;
 		});
 		
 		addKeyListener(new KeyAdapter()
@@ -85,28 +87,17 @@ public class IngameMenuScreen extends MDComponent
 		quit = new MDButton("Leave Game");
 		quit.setFontSize(26);
 		quit.setColorScheme(ButtonColorScheme.OLD);
-		quit.addMouseListener(new MouseAdapter()
+		quit.addClickListener(() ->
 		{
-			@Override
-			public void mouseReleased(MouseEvent event)
-			{
-				setVisible(false);
-				getClient().disconnect("quitting");
-			}
+			setVisible(false);
+			getClient().disconnect("quitting");
 		});
 		add(quit);
 		
 		resume = new MDButton("Return to Game");
 		resume.setFontSize(26);
 		resume.setColorScheme(ButtonColorScheme.OLD);
-		resume.addMouseListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseReleased(MouseEvent event)
-			{
-				setVisible(false);
-			}
-		});
+		resume.addClickListener(() -> setVisible(false));
 		add(resume);
 		
 		uiScaleText = new MDText("UI Scale");
@@ -119,38 +110,30 @@ public class IngameMenuScreen extends MDComponent
 		enlargeUI = new MDButton("+");
 		enlargeUI.setFontSize(26);
 		enlargeUI.setColorScheme(ButtonColorScheme.OLD);
-		enlargeUI.addMouseListener(new MouseAdapter()
+		enlargeUI.addClickListener(() ->
 		{
-			@Override
-			public void mouseReleased(MouseEvent event)
-			{
-				GraphicsUtils.setScale(Math.min(GraphicsUtils.SCALE + 0.1, 4.0));
-				uiScale.setText(((int) (GraphicsUtils.SCALE * 100)) + "%");
-				getClient().getTableScreen().revalidate();
-				getClient().getTableScreen().repaint();
-				
-				getClient().getGameState().updateUI();
-				revalidate();
-			}
+			GraphicsUtils.setScale(Math.min(GraphicsUtils.SCALE + 0.1, 4.0));
+			uiScale.setText(((int) (GraphicsUtils.SCALE * 100)) + "%");
+			getClient().getTableScreen().revalidate();
+			getClient().getTableScreen().repaint();
+			
+			getClient().getGameState().updateUI();
+			revalidate();
 		});
 		add(enlargeUI);
 		
 		shrinkUI = new MDButton("-");
 		shrinkUI.setFontSize(26);
 		shrinkUI.setColorScheme(ButtonColorScheme.OLD);
-		shrinkUI.addMouseListener(new MouseAdapter()
+		shrinkUI.addClickListener(() ->
 		{
-			@Override
-			public void mouseReleased(MouseEvent event)
-			{
-				GraphicsUtils.setScale(Math.max(GraphicsUtils.SCALE - 0.1, 0.5));
-				uiScale.setText(((int) (GraphicsUtils.SCALE * 100)) + "%");
-				getClient().getTableScreen().revalidate();
-				getClient().getTableScreen().repaint();
-				
-				getClient().getGameState().updateUI();
-				revalidate();
-			}
+			GraphicsUtils.setScale(Math.max(GraphicsUtils.SCALE - 0.1, 0.5));
+			uiScale.setText(((int) (GraphicsUtils.SCALE * 100)) + "%");
+			getClient().getTableScreen().revalidate();
+			getClient().getTableScreen().repaint();
+			
+			getClient().getGameState().updateUI();
+			revalidate();
 		});
 		add(shrinkUI);
 		
@@ -160,6 +143,56 @@ public class IngameMenuScreen extends MDComponent
 		uiScale.setVerticalAlignment(Alignment.CENTER);
 		uiScale.setColor(whiteish);
 		add(uiScale);
+		
+		
+		fpsText = new MDText("Framerate");
+		fpsText.setFontSize(30);
+		fpsText.setHorizontalAlignment(Alignment.CENTER);
+		fpsText.setColor(whiteish);
+		fpsText.setBold(true);
+		add(fpsText);
+		
+		increaseFPS = new MDButton("+");
+		increaseFPS.setFontSize(26);
+		increaseFPS.setColorScheme(ButtonColorScheme.OLD);
+		increaseFPS.addClickListener(() ->
+		{
+			getClient().getScheduler().setFPS(Math.min(MDScheduler.getFPS() + 5, 500), true);
+			fps.setText(MDScheduler.getFPS() + " FPS");
+			getClient().getTableScreen().revalidate();
+			getClient().getTableScreen().repaint();
+			
+			getClient().getGameState().updateUI();
+			revalidate();
+		});
+		add(increaseFPS);
+		
+		decreaseFPS = new MDButton("-");
+		decreaseFPS.setFontSize(26);
+		decreaseFPS.setColorScheme(ButtonColorScheme.OLD);
+		decreaseFPS.addClickListener(() ->
+		{
+			getClient().getScheduler().setFPS(Math.max(MDScheduler.getFPS() - 5, 5), true);
+			fps.setText(MDScheduler.getFPS() + " FPS");
+			getClient().getTableScreen().revalidate();
+			getClient().getTableScreen().repaint();
+			
+			getClient().getGameState().updateUI();
+			revalidate();
+		});
+		add(decreaseFPS);
+		
+		fps = new MDText(MDScheduler.getFPS() + " FPS");
+		fps.setFontSize(28);
+		fps.setHorizontalAlignment(Alignment.CENTER);
+		fps.setVerticalAlignment(Alignment.CENTER);
+		fps.setColor(whiteish);
+		add(fps);
+		
+		
+		
+		
+		
 		
 		debug = new MDButton("Debug");
 		debug.setFontSize(16);
@@ -202,18 +235,29 @@ public class IngameMenuScreen extends MDComponent
 			uiScaleText.setSize(scale(300), scale(32));
 			
 			uiScale.setSize(scale(80), scale(32));
-			uiScale.setLocationCentered(getWidth() / 2, uiScaleText.getMaxY() + scale(24));
+			uiScale.setLocationCentered(getWidth() / 2, uiScaleText.getMaxY() + scale(15));
 			enlargeUI.setSize(scale(30), scale(30));
-			enlargeUI.setLocationCentered(uiScale.getX() - scale(16), uiScaleText.getMaxY() + scale(24));
+			enlargeUI.setLocationCentered(uiScale.getMaxX() + scale(16), uiScaleText.getMaxY() + scale(15));
 			shrinkUI.setSize(scale(30), scale(30));
-			shrinkUI.setLocationCentered(uiScale.getMaxX() + scale(16), uiScaleText.getMaxY() + scale(24));
+			shrinkUI.setLocationCentered(uiScale.getX() - scale(16), uiScaleText.getMaxY() + scale(15));
+			
+			
+			fpsText.setLocation((getWidth() / 2) - scale(150), menuText.getMaxY() + scale(120));
+			fpsText.setSize(scale(300), scale(32));
+			
+			fps.setSize(scale(90), scale(32));
+			fps.setLocationCentered(getWidth() / 2, fpsText.getMaxY() + scale(15));
+			increaseFPS.setSize(scale(30), scale(30));
+			increaseFPS.setLocationCentered(fps.getMaxX() + scale(16), fpsText.getMaxY() + scale(15));
+			decreaseFPS.setSize(scale(30), scale(30));
+			decreaseFPS.setLocationCentered(fps.getX() - scale(16), fpsText.getMaxY() + scale(15));
 			
 			debug.setSize(scale(80), scale(30));
 			debug.setLocation(getWidth() - scale(85), scale(5));
 			
 			
 			resume.setSize(scale(320), scale(60));
-			resume.setLocation((getWidth() / 2) - scale(160), Math.max((getHeight() / 2) - scale(30), uiScale.getMaxY() + scale(10)));
+			resume.setLocation((getWidth() / 2) - scale(160), Math.max((getHeight() / 2) - scale(30), fps.getMaxY() + scale(10)));
 			quit.setSize(scale(320), scale(60));
 			quit.setLocation(resume.getX(), resume.getMaxY() + scale(20));
 		}

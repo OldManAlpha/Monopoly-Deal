@@ -6,14 +6,16 @@ public class PacketMoveUnknownCard extends Packet
 {
 	public int from;
 	public int to;
-	public float speed;
+	public float time;
+	public byte anim;
 	
 	public PacketMoveUnknownCard() {}
 	
-	public PacketMoveUnknownCard(int from, int to, double speed)
+	public PacketMoveUnknownCard(int from, int to, double time, int anim)
 	{
 		this.from = from;
 		this.to = to;
-		this.speed = (float) speed;
+		this.time = (float) time;
+		this.anim = (byte) anim;
 	}
 }

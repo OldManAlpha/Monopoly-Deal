@@ -394,7 +394,7 @@ public class NetServerHandler extends NetHandler
 	public void handleUseCardButton(Player player, PacketActionUseCardButton packet)
 	{
 		Card card = Card.getCard(packet.cardID);
-		CardButton button = card.getControls().getButton(packet.pos);
+		CardButton button = card.getControls().getEnabledButton(packet.pos);
 		if (card.getOwner() == player && button != null)
 		{
 			button.click(player, packet.data);

@@ -22,6 +22,7 @@ public class Settings
 		defaults.put("Scale", String.valueOf(GraphicsUtils.roundScale(Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 1000)));
 		defaults.put("Developer-Mode", "false");
 		defaults.put("Extra-Buttons", "false");
+		defaults.put("Framerate", String.valueOf(60));
 	}
 	
 	private Map<String, String> settings = new HashMap<String, String>();

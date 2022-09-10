@@ -3,16 +3,13 @@ package oldmana.md.client.gui.screen;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.LayoutManager2;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 
 import oldmana.md.client.MDClient;
@@ -23,6 +20,7 @@ import oldmana.md.client.card.collection.Deck;
 import oldmana.md.client.card.collection.DiscardPile;
 import oldmana.md.client.card.collection.Hand;
 import oldmana.md.client.card.collection.VoidCollection;
+import oldmana.md.client.gui.LayoutAdapter;
 import oldmana.md.client.gui.action.ActionScreen;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDChat;
@@ -59,6 +57,8 @@ public class TableScreen extends JLayeredPane
 	private MDButton debug;
 	
 	private MDText version;
+	
+	private MDButton menu;
 	
 	private MDButton enlargeUI;
 	private MDButton shrinkUI;
@@ -175,6 +175,16 @@ public class TableScreen extends JLayeredPane
 			uiScale.setHorizontalAlignment(Alignment.CENTER);
 			add(uiScale, new Integer(1));
 		}
+		else
+		{
+			menu = new MDButton("Menu");
+			menu.addClickListener(() ->
+			{
+				ingameMenu.setVisible(true);
+				ingameMenu.requestFocus();
+			});
+			add(menu);
+		}
 		
 		ingameMenu = new IngameMenuScreen();
 		add(ingameMenu, new Integer(10000));
@@ -183,14 +193,7 @@ public class TableScreen extends JLayeredPane
 	public void positionPlayers()
 	{
 		List<Player> ordered = getClient().getAllPlayers();
-		ordered.sort(new Comparator<Player>()
-		{
-			@Override
-			public int compare(Player p1, Player p2)
-			{
-				return p1.getID() - p2.getID();
-			}
-		});
+		ordered.sort(Comparator.comparingInt(player -> player.getID()));
 		int thePlayerIndex = 0;
 		for (int i = 0 ; i < ordered.size() ; i++)
 		{
@@ -227,19 +230,6 @@ public class TableScreen extends JLayeredPane
 			//ui.setLocation(200, topbar.getHeight() + scale(10) + (loc * (MDPlayer.PLAYER_SIZE.height + 5)));
 			player.setUIPosition(loc);
 		}
-		
-		/*
-		if (this instanceof ThePlayer)
-		{
-			ui.setLocation(200, 45 + (3 * (MDPlayer.PLAYER_SIZE.height + 5)));
-			uiPos = 3;
-		}
-		else
-		{
-			ui.setLocation(200, 45 + (nextUIPos * (MDPlayer.PLAYER_SIZE.height + 5)));
-			uiPos = nextUIPos++;
-		}
-		*/
 	}
 	
 	public ActionScreen getActionScreen()
@@ -297,16 +287,6 @@ public class TableScreen extends JLayeredPane
 	
 	public void setDiscardPile(DiscardPile discard)
 	{
-		/*
-		if (this.discard != null)
-		{
-			remove(this.discard);
-		}
-		this.discard = discard;
-		discard.setLocation(30, 260);
-		discard.setSize(120 + 40, 180);
-		add(discard, new Integer(0));
-		*/
 		discard.setUI(this.discard);
 	}
 	
@@ -317,16 +297,6 @@ public class TableScreen extends JLayeredPane
 	
 	public void setHand(Hand hand)
 	{
-		/*
-		if (this.hand != null)
-		{
-			remove(this.hand);
-		}
-		this.hand = hand;
-		hand.setLocation(200, 715);
-		hand.setSize(1400 - 5, 180);
-		add(hand, new Integer(0));
-		*/
 		hand.setUI(this.hand);
 	}
 	
@@ -381,14 +351,8 @@ public class TableScreen extends JLayeredPane
 		super.paintComponent(g);
 	}
 	
-	public class TableLayout implements LayoutManager2
+	public class TableLayout extends LayoutAdapter
 	{
-		@Override
-		public void addLayoutComponent(String arg0, Component arg1)
-		{
-			System.out.println("component added in other method");
-		}
-		
 		@Override
 		public void layoutContainer(Container container)
 		{
@@ -408,6 +372,12 @@ public class TableScreen extends JLayeredPane
 				
 				shrinkUI.setLocation(uiScale.getMaxX() + scale(5), scale(5));
 				shrinkUI.setSize(scale(25), scale(25));
+			}
+			else
+			{
+				menu.setLocation(scale(5), scale(5));
+				menu.setSize(scale(60), scale(25));
+				menu.setFontSize(16);
 			}
 			
 			chat.setSize(scale(650), scale(450));
@@ -453,59 +423,15 @@ public class TableScreen extends JLayeredPane
 		}
 		
 		@Override
-		public Dimension minimumLayoutSize(Container arg0)
-		{
-			System.out.println("minimum layout " + arg0);
-			return null;
-		}
-		
-		@Override
-		public Dimension preferredLayoutSize(Container arg0)
-		{
-			System.out.println("preferred layout " + arg0);
-			// TODO Auto-generated method stub
-			return null;
-		}
-		
-		@Override
-		public void removeLayoutComponent(Component arg0)
-		{
-			// TODO Auto-generated method stub
-			
-		}
-		
-		@Override
 		public void addLayoutComponent(Component comp, Object arg1)
 		{
-			// TODO Auto-generated method stub
 			System.out.println("component added " + arg1);
-		}
-		
-		@Override
-		public float getLayoutAlignmentX(Container arg0)
-		{
-			// TODO Auto-generated method stub
-			return 0;
-		}
-		
-		@Override
-		public float getLayoutAlignmentY(Container arg0)
-		{
-			// TODO Auto-generated method stub
-			return 0;
 		}
 		
 		@Override
 		public void invalidateLayout(Container arg0)
 		{
 			layoutContainer(arg0);
-		}
-		
-		@Override
-		public Dimension maximumLayoutSize(Container arg0)
-		{
-			// TODO Auto-generated method stub
-			return null;
 		}
 	}
 }

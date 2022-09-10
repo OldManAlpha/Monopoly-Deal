@@ -35,9 +35,11 @@ import oldmana.md.client.card.collection.DiscardPile;
 import oldmana.md.client.card.collection.Hand;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.card.collection.VoidCollection;
+import oldmana.md.client.gui.component.MDMovingCard.CardAnimationType;
 import oldmana.md.client.gui.component.MDUndoButton;
 import oldmana.md.client.gui.component.MDButton.ButtonColorScheme;
 import oldmana.md.client.gui.component.MDClientButton;
+import oldmana.md.client.gui.component.collection.MDHand;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.ActionStateDiscard;
 import oldmana.md.client.state.ActionStateDoNothing;
@@ -311,21 +313,21 @@ public class NetClientHandler extends NetHandler
 	{
 		Card card = Card.getCard(packet.cardId);
 		CardCollection collection = CardCollection.getCardCollection(packet.collectionId);
-		collection.transferCard(card, packet.index, packet.speed);
+		collection.transferCard(card, packet.index, packet.time, CardAnimationType.fromID(packet.anim));
 	}
 	
 	public void handleMoveRevealCard(PacketMoveRevealCard packet)
 	{
 		CardCollection from = CardCollection.getCardCollection(packet.from);
 		CardCollection to = CardCollection.getCardCollection(packet.to);
-		from.transferCardTo(Card.getCard(packet.cardId), to, packet.index, packet.speed);
+		from.transferCardTo(Card.getCard(packet.cardId), to, packet.index, packet.time, CardAnimationType.fromID(packet.anim));
 	}
 	
 	public void handleMoveUnknownCard(PacketMoveUnknownCard packet)
 	{
 		CardCollection from = CardCollection.getCardCollection(packet.from);
 		CardCollection to = CardCollection.getCardCollection(packet.to);
-		from.transferCardTo(null, to, -1, packet.speed);
+		from.transferCardTo(null, to, -1, packet.time, CardAnimationType.fromID(packet.anim));
 	}
 	
 	@Queued
@@ -562,12 +564,14 @@ public class NetClientHandler extends NetHandler
 		CardButtonPosition pos = CardButtonPosition.fromID(packet.pos);
 		card.setButton(pos, new CardButton(packet.text, pos, CardButtonType.fromID(packet.type),
 				ButtonColorScheme.fromID(packet.color)));
+		queueTask(() -> ((MDHand) client.getThePlayer().getHand().getUI()).removeOverlay());
 	}
 	
 	public void handleDestroyCardButton(PacketDestroyCardButton packet)
 	{
 		Card card = Card.getCard(packet.cardID);
 		card.removeButton(CardButtonPosition.fromID(packet.pos));
+		queueTask(() -> ((MDHand) client.getThePlayer().getHand().getUI()).removeOverlay());
 	}
 	
 	/**

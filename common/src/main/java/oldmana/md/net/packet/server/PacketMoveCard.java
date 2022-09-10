@@ -7,7 +7,8 @@ public class PacketMoveCard extends Packet
 	public int cardId;
 	public int collectionId;
 	public short index;
-	public float speed;
+	public float time;
+	public byte anim;
 	
 	public PacketMoveCard() {}
 	
@@ -17,11 +18,12 @@ public class PacketMoveCard extends Packet
 	 * @param collectionId - The collection to move the card to
 	 * @param index - The index the card should be placed at, -1 for append
 	 */
-	public PacketMoveCard(int cardId, int collectionId, int index, double speed)
+	public PacketMoveCard(int cardId, int collectionId, int index, double time, int anim)
 	{
 		this.cardId = cardId;
 		this.collectionId = collectionId;
 		this.index = (short) index;
-		this.speed = (float) speed;
+		this.time = (float) time;
+		this.anim = (byte) anim;
 	}
 }

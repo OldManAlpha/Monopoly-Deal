@@ -14,7 +14,6 @@ import javafx.embed.swing.JFXPanel;
 import oldmana.general.mjnetworkingapi.MJConnection;
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.client.MDEventQueue.CardMove;
-import oldmana.md.client.MDScheduler.MDTask;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.CardCollection;
@@ -39,7 +38,7 @@ public class MDClient
 {
 	private static MDClient instance;
 	
-	public static final String VERSION = "0.6.4";
+	public static final String VERSION = "0.6.5 Dev";
 	
 	private MDFrame window;
 	
@@ -94,30 +93,19 @@ public class MDClient
 		}
 		
 		scheduler = new MDScheduler();
-		scheduler.scheduleTask(new MDTask(1, true)
+		scheduler.scheduleFrameboundTask(task -> eventQueue.tick());
+		scheduler.scheduleTask(task ->
 		{
-			@Override
-			public void run()
+			if (connection != null && connection.isAlive())
 			{
-				eventQueue.tick();
-			}
-		});
-		scheduler.scheduleTask(new MDTask(60, true)
-		{
-			@Override
-			public void run()
-			{
-				if (connection != null && connection.isAlive())
+				if (++timeSincePing > 50)
 				{
-					if (++timeSincePing > 50)
-					{
-						getTableScreen().getTopbar().setText("Disconnected: Timed out");
-						getTableScreen().getTopbar().repaint();
-						connection.close();
-					}
+					getTableScreen().getTopbar().setText("Disconnected: Timed out");
+					getTableScreen().getTopbar().repaint();
+					connection.close();
 				}
 			}
-		});
+		}, 1000, true);
 		
 		eventQueue = new MDEventQueue();
 		
@@ -147,6 +135,7 @@ public class MDClient
 			settings.loadSettings(folder);
 			MDSoundSystem.loadCache();
 		}
+		scheduler.setFPS(settings.getIntSetting("Framerate"));
 		
 		window = new MDFrame(folder == null);
 		
@@ -401,9 +390,9 @@ public class MDClient
 	
 	public void setAwaitingResponse(boolean awaitingResponse)
 	{
-		this.awaitingResponse = awaitingResponse;
-		if (awaitingResponse)
+		if (this.awaitingResponse != awaitingResponse)
 		{
+			this.awaitingResponse = awaitingResponse;
 			((MDHand) getThePlayer().getHand().getUI()).removeOverlay();
 		}
 	}

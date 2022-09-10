@@ -9,7 +9,7 @@ import oldmana.md.net.packet.universal.*;
 
 public class NetHandler
 {
-	public static int PROTOCOL_VERSION = 16;
+	public static int PROTOCOL_VERSION = 17;
 	
 	public NetHandler()
 	{

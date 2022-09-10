@@ -50,6 +50,47 @@ public class CardPainter
 		return new Font("ITCKabelStd-Bold", Font.PLAIN, scale(4));
 	}
 	
+	public void paintMystery(Graphics g)
+	{
+		// Draw White
+		g.setColor(Color.WHITE);
+		g.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, getWidth() / 6, getWidth() / 6);
+		
+		// Draw Card Outline
+		g.setColor(Color.BLACK);
+		g.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, getWidth() / 6, getWidth() / 6);
+		
+		// Draw Inner Outline
+		g.setColor(Color.BLACK);
+		for (int i = 0 ; i < 1 + (scale(1) / 4) ; i++)
+		{
+			g.drawRect(scale(3) + i, scale(3) + i, getWidth() - scale(6) - 1 - (i * 2), getHeight() - scale(6) - 1 - (i * 2));
+		}
+		
+		/*
+		// Draw Value
+		g.setColor(Color.BLACK);
+		g.fillOval(scale(4), scale(4), scale(12), scale(12));
+		g.setColor(Color.WHITE);
+		g.fillOval(scale(4 + 0.5), scale(4 + 0.5), scale(11), scale(11));
+		
+		g.setColor(Color.BLACK);
+		Font font = new Font(getFont().getFontName(), Font.BOLD, scale(6));
+		g.setFont(font);
+		TextPainter tp = new TextPainter("??", font, new Rectangle(scale(2.75), scale(5), scale(15), scale(10)));
+		tp.setHorizontalAlignment(Alignment.CENTER);
+		tp.setVerticalAlignment(Alignment.CENTER);
+		tp.paint((Graphics2D) g);
+		
+		 */
+		
+		// Draw ?
+		TextPainter tp = new TextPainter("?", GraphicsUtils.getBoldMDFont(scale(60)), new Rectangle(0, scale(4), getWidth(), getHeight()));
+		tp.setHorizontalAlignment(Alignment.CENTER);
+		tp.setVerticalAlignment(Alignment.CENTER);
+		tp.paint((Graphics2D) g);
+	}
+	
 	
 	// TODO: The card scaling is a bit of a failure and needs rethinking or just needs to be removed. This only supports 8x scaled cards unless it's a card back.
 	public void paint(Graphics gr)

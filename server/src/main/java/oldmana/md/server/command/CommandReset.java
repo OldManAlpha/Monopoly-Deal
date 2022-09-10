@@ -30,7 +30,7 @@ public class CommandReset extends Command
 			{
 				putCardAway(card);
 			}
-			List<PropertySet> sets = new ArrayList<PropertySet>(player.getPropertySets());
+			List<PropertySet> sets = player.getPropertySets(true);
 			Collections.reverse(sets);
 			for (PropertySet set : sets)
 			{
@@ -75,11 +75,11 @@ public class CommandReset extends Command
 		Deck deck = getServer().getDeck();
 		if (deck.getDeckStack().hasCard(card))
 		{
-			card.transfer(deck, -1, 4);
+			card.transfer(deck, -1, 0.25);
 		}
 		else
 		{
-			card.transfer(getServer().getVoidCollection(), -1, 4);
+			card.transfer(getServer().getVoidCollection(), -1, 0.25);
 		}
 	}
 }

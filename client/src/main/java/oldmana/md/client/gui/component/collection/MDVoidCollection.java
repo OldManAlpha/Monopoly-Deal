@@ -7,53 +7,50 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 
 import oldmana.md.client.MDEventQueue.CardMove;
-import oldmana.md.client.MDScheduler.MDTask;
+import oldmana.md.client.MDScheduler;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.gui.util.GraphicsUtils;
 
 public class MDVoidCollection extends MDCardCollectionUnknown
 {
-	private int stage; // Range: 0(invisible) to 30(fully visible)
-	private double pos; // Range: -20 to 20
+	private int stage; // Range: 0(invisible) to 500(fully visible)
+	private double pos; // Range: -350 to 350
 	private boolean dir;
 	
-	private int intoVoidTicks;
+	private int intoVoidTime;
 	
 	public MDVoidCollection(CardCollection collection)
 	{
 		super(collection, 1);
 		
-		getClient().getScheduler().scheduleTask(new MDTask(1, true)
+		getClient().getScheduler().scheduleFrameboundTask(task ->
 		{
-			@Override
-			public void run()
+			if (getCollection() == null)
 			{
-				if (getCollection() == null)
-				{
-					return;
-				}
-				
-				double diff = (23 - Math.max(8, Math.abs(pos))) * 0.045;
-				pos += dir ? diff : -diff;
-				if ((dir && pos > 20) || (!dir && pos < -20))
-				{
-					dir = !dir;
-				}
-				
-				if (isCardIncoming() || isCardMovingFrom() || getClient().isDebugEnabled() || intoVoidTicks > 0)
-				{
-					stage = Math.min(30, stage + 1);
-					repaint();
-				}
-				else if (stage > 0)
-				{
-					stage--;
-					repaint();
-				}
-				
-				intoVoidTicks = Math.max(intoVoidTicks - 1, 0);
+				return;
 			}
+			
+			//double diff = (23 - Math.max(8, Math.abs(pos))) * 0.045;
+			double diff = (405 - Math.max(140, Math.abs(pos))) * MDScheduler.getFrameDelay() * 0.003;
+			pos += dir ? diff : -diff;
+			if ((dir && pos > 350) || (!dir && pos < -350))
+			{
+				dir = !dir;
+			}
+			
+			if (isCardIncoming() || isCardMovingFrom() || getClient().isDebugEnabled() || intoVoidTime > 0)
+			{
+				stage = (int) Math.min(500, stage + MDScheduler.getFrameDelay());
+				repaint();
+			}
+			else if (stage > 0)
+			{
+				stage = (int) Math.max(0, stage - MDScheduler.getFrameDelay());
+				repaint();
+			}
+			
+			intoVoidTime = (int) Math.max(intoVoidTime - MDScheduler.getFrameDelay(), 0);
 		});
 	}
 	
@@ -61,7 +58,7 @@ public class MDVoidCollection extends MDCardCollectionUnknown
 	public void cardArrived()
 	{
 		super.cardArrived();
-		intoVoidTicks = 30;
+		intoVoidTime = 500;
 	}
 	
 	private boolean isCardMovingFrom()
@@ -98,16 +95,16 @@ public class MDVoidCollection extends MDCardCollectionUnknown
 		if (stage > 0)
 		{
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g.rotate(Math.toRadians(pos), getWidth() / 2, getHeight() / 2);
+			g.rotate(Math.toRadians(pos / 20), getWidth() / 2, getHeight() / 2);
 			g.setColor(new Color(0, 0, 40));
-			double size = (double) stage / 30;
+			double size = (double) stage / 500;
 			g.fillRoundRect((getWidth() / 2) - (int) (GraphicsUtils.getCardWidth() * size * 0.5), (getHeight() / 2) - 
 					(int) (GraphicsUtils.getCardHeight() * size * 0.5), (int) (GraphicsUtils.getCardWidth() * size), 
 					(int) (GraphicsUtils.getCardHeight() * size), scale(10 * size), scale(10 * size));
 			
-			if (intoVoidTicks > 0)
+			if (intoVoidTime > 0)
 			{
-				double intoVoidProg = intoVoidTicks / 30.0;
+				double intoVoidProg = intoVoidTime / 500.0;
 				gv.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				gv.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 				gv.drawImage(Card.getBackGraphics(1), (getWidth() / 2) - (int) (GraphicsUtils.getCardWidth() * size * 0.5 * intoVoidProg), (getHeight() / 2) - 

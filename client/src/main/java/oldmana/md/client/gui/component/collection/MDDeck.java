@@ -14,7 +14,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 
-import oldmana.md.client.MDScheduler.MDTask;
+import oldmana.md.client.MDScheduler;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.Deck;
 import oldmana.md.client.gui.component.MDSelection;
@@ -26,8 +26,7 @@ import oldmana.md.client.gui.util.TextPainter.Alignment;
 public class MDDeck extends MDCardCollectionUnknown
 {
 	private boolean hovered;
-	private MDTask animTask;
-	private int animStage;
+	private double animProgress;
 	
 	private MDSelection notifySelect;
 	
@@ -38,41 +37,36 @@ public class MDDeck extends MDCardCollectionUnknown
 		addMouseListener(listener);
 		addMouseMotionListener(listener);
 		constructNotifySelect();
-		animTask = new MDTask(1, true)
+		getClient().getScheduler().scheduleFrameboundTask(task ->
 		{
-			@Override
-			public void run()
+			double lastStage = animProgress;
+			if (getClient().isInputBlocked() || !getClient().canDraw())
 			{
-				int lastStage = animStage;
-				if (getClient().isInputBlocked() || !getClient().canDraw())
+				animProgress = 0;
+				notifySelect.setVisible(false);
+			}
+			else
+			{
+				if (hovered)
 				{
-					animStage = 0;
+					animProgress = Math.min(animProgress + (MDScheduler.getFrameDelay() / ((animProgress + 40) / 120)), 250);
 					notifySelect.setVisible(false);
 				}
 				else
 				{
-					if (hovered)
+					animProgress = Math.max(animProgress - MDScheduler.getFrameDelay(), 0);
+					if (animProgress == 0)
 					{
-						animStage = Math.min(animStage + 1, 16);
-						notifySelect.setVisible(false);
+						notifySelect.setVisible(true);
+						notifySelect.repaint();
 					}
-					else
-					{
-						animStage = Math.max(animStage - 1, 0);
-						if (animStage == 0)
-						{
-							notifySelect.setVisible(true);
-							notifySelect.repaint();
-						}
-					}
-				}
-				if (lastStage != animStage)
-				{
-					repaint();
 				}
 			}
-		};
-		getClient().getScheduler().scheduleTask(animTask);
+			if (lastStage != animProgress)
+			{
+				repaint();
+			}
+		});
 		this.addComponentListener(new ComponentAdapter()
 		{
 			@Override
@@ -125,7 +119,7 @@ public class MDDeck extends MDCardCollectionUnknown
 		if (getCollection() != null)
 		{
 			int cardCount = getCollection().getCardCount();
-			if (cardCount > 0 && !(cardCount == 1 && animStage > 0))
+			if (cardCount > 0 && !(cardCount == 1 && animProgress > 0))
 			{
 				g.translate(0, scale(10));
 				g.setColor(Color.DARK_GRAY);
@@ -147,14 +141,14 @@ public class MDDeck extends MDCardCollectionUnknown
 				tp.paint(g);
 			}
 			
-			if (animStage > 0)
+			if (animProgress > 0)
 			{
 				BufferedImage img = GraphicsUtils.createImage(GraphicsUtils.getCardWidth(2) + scale(16), GraphicsUtils.getCardHeight(2) + scale(24));
 				Graphics2D g2 = img.createGraphics();
 				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 				g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-				g2.rotate(Math.toRadians(animStage * 0.35), 0, GraphicsUtils.getCardHeight(2) + scale(10));
+				g2.rotate(Math.toRadians(animProgress * 0.024), 0, GraphicsUtils.getCardHeight(2) + scale(10));
 				g2.translate(0, scale(10));
 				CardPainter cp = new CardPainter(null, GraphicsUtils.SCALE * 2);
 				cp.paint(g2);
@@ -191,25 +185,13 @@ public class MDDeck extends MDCardCollectionUnknown
 	public class MDDeckListener implements MouseListener, MouseMotionListener
 	{
 		@Override
-		public void mouseDragged(MouseEvent event)
-		{
-			// TODO Auto-generated method stub
-			
-		}
+		public void mouseDragged(MouseEvent event) {}
 
 		@Override
-		public void mouseMoved(MouseEvent event)
-		{
-			// TODO Auto-generated method stub
-			
-		}
+		public void mouseMoved(MouseEvent event) {}
 
 		@Override
-		public void mouseClicked(MouseEvent event)
-		{
-			// TODO Auto-generated method stub
-			
-		}
+		public void mouseClicked(MouseEvent event) {}
 
 		@Override
 		public void mouseEntered(MouseEvent event)
@@ -226,19 +208,15 @@ public class MDDeck extends MDCardCollectionUnknown
 		}
 
 		@Override
-		public void mousePressed(MouseEvent event)
+		public void mousePressed(MouseEvent event) {}
+
+		@Override
+		public void mouseReleased(MouseEvent event)
 		{
 			if (getClient().canDraw() && !getClient().isInputBlocked())
 			{
 				getClient().draw();
 			}
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent event)
-		{
-			// TODO Auto-generated method stub
-			
 		}
 	}
 }

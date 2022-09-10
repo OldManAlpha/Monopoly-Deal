@@ -6,7 +6,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -25,7 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import oldmana.md.client.MDClient;
-import oldmana.md.client.MDScheduler.MDTask;
+import oldmana.md.client.MDScheduler;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
@@ -58,74 +57,62 @@ public class MDChat extends MDComponent
 	
 	public MDChat()
 	{
-		getClient().getScheduler().scheduleTask(new MDTask(1, true)
+		getClient().getScheduler().scheduleFrameboundTask(task ->
 		{
-			@Override
-			public void run()
+			boolean update = false;
+			for (int i = 0 ; i < getMaxChatHistoryLines() ; i++)
 			{
-				boolean update = false;
-				for (int i = 0 ; i < getMaxChatHistoryLines() ; i++)
+				if (messages.size() > i)
 				{
-					if (messages.size() > i)
+					Message m = messages.get(i);
+					if (m.tick())
 					{
-						Message m = messages.get(i);
-						if (m.tick())
-						{
-							update = true;
-						}
+						update = true;
 					}
 				}
-				if (update)
-				{
-					repaint();
-				}
+			}
+			if (update)
+			{
+				repaint();
 			}
 		});
-		getClient().getScheduler().scheduleTask(new MDTask(30, true)
+		getClient().getScheduler().scheduleTask(task ->
 		{
-			@Override
-			public void run()
+			if (ignoreNextBlink)
 			{
-				if (ignoreNextBlink)
-				{
-					ignoreNextBlink = false;
-					return;
-				}
-				blink = !blink;
-				if (chatOpen)
-				{
-					repaint();
-				}
+				ignoreNextBlink = false;
+				return;
 			}
-		});
-		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher()
-		{
-			@Override
-			public boolean dispatchKeyEvent(KeyEvent event)
+			blink = !blink;
+			if (chatOpen)
 			{
-				if (getClient().getTableScreen().isVisible())
+				repaint();
+			}
+		}, 500, true);
+		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(event ->
+		{
+			if (getClient().getTableScreen().isVisible())
+			{
+				if (!chatOpen && event.getID() == KeyEvent.KEY_PRESSED && !getClient().getTableScreen().ingameMenu.isVisible())
 				{
-					if (!chatOpen && event.getID() == KeyEvent.KEY_PRESSED && !getClient().getTableScreen().ingameMenu.isVisible())
+					if (event.getKeyCode() == KeyEvent.VK_T)
 					{
-						if (event.getKeyCode() == KeyEvent.VK_T)
-						{
-							setChatOpen(true);
-							requestFocus();
-							repaint();
-							return true;
-						}
-						else if (event.getKeyCode() == KeyEvent.VK_SLASH)
-						{
-							setChatOpen(true);
-							typed.append("/");
-							requestFocus();
-							repaint();
-							return true;
-						}
+						setChatOpen(true);
+						requestFocus();
+						repaint();
+						return true;
+					}
+					else if (event.getKeyCode() == KeyEvent.VK_SLASH)
+					{
+						setChatOpen(true);
+						typed.append("/");
+						requestFocus();
+						repaint();
+						return true;
 					}
 				}
-				return false;
 			}
+			return false;
 		});
 		addKeyListener(new KeyAdapter()
 		{
@@ -320,7 +307,7 @@ public class MDChat extends MDComponent
 			{
 				for (int index = -pos - 1 ; index >= 0 ; index--)
 				{
-					lines.put(m.getLineAt(index), m.getDisplayTicks());
+					lines.put(m.getLineAt(index), m.getDisplayTime());
 					if (--linesLeft == 0)
 					{
 						break;
@@ -419,7 +406,7 @@ public class MDChat extends MDComponent
 			double opacity = 1;
 			if (!chatOpen)
 			{
-				opacity = Math.min(1, line.getValue() * (1 / 90.0));
+				opacity = Math.min(1, line.getValue() * (1 / 1500.0));
 			}
 			int pos = -(i - maxLines + 1);
 			// Draw Transparent Text Area
@@ -513,7 +500,7 @@ public class MDChat extends MDComponent
 	{
 		private String text;
 		private List<TextSegment[]> lines = new ArrayList<TextSegment[]>();
-		private int displayTicks = 360;
+		private int displayTime = 6000;
 		
 		public Message(String text)
 		{
@@ -541,16 +528,16 @@ public class MDChat extends MDComponent
 			return lines.get(index);
 		}
 		
-		public int getDisplayTicks()
+		public int getDisplayTime()
 		{
-			return displayTicks;
+			return displayTime;
 		}
 		
 		public boolean tick()
 		{
-			if (displayTicks > 0)
+			if (displayTime > 0)
 			{
-				displayTicks--;
+				displayTime -= MDScheduler.getFrameDelay();
 				return true;
 			}
 			return false;
