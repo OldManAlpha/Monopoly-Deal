@@ -5,7 +5,7 @@ public class Console implements CommandSender
 	@Override
 	public void sendMessage(String message)
 	{
-		System.out.println(ChatColor.stripColors(message));
+		System.out.println(ChatColor.stripFormatting(message));
 	}
 	
 	@Override

@@ -57,6 +57,22 @@ public enum ChatColor
 		return sb.toString();
 	}
 	
+	public static String stripLinks(String str)
+	{
+		StringBuilder sb = new StringBuilder(str);
+		int index;
+		while ((index = sb.indexOf("§2")) != -1)
+		{
+			sb.replace(index, index + 5, "");
+		}
+		return sb.toString();
+	}
+	
+	public static String stripFormatting(String str)
+	{
+		return stripLinks(stripColors(str));
+	}
+	
 	public static String of(int r, int g, int b)
 	{
 		return toChatColor(new Color(r, g, b));
