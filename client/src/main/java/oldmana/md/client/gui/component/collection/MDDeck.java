@@ -67,7 +67,7 @@ public class MDDeck extends MDCardCollectionUnknown
 				repaint();
 			}
 		});
-		this.addComponentListener(new ComponentAdapter()
+		addComponentListener(new ComponentAdapter()
 		{
 			@Override
 			public void componentResized(ComponentEvent event)
@@ -119,7 +119,7 @@ public class MDDeck extends MDCardCollectionUnknown
 		if (getCollection() != null)
 		{
 			int cardCount = getCollection().getCardCount();
-			if (cardCount > 0 && !(cardCount == 1 && animProgress > 0))
+			if (cardCount > 0 && !(cardCount <= 2 && animProgress > 0))
 			{
 				g.translate(0, scale(10));
 				g.setColor(Color.DARK_GRAY);
@@ -143,18 +143,26 @@ public class MDDeck extends MDCardCollectionUnknown
 			
 			if (animProgress > 0)
 			{
-				BufferedImage img = GraphicsUtils.createImage(GraphicsUtils.getCardWidth(2) + scale(16), GraphicsUtils.getCardHeight(2) + scale(24));
-				Graphics2D g2 = img.createGraphics();
-				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-				g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-				g2.rotate(Math.toRadians(animProgress * 0.024), 0, GraphicsUtils.getCardHeight(2) + scale(10));
-				g2.translate(0, scale(10));
-				CardPainter cp = new CardPainter(null, GraphicsUtils.SCALE * 2);
-				cp.paint(g2);
-				//g2.drawImage(Card.getBackGraphics(GraphicsUtils.SCALE * 2), 0, 0, null);
-				g.translate(0, scale(-10));
-				g.drawImage(img, 0, 0, null);
+				for (int i = 2 ; i > 0 ; i--)
+				{
+					if (getCardCount() < i)
+					{
+						continue;
+					}
+					BufferedImage img = GraphicsUtils.createImage(GraphicsUtils.getCardWidth(2) + scale(20),
+							GraphicsUtils.getCardHeight(2) + scale(24));
+					Graphics2D g2 = img.createGraphics();
+					g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+					g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+					g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+					g2.rotate(Math.toRadians(animProgress * 0.026 * (i == 2 ? 0.3 : 1)), 0, GraphicsUtils.getCardHeight(2) + scale(10));
+					g2.translate(0, scale(10));
+					CardPainter cp = new CardPainter(null, GraphicsUtils.SCALE * 2);
+					cp.paint(g2);
+					g.translate(0, scale(-10));
+					g.drawImage(img, 0, 0, null);
+					g.translate(0, scale(10));
+				}
 			}
 			else if (cardCount <= 8 && cardCount > 0)
 			{
