@@ -179,14 +179,15 @@ public class MDMovingCard extends MDComponent
 				rec.setLocation((int) Math.round(startPos.x + ((xPos - startPos.x) * getProgressBetween(0, 0.25, posProg))),
 						(int) Math.round(startPos.y + ((yPos - startPos.y) * getProgressBetween(0, 0.25, posProg))));
 			}
-			else if (posProg > 0.75)
+			else if (posProg > 0.8)
 			{
-				double scale = (4) + ((endScale - 4) * getProgressBetween(0.75, 1, posProg));
+				double progBetween = getProgressBetween(0.8, 1, posProg);
+				double scale = (4) + ((endScale - 4) * progBetween);
 				rec.setSize((int) Math.round(scale * cardWidth), (int) Math.round(scale * cardHeight));
 				int xPos = (screen.getWidth() / 2);
 				int yPos = ((screen.getHeight() - getClient().getThePlayer().getHand().getUI().getHeight()) / 2);
-				rec.setLocation((int) Math.round(xPos + ((endPos.x - xPos) * getProgressBetween(0.75, 1, posProg))),
-						(int) Math.round(yPos + ((endPos.y - yPos) * getProgressBetween(0.75, 1, posProg))));
+				rec.setLocation((int) Math.round(xPos + ((endPos.x - xPos) * progBetween)),
+						(int) Math.round(yPos + ((endPos.y - yPos) * progBetween)));
 			}
 			else
 			{
@@ -413,14 +414,14 @@ public class MDMovingCard extends MDComponent
 			{
 				degrees = getProgressBetween(0, 0.25, posProg) * (360 + 180 - 40 + (start == null ? 0 : 180));
 			}
-			else if (posProg > 0.75)
+			else if (posProg > 0.8)
 			{
-				degrees = (start != null ? 0 : 180) + 40 + (getProgressBetween(0.75, 1, posProg) * ((end == null ? 180 : 0) - 40));
+				degrees = (start != null ? 0 : 180) + 40 + (getProgressBetween(0.8, 1, posProg) * ((end == null ? 180 : 0) - 40));
 			}
 			else
 			{
-				degrees = (start != null ? 0 : 180) - 40 + (getProgressBetween(0.25, 0.75, posProg) * 80);
-				shine = getProgressBetween(0.25, 0.75, posProg);
+				degrees = (start != null ? 0 : 180) - 40 + (getProgressBetween(0.25, 0.8, posProg) * 80);
+				shine = getProgressBetween(0.25, 0.8, posProg);
 			}
 		}
 		
