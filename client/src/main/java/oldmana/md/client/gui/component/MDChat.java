@@ -537,7 +537,7 @@ public class MDChat extends MDComponent
 		{
 			if (displayTime > 0)
 			{
-				displayTime -= MDScheduler.getFrameDelay();
+				displayTime = (int) Math.max(displayTime - MDScheduler.getFrameDelay(), 0);
 				return true;
 			}
 			return false;

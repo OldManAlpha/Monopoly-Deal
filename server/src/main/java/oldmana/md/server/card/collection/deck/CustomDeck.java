@@ -55,7 +55,7 @@ public class CustomDeck extends DeckStack
 			if (version < MIN_VERSION)
 			{
 				throw new DeckLoadFailureException("Deck format version(" + version + ") is not supported. Minimum required is " +
-						MIN_VERSION);
+						MIN_VERSION, null);
 			}
 			if (version > VERSION)
 			{
@@ -73,7 +73,7 @@ public class CustomDeck extends DeckStack
 		}
 		catch (Exception e)
 		{
-			throw new DeckLoadFailureException("Failed to load deck");
+			throw new DeckLoadFailureException("Failed to load deck", e);
 		}
 	}
 	
@@ -99,9 +99,9 @@ public class CustomDeck extends DeckStack
 	
 	public static class DeckLoadFailureException extends RuntimeException
 	{
-		public DeckLoadFailureException(String msg)
+		public DeckLoadFailureException(String msg, Throwable cause)
 		{
-			super(msg);
+			super(msg, cause);
 		}
 	}
 }

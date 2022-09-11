@@ -209,8 +209,9 @@ public class GameState
 			{
 				return false;
 			}
+			winners = event.getWinners();
 			
-			if (deferredWinTurns < 1 && isWinningEnabled())
+			if (!winners.isEmpty() && deferredWinTurns < 1 && isWinningEnabled())
 			{
 				endGame();
 				if (winners.size() > 1)

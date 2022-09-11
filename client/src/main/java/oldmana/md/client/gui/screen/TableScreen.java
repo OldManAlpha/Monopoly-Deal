@@ -1,11 +1,10 @@
 package oldmana.md.client.gui.screen;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.Comparator;
 import java.util.List;
 
@@ -54,12 +53,11 @@ public class TableScreen extends JLayeredPane
 	
 	private ActionScreen actionScreen;
 	
-	private MDButton debug;
-	
 	private MDText version;
 	
 	private MDButton menu;
 	
+	private MDButton debug;
 	private MDButton enlargeUI;
 	private MDButton shrinkUI;
 	private MDText uiScale;
@@ -86,87 +84,63 @@ public class TableScreen extends JLayeredPane
 		
 		topbar = new MDTopbar();
 		topbar.setText("");
-		topbar.setSize(1600, 35);
 		add(topbar, new Integer(0));
+		
 		undoButton = new MDUndoButton("Undo Card");
-		undoButton.setLocation(10, 570);
-		undoButton.setSize(180, 50);
 		undoButton.setFontSize(24);
 		add(undoButton, new Integer(0));
 		
 		multiButton = new MDLayeredButton("");
-		multiButton.setLocation(10, 500);
-		multiButton.setSize(180, 50);
 		multiButton.setFontSize(24);
 		multiButton.setEnabled(false);
 		add(multiButton, new Integer(0));
 		
 		turnCount = new MDTurns();
-		turnCount.setSize(181, 30);
-		turnCount.setLocation(10, 460);
 		add(turnCount, new Integer(0));
 		
 		version = new MDText("Version " + MDClient.VERSION);
-		version.setLocation(5, 880);
-		version.setSize(200, 15);
 		version.setFontSize(16);
 		add(version);
 		
 		chat = new MDChat();
-		chat.setSize(500, 400);
-		chat.setLocation(50, 300);
 		add(chat, new Integer(150));
 		
 		if (getClient().getSettings().getBooleanSetting("Extra-Buttons"))
 		{
 			debug = new MDButton("DB");
-			debug.setLocation(1555, 5);
-			debug.setSize(40, 25);
 			debug.setFontSize(16);
-			debug.addMouseListener(new MouseAdapter()
+			debug.addClickListener(() ->
 			{
-				@Override
-				public void mouseReleased(MouseEvent event)
+				getClient().setDebugEnabled(!getClient().isDebugEnabled());
+				for (Card card : Card.getRegisteredCards().values())
 				{
-					getClient().setDebugEnabled(!getClient().isDebugEnabled());
-					for (Card card : Card.getRegisteredCards().values())
-					{
-						card.clearGraphicsCache();
-					}
-					repaint();
+					card.clearGraphicsCache();
 				}
+				repaint();
 			});
 			add(debug, new Integer(1));
 			
 			enlargeUI = new MDButton("+");
-			enlargeUI.addMouseListener(new MouseAdapter()
+			enlargeUI.addClickListener(() ->
 			{
-				@Override
-				public void mouseReleased(MouseEvent event)
-				{
-					GraphicsUtils.setScale(Math.min(GraphicsUtils.SCALE + 0.1, 4.0));
-					uiScale.setText("" + GraphicsUtils.SCALE);
-					revalidate();
-					repaint();
-					
-					getClient().getGameState().updateUI();
-				}
+				GraphicsUtils.setScale(Math.min(GraphicsUtils.SCALE + 0.1, 4.0));
+				uiScale.setText("" + GraphicsUtils.SCALE);
+				revalidate();
+				repaint();
+				
+				getClient().getGameState().updateUI();
 			});
 			add(enlargeUI, new Integer(1));
 			
 			shrinkUI = new MDButton("-");
-			shrinkUI.addMouseListener(new MouseAdapter()
+			shrinkUI.addClickListener(() ->
 			{
-				@Override
-				public void mouseReleased(MouseEvent event)
-				{
-					GraphicsUtils.setScale(Math.max(GraphicsUtils.SCALE - 0.1, 0.5));
-					uiScale.setText("" + GraphicsUtils.SCALE);
-					revalidate();
-					repaint();
-					
-					getClient().getGameState().updateUI();
-				}
+				GraphicsUtils.setScale(Math.max(GraphicsUtils.SCALE - 0.1, 0.5));
+				uiScale.setText("" + GraphicsUtils.SCALE);
+				revalidate();
+				repaint();
+				
+				getClient().getGameState().updateUI();
 			});
 			add(shrinkUI, new Integer(1));
 			
@@ -267,16 +241,6 @@ public class TableScreen extends JLayeredPane
 	
 	public void setDeck(Deck deck)
 	{
-		/*
-		if (this.deck != null)
-		{
-			remove(deck);
-		}
-		this.deck = deck;
-		deck.setLocation(30, 60 - 10);
-		deck.setSize(120 + 40, 180 + 24);
-		add(deck, new Integer(0));
-		*/
 		deck.setUI(this.deck);
 	}
 	
@@ -348,6 +312,8 @@ public class TableScreen extends JLayeredPane
 	@Override
 	public void paintComponent(Graphics g)
 	{
+		g.setColor(new Color(240, 240, 240));
+		g.fillRect(0, 0, getWidth(), getHeight());
 		super.paintComponent(g);
 	}
 	
@@ -358,7 +324,7 @@ public class TableScreen extends JLayeredPane
 		{
 			topbar.setSize(getWidth(), scale(35));
 			
-			if (getClient().getSettings().getBooleanSetting("Extra-Buttons"))
+			if (debug != null)
 			{
 				debug.setLocation(getWidth() - scale(45), scale(5));
 				debug.setSize(scale(40), scale(25));

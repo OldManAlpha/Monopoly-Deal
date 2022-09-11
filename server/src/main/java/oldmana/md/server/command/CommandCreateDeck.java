@@ -40,6 +40,7 @@ public class CommandCreateDeck extends Command
 			return;
 		}
 		getServer().getDeckStacks().put(name, deck);
+		getServer().getDeck().setDeckStack(deck);
 		sender.sendMessage("Saved deck as '" + name + "'");
 	}
 }

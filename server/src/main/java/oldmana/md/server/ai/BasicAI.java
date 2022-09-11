@@ -498,6 +498,10 @@ public class BasicAI extends PlayerAI
 				{
 					return 25;
 				}
+				if (card instanceof CardActionJustSayNo)
+				{
+					return 0;
+				}
 				int stakes = player.getAllPropertyCards().size();
 				return Math.max(Math.min(40, stakes * 8) - (security * 6), 1);
 			}
