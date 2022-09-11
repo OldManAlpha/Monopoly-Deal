@@ -2,42 +2,58 @@ package oldmana.md.client;
 
 import java.awt.Toolkit;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import oldmana.md.client.gui.util.GraphicsUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.util.Scanner;
 
-public class Settings
+public class Settings extends JSONObject
 {
-	private Map<String, String> defaults = new HashMap<String, String>();
+	private JSONObject defaults = new JSONObject();
 	{
-		defaults.put("Settings-Version", "1");
-		defaults.put("Last-IP", "localhost:27599");
-		defaults.put("Last-ID", "1");
-		defaults.put("Scale", String.valueOf(GraphicsUtils.roundScale(Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 1000)));
-		defaults.put("Developer-Mode", "false");
-		defaults.put("Extra-Buttons", "false");
-		defaults.put("Framerate", String.valueOf(60));
+		defaults.put("settingsVersion", 2);
+		defaults.put("lastIP", "localhost:27599");
+		defaults.put("lastID", 1);
+		defaults.put("scale", GraphicsUtils.roundScale(Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 1000));
+		defaults.put("developerMode", false);
+		defaults.put("extraButtons", false);
+		defaults.put("framerate", 60);
 	}
 	
-	private Map<String, String> settings = new HashMap<String, String>();
+	private Map<String, ConvertType> conversionTypes = new HashMap<String, ConvertType>();
+	{
+		conversionTypes.put("Last-IP", new ConvertType(String.class, "lastIP"));
+		conversionTypes.put("Last-ID", new ConvertType(int.class, "lastID"));
+		conversionTypes.put("Scale", new ConvertType(double.class, "scale"));
+		conversionTypes.put("Developer-Mode", new ConvertType(boolean.class, "developerMode"));
+		conversionTypes.put("Extra-Buttons", new ConvertType(boolean.class, "extraButtons"));
+	}
+	
+	private static class ConvertType
+	{
+		Class<?> type;
+		String newName;
+		
+		ConvertType(Class<?> type, String newName)
+		{
+			this.type = type;
+			this.newName = newName;
+		}
+	}
 	
 	private File file;
 	
 	public Settings()
 	{
-		for (Entry<String, String> defaultSetting : defaults.entrySet())
-		{
-			if (!settings.containsKey(defaultSetting.getKey()))
-			{
-				settings.put(defaultSetting.getKey(), defaultSetting.getValue());
-			}
-		}
+		applyDefaults();
 	}
 	
 	public void setLocation(File folder)
@@ -55,40 +71,72 @@ public class Settings
 			{
 				file.createNewFile();
 			}
-			Scanner scanner = new Scanner(file);
-			while (scanner.hasNextLine())
+			boolean converted = false;
+			try (FileInputStream is = new FileInputStream(file))
 			{
-				String[] setting = scanner.nextLine().split("=");
-				settings.put(setting[0], setting[1]);
+				JSONObject object = new JSONObject(new JSONTokener(is));
+				setMap(object.getMap());
 			}
-			scanner.close();
+			catch (JSONException e)
+			{
+				System.out.println("Failed to load settings. Trying to convert from old format..");
+				try (Scanner scanner = new Scanner(file))
+				{
+					while (scanner.hasNextLine())
+					{
+						String[] setting = scanner.nextLine().split("=");
+						ConvertType convertType = conversionTypes.get(setting[0]);
+						if (convertType != null)
+						{
+							Object value = null;
+							if (convertType.type == int.class)
+							{
+								value = Integer.parseInt(setting[1]);
+							}
+							else if (convertType.type == double.class)
+							{
+								value = Double.parseDouble(setting[1]);
+							}
+							else if (convertType.type == boolean.class)
+							{
+								value = Boolean.parseBoolean(setting[1]);
+							}
+							else if (convertType.type == String.class)
+							{
+								value = setting[1];
+							}
+							put(convertType.newName, value);
+						}
+					}
+					converted = true;
+				}
+				catch (Exception e2)
+				{
+					System.err.println("Failed settings conversion!");
+					throw new RuntimeException(e2);
+				}
+			}
+			if (converted)
+			{
+				saveSettings();
+				System.out.println("Successfully converted settings to new format");
+			}
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
 		
-		for (Entry<String, String> defaultSetting : defaults.entrySet())
-		{
-			if (!settings.containsKey(defaultSetting.getKey()))
-			{
-				settings.put(defaultSetting.getKey(), defaultSetting.getValue());
-			}
-		}
+		applyDefaults();
 	}
 	
 	public void saveSettings()
 	{
 		if (file != null)
 		{
-			try
+			try (FileWriter fw = new FileWriter(file))
 			{
-				PrintWriter pw = new PrintWriter(new FileWriter(file, false));
-				for (Entry<String, String> setting : settings.entrySet())
-				{
-					pw.println(setting.getKey() + "=" + setting.getValue());
-				}
-				pw.close();
+				write(fw, 2, 0);
 			}
 			catch (Exception e)
 			{
@@ -97,70 +145,14 @@ public class Settings
 		}
 	}
 	
-	public String getSetting(String name)
+	public void applyDefaults()
 	{
-		return settings.get(name);
-	}
-	
-	public int getIntSetting(String name)
-	{
-		int i = Integer.parseInt(defaults.get(name));
-		try
+		for (Entry<String, Object> defaultSetting : defaults.getMap().entrySet())
 		{
-			i = Integer.parseInt(settings.get(name));
+			if (!has(defaultSetting.getKey()))
+			{
+				put(defaultSetting.getKey(), defaultSetting.getValue());
+			}
 		}
-		catch (Exception e)
-		{
-			System.err.println("Failed to parse setting: " + name);
-		}
-		return i;
-	}
-	
-	public double getDoubleSetting(String name)
-	{
-		double d = Double.parseDouble(defaults.get(name));
-		try
-		{
-			d = Double.parseDouble(settings.get(name));
-		}
-		catch (Exception e)
-		{
-			System.err.println("Failed to parse setting: " + name);
-		}
-		return d;
-	}
-	
-	public boolean getBooleanSetting(String name)
-	{
-		boolean b = Boolean.parseBoolean(defaults.get(name));
-		try
-		{
-			b = Boolean.parseBoolean(settings.get(name));
-		}
-		catch (Exception e)
-		{
-			System.err.println("Failed to parse setting: " + name);
-		}
-		return b;
-	}
-	
-	public void setSetting(String name, String value)
-	{
-		settings.put(name, value);
-	}
-	
-	public void setSetting(String name, int value)
-	{
-		settings.put(name, String.valueOf(value));
-	}
-	
-	public void setSetting(String name, double value)
-	{
-		settings.put(name, String.valueOf(value));
-	}
-	
-	public void setSetting(String name, boolean value)
-	{
-		settings.put(name, String.valueOf(value));
 	}
 }

@@ -46,7 +46,7 @@ public class MDFrame extends JFrame
 	public MDFrame(boolean firstRun)
 	{
 		super("Monopoly Deal");
-		GraphicsUtils.setScale(MDClient.getInstance().getSettings().getDoubleSetting("Scale"), false);
+		GraphicsUtils.setScale(MDClient.getInstance().getSettings().getDouble("scale"), false);
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		addWindowListener(new WindowAdapter()

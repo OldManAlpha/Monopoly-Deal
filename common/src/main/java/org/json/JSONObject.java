@@ -162,7 +162,7 @@ public class JSONObject {
     /**
      * The map where the JSONObject's properties are kept.
      */
-    private final Map<String, Object> map;
+    private Map<String, Object> map;
 
     /**
      * It is sometimes more convenient and less ambiguous to have a
@@ -2612,6 +2612,16 @@ public class JSONObject {
             results.put(entry.getKey(), value);
         }
         return results;
+    }
+    
+    public Map<String, Object> getMap()
+    {
+        return map;
+    }
+    
+    public void setMap(Map<String, Object> map)
+    {
+        this.map = map;
     }
 
     /**

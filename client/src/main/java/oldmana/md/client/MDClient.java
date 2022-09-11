@@ -135,7 +135,7 @@ public class MDClient
 			settings.loadSettings(folder);
 			MDSoundSystem.loadCache();
 		}
-		scheduler.setFPS(settings.getIntSetting("Framerate"));
+		scheduler.setFPS(settings.getInt("framerate"));
 		
 		window = new MDFrame(folder == null);
 		

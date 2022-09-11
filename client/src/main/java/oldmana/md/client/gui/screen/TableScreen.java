@@ -105,7 +105,7 @@ public class TableScreen extends JLayeredPane
 		chat = new MDChat();
 		add(chat, new Integer(150));
 		
-		if (getClient().getSettings().getBooleanSetting("Extra-Buttons"))
+		if (getClient().getSettings().getBoolean("extraButtons"))
 		{
 			debug = new MDButton("DB");
 			debug.setFontSize(16);

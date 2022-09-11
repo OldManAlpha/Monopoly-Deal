@@ -15,7 +15,6 @@ import oldmana.md.client.gui.component.MDComponent;
 import oldmana.md.client.gui.component.MDText;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
-import oldmana.md.client.net.NetClientHandler;
 import oldmana.md.net.NetHandler;
 import oldmana.md.net.packet.client.PacketLogin;
 
@@ -36,7 +35,7 @@ public class MainMenuScreen extends MDComponent
 		Settings settings = client.getSettings();
 		ipText = new MDText("IP");
 		ipText.setFontSize(30);
-		ip = new JTextField(settings.getSetting("Last-IP"))
+		ip = new JTextField(settings.getString("lastIP"))
 		{
 			@Override
 			public void revalidate() {} // This is why I gotta make my own components and/or API..
@@ -44,7 +43,7 @@ public class MainMenuScreen extends MDComponent
 		ip.setFont(GraphicsUtils.getThinMDFont(Font.PLAIN, 30));
 		idText = new MDText("User ID");
 		idText.setFontSize(30);
-		id = new JTextField(settings.getSetting("Last-ID"))
+		id = new JTextField(String.valueOf(settings.getInt("lastID")))
 		{
 			@Override
 			public void revalidate() {} // This is why I gotta make my own components and/or API..
@@ -78,11 +77,20 @@ public class MainMenuScreen extends MDComponent
 					return;
 				}
 				status.setText("");
-				settings.setSetting("Last-IP", ip.getText());
-				settings.setSetting("Last-ID", id.getText());
-				settings.saveSettings();
-				client.sendPacket(new PacketLogin(NetHandler.PROTOCOL_VERSION, Integer.parseInt(id.getText())));
-				client.getWindow().displayTable();
+				settings.put("lastIP", ip.getText());
+				try
+				{
+					int parsedID = Integer.parseInt(id.getText());
+					settings.put("lastID", parsedID);
+					settings.saveSettings();
+					client.sendPacket(new PacketLogin(NetHandler.PROTOCOL_VERSION, parsedID));
+					client.getWindow().displayTable();
+				}
+				catch (NumberFormatException e)
+				{
+					status.setText("Invalid ID");
+					status.repaint();
+				}
 			}
 		});
 		

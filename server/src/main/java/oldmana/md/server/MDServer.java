@@ -139,8 +139,8 @@ public class MDServer
 		deck = new Deck(decks.get("vanilla"));
 		discardPile = new DiscardPile();
 		config.loadConfig();
-		verbose = Boolean.parseBoolean(config.getSetting("Verbose"));
-		int port = Integer.parseInt(config.getSetting("Server-Port"));
+		verbose = config.getBoolean("verbose");
+		int port = config.getInt("port");
 		try
 		{
 			threadIncConnect = new IncomingConnectionsThread(port);

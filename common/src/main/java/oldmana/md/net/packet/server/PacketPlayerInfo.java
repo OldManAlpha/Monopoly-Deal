@@ -16,22 +16,4 @@ public class PacketPlayerInfo extends Packet
 		this.name = name;
 		this.connected = connected;
 	}
-	
-	/*
-	@Override
-	public void fromBytes(MJPacketBuffer data)
-	{
-		id = data.getInt();
-		name = data.getString();
-	}
-
-	@Override
-	public byte[] toBytes(MJPacketBuffer data)
-	{
-		data.addInt(4 + name.getBytes().length);
-		data.addInt(id);
-		data.addString(name);
-		return data.toByteArray();
-	}
-	*/
 }

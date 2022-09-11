@@ -54,7 +54,7 @@ public class GraphicsUtils
 		if (save)
 		{
 			Settings s = MDClient.getInstance().getSettings();
-			s.setSetting("Scale", SCALE);
+			s.put("scale", SCALE);
 			s.saveSettings();
 		}
 	}

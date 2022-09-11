@@ -84,7 +84,7 @@ public class MDScheduler
 		if (save)
 		{
 			Settings s = MDClient.getInstance().getSettings();
-			s.setSetting("Framerate", fps);
+			s.put("framerate", fps);
 			s.saveSettings();
 		}
 	}
