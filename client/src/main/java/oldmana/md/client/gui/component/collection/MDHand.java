@@ -190,6 +190,7 @@ public class MDHand extends MDCardCollection
 						overlay = new MDOverlayHand(hovered);
 						overlay.setLocation(getCardStartX(event.getX()), 0);
 						add(overlay);
+						overlay.addCardInfo();
 						repaint();
 					}
 				}

@@ -7,6 +7,7 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
+import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.util.Arrays;
@@ -26,6 +27,8 @@ public class MDCardInfo extends MDComponent
 	
 	private int existTime;
 	
+	private int cardPos;
+	
 	public MDCardInfo(Card card)
 	{
 		setLocation(20, 20);
@@ -37,7 +40,7 @@ public class MDCardInfo extends MDComponent
 			Font f = GraphicsUtils.getThinMDFont(scale(20));
 			List<String> desc = GraphicsUtils.splitStrings(Arrays.asList(card.getDescription().getText()), GraphicsUtils.getThinMDFont(scale(20)), 
 					scale(width - 8), true);
-			setSize(scale(width), scale(60) + (f.getSize() * desc.size()));
+			setSize(scale(width), scale(60) + scale(15) + (f.getSize() * desc.size()));
 		}
 		catch (Exception e)
 		{
@@ -56,9 +59,16 @@ public class MDCardInfo extends MDComponent
 		});
 	}
 	
+	public void setCardPos(int cardPos)
+	{
+		this.cardPos = cardPos;
+	}
+	
 	@Override
 	public void paintComponent(Graphics gr)
 	{
+		int width = getWidth();
+		int height = getHeight() - scale(15);
 		Graphics2D g = (Graphics2D) gr;
 		if (existTime < 200)
 		{
@@ -82,21 +92,21 @@ public class MDCardInfo extends MDComponent
 				fractions[i] = (i + (i % 2 == 0 ? 0.2F : 0.8F)) / (float) (colorCount * 2);
 				colors[i] = GraphicsUtils.getLighterColor(prop.getColors().get(i / 2).getColor(), 1);
 			}
-			propPaint = new LinearGradientPaint(0, 0, getWidth(), 0,
+			propPaint = new LinearGradientPaint(0, 0, width, 0,
 					fractions, colors);
 		}
-		g.fillRoundRect(0, 0, getWidth(), getHeight(), scale(20), scale(20));
+		g.fillRoundRect(0, 0, width, height, scale(20), scale(20));
 		if (card instanceof CardProperty)
 		{
 			g.setPaint(propPaint);
-			g.fillRoundRect(0, 0, getWidth(), scale(28), scale(20), scale(20));
-			g.fillRect(0, scale(18), getWidth(), scale(10));
+			g.fillRoundRect(0, 0, width, scale(28), scale(20), scale(20));
+			g.fillRect(0, scale(18), width, scale(10));
 			g.setPaint(null);
 		}
 		
 		// Draw divider
 		g.setColor(Color.BLACK);
-		g.fillRect(0, scale(28), getWidth(), scale(2));
+		g.fillRect(0, scale(28), width, scale(2));
 		
 		// Draw card name
 		String name = card.getName();
@@ -105,25 +115,29 @@ public class MDCardInfo extends MDComponent
 			name = card.getValue() + "M";
 		}
 		TextPainter tp = new TextPainter(name, g.getFont(), 
-				new Rectangle(0, scale(2), getWidth(), scale(28)));
+				new Rectangle(0, scale(2), width, scale(28)));
 		tp.setHorizontalAlignment(Alignment.CENTER);
 		tp.setVerticalAlignment(Alignment.CENTER);
 		tp.paint(g);
 		
 		// Draw card description
 		g.setFont(GraphicsUtils.getThinMDFont(scale(20)));
-		tp = new TextPainter(Arrays.asList(card.getDescription().getText()), g.getFont(), new Rectangle(scale(4), scale(32), getWidth() - scale(8), 
-				getHeight() - scale(32)), true, true);
+		tp = new TextPainter(Arrays.asList(card.getDescription().getText()), g.getFont(), new Rectangle(scale(4), scale(58), width - scale(8),
+				height - scale(58)), true, true);
 		tp.paint(g);
 		
 		// Draw card type
 		Color brighter = GraphicsUtils.getLighterColor(cc, 1);
-		GradientPaint paint = new GradientPaint(0, getHeight() - scale(24), brighter, 0, getHeight(), cc);
+		GradientPaint paint = new GradientPaint(0, scale(29), brighter, 0, scale(29) + scale(24), cc);
 		g.setPaint(paint);
-		g.fillRoundRect(getWidth() / 2 - scale(65), getHeight() - scale(24), scale(130), scale(24), scale(10), scale(10));
+		g.fillRoundRect(0, scale(29), scale(130), scale(24), scale(10), scale(10));
 		g.setColor(Color.BLACK);
-		g.drawRoundRect(getWidth() / 2 - scale(65), getHeight() - scale(24), scale(130), scale(24), scale(10), scale(10));
+		g.drawRoundRect(0, scale(29), scale(130) - 1, scale(24) - 1, scale(10), scale(10));
+		g.setPaint(paint);
+		g.fillRect(0, scale(29) + 1, scale(6), scale(6));
+		g.setColor(Color.BLACK);
 		g.setFont(GraphicsUtils.getBoldMDFont(scale(20)));
+		
 		String type = "Action";
 		if (card instanceof CardMoney)
 		{
@@ -133,12 +147,37 @@ public class MDCardInfo extends MDComponent
 		{
 			type = "Property";
 		}
-		tp = new TextPainter(type + " Card", g.getFont(), new Rectangle(0, getHeight() - scale(28), getWidth(), scale(28)));
+		tp = new TextPainter(type + " Card", g.getFont(), new Rectangle(0, scale(28), scale(130), scale(28)));
 		tp.setHorizontalAlignment(Alignment.CENTER);
-		tp.setVerticalAlignment(Alignment.BOTTOM);
+		tp.setVerticalAlignment(Alignment.CENTER);
+		tp.paint(g);
+		
+		// Draw Value
+		g.setPaint(paint);
+		g.fillRoundRect(width - scale(130), scale(29), scale(130), scale(24), scale(10), scale(10));
+		g.setColor(Color.BLACK);
+		g.drawRoundRect(width - scale(130), scale(29), scale(130) - 1, scale(24) - 1, scale(10), scale(10));
+		g.setPaint(paint);
+		g.fillRect(width - scale(6), scale(29) + 1, scale(6), scale(4));
+		g.setColor(Color.BLACK);
+		g.setFont(GraphicsUtils.getBoldMDFont(scale(20)));
+		
+		tp = new TextPainter("Value: " + card.getValue() + "M", g.getFont(), new Rectangle(width - scale(130), scale(28), scale(130), scale(28)));
+		tp.setHorizontalAlignment(Alignment.CENTER);
+		tp.setVerticalAlignment(Alignment.CENTER);
 		tp.paint(g);
 		
 		// Draw border
-		g.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, scale(20), scale(20));
+		g.drawRoundRect(0, 0, width - 1, height - 1, scale(20), scale(20));
+		
+		Polygon arrow = new Polygon();
+		arrow.addPoint(cardPos - scale(10), height - 1);
+		arrow.addPoint(cardPos + scale(10), height - 1);
+		arrow.addPoint(cardPos, getHeight());
+		g.setColor(cc);
+		g.fillPolygon(arrow);
+		g.setColor(Color.BLACK);
+		g.drawLine(cardPos - scale(10), height, cardPos, getHeight());
+		g.drawLine(cardPos + scale(10), height, cardPos, getHeight());
 	}
 }

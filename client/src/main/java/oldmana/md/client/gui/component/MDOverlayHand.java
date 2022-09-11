@@ -3,6 +3,7 @@ package oldmana.md.client.gui.component;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.util.Map;
 
 import oldmana.md.client.MDClient;
@@ -18,10 +19,13 @@ import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.client.ActionStateClientPlayProperty;
 import oldmana.md.net.packet.client.action.PacketActionUseCardButton;
 
+import javax.swing.SwingUtilities;
+
 public class MDOverlayHand extends MDComponent
 {
 	private Card card;
-	private MDInfoIcon icon;
+	
+	private MDCardInfo cardInfo;
 	
 	private boolean hasButtons;
 	
@@ -32,9 +36,6 @@ public class MDOverlayHand extends MDComponent
 		setSize(GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2));
 		Player player = client.getThePlayer();
 		
-		icon = new MDInfoIcon(card);
-		icon.setLocation(getWidth() - scale(24), scale(2));
-		add(icon);
 		
 		if (getClient().isInputBlocked())
 		{
@@ -91,9 +92,32 @@ public class MDOverlayHand extends MDComponent
 		return card;
 	}
 	
+	public void addCardInfo()
+	{
+		getClient().getScheduler().scheduleTask(task ->
+		{
+			if (isDisplayable())
+			{
+				cardInfo = new MDCardInfo(card);
+				Point infoPos = SwingUtilities.convertPoint(this, new Point(getWidth() / 2, -cardInfo.getHeight() - scale(5)), getClient().getTableScreen());
+				infoPos.x = Math.max(scale(2), Math.min(infoPos.x - (cardInfo.getWidth() / 2), getClient().getTableScreen().getWidth() - cardInfo.getWidth() - scale(2)));
+				infoPos.y = Math.max(scale(2), infoPos.y);
+				cardInfo.setLocation(infoPos.x, infoPos.y);
+				cardInfo.setCardPos((int) (((MDHand) getClient().getThePlayer().getHand().getUI()).getScreenLocationOf(card).getX()
+						- cardInfo.getX() + GraphicsUtils.getCardWidth()));
+				getClient().addTableComponent(cardInfo, 110);
+			}
+		}, 250, false);
+	}
+	
 	public void removeCardInfo()
 	{
-		icon.removeCardInfo();
+		if (cardInfo != null)
+		{
+			getClient().removeTableComponent(cardInfo);
+			getClient().getTableScreen().repaint();
+			cardInfo = null;
+		}
 	}
 	
 	@Override

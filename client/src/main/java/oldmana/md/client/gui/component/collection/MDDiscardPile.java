@@ -12,16 +12,20 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import oldmana.md.client.MDScheduler;
+import oldmana.md.client.MDScheduler.MDTask;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.DiscardPile;
-import oldmana.md.client.gui.component.MDInfoIcon;
+import oldmana.md.client.gui.component.MDCardInfo;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
 
+import javax.swing.SwingUtilities;
+
 public class MDDiscardPile extends MDCardCollection
 {
-	private MDInfoIcon icon;
+	private MDCardInfo cardInfo;
+	private MDTask infoTask;
 	
 	public int scrollPos;
 	
@@ -47,7 +51,7 @@ public class MDDiscardPile extends MDCardCollection
 					}
 					animDir = true;
 					animDuration = 250;
-					constructInfoIcon();
+					startInfoTask();
 					repaint();
 				}
 			}
@@ -58,7 +62,7 @@ public class MDDiscardPile extends MDCardCollection
 					scrollPos--;
 					animDir = false;
 					animDuration = 250;
-					constructInfoIcon();
+					startInfoTask();
 					repaint();
 				}
 			}
@@ -179,25 +183,37 @@ public class MDDiscardPile extends MDCardCollection
 		//g.fillRect(60, 0, collection.getCardCount(), 90);
 	}
 	
-	public void constructInfoIcon()
+	public void startInfoTask()
 	{
-		destroyInfoIcon();
-		if (!getCollection().isEmpty())
+		destroyInfo();
+		infoTask = getClient().getScheduler().scheduleTask(task ->
 		{
-			icon = new MDInfoIcon(getCollection().getCardAt(getCollection().getCardCount() - 1 - scrollPos));
-			icon.setLocation(GraphicsUtils.getCardWidth(2) - scale(24), scale(2));
-			add(icon);
-			repaint();
-		}
+			if (!getCollection().isEmpty())
+			{
+				Card card = getCollection().getCardAt(getCollection().getCardCount() - 1 - scrollPos);
+				cardInfo = new MDCardInfo(card);
+				Point infoPos = SwingUtilities.convertPoint(this, new Point(getWidth() / 2, -cardInfo.getHeight() - scale(5)), getClient().getTableScreen());
+				infoPos.x = Math.max(scale(2), Math.min(infoPos.x - (cardInfo.getWidth() / 2), getClient().getTableScreen().getWidth() - cardInfo.getWidth() - scale(2)));
+				infoPos.y = Math.max(scale(2), infoPos.y);
+				cardInfo.setLocation(infoPos.x, infoPos.y);
+				cardInfo.setCardPos((int) getScreenLocationOf(card).getX() - cardInfo.getX() + GraphicsUtils.getCardWidth());
+				getClient().addTableComponent(cardInfo, 110);
+				repaint();
+			}
+		}, 250, false);
 	}
 	
-	public void destroyInfoIcon()
+	public void destroyInfo()
 	{
-		if (icon != null)
+		if (infoTask != null)
 		{
-			icon.removeCardInfo();
-			remove(icon);
-			icon = null;
+			infoTask.cancel();
+		}
+		if (cardInfo != null)
+		{
+			getClient().removeTableComponent(cardInfo);
+			cardInfo = null;
+			getClient().getTableScreen().repaint();
 		}
 	}
 	
@@ -261,7 +277,7 @@ public class MDDiscardPile extends MDCardCollection
 		@Override
 		public void mouseEntered(MouseEvent event)
 		{
-			constructInfoIcon();
+			startInfoTask();
 			collapsing = false;
 		}
 		
@@ -271,7 +287,7 @@ public class MDDiscardPile extends MDCardCollection
 			Point p = event.getPoint();
 			if (p.x < 0 || p.x >= getWidth() || p.y < 0 || p.y >= getHeight())
 			{
-				destroyInfoIcon();
+				destroyInfo();
 				//scrollPos = 0;
 				//getParent().invalidate();
 				if (scrollPos > 0)

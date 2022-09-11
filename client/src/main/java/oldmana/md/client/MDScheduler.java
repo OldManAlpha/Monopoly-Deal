@@ -30,16 +30,18 @@ public class MDScheduler
 		tasks.add(task);
 	}
 	
-	public void scheduleTask(Consumer<MDTask> func, int interval, boolean repeats)
+	public MDTask scheduleTask(Consumer<MDTask> func, int interval, boolean repeats)
 	{
-		scheduleTask(new MDTask(interval, repeats)
+		MDTask task = new MDTask(interval, repeats)
 		{
 			@Override
 			public void run()
 			{
 				func.accept(this);
 			}
-		});
+		};
+		scheduleTask(task);
+		return task;
 	}
 	
 	public void scheduleFrameboundTask(Consumer<MDTask> func)
