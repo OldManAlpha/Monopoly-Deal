@@ -1,30 +1,30 @@
 package oldmana.md.server.command;
 
+import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
-import oldmana.md.server.MDServer;
-import oldmana.md.server.Player;
-import oldmana.md.server.state.GameState;
 
 public class CommandStart extends Command
 {
 	public CommandStart()
 	{
-		super("start", null, new String[] {"/start"}, true);
+		super("start", new String[] {"startgame", "deal"}, new String[] {"/start"}, true);
 	}
 	
 	@Override
 	public void executeCommand(CommandSender sender, String[] args)
 	{
-		sender.sendMessage("Starting game", true);
-		MDServer server = getServer();
-		for (int i = 0 ; i < 5 ; i++)
+		if (args.length > 0 && args[0].equalsIgnoreCase("force"))
 		{
-			for (Player player : server.getPlayers())
-			{
-				server.getDeck().drawCard(player, 0.6);
-			}
+			sender.sendMessage("Starting game (Forced)", true);
+			getServer().getGameState().startGame(true);
+			return;
 		}
-		GameState gs = server.getGameState();
-		gs.nextTurn();
+		if (getServer().getGameState().isGameRunning())
+		{
+			sender.sendMessage(ChatColor.PREFIX_ALERT + "The game is already running! Use /reset to end the game first.");
+			return;
+		}
+		sender.sendMessage("Starting game", true);
+		getServer().getGameState().startGame();
 	}
 }

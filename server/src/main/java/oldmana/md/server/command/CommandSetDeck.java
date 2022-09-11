@@ -2,6 +2,7 @@ package oldmana.md.server.command;
 
 import java.util.Map;
 
+import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.card.collection.deck.DeckStack;
 
@@ -15,6 +16,11 @@ public class CommandSetDeck extends Command
 	@Override
 	public void executeCommand(CommandSender sender, String[] args)
 	{
+		if (getServer().getGameState().isGameRunning())
+		{
+			sender.sendMessage(ChatColor.PREFIX_ALERT + "The game is currently running! Use /reset to end the game first.");
+			return;
+		}
 		if (args.length >= 1)
 		{
 			String name = args[0];

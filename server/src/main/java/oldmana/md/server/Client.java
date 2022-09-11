@@ -6,18 +6,15 @@ import oldmana.md.server.net.ConnectionThread;
 public class Client
 {
 	private ConnectionThread net;
-	private boolean connected;
 	
 	public Client(ConnectionThread net)
 	{
 		this.net = net;
-		connected = net != null;
 	}
 	
 	public void setNet(ConnectionThread net)
 	{
 		this.net = net;
-		connected = net != null;
 	}
 	
 	public ConnectionThread getNet()
@@ -27,12 +24,7 @@ public class Client
 	
 	public boolean isConnected()
 	{
-		return connected;
-	}
-	
-	public void setConnected(boolean connected)
-	{
-		this.connected = connected;
+		return net != null;
 	}
 	
 	public void sendPacket(Packet packet)

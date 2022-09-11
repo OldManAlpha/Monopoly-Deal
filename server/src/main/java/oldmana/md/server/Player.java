@@ -950,6 +950,14 @@ public class Player extends Client implements CommandSender
 	public void setBot(boolean bot)
 	{
 		this.bot = bot;
+		if (bot)
+		{
+			getServer().broadcastPacket(new PacketPlayerStatus(id, true));
+		}
+		else if (!isConnected())
+		{
+			getServer().broadcastPacket(new PacketPlayerStatus(id, false));
+		}
 	}
 	
 	public void setAI(PlayerAI ai)

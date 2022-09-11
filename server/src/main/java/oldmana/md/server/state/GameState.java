@@ -1,5 +1,6 @@
 package oldmana.md.server.state;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -9,8 +10,12 @@ import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateRefusal;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
+import oldmana.md.server.card.collection.Deck;
+import oldmana.md.server.card.collection.PropertySet;
 import oldmana.md.server.event.ActionStateChangedEvent;
 import oldmana.md.server.event.ActionStateChangingEvent;
+import oldmana.md.server.event.GameEndEvent;
+import oldmana.md.server.event.GameStartEvent;
 import oldmana.md.server.event.PlayersWonEvent;
 import oldmana.md.server.event.TurnEndEvent;
 import oldmana.md.server.event.TurnStartEvent;
@@ -18,6 +23,9 @@ import oldmana.md.server.event.TurnStartEvent;
 public class GameState
 {
 	private MDServer server;
+	
+	private boolean gameRunning;
+	private boolean clean;
 	
 	private Player activePlayer;
 	private int turns;
@@ -56,13 +64,44 @@ public class GameState
 		nextNaturalActionState();
 	}
 	
+	public boolean isGameRunning()
+	{
+		return gameRunning;
+	}
+	
+	public boolean isClean()
+	{
+		return clean;
+	}
+	
 	public void startGame()
 	{
-		activePlayer = server.getPlayers().get(new Random().nextInt(server.getPlayers().size()));
+		startGame(false);
+	}
+	
+	public void startGame(boolean ignoreCleanup)
+	{
+		if (!isClean() && !ignoreCleanup)
+		{
+			cleanup();
+		}
+		gameRunning = true;
+		clean = false;
+		server.getEventManager().callEvent(new GameStartEvent());
+		for (int i = 0 ; i < 5 ; i++)
+		{
+			for (Player player : server.getPlayers())
+			{
+				server.getDeck().drawCard(player, 0.6);
+			}
+		}
+		nextTurn();
 	}
 	
 	public void endGame()
 	{
+		gameRunning = false;
+		server.getEventManager().callEvent(new GameEndEvent());
 		if (activePlayer != null)
 		{
 			activePlayer.clearRevocableCards();
@@ -76,9 +115,69 @@ public class GameState
 		setActionState(new ActionStateDoNothing());
 	}
 	
-	public boolean isGameStarted()
+	/**
+	 * Puts all cards in the playing field back to their original place.
+	 */
+	public void cleanup()
 	{
-		return activePlayer != null;
+		Deck deck = server.getDeck();
+		for (Player player : server.getPlayers())
+		{
+			for (Card card : player.getBank().getCardsInReverse())
+			{
+				putCardAway(card);
+			}
+			List<PropertySet> sets = player.getPropertySets(true);
+			Collections.reverse(sets);
+			for (PropertySet set : sets)
+			{
+				for (Card card : set.getCardsInReverse())
+				{
+					putCardAway(card);
+				}
+			}
+			for (Card card : player.getHand().getCardsInReverse())
+			{
+				putCardAway(card);
+			}
+		}
+		for (Card card : server.getDiscardPile().getCardsInReverse())
+		{
+			putCardAway(card);
+		}
+		
+		for (Card card : deck.getCards(true))
+		{
+			if (!deck.getDeckStack().hasCard(card))
+			{
+				putCardAway(card);
+			}
+		}
+		
+		for (Card card : deck.getDeckStack().getCards())
+		{
+			if (!deck.hasCard(card))
+			{
+				putCardAway(card);
+			}
+		}
+		
+		deck.shuffle();
+		
+		clean = true;
+	}
+	
+	private void putCardAway(Card card)
+	{
+		Deck deck = server.getDeck();
+		if (deck.getDeckStack().hasCard(card))
+		{
+			card.transfer(deck, -1, 0.25);
+		}
+		else
+		{
+			card.transfer(server.getVoidCollection(), -1, 0.25);
+		}
 	}
 	
 	public void nextTurn()
