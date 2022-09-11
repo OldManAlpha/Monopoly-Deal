@@ -21,7 +21,6 @@ import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.LayoutAdapter;
-import oldmana.md.client.gui.component.MDChat;
 import oldmana.md.client.gui.component.MDComponent;
 import oldmana.md.client.gui.component.MDClientButton;
 import oldmana.md.client.gui.component.MDPlayerPropertySets;
@@ -150,10 +149,12 @@ public class MDPlayer extends MDComponent
 		ActionState state = gs.getActionState();
 		Color border = null;
 		Color nameplate = null;
+		Color inner = null;
 		if (gs.getWhoseTurn() == player)
 		{
 			border = GraphicsUtils.DARK_BLUE;
 			nameplate = GraphicsUtils.LIGHT_BLUE;
+			inner = new Color(232, 237, 240);
 		}
 		else if (state != null && state.isTarget(player))
 		{
@@ -161,23 +162,29 @@ public class MDPlayer extends MDComponent
 			{
 				border = GraphicsUtils.GREEN;
 				nameplate = border.brighter();
+				inner = new Color(235, 240, 235);
 			}
 			else if (state.isRefused(player))
 			{
 				border = Color.BLUE;
-				nameplate = new Color(80, 80, 255);
+				nameplate = new Color(100, 100, 255);
+				inner = new Color(240, 240, 255);
 			}
 			else
 			{
 				border = GraphicsUtils.RED;
 				nameplate = new Color(255, 169, 112);
+				inner = new Color(240, 235, 235);
 			}
 		}
 		else
 		{
 			border = Color.BLACK;
 			nameplate = Color.LIGHT_GRAY;
+			inner = new Color(240, 240, 240);
 		}
+		g.setColor(inner);
+		g.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, scale(10), scale(10));
 		g.setColor(border);
 		g.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, scale(10), scale(10));
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
