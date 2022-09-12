@@ -75,6 +75,10 @@ public class CardActionRent extends CardAction
 			card.transfer(getServer().getDiscardPile());
 			doubleRent.transfer(getServer().getDiscardPile());
 			getServer().getGameState().decrementTurns(2);
+			if (card.clearsRevocableCards() || doubleRent.clearsRevocableCards())
+			{
+				player.clearRevocableCards();
+			}
 			((CardActionRent) card).playCard(player, 2);
 		});
 		controls.addButton(doubleButton);
