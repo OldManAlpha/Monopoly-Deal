@@ -565,13 +565,11 @@ public class NetClientHandler extends NetHandler
 		b.setMaxSize(packet.maxSize);
 		b.repaint();
 		player.getUI().validate();
-		System.out.println("Button " + packet.id);
 	}
 	
 	@Queued
 	public void handleDestroyButton(PacketDestroyButton packet)
 	{
-		System.out.println("Destroy button " + packet.id);
 		for (Player player : client.getAllPlayers())
 		{
 			if (player.getUI().removeButton(packet.id))
