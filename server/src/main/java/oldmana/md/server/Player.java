@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketDestroyButton;
@@ -42,7 +43,7 @@ public class Player extends Client implements CommandSender
 	
 	private MDServer server;
 	
-	private int uid;
+	private UUID uuid;
 	
 	private int id;
 	
@@ -69,11 +70,11 @@ public class Player extends Client implements CommandSender
 	private boolean bot;
 	private PlayerAI ai;
 	
-	public Player(MDServer server, int uid, ConnectionThread net, String name, boolean op)
+	public Player(MDServer server, UUID uuid, ConnectionThread net, String name, boolean op)
 	{
 		super(net);
 		this.server = server;
-		this.uid = uid;
+		this.uuid = uuid;
 		this.name = name;
 		this.op = op;
 		id = nextID++;
@@ -93,13 +94,13 @@ public class Player extends Client implements CommandSender
 	 */
 	public Player(MDServer server, String name)
 	{
-		this(server, -(nextID + 1), null, name, false);
+		this(server, UUID.randomUUID(), null, name, false);
 		bot = true;
 	}
 	
-	public int getUID()
+	public UUID getUUID()
 	{
-		return uid;
+		return uuid;
 	}
 	
 	public int getID()
@@ -663,6 +664,10 @@ public class Player extends Client implements CommandSender
 	
 	public ClientButton getButton(Player view, ButtonTag tag)
 	{
+		if (tag == null)
+		{
+			throw new IllegalArgumentException("Tag cannot be null.");
+		}
 		for (ClientButton button : getButtonsFor(view))
 		{
 			if (button.getTag() == tag)

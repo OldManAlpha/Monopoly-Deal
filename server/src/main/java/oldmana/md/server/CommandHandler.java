@@ -28,8 +28,8 @@ public class CommandHandler
 		registerCommand(new CommandListPlayers());
 		registerCommand(new CommandListDecks());
 		registerCommand(new CommandHelp());
-		registerCommand(new CommandRegisterPlayer());
-		registerCommand(new CommandUnregisterPlayer());
+		//registerCommand(new CommandRegisterPlayer());
+		//registerCommand(new CommandUnregisterPlayer());
 		registerCommand(new CommandListRegisteredPlayers());
 		registerCommand(new CommandSetTurn());
 		registerCommand(new CommandSetTurns());

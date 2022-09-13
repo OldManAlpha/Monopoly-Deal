@@ -16,7 +16,7 @@ public class CommandListRegisteredPlayers extends Command
 		sender.sendMessage("List of registered players:");
 		for (RegisteredPlayer player : getServer().getPlayerRegistry().getRegisteredPlayers())
 		{
-			sender.sendMessage("- " + player.name + (player.op ? " (Operator)" : "") + ": " + player.uid);
+			sender.sendMessage("- " + player.name + (player.op ? " (Operator)" : ""));
 		}
 	}
 }

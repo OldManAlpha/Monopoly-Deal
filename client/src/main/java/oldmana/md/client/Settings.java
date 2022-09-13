@@ -4,6 +4,8 @@ import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,7 +33,6 @@ public class Settings extends JSONObject
 	private Map<String, ConvertType> conversionTypes = new HashMap<String, ConvertType>();
 	{
 		conversionTypes.put("Last-IP", new ConvertType(String.class, "lastIP"));
-		conversionTypes.put("Last-ID", new ConvertType(int.class, "lastID"));
 		conversionTypes.put("Scale", new ConvertType(double.class, "scale"));
 		conversionTypes.put("Developer-Mode", new ConvertType(boolean.class, "developerMode"));
 		conversionTypes.put("Extra-Buttons", new ConvertType(boolean.class, "extraButtons"));
@@ -153,6 +154,14 @@ public class Settings extends JSONObject
 			{
 				put(defaultSetting.getKey(), defaultSetting.getValue());
 			}
+		}
+		if (!has("clientKey"))
+		{
+			SecureRandom r = new SecureRandom();
+			byte[] key = new byte[16];
+			r.nextBytes(key);
+			put("clientKey", new BigInteger(key));
+			saveSettings();
 		}
 	}
 }

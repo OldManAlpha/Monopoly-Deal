@@ -1,39 +1,49 @@
 package oldmana.md.server;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Scanner;
+import java.util.Map;
+import java.util.UUID;
 
 public class PlayerRegistry
 {
-	private List<RegisteredPlayer> players = new ArrayList<RegisteredPlayer>();
+	private Map<UUID, RegisteredPlayer> players = new HashMap<UUID, RegisteredPlayer>();
 	
-	public void loadPlayers()
+	public void loadPlayers() throws IOException
 	{
-		try
+		File file = new File(MDServer.getInstance().getDataFolder(), "players.dat");
+		if (!file.exists())
 		{
-			File f = new File(MDServer.getInstance().getDataFolder(), "players.dat");
-			if (!f.exists())
-			{
-				System.out.println("Player data doesn't exist, generating file.");
-				f.createNewFile();
-			}
-			Scanner s = new Scanner(new FileInputStream(f));
-			while (s.hasNextLine())
-			{
-				String line = s.nextLine();
-				String[] data = line.split(",");
-				registerPlayer(new RegisteredPlayer(Integer.parseInt(data[0]), data[1], Boolean.parseBoolean(data[2])));
-			}
-			s.close();
+			System.out.println("Server config doesn't exist, generating file.");
+			file.createNewFile();
 		}
-		catch (Exception e)
+		try (FileInputStream is = new FileInputStream(file))
 		{
-			System.out.println("Error while loading players!");
+			JSONArray array = new JSONArray(new JSONTokener(is));
+			for (Object o : array)
+			{
+				JSONObject obj = (JSONObject) o;
+				UUID uuid = UUID.fromString(obj.getString("uuid"));
+				RegisteredPlayer rp = new RegisteredPlayer(uuid,
+						obj.has("name") ? obj.getString("name") : "Unknown",
+						obj.has("staticName") && obj.getBoolean("staticName"),
+						obj.has("op") && obj.getBoolean("op"));
+				players.put(uuid, rp);
+			}
+		}
+		catch (JSONException e)
+		{
+			System.err.println("Failed to parse players.dat(old format?). The file will be overwritten if players join.");
 			e.printStackTrace();
 		}
 	}
@@ -42,86 +52,83 @@ public class PlayerRegistry
 	{
 		try
 		{
-			File f = new File(MDServer.getInstance().getDataFolder(), "players.dat");
-			PrintWriter pw = new PrintWriter(new FileOutputStream(f));
-			for (RegisteredPlayer player : players)
+			JSONArray array = new JSONArray();
+			for (RegisteredPlayer rp : players.values())
 			{
-				pw.println(player.uid + "," + player.name + "," + player.op);
+				array.put(rp.toJSON());
 			}
-			pw.close();
+			
+			File file = new File(MDServer.getInstance().getDataFolder(), "players.dat");
+			try (FileWriter w = new FileWriter(file))
+			{
+				array.write(w, 2, 0);
+			}
 		}
 		catch (Exception e)
 		{
-			System.out.println("Error while saving players!");
+			System.err.println("Error while saving players!");
 			e.printStackTrace();
 		}
 	}
 	
-	public void registerPlayer(RegisteredPlayer player)
+	public RegisteredPlayer registerPlayer(UUID uuid, String name)
 	{
-		players.add(player);
+		if (isUUIDRegistered(uuid))
+		{
+			return getRegisteredPlayerByUUID(uuid);
+		}
+		RegisteredPlayer rp = new RegisteredPlayer(uuid, name, false, false);
+		players.put(uuid, rp);
+		savePlayers();
+		return rp;
 	}
 	
 	public void unregisterPlayer(RegisteredPlayer player)
 	{
-		players.remove(player);
+		players.remove(player.uuid);
 	}
 	
-	public RegisteredPlayer getRegisteredPlayerByUID(int uid)
+	public RegisteredPlayer getRegisteredPlayerByUUID(UUID uuid)
 	{
-		for (RegisteredPlayer rp : players)
-		{
-			if (rp.uid == uid)
-			{
-				return rp;
-			}
-		}
-		return null;
+		return players.get(uuid);
 	}
 	
-	public RegisteredPlayer getRegisteredPlayerByName(String name)
+	public boolean isUUIDRegistered(UUID uuid)
 	{
-		for (RegisteredPlayer rp : players)
-		{
-			if (rp.name.equalsIgnoreCase(name))
-			{
-				return rp;
-			}
-		}
-		return null;
-	}
-	
-	public boolean isUIDRegistered(int uid)
-	{
-		return getRegisteredPlayerByUID(uid) != null;
-	}
-	
-	public boolean isNameRegistered(String name)
-	{
-		return getRegisteredPlayerByName(name) != null;
-	}
-	
-	public String getNameOf(int uid)
-	{
-		return getRegisteredPlayerByUID(uid).name;
+		return players.get(uuid) != null;
 	}
 	
 	public List<RegisteredPlayer> getRegisteredPlayers()
 	{
-		return players;
+		return new ArrayList<RegisteredPlayer>(players.values());
 	}
 	
 	public static class RegisteredPlayer
 	{
-		public int uid;
+		public UUID uuid;
 		public String name;
+		public boolean staticName;
 		public boolean op;
 		
-		public RegisteredPlayer(int uid, String name, boolean op)
+		public RegisteredPlayer(UUID uuid, String name, boolean staticName, boolean op)
 		{
-			this.uid = uid;
+			this.uuid = uuid;
 			this.name = name;
+			this.staticName = staticName;
 			this.op = op;
+		}
+		
+		public JSONObject toJSON()
+		{
+			JSONObject obj = new JSONObject();
+			obj.put("uuid", uuid.toString());
+			obj.put("name", name);
+			if (staticName)
+			{
+				obj.put("staticName", staticName);
+			}
+			obj.put("op", op);
+			return obj;
 		}
 	}
 }

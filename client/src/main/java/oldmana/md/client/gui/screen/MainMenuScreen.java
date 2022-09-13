@@ -2,8 +2,6 @@ package oldmana.md.client.gui.screen;
 
 import java.awt.Container;
 import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 import javax.swing.JTextField;
 
@@ -16,23 +14,42 @@ import oldmana.md.client.gui.component.MDText;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
 import oldmana.md.net.NetHandler;
-import oldmana.md.net.packet.client.PacketLogin;
+import oldmana.md.net.packet.client.PacketInitiateLogin;
 
 public class MainMenuScreen extends MDComponent
 {
 	private MDText ipText;
 	private MDText idText;
 	private JTextField ip;
-	private JTextField id;
+	private JTextField nameField;
 	
 	private MDText status;
 	
 	private MDButton login;
 	
+	// Dev mode components
+	private MDText saltText;
+	private JTextField salt;
+	
 	public MainMenuScreen()
 	{
 		MDClient client = MDClient.getInstance();
 		Settings settings = client.getSettings();
+		
+		if (client.isDevMode())
+		{
+			saltText = new MDText("Salt:");
+			saltText.setFontSize(30);
+			salt = new JTextField(settings.has("lastSalt") ? settings.getString("lastSalt") : "")
+			{
+				@Override
+				public void revalidate() {}
+			};
+			
+			add(saltText);
+			add(salt);
+		}
+		
 		ipText = new MDText("IP");
 		ipText.setFontSize(30);
 		ip = new JTextField(settings.getString("lastIP"))
@@ -41,14 +58,14 @@ public class MainMenuScreen extends MDComponent
 			public void revalidate() {} // This is why I gotta make my own components and/or API..
 		};
 		ip.setFont(GraphicsUtils.getThinMDFont(Font.PLAIN, 30));
-		idText = new MDText("User ID");
+		idText = new MDText("Name");
 		idText.setFontSize(30);
-		id = new JTextField(String.valueOf(settings.getInt("lastID")))
+		nameField = new JTextField(settings.getString("lastName"))
 		{
 			@Override
 			public void revalidate() {} // This is why I gotta make my own components and/or API..
 		};
-		id.setFont(GraphicsUtils.getThinMDFont(Font.PLAIN, 30));
+		nameField.setFont(GraphicsUtils.getThinMDFont(Font.PLAIN, 30));
 		
 		status = new MDText("");
 		status.setHorizontalAlignment(Alignment.CENTER);
@@ -56,41 +73,47 @@ public class MainMenuScreen extends MDComponent
 		
 		login = new MDButton("Login");
 		login.setFontSize(30);
-		login.addMouseListener(new MouseAdapter()
+		login.addClickListener(() ->
 		{
-			@Override
-			public void mousePressed(MouseEvent event)
+			if (nameField.getText().isEmpty())
 			{
-				MDClient client = MDClient.getInstance();
-				String[] ipPort = ip.getText().split(":");
-				status.setText("Connecting...");
-				status.paintImmediately(status.getVisibleRect());
-				try
+				status.setText("Name required");
+				status.repaint();
+				return;
+			}
+			
+			String[] ipPort = ip.getText().split(":");
+			status.setText("Connecting...");
+			status.paintImmediately(status.getVisibleRect());
+			try
+			{
+				client.connectToServer(ipPort[0], Integer.parseInt(ipPort[1]));
+			}
+			catch (Exception e)
+			{
+				status.setText("Connection failed");
+				status.repaint();
+				e.printStackTrace();
+				return;
+			}
+			status.setText("");
+			settings.put("lastIP", ip.getText());
+			try
+			{
+				String name = nameField.getText();
+				settings.put("lastName", name);
+				if (salt != null)
 				{
-					client.connectToServer(ipPort[0], Integer.parseInt(ipPort[1]));
+					settings.put("lastSalt", salt.getText());
 				}
-				catch (Exception e)
-				{
-					status.setText("Connection failed");
-					status.repaint();
-					e.printStackTrace();
-					return;
-				}
-				status.setText("");
-				settings.put("lastIP", ip.getText());
-				try
-				{
-					int parsedID = Integer.parseInt(id.getText());
-					settings.put("lastID", parsedID);
-					settings.saveSettings();
-					client.sendPacket(new PacketLogin(NetHandler.PROTOCOL_VERSION, parsedID));
-					client.getWindow().displayTable();
-				}
-				catch (NumberFormatException e)
-				{
-					status.setText("Invalid ID");
-					status.repaint();
-				}
+				settings.saveSettings();
+				client.sendPacket(new PacketInitiateLogin(NetHandler.PROTOCOL_VERSION));
+				client.getWindow().displayTable();
+			}
+			catch (NumberFormatException e)
+			{
+				status.setText("Invalid ID");
+				status.repaint();
 			}
 		});
 		
@@ -98,7 +121,7 @@ public class MainMenuScreen extends MDComponent
 		add(ipText);
 		add(ip);
 		add(idText);
-		add(id);
+		add(nameField);
 		add(login);
 		
 		add(status);
@@ -119,16 +142,25 @@ public class MainMenuScreen extends MDComponent
 			
 			idText.setSize(ipText.getSize());
 			idText.setLocation(ipText.getX(), ip.getY() + ip.getHeight() + scale(25));
-			id.setSize(ip.getSize());
-			id.setLocation(idText.getX(), idText.getMaxY() + scale(5));
-			id.setFont(GraphicsUtils.getThinMDFont(Font.PLAIN, scale(30)));
+			nameField.setSize(ip.getSize());
+			nameField.setLocation(idText.getX(), idText.getMaxY() + scale(5));
+			nameField.setFont(GraphicsUtils.getThinMDFont(Font.PLAIN, scale(30)));
 			
 			status.setSize(ipText.getSize());
-			status.setLocation(ipText.getX(), id.getY() + id.getHeight() + scale(40));
+			status.setLocation(ipText.getX(), nameField.getY() + nameField.getHeight() + scale(40));
 			
 			
 			login.setSize(scale(200), scale(40));
 			login.setLocation((getWidth() / 2) - scale(100), status.getMaxY() + scale(20));
+			
+			if (saltText != null)
+			{
+				saltText.setSize(ipText.getSize());
+				saltText.setLocation(ipText.getX(), login.getY() + login.getHeight() + scale(35));
+				salt.setLocation(saltText.getX() + scale(55), saltText.getY() - scale(5));
+				salt.setSize(scale(200), scale(40));
+				salt.setFont(GraphicsUtils.getThinMDFont(Font.PLAIN, scale(30)));
+			}
 		}
 		
 		@Override

@@ -1,12 +1,15 @@
 package oldmana.md.server.net;
 
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.NetHandler;
+import oldmana.md.net.packet.client.PacketInitiateLogin;
 import oldmana.md.net.packet.client.PacketLogin;
 import oldmana.md.net.packet.client.PacketQuit;
 import oldmana.md.net.packet.client.PacketSoundCache;
@@ -19,6 +22,7 @@ import oldmana.md.server.Client;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.PlayerRegistry;
+import oldmana.md.server.PlayerRegistry.RegisteredPlayer;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardBuilding;
 import oldmana.md.server.card.CardProperty;
@@ -96,7 +100,11 @@ public class NetServerHandler extends NetHandler
 				{
 					System.out.println("Processing: " + packetName + " (Connecting Client)");
 				}
-				if (packet instanceof PacketLogin)
+				if (packet instanceof PacketInitiateLogin)
+				{
+					handleInitiateLogin(client, (PacketInitiateLogin) packet);
+				}
+				else if (packet instanceof PacketLogin)
 				{
 					handleLogin(client, (PacketLogin) packet);
 				}
@@ -108,55 +116,81 @@ public class NetServerHandler extends NetHandler
 		}
 	}
 	
+	public void handleInitiateLogin(Client client, PacketInitiateLogin packet)
+	{
+		client.sendPacket(new PacketServerInfo(PROTOCOL_VERSION, server.getServerKey()));
+	}
+	
 	public void handleLogin(Client client, PacketLogin packet)
 	{
-		int version = packet.getProtocolVersion();
+		int version = packet.protocolVersion;
 		if (version == NetHandler.PROTOCOL_VERSION)
 		{
+			ByteBuffer buffer = ByteBuffer.wrap(packet.id);
+			UUID uuid = new UUID(buffer.getLong(), buffer.getLong());
 			PlayerRegistry registry = server.getPlayerRegistry();
-			int uid = packet.getUID();
-			if (registry.isUIDRegistered(uid))
+			
+			server.removeClient(client);
+			if (server.isPlayerWithUUIDLoggedIn(uuid))
 			{
-				server.removeClient(client);
-				if (server.isPlayerWithUIDLoggedIn(uid))
+				Player player = server.getPlayerByUUID(uuid);
+				if (player.isOnline())
 				{
-					Player player = server.getPlayerByUID(uid);
-					if (player.isOnline())
-					{
-						player.sendPacket(new PacketKick("Logged in from another client!"));
-						System.out.println("Previously connected client of " + player.getDescription() + " was kicked");
-					}
-					player.setOnline(true);
-					player.setNet(client.getNet());
-					player.sendPacket(new PacketHandshake(player.getID(), player.getName()));
-					server.refreshPlayer(player);
-					System.out.println("Player " + player.getDescription() + " reconnected");
-					server.getEventManager().callEvent(new PlayerReconnectedEvent(player));
+					player.sendPacket(new PacketKick("Logged in from another client!"));
+					System.out.println("Previously connected client of " + player.getDescription() + " was kicked");
 				}
-				else
-				{
-					Player player = new Player(server, uid, client.getNet(), registry.getNameOf(packet.getUID()),
-							registry.getRegisteredPlayerByUID(uid).op);
-					player.sendPacket(new PacketHandshake(player.getID(), player.getName()));
-					server.addPlayer(player);
-					player.setOnline(true);
-					server.refreshPlayer(player);
-					System.out.println("Player " + player.getName() + " logged in with ID " + player.getID());
-					server.getEventManager().callEvent(new PlayerJoinedEvent(player));
-				}
+				player.setOnline(true);
+				player.setNet(client.getNet());
+				player.sendPacket(new PacketHandshake(player.getID(), player.getName()));
+				server.refreshPlayer(player);
+				System.out.println("Player " + player.getDescription() + " reconnected");
+				server.getEventManager().callEvent(new PlayerReconnectedEvent(player));
 			}
 			else
 			{
-				System.out.println("Client attempted login with invalid user ID");
-				client.sendPacket(new PacketKick("User ID does not exist"));
-				server.disconnectClient(client);
+				if (packet.name.isEmpty())
+				{
+					server.disconnectClient(client, "Must provide a name");
+					System.out.println("Disconnected client for not providing a name");
+					return;
+				}
+				else if (packet.name.length() > 24)
+				{
+					server.disconnectClient(client, "Max name length allowed is 24 characters");
+					System.out.println("Disconnected client for too long name: " + (packet.name.length() > 200 ?
+							packet.name.length() + " characters" : packet.name));
+					return;
+				}
+				RegisteredPlayer rp = registry.getRegisteredPlayerByUUID(uuid);
+				boolean newPlayer = rp == null;
+				if (rp == null)
+				{
+					rp = registry.registerPlayer(uuid, packet.name);
+				}
+				if (!rp.staticName)
+				{
+					rp.name = packet.name;
+					registry.savePlayers();
+				}
+				if (server.getPlayerByName(rp.name) != null)
+				{
+					server.disconnectClient(client, "A player is already logged in with that name!");
+					System.out.println("Disconnected client for using same name as an already logged in player: " + rp.name);
+					return;
+				}
+				Player player = new Player(server, uuid, client.getNet(), rp.name, rp.op);
+				player.sendPacket(new PacketHandshake(player.getID(), player.getName()));
+				server.addPlayer(player);
+				player.setOnline(true);
+				server.refreshPlayer(player);
+				System.out.println((newPlayer ? "New player " : "Player ") + player.getName() + " logged in with ID " + player.getID());
+				server.getEventManager().callEvent(new PlayerJoinedEvent(player));
 			}
 		}
 		else
 		{
 			System.out.println("Client attempted login with an invalid protocol version (" + version + ")");
-			client.sendPacket(new PacketKick("Invalid protocol version"));
-			server.disconnectClient(client);
+			server.disconnectClient(client, "Invalid protocol version");
 		}
 	}
 	

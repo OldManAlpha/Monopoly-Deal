@@ -1,13 +1,14 @@
 package oldmana.md.server.command;
 
 import oldmana.md.server.CommandSender;
-import oldmana.md.server.PlayerRegistry.RegisteredPlayer;
+import oldmana.md.server.Player;
+import oldmana.md.server.PlayerRegistry;
 
 public class CommandOp extends Command
 {
 	public CommandOp()
 	{
-		super("op", null, new String[] {"/op [Player UID]"}, true);
+		super("op", null, new String[] {"/op [Player Name]"}, true);
 	}
 	
 	@Override
@@ -15,33 +16,22 @@ public class CommandOp extends Command
 	{
 		if (args.length >= 1)
 		{
-			if (verifyInt(args[0]))
+			PlayerRegistry registry = getServer().getPlayerRegistry();
+			String name = getFullStringArgument(args, 0);
+			Player player = getServer().getPlayerByName(name);
+			if (player == null)
 			{
-				int uid = parseInt(args[0]);
-				RegisteredPlayer player = getServer().getPlayerRegistry().getRegisteredPlayerByUID(uid);
-				if (player != null)
-				{
-					player.op = true;
-					getServer().getPlayerRegistry().savePlayers();
-					if (getServer().isPlayerWithUIDLoggedIn(uid))
-					{
-						getServer().getPlayerByUID(uid).setOp(true);
-					}
-					sender.sendMessage("Granted operator permissions to " + player.name +".", true);
-				}
-				else
-				{
-					sender.sendMessage("Invalid player UID.");
-				}
+				sender.sendMessage("Couldn't find an online player by that name!");
+				return;
 			}
-			else
-			{
-				sender.sendMessage("Player UID must be a number.");
-			}
+			player.setOp(true);
+			registry.getRegisteredPlayerByUUID(player.getUUID()).op = true;
+			registry.savePlayers();
+			sender.sendMessage("Granted operator permissions to " + player.getName() +".", true);
 		}
 		else
 		{
-			sender.sendMessage("Player UID required.");
+			sender.sendMessage("Player name required.");
 		}
 	}
 }

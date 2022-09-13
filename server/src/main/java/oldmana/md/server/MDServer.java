@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.DigestInputStream;
@@ -19,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -109,6 +109,8 @@ public class MDServer
 	
 	private IncomingConnectionsThread threadIncConnect;
 	
+	private byte[] serverKey;
+	
 	public MDServer()
 	{
 		this(new File(System.getProperty("user.dir")));
@@ -141,6 +143,7 @@ public class MDServer
 		config.loadConfig();
 		verbose = config.getBoolean("verbose");
 		int port = config.getInt("port");
+		serverKey = config.getBigInteger("serverKey").toByteArray();
 		try
 		{
 			threadIncConnect = new IncomingConnectionsThread(port);
@@ -154,7 +157,16 @@ public class MDServer
 		System.out.println("Using port " + port);
 		rules.setWinCondition(new PropertySetCondition(3));
 		cmdHandler.registerDefaultCommands();
-		playerRegistry.loadPlayers();
+		try
+		{
+			playerRegistry.loadPlayers();
+		}
+		catch (IOException e)
+		{
+			System.err.println("Failed to load players file!");
+			e.printStackTrace();
+			System.exit(1);
+		}
 		
 		// Keep connected checker
 		scheduler.scheduleTask(20, true, task ->
@@ -492,11 +504,11 @@ public class MDServer
 		return playerRegistry;
 	}
 	
-	public Player getPlayerByUID(int uid)
+	public Player getPlayerByUUID(UUID uuid)
 	{
 		for (Player player : getPlayers())
 		{
-			if (player.getUID() == uid)
+			if (player.getUUID().equals(uuid))
 			{
 				return player;
 			}
@@ -504,9 +516,9 @@ public class MDServer
 		return null;
 	}
 	
-	public boolean isPlayerWithUIDLoggedIn(int uid)
+	public boolean isPlayerWithUUIDLoggedIn(UUID uuid)
 	{
-		return getPlayerByUID(uid) != null;
+		return getPlayerByUUID(uuid) != null;
 	}
 	
 	public void addClient(Client client)
@@ -523,6 +535,12 @@ public class MDServer
 	{
 		client.getNet().close();
 		removeClient(client);
+	}
+	
+	public void disconnectClient(Client client, String reason)
+	{
+		client.sendPacket(new PacketKick(reason));
+		disconnectClient(client);
 	}
 	
 	public void addPlayer(Player player)
@@ -624,6 +642,11 @@ public class MDServer
 	public int getTickCount()
 	{
 		return tickCount;
+	}
+	
+	public byte[] getServerKey()
+	{
+		return serverKey;
 	}
 	
 	public void loadSounds()

@@ -7,6 +7,8 @@ import org.json.JSONTokener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -139,6 +141,14 @@ public class ServerConfig extends JSONObject
 				put(defaultSetting.getKey(), defaultSetting.getValue());
 				shouldSave = true;
 			}
+		}
+		if (!has("serverKey"))
+		{
+			SecureRandom r = new SecureRandom();
+			byte[] key = new byte[16];
+			r.nextBytes(key);
+			put("serverKey", new BigInteger(key));
+			shouldSave = true;
 		}
 		if (shouldSave)
 		{

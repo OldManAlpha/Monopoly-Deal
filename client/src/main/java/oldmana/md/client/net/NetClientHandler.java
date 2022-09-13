@@ -6,6 +6,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Method;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +19,7 @@ import oldmana.md.client.Player;
 import oldmana.md.client.MDEventQueue.EventTask;
 import oldmana.md.client.MDSoundSystem;
 import oldmana.md.client.MDSoundSystem.MDSound;
+import oldmana.md.client.Settings;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.Card.CardDescription;
 import oldmana.md.client.card.CardAction;
@@ -56,6 +59,7 @@ import oldmana.md.client.state.ActionStateTargetPlayerMonopoly;
 import oldmana.md.client.state.ActionStateTargetPlayerProperty;
 import oldmana.md.client.state.ActionStateTargetSelfPlayerProperty;
 import oldmana.md.net.NetHandler;
+import oldmana.md.net.packet.client.PacketLogin;
 import oldmana.md.net.packet.client.PacketSoundCache;
 import oldmana.md.net.packet.server.*;
 import oldmana.md.net.packet.server.PacketCardCollectionData.CardCollectionType;
@@ -133,6 +137,25 @@ public class NetClientHandler extends NetHandler
 	private void queueTask(EventTask task)
 	{
 		client.getEventQueue().addTask(task);
+	}
+	
+	public void handleServerInfo(PacketServerInfo packet) throws NoSuchAlgorithmException
+	{
+		Settings settings = client.getSettings();
+		MessageDigest digest = MessageDigest.getInstance("MD5");
+		digest.update(settings.getBigInteger("clientKey").toByteArray());
+		digest.update(packet.serverKey);
+		if (client.isDevMode() && settings.has("lastSalt"))
+		{
+			String salt = settings.getString("lastSalt");
+			if (!salt.isEmpty())
+			{
+				digest.update(salt.getBytes());
+			}
+		}
+		client.sendPacket(new PacketLogin(PROTOCOL_VERSION, digest.digest(), client.getSettings().getString("lastName")));
+		client.getTableScreen().getTopbar().setText("Authenticating..");
+		client.getTableScreen().getTopbar().repaint();
 	}
 	
 	public void handleHandshake(PacketHandshake packet)
@@ -542,11 +565,13 @@ public class NetClientHandler extends NetHandler
 		b.setMaxSize(packet.maxSize);
 		b.repaint();
 		player.getUI().validate();
+		System.out.println("Button " + packet.id);
 	}
 	
 	@Queued
 	public void handleDestroyButton(PacketDestroyButton packet)
 	{
+		System.out.println("Destroy button " + packet.id);
 		for (Player player : client.getAllPlayers())
 		{
 			if (player.getUI().removeButton(packet.id))

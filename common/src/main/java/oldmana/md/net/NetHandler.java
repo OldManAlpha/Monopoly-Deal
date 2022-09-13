@@ -9,7 +9,7 @@ import oldmana.md.net.packet.universal.*;
 
 public class NetHandler
 {
-	public static int PROTOCOL_VERSION = 17;
+	public static int PROTOCOL_VERSION = 18;
 	
 	public NetHandler()
 	{
@@ -22,9 +22,11 @@ public class NetHandler
 		Packet.registerPacket(PacketPing.class);
 		
 		// Client -> Server
+		Packet.registerPacket(PacketInitiateLogin.class);
 		Packet.registerPacket(PacketLogin.class);
 		
 		// Server -> Client
+		Packet.registerPacket(PacketServerInfo.class);
 		Packet.registerPacket(PacketHandshake.class);
 		Packet.registerPacket(PacketKick.class);
 		

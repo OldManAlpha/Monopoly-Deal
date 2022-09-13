@@ -67,7 +67,8 @@ public class MDClient
 	
 	public int timeSincePing;
 	
-	public boolean debugEnabled = false;
+	private boolean debug = false;
+	private boolean developerMode = false;
 	
 	public MDClient()
 	{
@@ -136,6 +137,8 @@ public class MDClient
 			MDSoundSystem.loadCache();
 		}
 		scheduler.setFPS(settings.getInt("framerate"));
+		
+		developerMode = settings.getBoolean("developerMode");
 		
 		window = new MDFrame(folder == null);
 		
@@ -241,6 +244,12 @@ public class MDClient
 		MJConnection connect = new MJConnection();
 		connect.connect(ip, port, 5000);
 		connection = new ConnectionThread(connect);
+		getTableScreen().getTopbar().setText("Logging in..");
+	}
+	
+	public boolean isConnected()
+	{
+		return connection != null;
 	}
 	
 	public void setDeck(Deck deck)
@@ -409,12 +418,17 @@ public class MDClient
 	
 	public boolean isDebugEnabled()
 	{
-		return debugEnabled;
+		return debug;
 	}
 	
 	public void setDebugEnabled(boolean debug)
 	{
-		debugEnabled = debug;
+		this.debug = debug;
+	}
+	
+	public boolean isDevMode()
+	{
+		return developerMode;
 	}
 	
 	public MDFrame getWindow()
