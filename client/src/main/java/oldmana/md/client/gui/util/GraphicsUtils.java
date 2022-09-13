@@ -277,4 +277,16 @@ public class GraphicsUtils
 		
 		return new Color(rgb[0], rgb[1], rgb[2]);
 	}
+	
+	public static Color getColorBetween(Color c1, Color c2, double progress)
+	{
+		int[] c1Rgb = new int[] {c1.getRed(), c1.getGreen(), c1.getBlue()};
+		int[] c2Rgb = new int[] {c2.getRed(), c2.getGreen(), c2.getBlue()};
+		int[] rgb = new int[3];
+		for (int i = 0 ; i < rgb.length ; i++)
+		{
+			rgb[i] = (int) ((c1Rgb[i] * -(progress - 1)) + (c2Rgb[i] * progress));
+		}
+		return new Color(rgb[0], rgb[1], rgb[2]);
+	}
 }

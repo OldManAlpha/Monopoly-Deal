@@ -10,6 +10,7 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import oldmana.md.client.MDScheduler;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
@@ -26,6 +27,7 @@ public class MDButton extends MDComponent
 	private ButtonColorScheme colors;
 	
 	private boolean hovered;
+	private double highlight;
 	
 	private MouseAdapter listener;
 	
@@ -47,6 +49,25 @@ public class MDButton extends MDComponent
 			public void mouseExited(MouseEvent event)
 			{
 				hovered = false;
+				repaint();
+			}
+		});
+		
+		getClient().getScheduler().scheduleFrameboundTask(task ->
+		{
+			if (!isDisplayable())
+			{
+				task.cancel();
+				return;
+			}
+			if (hovered && highlight < 1 && isEnabled())
+			{
+				highlight = Math.min(highlight + (MDScheduler.getFrameDelay() / 250), 1);
+				repaint();
+			}
+			else if ((!hovered && highlight > 0) || !isEnabled())
+			{
+				highlight = Math.max(highlight - (MDScheduler.getFrameDelay() / 250), 0);
 				repaint();
 			}
 		});
@@ -104,14 +125,14 @@ public class MDButton extends MDComponent
 		Graphics2D g = (Graphics2D) gr;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		Color color = isEnabled() ? (hovered ? colors.hoveredColor : colors.color) : colors.disabledColor;
+		Color color = isEnabled() ? GraphicsUtils.getColorBetween(colors.color, colors.hoveredColor, highlight) : colors.disabledColor;
 		Color shineColor = GraphicsUtils.getLighterColor(color, colors.topLightFactor);
 		Color insideBorderColor = GraphicsUtils.getLighterColor(color, colors.innerBorderLightFactor);
 		
 		int borderWidth = (int) Math.max(GraphicsUtils.SCALE + 0.3, 1); // Start scaling the border at 1.7x scale
 		
 		// Draw Outline
-		g.setColor(isEnabled() ? (hovered ? colors.hoveredOutlineColor : colors.outlineColor) : colors.disabledOutlineColor);
+		g.setColor(isEnabled() ? GraphicsUtils.getColorBetween(colors.outlineColor, colors.hoveredOutlineColor, highlight) : colors.disabledOutlineColor);
 		g.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, scale(7), scale(7));
 		
 		// Draw Inside Border
