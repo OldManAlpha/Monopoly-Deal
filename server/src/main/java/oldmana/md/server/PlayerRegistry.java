@@ -27,6 +27,10 @@ public class PlayerRegistry
 			System.out.println("Server config doesn't exist, generating file.");
 			file.createNewFile();
 		}
+		if (file.length() == 0)
+		{
+			return;
+		}
 		try (FileInputStream is = new FileInputStream(file))
 		{
 			JSONArray array = new JSONArray(new JSONTokener(is));
