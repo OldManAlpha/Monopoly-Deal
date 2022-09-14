@@ -23,7 +23,7 @@ public class Settings extends JSONObject
 	{
 		defaults.put("settingsVersion", 2);
 		defaults.put("lastIP", "localhost:27599");
-		defaults.put("lastID", 1);
+		defaults.put("lastName", "");
 		defaults.put("scale", GraphicsUtils.roundScale(Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 1000));
 		defaults.put("developerMode", false);
 		defaults.put("extraButtons", false);
