@@ -142,9 +142,6 @@ public class MDChat extends MDComponent
 						}
 						typed = new StringBuilder();
 					}
-					historyPos = -1;
-					typeOffset = 0;
-					scroll = 0;
 					setChatOpen(false);
 				}
 				else if (event.getKeyCode() == KeyEvent.VK_LEFT)
@@ -186,10 +183,6 @@ public class MDChat extends MDComponent
 				else if (event.getKeyCode() == KeyEvent.VK_ESCAPE)
 				{
 					setChatOpen(false);
-					typed = new StringBuilder();
-					historyPos = -1;
-					typeOffset = 0;
-					scroll = 0;
 				}
 				else if (event.getKeyChar() != '\uFFFF' && event.getKeyCode() != KeyEvent.VK_DELETE)
 				{
@@ -285,6 +278,10 @@ public class MDChat extends MDComponent
 			
 			setCursor(Cursor.getDefaultCursor());
 			hoveringLink = false;
+			historyPos = -1;
+			typeOffset = 0;
+			scroll = 0;
+			typed = new StringBuilder();
 		}
 		chatOpen = open;
 	}

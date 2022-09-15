@@ -154,6 +154,10 @@ public class TableScreen extends JLayeredPane
 			menu = new MDButton("Menu");
 			menu.addClickListener(() ->
 			{
+				if (chat.isChatOpen())
+				{
+					chat.setChatOpen(false);
+				}
 				ingameMenu.setVisible(true);
 				ingameMenu.requestFocus();
 			});
