@@ -78,7 +78,7 @@ public class Deck extends CardCollection
 			Collections.reverse(cards);
 			for (Card card : cards)
 			{
-				card.transfer(this, 0, 4);
+				card.transfer(this, 0, 0.25);
 			}
 			shuffle();
 			getServer().getEventManager().callEvent(new DeckReshuffledEvent(this));
