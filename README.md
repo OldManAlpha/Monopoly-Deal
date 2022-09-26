@@ -20,7 +20,7 @@ I originally started making this project with the intention of it being somethin
 
 ### Option 1: Installer (Windows only)
 
-[Download the latest installer](https://github.com/OldManAlpha/Monopoly-Deal/releases/download/v0.6.5/Monopoly-Deal-Setup-0.6.5.exe) and install the game.
+[Download the latest installer](https://github.com/OldManAlpha/Monopoly-Deal/releases/download/v0.6.5.1/Monopoly-Deal-Setup-0.6.5.1.exe) and install the game.
 
 #### Running the Game
 
