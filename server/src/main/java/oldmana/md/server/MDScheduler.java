@@ -8,26 +8,31 @@ public class MDScheduler
 {
 	private List<MDTask> tasks = new ArrayList<MDTask>();
 	
-	public MDScheduler()
-	{
-		
-	}
-	
 	public void scheduleTask(MDTask task)
 	{
 		tasks.add(task);
 	}
 	
-	public void scheduleTask(int interval, Consumer<MDTask> task)
+	public void scheduleTask(Runnable task)
 	{
-		tasks.add(new MDTask(interval)
+		scheduleTask(1, task);
+	}
+	
+	public void scheduleTask(int delay, Runnable task)
+	{
+		tasks.add(new MDTask(delay)
 		{
 			@Override
 			public void run()
 			{
-				task.accept(this);
+				task.run();
 			}
 		});
+	}
+	
+	public void scheduleTask(int delay, Consumer<MDTask> task)
+	{
+		scheduleTask(delay, false, task);
 	}
 	
 	public void scheduleTask(int interval, boolean repeats, Consumer<MDTask> task)
@@ -46,17 +51,31 @@ public class MDScheduler
 	{
 		for (MDTask task : new ArrayList<MDTask>(tasks))
 		{
-			try
+			if (task.isCancelled())
 			{
-				if (task.tick())
+				tasks.remove(task);
+				continue;
+			}
+			task.tick();
+			if (task.getNextRun() <= 0)
+			{
+				if (task.isRepeating())
+				{
+					task.setNextRun(task.getInterval());
+				}
+				try
+				{
+					task.run();
+				}
+				catch (Exception e)
+				{
+					System.err.println("Exception occurred in scheduled task");
+					e.printStackTrace();
+				}
+				if (task.getNextRun() <= 0)
 				{
 					tasks.remove(task);
 				}
-			}
-			catch (Exception e)
-			{
-				System.err.println("Exception occurred in scheduled task");
-				e.printStackTrace();
 			}
 		}
 	}
@@ -83,6 +102,26 @@ public class MDScheduler
 			this.repeats = repeats;
 		}
 		
+		public int getInterval()
+		{
+			return interval;
+		}
+		
+		public int getNextRun()
+		{
+			return next;
+		}
+		
+		public void setNextRun(int next)
+		{
+			this.next = next;
+		}
+		
+		public boolean isRepeating()
+		{
+			return repeats;
+		}
+		
 		public boolean isCancelled()
 		{
 			return cancelled;
@@ -93,26 +132,9 @@ public class MDScheduler
 			cancelled = true;
 		}
 		
-		public boolean tick()
+		public void tick()
 		{
-			if (cancelled)
-			{
-				return true;
-			}
 			next--;
-			if (next == 0)
-			{
-				run();
-				if (repeats)
-				{
-					next = interval;
-				}
-				else
-				{
-					return true;
-				}
-			}
-			return false;
 		}
 	}
 }

@@ -14,11 +14,11 @@ import oldmana.md.client.gui.util.GraphicsUtils;
 
 public class MDVoidCollection extends MDCardCollectionUnknown
 {
-	private int stage; // Range: 0(invisible) to 500(fully visible)
+	private double stage; // Range: 0(invisible) to 500(fully visible)
 	private double pos; // Range: -350 to 350
 	private boolean dir;
 	
-	private int intoVoidTime;
+	private double intoVoidTime;
 	
 	public MDVoidCollection(CardCollection collection)
 	{
@@ -28,6 +28,8 @@ public class MDVoidCollection extends MDCardCollectionUnknown
 		{
 			if (getCollection() == null)
 			{
+				stage = 0;
+				intoVoidTime = 0;
 				return;
 			}
 			
@@ -41,16 +43,16 @@ public class MDVoidCollection extends MDCardCollectionUnknown
 			
 			if (isCardIncoming() || isCardMovingFrom() || getClient().isDebugEnabled() || intoVoidTime > 0)
 			{
-				stage = (int) Math.min(500, stage + MDScheduler.getFrameDelay());
+				stage = Math.min(500, stage + MDScheduler.getFrameDelay());
 				repaint();
 			}
 			else if (stage > 0)
 			{
-				stage = (int) Math.max(0, stage - MDScheduler.getFrameDelay());
+				stage = Math.max(0, stage - MDScheduler.getFrameDelay());
 				repaint();
 			}
 			
-			intoVoidTime = (int) Math.max(intoVoidTime - MDScheduler.getFrameDelay(), 0);
+			intoVoidTime = Math.max(intoVoidTime - MDScheduler.getFrameDelay(), 0);
 		});
 	}
 	
@@ -97,7 +99,7 @@ public class MDVoidCollection extends MDCardCollectionUnknown
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g.rotate(Math.toRadians(pos / 20), getWidth() / 2, getHeight() / 2);
 			g.setColor(new Color(0, 0, 40));
-			double size = (double) stage / 500;
+			double size = stage / 500;
 			g.fillRoundRect((getWidth() / 2) - (int) (GraphicsUtils.getCardWidth() * size * 0.5), (getHeight() / 2) - 
 					(int) (GraphicsUtils.getCardHeight() * size * 0.5), (int) (GraphicsUtils.getCardWidth() * size), 
 					(int) (GraphicsUtils.getCardHeight() * size), scale(10 * size), scale(10 * size));

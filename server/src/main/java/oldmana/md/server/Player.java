@@ -9,17 +9,22 @@ import java.util.Map.Entry;
 import java.util.UUID;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.net.packet.server.PacketCardDescription;
 import oldmana.md.net.packet.server.PacketDestroyButton;
 import oldmana.md.net.packet.server.PacketDestroyCardCollection;
+import oldmana.md.net.packet.server.PacketHandshake;
 import oldmana.md.net.packet.server.PacketKick;
 import oldmana.md.net.packet.server.PacketPlayerInfo;
 import oldmana.md.net.packet.server.PacketPlayerStatus;
+import oldmana.md.net.packet.server.PacketRefresh;
+import oldmana.md.net.packet.server.PacketStatus;
 import oldmana.md.net.packet.server.PacketUndoCardStatus;
 import oldmana.md.net.packet.universal.PacketChat;
 import oldmana.md.server.ClientButton.ButtonTag;
 import oldmana.md.server.ai.BasicAI;
 import oldmana.md.server.ai.PlayerAI;
 import oldmana.md.server.card.Card;
+import oldmana.md.server.card.Card.CardDescription;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.PropertyColor;
@@ -978,6 +983,56 @@ public class Player extends Client implements CommandSender
 	public void doAIAction()
 	{
 		ai.doAction();
+	}
+	
+	/**
+	 * Resend all data to the client.
+	 */
+	public void refresh()
+	{
+		sendPacket(new PacketRefresh());
+		sendPacket(new PacketHandshake(getID(), getName()));
+		sendPacket(new PacketStatus("Loading.."));
+		for (Player other : server.getPlayersExcluding(this))
+		{
+			sendPacket(other.getInfoPacket());
+		}
+		
+		// Send card descriptions
+		for (CardDescription desc : CardDescription.getAllDescriptions())
+		{
+			sendPacket(new PacketCardDescription(desc.getID(), desc.getText()));
+		}
+		
+		// Send card colors
+		sendPacket(PropertyColor.getColorsPacket());
+		
+		// Send all card data
+		for (Card card : Card.getRegisteredCards().values())
+		{
+			sendPacket(card.getCardDataPacket());
+		}
+		// Send void
+		sendPacket(getServer().getVoidCollection().getCollectionDataPacket());
+		// Send deck
+		sendPacket(getServer().getDeck().getCollectionDataPacket());
+		// Send discard pile
+		sendPacket(getServer().getDiscardPile().getCollectionDataPacket());
+		// Send player data (including own)
+		for (Player other : getServer().getPlayers())
+		{
+			for (Packet packet : other.getPropertySetPackets())
+			{
+				sendPacket(packet);
+			}
+			sendPacket(other.getBank().getCollectionDataPacket());
+			sendPacket(this == other ? other.getHand().getOwnerHandDataPacket() : other.getHand().getCollectionDataPacket());
+		}
+		resendActionState();
+		resendCardButtons();
+		sendButtonPackets();
+		sendUndoStatus();
+		server.getGameState().sendStatus(this);
 	}
 	
 	protected MDServer getServer()

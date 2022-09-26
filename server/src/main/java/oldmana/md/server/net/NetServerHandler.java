@@ -141,8 +141,7 @@ public class NetServerHandler extends NetHandler
 				}
 				player.setOnline(true);
 				player.setNet(client.getNet());
-				player.sendPacket(new PacketHandshake(player.getID(), player.getName()));
-				server.refreshPlayer(player);
+				player.refresh();
 				System.out.println("Player " + player.getDescription() + " reconnected");
 				server.getEventManager().callEvent(new PlayerReconnectedEvent(player));
 			}
@@ -179,10 +178,9 @@ public class NetServerHandler extends NetHandler
 					return;
 				}
 				Player player = new Player(server, uuid, client.getNet(), rp.name, rp.op);
-				player.sendPacket(new PacketHandshake(player.getID(), player.getName()));
 				server.addPlayer(player);
 				player.setOnline(true);
-				server.refreshPlayer(player);
+				player.refresh();
 				System.out.println((newPlayer ? "New player " : "Player ") + player.getName() + " logged in with ID " + player.getID());
 				server.getEventManager().callEvent(new PlayerJoinedEvent(player));
 			}

@@ -18,7 +18,6 @@ public abstract class MDCardCollectionBase extends MDComponent
 	
 	public MDCardCollectionBase(CardCollection collection, double scale)
 	{
-		super();
 		this.collection = collection;
 		this.scale = scale;
 	}
@@ -31,6 +30,14 @@ public abstract class MDCardCollectionBase extends MDComponent
 	public void setCollection(CardCollection collection)
 	{
 		this.collection = collection;
+	}
+	
+	public void reset()
+	{
+		setCollection(null);
+		setModification(null);
+		modIndex = -1;
+		moveProgress = 0;
 	}
 	
 	public int getCardCount()

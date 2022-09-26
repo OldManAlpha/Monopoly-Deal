@@ -38,7 +38,7 @@ public class MDClient
 {
 	private static MDClient instance;
 	
-	public static final String VERSION = "0.6.5";
+	public static final String VERSION = "0.6.5.1";
 	
 	private MDFrame window;
 	
@@ -500,38 +500,43 @@ public class MDClient
 		}
 		if (!closing)
 		{
-			getGameState().setActionState(null);
-			
-			if (eventQueue.getCurrentTask() instanceof CardMove)
-			{
-				removeTableComponent(((CardMove) eventQueue.getCurrentTask()).getComponent());
-			}
-			eventQueue.clearTasks();
-			
-			awaitingResponse = false;
-			getTableScreen().getDeck().setCollection(null);
-			getTableScreen().getDiscardPile().setCollection(null);
-			getTableScreen().getVoidCollection().setCollection(null);
-			getTableScreen().getHand().setCollection(null);
-			deck = null;
-			discard = null;
-			voidCollection = null;
-			
-			for (Player p : getAllPlayers())
-			{
-				removeTableComponent(p.getUI());
-			}
-			thePlayer = null;
-			otherPlayers.clear();
+			resetGame();
 			
 			timeSincePing = 0;
 			
-			Card.getRegisteredCards().clear();
-			CardCollection.getRegisteredCardCollections().clear();
-			PropertyColor.clearColors();
-			
 			getWindow().displayMenu();
 		}
+	}
+	
+	public void resetGame()
+	{
+		getGameState().setActionState(null);
+		
+		if (eventQueue.getCurrentTask() instanceof CardMove)
+		{
+			removeTableComponent(((CardMove) eventQueue.getCurrentTask()).getComponent());
+		}
+		eventQueue.clearTasks();
+		
+		awaitingResponse = false;
+		getTableScreen().getDeck().reset();
+		getTableScreen().getDiscardPile().reset();
+		getTableScreen().getVoidCollection().reset();
+		getTableScreen().getHand().reset();
+		deck = null;
+		discard = null;
+		voidCollection = null;
+		
+		for (Player p : getAllPlayers())
+		{
+			removeTableComponent(p.getUI());
+		}
+		thePlayer = null;
+		otherPlayers.clear();
+		
+		Card.getRegisteredCards().clear();
+		CardCollection.getRegisteredCardCollections().clear();
+		PropertyColor.clearColors();
 	}
 	
 	public static MDClient getInstance()

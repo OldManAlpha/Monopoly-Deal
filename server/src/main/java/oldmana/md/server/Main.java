@@ -22,8 +22,7 @@ public class Main
 		{
 			dataFolder.mkdirs();
 		}
-		File finalDataFolder = dataFolder;
-		new Thread(() -> new MDServer(finalDataFolder).startServer(), "Server Thread").start();
+		new MDServer(dataFolder).startServer();
 	}
 	
 	public static File getLocalFolder()

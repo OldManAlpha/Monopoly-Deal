@@ -173,6 +173,11 @@ public class NetClientHandler extends NetHandler
 		client.sendPacket(new PacketSoundCache(soundNames, soundHashes));
 	}
 	
+	public void handleRefresh(PacketRefresh packet)
+	{
+		client.resetGame();
+	}
+	
 	public void handlePropertyColors(PacketPropertyColors packet)
 	{
 		int len = packet.name.length;
@@ -206,6 +211,7 @@ public class NetClientHandler extends NetHandler
 		{
 			card.setValue(packet.value);
 			card.setName(packet.name);
+			card.clearGraphicsCache();
 		}
 		else
 		{
@@ -226,14 +232,37 @@ public class NetClientHandler extends NetHandler
 	
 	public void handleCardActionRentData(PacketCardActionRentData packet)
 	{
-		new CardActionRent(packet.id, packet.value, packet.name, PropertyColor.fromIDs(packet.colors).toArray(new PropertyColor[packet.colors.length]), 
-				CardDescription.getDescriptionByID(packet.description));
+		CardActionRent card;
+		if ((card = (CardActionRent) Card.getCard(packet.id)) != null)
+		{
+			card.setValue(packet.value);
+			card.setName(packet.name);
+			card.clearGraphicsCache();
+		}
+		else
+		{
+			card = new CardActionRent(packet.id, packet.value, packet.name);
+		}
+		card.setRentColors(PropertyColor.fromIDs(packet.colors).toArray(new PropertyColor[packet.colors.length]));
+		card.setDescription(CardDescription.getDescriptionByID(packet.description));
 	}
 	
 	public void handleCardPropertyData(PacketCardPropertyData packet)
 	{
-		new CardProperty(packet.id, PropertyColor.fromIDs(packet.colors), packet.base, packet.value, packet.name, 
-				CardDescription.getDescriptionByID(packet.description));
+		CardProperty card;
+		if ((card = (CardProperty) Card.getCard(packet.id)) != null)
+		{
+			card.setValue(packet.value);
+			card.setName(packet.name);
+			card.clearGraphicsCache();
+		}
+		else
+		{
+			card = new CardProperty(packet.id, PropertyColor.fromIDs(packet.colors), packet.base, packet.value, packet.name);
+		}
+		card.setBase(packet.base);
+		card.setColors(PropertyColor.fromIDs(packet.colors));
+		card.setDescription(CardDescription.getDescriptionByID(packet.description));
 	}
 	
 	public void handleCardBuildingData(PacketCardBuildingData packet)

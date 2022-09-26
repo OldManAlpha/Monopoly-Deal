@@ -19,12 +19,11 @@ public class CardProperty extends Card
 		base = true;
 	}
 	
-	public CardProperty(int id, List<PropertyColor> colors, boolean base, int value, String name, CardDescription description)
+	public CardProperty(int id, List<PropertyColor> colors, boolean base, int value, String name)
 	{
 		super(id, value, name);
 		this.colors = colors;
 		this.base = base;
-		setDescription(description);
 	}
 	
 	public boolean isSingleColor()
@@ -47,6 +46,11 @@ public class CardProperty extends Card
 		return base;
 	}
 	
+	public void setBase(boolean base)
+	{
+		this.base = base;
+	}
+	
 	public PropertyColor getColor()
 	{
 		return colors.get(0);
@@ -60,6 +64,11 @@ public class CardProperty extends Card
 	public boolean hasColor(PropertyColor color)
 	{
 		return colors.contains(color);
+	}
+	
+	public void setColors(List<PropertyColor> colors)
+	{
+		this.colors = colors;
 	}
 	
 	public static class PropertyColor

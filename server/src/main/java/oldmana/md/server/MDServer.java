@@ -19,9 +19,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import oldmana.md.net.packet.server.PacketHandshake;
+import oldmana.md.net.packet.server.PacketRefresh;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardMoney;
 import oldmana.md.server.card.CardProperty;
@@ -64,7 +69,9 @@ public class MDServer
 {
 	private static MDServer instance;
 	
-	public static final String VERSION = "0.6.5";
+	public static final String VERSION = "0.6.5.1";
+	
+	private ScheduledExecutorService serverThread;
 	
 	private File dataFolder;
 	
@@ -126,6 +133,16 @@ public class MDServer
 	
 	public void startServer()
 	{
+		if (serverThread != null)
+		{
+			throw new IllegalStateException("Server already started");
+		}
+		serverThread = Executors.newSingleThreadScheduledExecutor();
+		serverThread.execute(() -> startServerSync());
+	}
+	
+	private void startServerSync()
+	{
 		System.setOut(new MDPrintStream(System.out));
 		System.setErr(new MDPrintStream(System.err));
 		
@@ -167,7 +184,6 @@ public class MDServer
 			e.printStackTrace();
 			System.exit(1);
 		}
-		
 		// Keep connected checker
 		scheduler.scheduleTask(20, true, task ->
 		{
@@ -235,64 +251,20 @@ public class MDServer
 		consoleReader.start();
 		
 		// AI ticking task
-		getScheduler().scheduleTask(new MDTask(50, true)
+		getScheduler().scheduleTask(50, true, task ->
 		{
-			@Override
-			public void run()
+			for (Player player : getPlayers())
 			{
-				for (Player player : getPlayers())
+				if (player.isBot())
 				{
-					if (player.isBot())
-					{
-						player.doAIAction();
-					}
+					player.doAIAction();
 				}
 			}
 		});
 		
 		System.out.println("Finished initialization");
 		
-		while (!shutdown)
-		{
-			tickServer();
-			try
-			{
-				Thread.sleep(50);
-			}
-			catch (InterruptedException e)
-			{
-				e.printStackTrace();
-			}
-		}
-		broadcastPacket(new PacketKick("Server shut down"));
-		threadIncConnect.interrupt();
-		tickServer();
-		while (true)
-		{
-			boolean hasPackets = false;
-			for (Player player : getPlayers())
-			{
-				if (player.getNet() != null && player.getNet().hasOutPackets())
-				{
-					hasPackets = true;
-					break;
-				}
-			}
-			if (!hasPackets)
-			{
-				break;
-			}
-			try
-			{
-				Thread.sleep(50);
-			}
-			catch (InterruptedException e)
-			{
-				e.printStackTrace();
-			}
-		}
-		System.out.println("Server stopped");
-		System.exit(0);
+		serverThread.scheduleAtFixedRate(() -> tickServer(), 50, 50, TimeUnit.MILLISECONDS);
 	}
 	
 	public void tickServer()
@@ -339,11 +311,43 @@ public class MDServer
 		gameState.tick();
 		
 		tickCount++;
+		
+		if (shutdown)
+		{
+			doShutdown();
+		}
 	}
 	
-	public File getDataFolder()
+	private void doShutdown()
 	{
-		return dataFolder;
+		broadcastPacket(new PacketKick("Server shut down"));
+		threadIncConnect.interrupt();
+		while (true)
+		{
+			boolean hasPackets = false;
+			for (Player player : getPlayers())
+			{
+				if (player.getNet() != null && player.getNet().hasOutPackets())
+				{
+					hasPackets = true;
+					break;
+				}
+			}
+			if (!hasPackets)
+			{
+				break;
+			}
+			try
+			{
+				Thread.sleep(50);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		System.out.println("Server stopped");
+		System.exit(0);
 	}
 	
 	public void shutdown()
@@ -354,6 +358,11 @@ public class MDServer
 	public boolean isShuttingDown()
 	{
 		return shutdown;
+	}
+	
+	public File getDataFolder()
+	{
+		return dataFolder;
 	}
 	
 	public void loadMods()
@@ -728,52 +737,6 @@ public class MDServer
 			}
 			i++;
 		}
-		getGameState().sendStatus(player);
-	}
-	
-	public void refreshPlayer(Player player)
-	{
-		//player.sendPacket(new PacketRefresh());
-		
-		for (Player other : getPlayersExcluding(player))
-		{
-			player.sendPacket(other.getInfoPacket());
-		}
-		
-		// Send card descriptions
-		for (CardDescription desc : CardDescription.getAllDescriptions())
-		{
-			player.sendPacket(new PacketCardDescription(desc.getID(), desc.getText()));
-		}
-		
-		// Send card colors
-		player.sendPacket(PropertyColor.getColorsPacket());
-		
-		// Send all card data
-		for (Card card : Card.getRegisteredCards().values())
-		{
-			player.sendPacket(card.getCardDataPacket());
-		}
-		// Send void
-		player.sendPacket(voidCollection.getCollectionDataPacket());
-		// Send deck
-		player.sendPacket(deck.getCollectionDataPacket());
-		// Send discard pile
-		player.sendPacket(discardPile.getCollectionDataPacket());
-		// Send player data (including own)
-		for (Player other : getPlayers())
-		{
-			for (Packet packet : other.getPropertySetPackets())
-			{
-				player.sendPacket(packet);
-			}
-			player.sendPacket(other.getBank().getCollectionDataPacket());
-			player.sendPacket(player == other ? other.getHand().getOwnerHandDataPacket() : other.getHand().getCollectionDataPacket());
-		}
-		player.resendActionState();
-		player.resendCardButtons();
-		player.sendButtonPackets();
-		player.sendUndoStatus();
 		getGameState().sendStatus(player);
 	}
 	
