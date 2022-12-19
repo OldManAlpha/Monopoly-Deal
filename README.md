@@ -86,9 +86,9 @@ Some of these commands rely on Card IDs and Collection IDs. These are visible wh
 Additional undocumented commands may be seen by using the `help` command.
 </details>
 
-### Video Tutorial (Outdated)
+### Video Tutorial
 
-[Here's a video](https://www.youtube.com/watch?v=GaBYbJwyJLY) explaining how to get the basic functionality setup for the client/server. Credit to [Zyga](https://www.youtube.com/channel/UCYMOaG7Eqq1jr1-i8m48fMw) for kindly creating the video.
+[Here's a video](https://www.youtube.com/watch?v=32Fa6YfK39) explaining how to get the basic functionality setup for the client/server. Credit to [Zyga](https://www.youtube.com/channel/UCYMOaG7Eqq1jr1-i8m48fMw) for kindly creating the video.
 
 ## Modding Support
 
