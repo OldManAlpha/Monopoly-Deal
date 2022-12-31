@@ -88,7 +88,7 @@ Additional undocumented commands may be seen by using the `help` command.
 
 ### Video Tutorial
 
-[Here's a video](https://www.youtube.com/watch?v=32Fa6YfK39M) explaining how to get the basic functionality setup for the client/server. Credit to [Zyga](https://www.youtube.com/channel/UCYMOaG7Eqq1jr1-i8m48fMw) for kindly creating the video.
+[Here's a video](https://www.youtube.com/watch?v=32Fa6YfK39M) explaining how to get the basic functionality setup for the client/server([Mac-specific tutorial here](https://www.youtube.com/watch?v=A9Jo7iiuOZY)). Credit to [Zyga](https://www.youtube.com/channel/UCYMOaG7Eqq1jr1-i8m48fMw) for kindly creating the videos.
 
 ## Modding Support
 
