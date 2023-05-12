@@ -9,6 +9,7 @@ import org.json.JSONObject;
 public class PacketChat extends Packet
 {
 	public byte[] encodedJsonMsg;
+	public String category = "";
 	
 	public PacketChat() {}
 	
@@ -32,11 +33,15 @@ public class PacketChat extends Packet
 	public PacketChat(Message message)
 	{
 		this(message.getMessage());
+		if (message.getCategory() != null)
+		{
+			category = message.getCategory();
+		}
 	}
 	
 	public Message getMessage()
 	{
-		return new Message(getDecodedJSON());
+		return "".equals(category) ? new Message(getDecodedJSON()) : new Message(getDecodedJSON(), category);
 	}
 	
 	public JSONArray getDecodedJSON()

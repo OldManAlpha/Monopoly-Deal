@@ -6,10 +6,17 @@ import org.json.JSONObject;
 public class Message
 {
 	private JSONArray message;
+	private String category;
 	
 	public Message(JSONArray message)
 	{
 		this.message = message;
+	}
+	
+	public Message(JSONArray message, String category)
+	{
+		this.message = message;
+		this.category = category;
 	}
 	
 	public JSONArray getMessage()
@@ -25,5 +32,15 @@ public class Message
 			sb.append(((JSONObject) o).getString("txt"));
 		}
 		return sb.toString();
+	}
+	
+	public String getCategory()
+	{
+		return category;
+	}
+	
+	public void setCategory(String category)
+	{
+		this.category = category;
 	}
 }

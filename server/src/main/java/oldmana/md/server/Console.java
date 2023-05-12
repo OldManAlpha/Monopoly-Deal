@@ -11,6 +11,12 @@ public class Console implements CommandSender
 	}
 	
 	@Override
+	public void sendMessage(String message, String category)
+	{
+		sendMessage(message);
+	}
+	
+	@Override
 	public void sendMessage(String message, boolean printConsole)
 	{
 		sendMessage(message);

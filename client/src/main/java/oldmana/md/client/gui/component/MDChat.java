@@ -17,6 +17,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -554,6 +555,28 @@ public class MDChat extends MDComponent
 		return GraphicsUtils.getBoldMDFont(scale(24));
 	}
 	
+	public void removeMessageCategory(String category)
+	{
+		int pos = 0;
+		Iterator<ChatMessage> it = messages.iterator();
+		while (it.hasNext())
+		{
+			ChatMessage message = it.next();
+			if (category.equals(message.getCategory()))
+			{
+				it.remove();
+				if (scroll > pos)
+				{
+					scroll = Math.max(scroll - message.getLineCount(), 0);
+				}
+				lineCount -= message.getLineCount();
+				continue;
+			}
+			pos += message.getLineCount();
+		}
+		repaint();
+	}
+	
 	/**Used for debug purposes only
 	 * 
 	 * @param msg
@@ -574,6 +597,8 @@ public class MDChat extends MDComponent
 		private List<List<TextSegment>> lines = new ArrayList<List<TextSegment>>();
 		private int displayTime = 6000;
 		
+		private String category;
+		
 		public ChatMessage(String text)
 		{
 			this.text = text;
@@ -583,6 +608,7 @@ public class MDChat extends MDComponent
 		public ChatMessage(Message message)
 		{
 			this.message = message;
+			this.category = message.getCategory();
 			calculateLines();
 		}
 		
@@ -609,6 +635,16 @@ public class MDChat extends MDComponent
 		public int getDisplayTime()
 		{
 			return displayTime;
+		}
+		
+		public boolean hasCategory()
+		{
+			return category != null;
+		}
+		
+		public String getCategory()
+		{
+			return category;
 		}
 		
 		public boolean tick()

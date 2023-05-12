@@ -1024,6 +1024,14 @@ public class Player extends Client implements CommandSender
 	}
 	
 	@Override
+	public void sendMessage(String message, String category)
+	{
+		Message simpleMessage = MessageBuilder.fromSimple(message);
+		simpleMessage.setCategory(category);
+		sendPacket(new PacketChat(simpleMessage));
+	}
+	
+	@Override
 	public void sendMessage(Message message)
 	{
 		sendPacket(new PacketChat(message));

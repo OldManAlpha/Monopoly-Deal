@@ -52,6 +52,16 @@ public abstract class Command
 		return requiresOp;
 	}
 	
+	/**
+	 * Check whether the entity has permission to execute this command.
+	 * @param sender The CommandSender to check permission on
+	 * @return True if the sender has permission to run this command
+	 */
+	public boolean checkPermission(CommandSender sender)
+	{
+		return !requiresOp() || sender.isOp();
+	}
+	
 	public void sendUsage(CommandSender sender)
 	{
 		for (String str : usage)

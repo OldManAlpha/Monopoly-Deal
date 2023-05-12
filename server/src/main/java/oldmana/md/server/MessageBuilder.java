@@ -22,6 +22,7 @@ public class MessageBuilder
 	private String cmd;
 	private String fillCmd;
 	private List<String> currentHoverText;
+	private String category;
 	
 	public MessageBuilder() {}
 	
@@ -69,7 +70,7 @@ public class MessageBuilder
 	public Message getMessage()
 	{
 		finalizeSegment();
-		return new Message(message);
+		return new Message(message, category);
 	}
 	
 	public String getUnformattedMessage()
@@ -211,6 +212,11 @@ public class MessageBuilder
 		cmd = null;
 		fillCmd = null;
 		currentHoverText = null;
+	}
+	
+	public void setCategory(String category)
+	{
+		this.category = category;
 	}
 	
 	public JSONArray toJSON()

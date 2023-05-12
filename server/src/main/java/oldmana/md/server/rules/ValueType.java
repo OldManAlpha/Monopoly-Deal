@@ -6,6 +6,7 @@ import oldmana.md.server.CommandSender;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -43,7 +44,7 @@ public class ValueType<T>
 	private final Function<String, T> parser;
 	private final Function<T, String> displayConverter;
 	
-	private final String[] usage;
+	private final List<String> usage;
 	
 	private ValueType(Class<T> type, Function<String, T> parser, Function<T, String> displayConverter, String... usage)
 	{
@@ -52,7 +53,7 @@ public class ValueType<T>
 		this.displayConverter = displayConverter;
 		types.put(type, this);
 		
-		this.usage = usage;
+		this.usage = Arrays.asList(usage);
 	}
 	
 	public Class<T> getType()
@@ -75,12 +76,9 @@ public class ValueType<T>
 		return obj.getClass() == type;
 	}
 	
-	public void sendUsage(CommandSender sender)
+	public List<String> getUsage()
 	{
-		for (String line : usage)
-		{
-			sender.sendMessage(line);
-		}
+		return usage;
 	}
 	
 	public static <C> ValueType<C> getByClass(Class<C> clazz)

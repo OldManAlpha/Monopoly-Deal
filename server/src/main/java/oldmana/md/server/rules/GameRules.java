@@ -40,13 +40,13 @@ public class GameRules
 				.jsonName("winCondition")
 				.name("Win Condition")
 				.description("The condition to win the game.")
-				.defaultChoice("propertySet")
+				.defaultChoice("propertySets")
 				.register();
 		{
 			RuleStruct propertySetCondition = RuleObjectBuilder.from(winCondition)
-					.jsonName("propertySet")
-					.name("Property Set")
-					.description("Win by number of full property sets")
+					.jsonName("propertySets")
+					.name("Full Property Sets")
+					.description("Win by number of full property sets.")
 					.register();
 			{
 				RuleKeyBuilder.from(propertySetCondition)
@@ -66,7 +66,7 @@ public class GameRules
 			RuleKeyBuilder.from(winCondition)
 					.jsonName("money")
 					.name("Money")
-					.description("Win by amount of money in bank")
+					.description("Win by the total value of money in the bank.")
 					.defaultValue(40)
 					.register();
 		}

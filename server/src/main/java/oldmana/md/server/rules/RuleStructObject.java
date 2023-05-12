@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A key with keys under it
+ * A struct with named structs under it.
  */
 public class RuleStructObject extends RuleStructNamed
 {

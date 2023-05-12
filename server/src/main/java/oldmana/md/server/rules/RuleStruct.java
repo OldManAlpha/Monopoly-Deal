@@ -1,5 +1,6 @@
 package oldmana.md.server.rules;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -10,9 +11,19 @@ public abstract class RuleStruct
 	private String name;
 	private List<String> description;
 	
+	public boolean hasParent()
+	{
+		return parent != null;
+	}
+	
 	public RuleStruct getParent()
 	{
 		return parent;
+	}
+	
+	public RuleStruct getObjectParent()
+	{
+		return parent instanceof RuleStructObject ? parent : parent.getParent();
 	}
 	
 	protected void setParent(RuleStruct parent)
@@ -40,6 +51,21 @@ public abstract class RuleStruct
 			if (rs instanceof RuleStructNamed && rs.getParent() != null)
 			{
 				path = ((RuleStructNamed) rs).getJsonName() + (path != null ? "." + path : "");
+			}
+			rs = rs.getParent();
+		}
+		return path == null ? "" : path;
+	}
+	
+	public List<String> getDisplayPathList()
+	{
+		List<String> path = new ArrayList<String>();
+		RuleStruct rs = this;
+		while (rs != null)
+		{
+			if (rs instanceof RuleStructNamed && rs.getParent() != null)
+			{
+				path.add(0, rs.getName());
 			}
 			rs = rs.getParent();
 		}

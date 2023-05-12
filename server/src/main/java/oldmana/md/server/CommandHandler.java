@@ -84,7 +84,7 @@ public class CommandHandler
 			sender.sendMessage("Command not found.");
 			return;
 		}
-		if (cmd.requiresOp() && !sender.isOp())
+		if (!cmd.checkPermission(sender))
 		{
 			sender.sendMessage("Insufficient permissions.");
 			return;

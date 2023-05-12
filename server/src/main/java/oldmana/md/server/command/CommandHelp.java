@@ -18,20 +18,21 @@ public class CommandHelp extends Command
 			sender.sendMessage("List of all available commands:");
 			for (Command cmd : getServer().getCommandHandler().getCommands())
 			{
-				if (sender.isOp() || !cmd.requiresOp())
+				if (cmd.checkPermission(sender))
 				{
 					cmd.sendUsage(sender);
 				}
 			}
 			return;
 		}
+		
 		Command cmd = getServer().getCommandHandler().findCommand(args[0]);
 		if (cmd == null)
 		{
 			sender.sendMessage(ChatColor.PREFIX_ALERT + "Command not found.");
 			return;
 		}
-		if (!sender.isOp() && cmd.requiresOp())
+		if (!cmd.checkPermission(sender))
 		{
 			sender.sendMessage("Insufficient permissions.");
 			return;

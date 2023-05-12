@@ -139,6 +139,10 @@ public class GameRule
 	
 	public GameRule traverse(String path)
 	{
+		if (path == null || path.equals(""))
+		{
+			return this;
+		}
 		GameRule rule = this;
 		for (String s : path.split("\\."))
 		{
@@ -157,7 +161,6 @@ public class GameRule
 	 */
 	public GameRule getChoice()
 	{
-		//return (GameRule) value;
 		return value instanceof GameRule ? (GameRule) value : ((Map<String, GameRule>) value).values().iterator().next();
 	}
 	

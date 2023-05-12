@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 public enum WinConditionType
 {
-	PROPERTY_SET("propertySet", PropertySetCondition::new),
+	PROPERTY_SET("propertySets", PropertySetCondition::new),
 	MONEY("money", MoneyCondition::new),
 	COLOR("color", ColorCondition::new);
 	

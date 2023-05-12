@@ -6,6 +6,8 @@ public interface CommandSender
 {
 	void sendMessage(String message);
 	
+	void sendMessage(String message, String category);
+	
 	default void sendMessage(String message, boolean printConsole)
 	{
 		sendMessage(message);

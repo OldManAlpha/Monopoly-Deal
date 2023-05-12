@@ -9,7 +9,7 @@ import oldmana.md.net.packet.universal.*;
 
 public class NetHandler
 {
-	public static int PROTOCOL_VERSION = 19;
+	public static int PROTOCOL_VERSION = 20;
 	
 	private Class<? extends Packet>[] packets = new Class[]
 	{
@@ -64,6 +64,8 @@ public class NetHandler
 		PacketDestroyCardButton.class,
 		PacketTurnOrder.class,
 		PacketGameRules.class,
+		PacketOpenChat.class,
+		PacketRemoveMessageCategory.class,
 		
 		// Client -> Server
 		PacketActionAccept.class,

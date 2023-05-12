@@ -603,6 +603,16 @@ public class NetClientHandler extends NetHandler
 		client.getTableScreen().getMoves().updateVisibleMaxMoves();
 	}
 	
+	public void handleOpenChat(PacketOpenChat packet)
+	{
+		client.getTableScreen().getChat().setChatOpen(true);
+	}
+	
+	public void handleRemoveMessageCategory(PacketRemoveMessageCategory packet)
+	{
+		client.getTableScreen().getChat().removeMessageCategory(packet.category);
+	}
+	
 	/**
 	 * Indicates that the packet handler should be ran in the event queue.
 	 */
