@@ -14,7 +14,6 @@ import oldmana.md.server.rules.RuleStructObject;
 import oldmana.md.server.rules.RuleStructOption;
 import oldmana.md.server.rules.RuleStructValue;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class CommandGameRule extends Command
@@ -57,7 +56,7 @@ public class CommandGameRule extends Command
 				{
 					MessageBuilder mb = new MessageBuilder();
 					mb.setCategory("gamerule");
-					mb.startHoverText(splitHoverText(choice.getDescription()));
+					mb.startHoverText(choice.getDescription());
 					mb.addCommandString(ChatColor.WHITE + "> " + ChatColor.LIGHT_GREEN + choice.getName(),
 							"gamerule set " + rs.getPath() + " " + key);
 					sender.sendMessage(mb.getMessage());
@@ -73,7 +72,7 @@ public class CommandGameRule extends Command
 				RuleStruct rs = rule.getRuleStruct();
 				MessageBuilder mb = new MessageBuilder();
 				mb.setCategory("gamerule");
-				mb.addHoverString(ChatColor.LIGHT_YELLOW + rs.getName(), splitHoverText(rs.getDescription()));
+				mb.addHoverString(ChatColor.LIGHT_YELLOW + rs.getName(), rs.getDescription());
 				mb.addString(ChatColor.WHITE + ": " + ChatColor.ORANGE);
 				if (rs instanceof RuleStructKey)
 				{
@@ -92,7 +91,7 @@ public class CommandGameRule extends Command
 				{
 					GameRule choice = rule.getChoice();
 					RuleStruct choiceStruct = choice.getRuleStruct();
-					mb.addHoverString(rs.getDisplayValue(rule), splitHoverText(choiceStruct.getDescription()));
+					mb.addHoverString(rs.getDisplayValue(rule), choiceStruct.getDescription());
 					if (choiceStruct instanceof RuleStructKey)
 					{
 						mb.addString(" (" + choice.getDeepValue() + ")");
@@ -196,23 +195,6 @@ public class CommandGameRule extends Command
 		mb.startCommand("gamerule list " + rs.getPath());
 		mb.addString(ChatColor.LIGHT_GREEN + "[List]" + ChatColor.WHITE);
 		mb.endSpecial();
-	}
-	
-	private List<String> splitHoverText(List<String> text)
-	{
-		int lineCharLimit = 50;
-		List<String> newText = new ArrayList<String>();
-		for (String line : text)
-		{
-			while (line.length() > lineCharLimit)
-			{
-				String extracted = line.substring(0, lineCharLimit);
-				newText.add(extracted);
-				line = line.substring(lineCharLimit);
-			}
-			newText.add(line);
-		}
-		return newText;
 	}
 	
 	private void clearMessages(CommandSender sender, String category)

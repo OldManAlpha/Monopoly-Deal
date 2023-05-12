@@ -16,6 +16,7 @@ import java.util.List;
 public class MDChatHover extends MDComponent
 {
 	private List<String> text;
+	private List<String> splitText;
 	
 	public MDChatHover(List<String> text)
 	{
@@ -30,13 +31,16 @@ public class MDChatHover extends MDComponent
 	public void setText(List<String> text)
 	{
 		this.text = text;
+		
+		splitText = GraphicsUtils.splitStrings(text, getFont(), scale(500), true);
+		
 		FontMetrics metrics = getFontMetrics(getFont());
 		int largestWidth = scale(20);
-		for (String line : text)
+		for (String line : splitText)
 		{
 			largestWidth = Math.max(largestWidth, metrics.stringWidth(line));
 		}
-		int height = getFont().getSize() * text.size();
+		int height = getFont().getSize() * splitText.size();
 		setSize(largestWidth + (getBorderSize() * 2), height + (getBorderSize() * 2));
 	}
 	
@@ -69,7 +73,7 @@ public class MDChatHover extends MDComponent
 		g.fillRoundRect(visualBorder, visualBorder, getWidth() - (visualBorder * 2), getHeight() - (visualBorder * 2), scale(10) - visualBorder, scale(10) - visualBorder);
 		g.setColor(Color.DARK_GRAY);
 		int border = getBorderSize();
-		TextPainter tp = new TextPainter(text, g.getFont(), new Rectangle(border, border, getWidth() - (border * 2),
+		TextPainter tp = new TextPainter(splitText, g.getFont(), new Rectangle(border, border, getWidth() - (border * 2),
 				getHeight() - (border * 2)), false, false);
 		tp.paint(g);
 	}
