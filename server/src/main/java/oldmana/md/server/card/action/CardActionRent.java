@@ -105,6 +105,7 @@ public class CardActionRent extends CardAction
 		if ((colors.size() <= 2 && rules.doesTwoColorRentChargeAll()) ||
 				(colors.size() > 2 && rules.doesMultiColorRentChargeAll()) || getServer().getPlayerCount() == 2)
 		{
+			player.clearRevocableCards();
 			getServer().getGameState().addActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player), rent));
 		}
 		else
@@ -184,8 +185,8 @@ public class CardActionRent extends CardAction
 		dt.putStrings("description", "Charge rent using your placed down properties that match the colors on this Rent card. "
 				+ "Refer to your properties to find the amount of rent you can charge.");
 		dt.putColors("colors", PropertyColor.getVanillaColors());
-		dt.put("revocable", false);
-		dt.put("clearsRevocableCards", true);
+		dt.put("revocable", true);
+		dt.put("clearsRevocableCards", false);
 		RAINBOW = dt;
 		
 		CardTemplate oneMilValue = new CardTemplate(dt);
@@ -222,7 +223,12 @@ public class CardActionRent extends CardAction
 		{
 			super(player);
 			this.rent = rent;
-			getServer().broadcastPacket(new PacketStatus(player.getName() + " is using a Rent card"));
+			setStatus(player.getName() + " is using a Rent card");
+		}
+		
+		public int getRent()
+		{
+			return rent;
 		}
 		
 		@Override

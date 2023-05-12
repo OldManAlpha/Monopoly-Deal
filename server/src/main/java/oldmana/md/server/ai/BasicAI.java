@@ -29,6 +29,7 @@ import oldmana.md.server.card.action.CardActionDealBreaker.ActionStateTargetDeal
 import oldmana.md.server.card.action.CardActionJustSayNo;
 import oldmana.md.server.card.action.CardActionPassGo;
 import oldmana.md.server.card.action.CardActionRent;
+import oldmana.md.server.card.action.CardActionRent.ActionStateTargetRent;
 import oldmana.md.server.card.collection.PropertySet;
 import oldmana.md.server.card.CardType;
 import oldmana.md.server.rules.win.PropertySetCondition;
@@ -39,7 +40,6 @@ import oldmana.md.server.card.action.CardActionDealBreaker.ActionStateStealMonop
 import oldmana.md.server.card.action.CardActionSlyDeal.ActionStateStealProperty;
 import oldmana.md.server.card.action.CardActionDebtCollector.ActionStateTargetDebtCollector;
 import oldmana.md.server.card.action.CardActionForcedDeal.ActionStateTargetForcedDeal;
-import oldmana.md.server.state.ActionStateTargetPlayerMonopoly;
 import oldmana.md.server.card.action.CardActionSlyDeal.ActionStateTargetSlyDeal;
 import oldmana.md.server.card.action.CardActionForcedDeal.ActionStateTradeProperties;
 import oldmana.md.server.state.primary.ActionStatePlayerTurn;
@@ -444,6 +444,27 @@ public class BasicAI extends PlayerAI
 		return combos.get(0).getCards();
 	}
 	
+	public Player chooseRentTarget(int rent)
+	{
+		List<Player> candidates = new ArrayList<Player>();
+		int highestValue = -1;
+		for (Player p : getOpponents())
+		{
+			int assets = Math.min(p.getTotalMonetaryAssets(), rent);
+			if (assets > highestValue)
+			{
+				candidates.clear();
+				candidates.add(p);
+				highestValue = assets;
+			}
+			else if (assets == highestValue)
+			{
+				candidates.add(p);
+			}
+		}
+		return candidates.get(getRandom().nextInt(candidates.size()));
+	}
+	
 	public List<CardProperty> getStealableProperties()
 	{
 		List<CardProperty> stealable = new ArrayList<CardProperty>();
@@ -836,23 +857,12 @@ public class BasicAI extends PlayerAI
 		
 		registerSelfStateHandler(ActionStateTargetDebtCollector.class, state ->
 		{
-			List<Player> candidates = new ArrayList<Player>();
-			int highestValue = -1;
-			for (Player p : getOpponents())
-			{
-				int assets = Math.min(p.getTotalMonetaryAssets(), 5);
-				if (assets > highestValue)
-				{
-					candidates.clear();
-					candidates.add(p);
-					highestValue = assets;
-				}
-				else if (assets == highestValue)
-				{
-					candidates.add(p);
-				}
-			}
-			state.playerSelected(candidates.get(getRandom().nextInt(candidates.size())));
+			state.playerSelected(chooseRentTarget(5));
+		});
+		
+		registerSelfStateHandler(ActionStateTargetRent.class, state ->
+		{
+			state.playerSelected(chooseRentTarget(state.getRent()));
 		});
 		
 		registerSelfStateHandler(ActionStateTradeProperties.class, state ->
