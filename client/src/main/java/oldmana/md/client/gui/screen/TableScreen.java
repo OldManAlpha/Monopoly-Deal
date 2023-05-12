@@ -1,12 +1,9 @@
 package oldmana.md.client.gui.screen;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.util.Comparator;
-import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
@@ -25,13 +22,14 @@ import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDChat;
 import oldmana.md.client.gui.component.MDLayeredButton;
 import oldmana.md.client.gui.component.MDText;
-import oldmana.md.client.gui.component.MDTurns;
+import oldmana.md.client.gui.component.MDMoves;
 import oldmana.md.client.gui.component.MDUndoButton;
 import oldmana.md.client.gui.component.collection.MDDeck;
 import oldmana.md.client.gui.component.collection.MDDiscardPile;
 import oldmana.md.client.gui.component.collection.MDHand;
 import oldmana.md.client.gui.component.collection.MDVoidCollection;
 import oldmana.md.client.gui.component.large.MDPlayer;
+import oldmana.md.client.gui.component.large.MDOpponents;
 import oldmana.md.client.gui.component.large.MDTopbar;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
@@ -45,9 +43,12 @@ public class TableScreen extends JLayeredPane
 	
 	private MDVoidCollection voidCollection;
 	
+	private MDPlayer self;
+	private MDOpponents opponents;
+	
 	private MDButton multiButton;
 	private MDUndoButton undoButton;
-	private MDTurns turnCount;
+	private MDMoves moveCount;
 	
 	private MDChat chat;
 	
@@ -82,6 +83,9 @@ public class TableScreen extends JLayeredPane
 		voidCollection = new MDVoidCollection(null);
 		add(voidCollection, new Integer(1));
 		
+		opponents = new MDOpponents();
+		add(opponents);
+		
 		topbar = new MDTopbar();
 		topbar.setText("");
 		add(topbar, new Integer(0));
@@ -95,8 +99,8 @@ public class TableScreen extends JLayeredPane
 		multiButton.setEnabled(false);
 		add(multiButton, new Integer(0));
 		
-		turnCount = new MDTurns();
-		add(turnCount, new Integer(0));
+		moveCount = new MDMoves();
+		add(moveCount, new Integer(0));
 		
 		version = new MDText("Version " + MDClient.VERSION);
 		version.setFontSize(16);
@@ -161,53 +165,48 @@ public class TableScreen extends JLayeredPane
 				ingameMenu.setVisible(true);
 				ingameMenu.requestFocus();
 			});
-			add(menu);
+			add(menu, new Integer(1));
 		}
 		
 		ingameMenu = new IngameMenuScreen();
 		add(ingameMenu, new Integer(10000));
 	}
 	
-	public void positionPlayers()
+	public void addPlayer(Player player)
 	{
-		List<Player> ordered = getClient().getAllPlayers();
-		ordered.sort(Comparator.comparingInt(player -> player.getID()));
-		int thePlayerIndex = 0;
-		for (int i = 0 ; i < ordered.size() ; i++)
+		if (player instanceof ThePlayer)
 		{
-			if (ordered.get(i) instanceof ThePlayer)
+			if (self != null)
 			{
-				thePlayerIndex = i;
+				removePlayer(player);
 			}
+			self = player.getUI();
+			add(self);
+			return;
 		}
-		
-		// 162
-		
-		int space = (getHeight() - hand.getHeight() - topbar.getHeight() - scale(15)) - scale((162 + 5) * 2);
-		int padding = ordered.size() > 1 ? (space - (scale(162) * (ordered.size() - 2))) / (ordered.size() - 1) : 0;
-		
-		for (int i = 0 ; i < ordered.size() ; i++)
+		opponents.add(player.getUI());
+		opponents.cacheOrder();
+		opponents.invalidate();
+		opponents.repaint();
+	}
+	
+	public void removePlayer(Player player)
+	{
+		if (player instanceof ThePlayer)
 		{
-			int index = (thePlayerIndex + i) % ordered.size();
-			int loc = i == 0 ? 3 : i - 1;
-			Player player = ordered.get(index);
-			MDPlayer ui = player.getUI();
-			if (loc == 0)
-			{
-				ui.setLocation(multiButton.getX() + multiButton.getWidth() + scale(10), topbar.getHeight() + scale(10));
-			}
-			else if (loc == 3)
-			{
-				ui.setLocation(multiButton.getX() + multiButton.getWidth() + scale(10), hand.getY() - scale(162 + 10));
-			}
-			else
-			{
-				ui.setLocation(multiButton.getX() + multiButton.getWidth() + scale(10), topbar.getHeight() + scale(10) + ((padding + scale(162)) * loc));
-			}
-			ui.setSize(getWidth() - scale(205), scale(162));
-			//ui.setLocation(200, topbar.getHeight() + scale(10) + (loc * (MDPlayer.PLAYER_SIZE.height + 5)));
-			player.setUIPosition(loc);
+			remove(self);
+			self = null;
+			return;
 		}
+		opponents.remove(player.getUI());
+		opponents.cacheOrder();
+		opponents.invalidate();
+		opponents.repaint();
+	}
+	
+	public MDOpponents getOpponents()
+	{
+		return opponents;
 	}
 	
 	public ActionScreen getActionScreen()
@@ -293,6 +292,11 @@ public class TableScreen extends JLayeredPane
 		return undoButton;
 	}
 	
+	public MDMoves getMoves()
+	{
+		return moveCount;
+	}
+	
 	public MDClient getClient()
 	{
 		return MDClient.getInstance();
@@ -367,10 +371,10 @@ public class TableScreen extends JLayeredPane
 				voidCollection.setLocation(scale(40), discard.getMaxY());
 				voidCollection.setSize(scale(60 + 40), scale(90 + 40));
 				
-				turnCount.setLocation(scale(10), getMaxY(discard) + scale(20));
-				turnCount.setSize(scale(180) + 1, scale(30));
+				moveCount.setLocation(scale(10), getMaxY(discard) + scale(10));
+				moveCount.setSize(scale(180), scale(30));
 				
-				multiButton.setLocation(scale(10), getMaxY(turnCount) + scale(10));
+				multiButton.setLocation(scale(10), getMaxY(moveCount) + scale(10));
 				multiButton.setSize(scale(180), scale(50));
 				multiButton.setFontSize(24);
 				
@@ -381,7 +385,15 @@ public class TableScreen extends JLayeredPane
 				hand.setLocation(getMaxX(undoButton) + scale(10), getHeight() - scale(185));
 				hand.setSize(getWidth() - multiButton.getWidth() - scale(25), scale(180));
 				
-				positionPlayers();
+				if (self != null)
+				{
+					self.setSize(opponents.getWidth(), MDPlayer.getPlayerSize());
+					self.setLocation(deck.getMaxX() + scale(10), hand.getY() - scale(5) - self.getHeight());
+				}
+				int selfHeight = self != null ? self.getHeight() : 0;
+				opponents.setLocation(deck.getMaxX() + scale(10), topbar.getMaxY() + scale(5));
+				opponents.setSize(getWidth() - deck.getMaxX() - scale(15), getHeight() - (getHeight() - hand.getY()) -
+						topbar.getHeight() - selfHeight - scale(15));
 			}
 			
 			if (actionScreen != null)
@@ -390,12 +402,6 @@ public class TableScreen extends JLayeredPane
 			}
 			
 			ingameMenu.setSize(getSize());
-		}
-		
-		@Override
-		public void addLayoutComponent(Component comp, Object arg1)
-		{
-			System.out.println("component added " + arg1);
 		}
 		
 		@Override

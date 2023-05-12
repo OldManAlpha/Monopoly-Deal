@@ -2,35 +2,38 @@ package oldmana.md.client.state;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardButton;
 import oldmana.md.client.gui.component.MDButton;
-import oldmana.md.client.gui.component.MDButton.ButtonColorScheme;
 import oldmana.md.client.state.client.ActionStateClientCounterPlayer;
+import oldmana.md.common.playerui.ButtonColorScheme;
+import oldmana.md.common.state.TargetState;
 import oldmana.md.net.packet.client.action.PacketActionAccept;
 import oldmana.md.net.packet.client.action.PacketActionUseCardButton;
 
 public class ActionState
 {
 	private Player actionOwner;
-	private List<ActionTarget> targets;
+	private Map<Player, TargetState> targets;
 	
 	private Card jsn;
 	
 	public ActionState(Player actionOwner)
 	{
 		this.actionOwner = actionOwner;
-		targets = new ArrayList<ActionTarget>();
+		targets = new HashMap<Player, TargetState>();
 	}
 	
 	public ActionState(Player actionOwner, Player actionTarget)
 	{
 		this(actionOwner);
-		targets.add(new ActionTarget(actionTarget));
+		targets.put(actionTarget, TargetState.TARGETED);
 	}
 	
 	public ActionState(Player actionOwner, List<Player> actionTargets)
@@ -38,7 +41,7 @@ public class ActionState
 		this(actionOwner);
 		for (Player player : actionTargets)
 		{
-			targets.add(new ActionTarget(player));
+			targets.put(player, TargetState.TARGETED);
 		}
 	}
 	
@@ -47,7 +50,7 @@ public class ActionState
 	 */
 	public void setup()
 	{
-		if (isTarget(getClient().getThePlayer()) && getActionTargets().size() == 1)
+		if (isTarget(getClient().getThePlayer()) && targets.size() == 1)
 		{
 			applyButtonAccept();
 		}
@@ -61,10 +64,15 @@ public class ActionState
 		removeButton();
 	};
 	
+	public boolean isTurnState()
+	{
+		return false;
+	}
+	
 	private void applyButtonAccept()
 	{
 		MDButton button = getClient().getTableScreen().getMultiButton();
-		button.setColorScheme(ButtonColorScheme.ALERT);
+		button.setColor(ButtonColorScheme.ALERT);
 		button.setText("Accept" + ((getRefusableTargets().size() > 1 ? " All" : "")));
 		button.setEnabled(true);
 		button.setListener(() ->
@@ -86,7 +94,7 @@ public class ActionState
 	private void removeButton()
 	{
 		MDButton button = getClient().getTableScreen().getMultiButton();
-		button.setColorScheme(ButtonColorScheme.NORMAL);
+		button.setColor(ButtonColorScheme.NORMAL);
 		button.setText("");
 		button.setEnabled(false);
 		button.removeListener();
@@ -130,21 +138,6 @@ public class ActionState
 	public boolean isUsingActionCounter()
 	{
 		return jsn != null;
-	}
-	
-	public void onPlayerAccept(Player player)
-	{
-		evaluateAcceptButton();
-	}
-	
-	public void onPlayerRefused(Player player)
-	{
-		evaluateAcceptButton();
-	}
-	
-	public void onPlayerUnrefused(Player player)
-	{
-		evaluateAcceptButton();
 	}
 	
 	public void onPreTargetRemoved(Player player) {}
@@ -197,91 +190,62 @@ public class ActionState
 	
 	public boolean isTarget(Player player)
 	{
-		return getActionTarget(player) != null;
+		return targets.containsKey(player);
 	}
 	
-	public void setTarget(Player player, boolean isTarget)
+	public void setTargetState(Player player, TargetState state)
 	{
-		if (!isTarget && isTarget(player))
+		if (state == TargetState.NOT_TARGETED)
 		{
-			onPreTargetRemoved(player);
-			targets.remove(getActionTarget(player));
-			onTargetRemoved(player);
+			if (targets.containsKey(player))
+			{
+				onPreTargetRemoved(player);
+				targets.remove(player);
+				onTargetRemoved(player);
+				getClient().getTableScreen().repaint();
+			}
+			return;
 		}
-		else if (isTarget && !isTarget(player))
+		targets.put(player, state);
+		evaluateAcceptButton();
+		getClient().getWindow().setAlert(true);
+		if (player == getClient().getThePlayer() && state == TargetState.TARGETED)
 		{
-			targets.add(new ActionTarget(player));
+			getClient().getTableScreen().getTopbar().triggerAlert();
 		}
 		getClient().getTableScreen().repaint();
 	}
 	
-	public ActionTarget getActionTarget(Player player)
+	public Player getTarget()
 	{
-		for (ActionTarget target : targets)
-		{
-			if (target.getPlayer() == player)
-			{
-				return target;
-			}
-		}
-		return null;
+		return targets.keySet().iterator().next();
 	}
 	
-	public ActionTarget getActionTarget()
-	{
-		return targets.get(0);
-	}
-	
-	public List<ActionTarget> getActionTargets()
+	public Map<Player, TargetState> getTargets()
 	{
 		return targets;
 	}
 	
-	public void setRefused(Player player, boolean refused)
-	{
-		getActionTarget(player).setRefused(refused);
-		if (refused)
-		{
-			onPlayerRefused(player);
-		}
-		else
-		{
-			onPlayerUnrefused(player);
-		}
-		getClient().getTableScreen().repaint();
-	}
-	
 	public boolean isRefused(Player player)
 	{
-		return getActionTarget(player).isRefused();
-	}
-	
-	public void setAccepted(Player player, boolean accepted)
-	{
-		getActionTarget(player).setRefused(false);
-		getActionTarget(player).setAccepted(accepted);
-		if (accepted)
-		{
-			onPlayerAccept(player);
-		}
-		getClient().getTableScreen().repaint();
+		return targets.get(player) == TargetState.REFUSED;
 	}
 	
 	public boolean isAccepted(Player player)
 	{
-		return getActionTarget(player).isAccepted();
+		return targets.get(player) == TargetState.ACCEPTED;
 	}
 	
 	public List<Player> getRefused()
 	{
 		List<Player> refused = new ArrayList<Player>();
-		for (ActionTarget target : targets)
+		targets.forEach((player, state) ->
 		{
-			if (target.isRefused())
+			if (state == TargetState.REFUSED)
 			{
-				refused.add(target.getPlayer());
+				refused.add(player);
 			}
-		}
+		});
 		return refused;
 	}
 	
@@ -301,22 +265,22 @@ public class ActionState
 	public List<Player> getAccepted()
 	{
 		List<Player> accepted = new ArrayList<Player>();
-		for (ActionTarget target : targets)
+		targets.forEach((player, state) ->
 		{
-			if (target.isAccepted())
+			if (state == TargetState.ACCEPTED)
 			{
-				accepted.add(target.getPlayer());
+				accepted.add(player);
 			}
-		}
+		});
 		return accepted;
 	}
 	
 	public int getNumberOfRefused()
 	{
 		int refused = 0;
-		for (ActionTarget target : targets)
+		for (TargetState state : targets.values())
 		{
-			if (target.isRefused())
+			if (state == TargetState.REFUSED)
 			{
 				refused++;
 			}
@@ -327,9 +291,9 @@ public class ActionState
 	public int getNumberOfAccepted()
 	{
 		int accepted = 0;
-		for (ActionTarget target : targets)
+		for (TargetState state : targets.values())
 		{
-			if (target.isAccepted())
+			if (state == TargetState.ACCEPTED)
 			{
 				accepted++;
 			}

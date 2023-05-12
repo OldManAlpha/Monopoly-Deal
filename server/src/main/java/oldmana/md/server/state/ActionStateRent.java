@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateRent;
@@ -25,7 +26,7 @@ public class ActionStateRent extends ActionState
 		super(renter, rented);
 		charges.put(rented, amount);
 		checkBrokePlayers();
-		broadcastStatus();
+		createStatus();
 	}
 	
 	public ActionStateRent(Player renter, List<Player> rented, int amount)
@@ -33,7 +34,7 @@ public class ActionStateRent extends ActionState
 		super(renter, rented);
 		rented.forEach((player) -> charges.put(player, amount));
 		checkBrokePlayers();
-		broadcastStatus();
+		createStatus();
 	}
 	
 	public ActionStateRent(Player renter, Map<Player, Integer> rented)
@@ -41,7 +42,7 @@ public class ActionStateRent extends ActionState
 		super(renter, new ArrayList<Player>(rented.keySet()));
 		charges = rented;
 		checkBrokePlayers();
-		broadcastStatus();
+		createStatus();
 	}
 	
 	public ActionStateRent(String renterName, Player rented, int amount)
@@ -50,7 +51,7 @@ public class ActionStateRent extends ActionState
 		this.renterName = renterName;
 		charges.put(rented, amount);
 		checkBrokePlayers();
-		broadcastStatus();
+		createStatus();
 	}
 	
 	public ActionStateRent(String renterName, List<Player> rented, int amount)
@@ -59,7 +60,7 @@ public class ActionStateRent extends ActionState
 		this.renterName = renterName;
 		rented.forEach((player) -> charges.put(player, amount));
 		checkBrokePlayers();
-		broadcastStatus();
+		createStatus();
 	}
 	
 	public ActionStateRent(String renterName, Map<Player, Integer> rented)
@@ -68,10 +69,10 @@ public class ActionStateRent extends ActionState
 		this.renterName = renterName;
 		charges = rented;
 		checkBrokePlayers();
-		broadcastStatus();
+		createStatus();
 	}
 	
-	public void broadcastStatus()
+	public void createStatus()
 	{
 		if (getNumberOfTargets() > 0)
 		{
@@ -88,18 +89,9 @@ public class ActionStateRent extends ActionState
 			String status = null;
 			if (sortedCharges.size() == 1)
 			{
-				for (ActionTarget target : getActionTargets())
-				{
-					if (status == null)
-					{
-						status = (getActionOwner() != null ? getActionOwner().getName() : renterName) + " charges " + charges.get(target.getPlayer()) + 
-								"M against " + target.getPlayer().getName();
-					}
-					else
-					{
-						status += ", " + target.getPlayer().getName();
-					}
-				}
+				status = (getActionOwner() != null ? getActionOwner().getName() : renterName) + " charges " +
+						charges.get(getTargetPlayer()) + "M against " +
+						oxfordify(getTargetPlayers().stream().map(p -> p.getName()).collect(Collectors.toList()));
 			}
 			else if (sortedCharges.size() > 1)
 			{
@@ -125,17 +117,35 @@ public class ActionStateRent extends ActionState
 					}
 				}
 			}
-			getServer().getGameState().setStatus(status);
+			setStatus(status);
 		}
+	}
+	
+	private String oxfordify(List<String> elements)
+	{
+		String str = "";
+		for (int i = 0 ; i < elements.size() ; i++)
+		{
+			str += elements.get(i);
+			if (i + 2 == elements.size())
+			{
+				str += (elements.size() > 2 ? "," : "") + " and ";
+			}
+			else if (i + 1 < elements.size())
+			{
+				str += ", ";
+			}
+		}
+		return str;
 	}
 	
 	public void checkBrokePlayers()
 	{
-		for (ActionTarget target : getActionTargets())
+		for (Player target : getTargetPlayers())
 		{
-			if (!target.getPlayer().hasAnyMonetaryAssets())
+			if (!target.hasAnyMonetaryAssets())
 			{
-				setAccepted(target.getPlayer(), true);
+				setAccepted(target, true);
 			}
 		}
 	}
@@ -181,10 +191,7 @@ public class ActionStateRent extends ActionState
 			}
 		}
 		setAccepted(player, true);
-		if (isFinished())
-		{
-			getServer().getGameState().nextNaturalActionState();
-		}
+		getServer().getGameState().proceed();
 	}
 	
 	@Override

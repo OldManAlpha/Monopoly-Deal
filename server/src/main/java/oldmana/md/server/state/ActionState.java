@@ -1,11 +1,13 @@
 package oldmana.md.server.state;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateAccepted;
-import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateRefusal;
+import oldmana.md.common.state.TargetState;
 import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateTarget;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
@@ -14,20 +16,32 @@ import oldmana.md.server.card.Card;
 public abstract class ActionState
 {
 	private Player actionOwner;
-	private List<ActionTarget> targets;
+	private Map<Player, TargetState> targets;
 	
-	private ActionStateListener listener;
+	private String status = "";
 	
 	public ActionState(Player actionOwner)
 	{
 		this.actionOwner = actionOwner;
-		targets = new ArrayList<ActionTarget>();
+		targets = new HashMap<Player, TargetState>();
+	}
+	
+	public ActionState(Player actionOwner, String status)
+	{
+		this(actionOwner);
+		this.status = status;
 	}
 	
 	public ActionState(Player actionOwner, Player actionTarget)
 	{
 		this(actionOwner);
-		targets.add(new ActionTarget(actionTarget));
+		targets.put(actionTarget, TargetState.TARGETED);
+	}
+	
+	public ActionState(Player actionOwner, Player actionTarget, String status)
+	{
+		this(actionOwner, actionTarget);
+		this.status = status;
 	}
 	
 	public ActionState(Player actionOwner, List<Player> actionTargets)
@@ -35,18 +49,57 @@ public abstract class ActionState
 		this(actionOwner);
 		for (Player player : actionTargets)
 		{
-			targets.add(new ActionTarget(player));
+			targets.put(player, TargetState.TARGETED);
 		}
 	}
 	
-	public void setListener(ActionStateListener listener)
+	public ActionState(Player actionOwner, List<Player> actionTargets, String status)
 	{
-		this.listener = listener;
+		this(actionOwner, actionTargets);
+		this.status = status;
 	}
 	
-	public ActionStateListener getListener()
+	/**
+	 * Removes this action state from the game state with the new state provided.
+	 * @param newState The new action state to take this one's place
+	 */
+	public void replaceState(ActionState newState)
 	{
-		return listener;
+		getGameState().swapActionState(this, newState);
+	}
+	
+	/**
+	 * Removes this action state from the game state.
+	 */
+	public void removeState()
+	{
+		getGameState().removeActionState(this);
+	}
+	
+	/**
+	 * Get the status text of this action state.
+	 * @return The state's status text
+	 */
+	public String getStatus()
+	{
+		return status;
+	}
+	
+	/**
+	 * Set the status text of this action state. Does nothing if getStatus is overridden.
+	 * @param status The new status text
+	 */
+	public void setStatus(String status)
+	{
+		status = status != null ? status : "";
+		if (!status.equals(this.status))
+		{
+			this.status = status;
+			if (getGameState().getActionState() == this)
+			{
+				getGameState().broadcastStatus();
+			}
+		}
 	}
 	
 	public void onCardUndo(Card card) {}
@@ -58,77 +111,75 @@ public abstract class ActionState
 	
 	public boolean isTarget(Player player)
 	{
-		return getActionTarget(player) != null;
+		return targets.containsKey(player);
+	}
+	
+	public void setTargetState(Player player, TargetState state)
+	{
+		if (getGameState().getActionState() == this)
+		{
+			getServer().broadcastPacket(new PacketUpdateActionStateTarget(player.getID(), state));
+		}
+		getGameState().setStateChanged();
+		if (state == TargetState.NOT_TARGETED)
+		{
+			targets.remove(player);
+			return;
+		}
+		targets.put(player, state);
 	}
 	
 	public void removeActionTarget(Player player)
 	{
-		targets.remove(getActionTarget(player));
-		getServer().broadcastPacket(new PacketUpdateActionStateTarget(player.getID(), false));
+		setTargetState(player, TargetState.NOT_TARGETED);
 	}
 	
-	public ActionTarget getActionTarget(Player player)
-	{
-		for (ActionTarget target : targets)
-		{
-			if (target.getPlayer() == player)
-			{
-				return target;
-			}
-		}
-		return null;
-	}
-	
-	public ActionTarget getActionTarget()
-	{
-		return targets.get(0);
-	}
-	
+	/**
+	 * Returns the target player. If there's multiple targets, then this will return one of them. If there's no target,
+	 * null is returned.
+	 * @return The target player
+	 */
 	public Player getTargetPlayer()
 	{
-		return targets.get(0).getPlayer();
+		return targets.isEmpty() ? null : targets.keySet().iterator().next();
 	}
 	
-	public List<ActionTarget> getActionTargets()
+	public Map<Player, TargetState> getTargets()
 	{
 		return targets;
 	}
 	
 	public List<Player> getTargetPlayers()
 	{
-		List<Player> players = new ArrayList<Player>(targets.size());
-		for (ActionTarget target : targets)
+		return new ArrayList<Player>(targets.keySet());
+	}
+	
+	public List<Player> getTargetPlayers(TargetState ofState)
+	{
+		List<Player> players = new ArrayList<Player>();
+		targets.forEach((player, state) ->
 		{
-			players.add(target.getPlayer());
-		}
+			if (state == ofState)
+			{
+				players.add(player);
+			}
+		});
 		return players;
 	}
 	
 	public void setRefused(Player player, boolean refused)
 	{
-		getActionTarget(player).setRefused(refused);
-		if (getServer().getGameState().getActionState() == this)
-		{
-			getServer().broadcastPacket(new PacketUpdateActionStateRefusal(player.getID(), refused));
-		}
+		setTargetState(player, refused ? TargetState.REFUSED : TargetState.TARGETED);
 	}
 	
 	public boolean isRefused(Player player)
 	{
-		return getActionTarget(player).isRefused();
+		return targets.get(player) == TargetState.REFUSED;
 	}
 	
 	public List<Player> getRefused()
 	{
-		List<Player> refused = new ArrayList<Player>();
-		for (ActionTarget target : targets)
-		{
-			if (target.isRefused())
-			{
-				refused.add(target.getPlayer());
-			}
-		}
-		return refused;
+		return getTargetPlayers(TargetState.REFUSED);
 	}
 	
 	public boolean canRefuse(Player player, Player target)
@@ -156,37 +207,25 @@ public abstract class ActionState
 	
 	public void setAccepted(Player player, boolean accepted)
 	{
-		getActionTarget(player).setAccepted(accepted);
-		if (getServer().getGameState().getActionState() == this)
-		{
-			getServer().broadcastPacket(new PacketUpdateActionStateAccepted(player.getID(), accepted));
-		}
+		setTargetState(player, accepted ? TargetState.ACCEPTED : TargetState.TARGETED);
 	}
 	
 	public boolean isAccepted(Player player)
 	{
-		return getActionTarget(player).isAccepted();
+		return targets.get(player) == TargetState.ACCEPTED;
 	}
 	
 	public List<Player> getAccepted()
 	{
-		List<Player> accepted = new ArrayList<Player>();
-		for (ActionTarget target : targets)
-		{
-			if (target.isAccepted())
-			{
-				accepted.add(target.getPlayer());
-			}
-		}
-		return accepted;
+		return getTargetPlayers(TargetState.ACCEPTED);
 	}
 	
 	public int getNumberOfRefused()
 	{
 		int refused = 0;
-		for (ActionTarget target : targets)
+		for (TargetState state : targets.values())
 		{
-			if (target.isRefused())
+			if (state == TargetState.REFUSED)
 			{
 				refused++;
 			}
@@ -197,9 +236,9 @@ public abstract class ActionState
 	public int getNumberOfAccepted()
 	{
 		int accepted = 0;
-		for (ActionTarget target : targets)
+		for (TargetState state : targets.values())
 		{
-			if (target.isAccepted())
+			if (state == TargetState.ACCEPTED)
 			{
 				accepted++;
 			}
@@ -212,9 +251,24 @@ public abstract class ActionState
 		return targets.size();
 	}
 	
+	/**
+	 * Check if this state is naturally finished and should be removed from the action state queue.
+	 * <br><br>
+	 * By default, the state is finished if all targets have accepted.
+	 * @return True if this action state is finished
+	 */
 	public boolean isFinished()
 	{
 		return getNumberOfAccepted() == getNumberOfTargets();
+	}
+	
+	/**
+	 * If a state is not important, it will be removed when any other state is added to the state queue.
+	 * @return True if the state is blocking
+	 */
+	public boolean isImportant()
+	{
+		return true;
 	}
 	
 	protected MDServer getServer()
@@ -225,6 +279,30 @@ public abstract class ActionState
 	protected GameState getGameState()
 	{
 		return getServer().getGameState();
+	}
+	
+	public void sendState()
+	{
+		getServer().broadcastPacket(constructPacket());
+		getTargets().forEach((player, ts) ->
+		{
+			if (ts != TargetState.TARGETED)
+			{
+				getServer().broadcastPacket(new PacketUpdateActionStateTarget(player.getID(), ts));
+			}
+		});
+	}
+	
+	public void sendState(Player sendTo)
+	{
+		sendTo.sendPacket(constructPacket());
+		getTargets().forEach((player, ts) ->
+		{
+			if (ts != TargetState.TARGETED)
+			{
+				sendTo.sendPacket(new PacketUpdateActionStateTarget(player.getID(), ts));
+			}
+		});
 	}
 	
 	public abstract Packet constructPacket();

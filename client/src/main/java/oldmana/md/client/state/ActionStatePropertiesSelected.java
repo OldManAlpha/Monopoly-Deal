@@ -10,6 +10,8 @@ import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.component.MDComponent;
 import oldmana.md.client.gui.component.MDSelection;
+import oldmana.md.client.gui.component.collection.MDCardCollectionBase;
+import oldmana.md.client.gui.component.large.MDPlayer;
 
 public class ActionStatePropertiesSelected extends ActionState
 {
@@ -28,28 +30,44 @@ public class ActionStatePropertiesSelected extends ActionState
 	{
 		super.setup();
 		
+		createSelections();
+	}
+	
+	@Override
+	public void updateUI()
+	{
+		destroySelections();
+		createSelections();
+	}
+	
+	private void createSelections()
+	{
 		Color selectColor = getActionOwner() == getClient().getThePlayer() ? Color.BLUE : Color.RED;
 		
 		components = new ArrayList<MDComponent>();
 		for (Card card : cards)
 		{
 			MDCard cardView = new MDCard(card);
-			cardView.setLocation(card.getOwningCollection().getUI().getScreenLocationOf(card.getOwningCollection().getIndexOf(card)));
-			getClient().addTableComponent(cardView, 91);
+			MDCardCollectionBase collectionUI = card.getOwningCollection().getUI();
+			MDPlayer playerUI = card.getOwner().getUI();
+			cardView.setLocation(collectionUI.getLocationOfRelative(card.getOwningCollection().getIndexOf(card), playerUI));
+			playerUI.add(cardView, 0);
 			MDSelection cardSelection = new MDSelection(selectColor);
 			cardSelection.setLocation(cardView.getLocation());
 			cardSelection.setSize(cardView.getSize());
-			getClient().addTableComponent(cardSelection, 92);
+			playerUI.add(cardSelection, 0);
 			
 			components.add(cardView);
 			components.add(cardSelection);
 		}
 	}
 	
-	@Override
-	public void updateUI()
+	private void destroySelections()
 	{
-		
+		for (MDComponent c : components)
+		{
+			c.getParent().remove(c);
+		}
 	}
 	
 	@Override
@@ -57,9 +75,6 @@ public class ActionStatePropertiesSelected extends ActionState
 	{
 		super.cleanup();
 		
-		for (MDComponent c : components)
-		{
-			getClient().removeTableComponent(c);
-		}
+		destroySelections();
 	}
 }

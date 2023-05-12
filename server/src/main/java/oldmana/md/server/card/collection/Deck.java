@@ -35,18 +35,19 @@ public class Deck extends CardCollection
 		{
 			for (Card card : this.stack.getCards())
 			{
-				card.transfer(getServer().getVoidCollection(), -1, 0.06);
+				card.transfer(getServer().getVoidCollection(), -1, 0.05);
 			}
 		}
 		this.stack = stack;
 		for (Card card : stack.getCards())
 		{
-			card.transfer(this, -1, 0.06);
+			card.transfer(this, -1, 0.05);
 		}
 		if (shuffle)
 		{
 			shuffle();
 		}
+		getServer().getGameRules().setRules(stack.getDeckRules());
 	}
 	
 	public DeckStack getDeckStack()
@@ -82,9 +83,9 @@ public class Deck extends CardCollection
 			}
 			shuffle();
 			getServer().getEventManager().callEvent(new DeckReshuffledEvent(this));
-			if (getCardCount() == 0) // That'd be kinda bad..
+			if (getCardCount() == 0)
 			{
-				System.out.println("Deck and discard pile are out of cards!");
+				System.out.println("Deck and discard pile are out of cards! " + player.getName() + " cannot draw a card.");
 				return null;
 			}
 			return drawCard(player, time);

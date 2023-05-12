@@ -63,6 +63,16 @@ public class MDComponent extends JComponent
 		setLocationCentered((int) x, (int) y);
 	}
 	
+	public void setLocationCenterX(int xCenter, int y)
+	{
+		setLocation(xCenter - (getWidth() / 2), y);
+	}
+	
+	public void setLocationCenterY(int x, int yCenter)
+	{
+		setLocation(x, yCenter - (getHeight() / 2));
+	}
+	
 	public int getMaxX()
 	{
 		return getX() + getWidth();

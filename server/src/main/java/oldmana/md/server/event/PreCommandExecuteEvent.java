@@ -3,7 +3,7 @@ package oldmana.md.server.event;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.command.Command;
 
-public class PreCommandExecuteEvent extends CancelableEvent
+public class PreCommandExecuteEvent extends CancellableEvent
 {
 	private Command command;
 	private CommandSender sender;

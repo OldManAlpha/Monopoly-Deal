@@ -1,43 +1,43 @@
 package oldmana.md.server.state;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 
 import oldmana.md.net.packet.server.PacketStatus;
-import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateAccepted;
-import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateRefusal;
+import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
+import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
+import oldmana.md.net.packet.server.actionstate.PacketActionStatePlayerTurn;
+import oldmana.md.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.collection.Deck;
 import oldmana.md.server.card.collection.PropertySet;
 import oldmana.md.server.event.ActionStateChangedEvent;
-import oldmana.md.server.event.ActionStateChangingEvent;
 import oldmana.md.server.event.GameEndEvent;
 import oldmana.md.server.event.GameStartEvent;
 import oldmana.md.server.event.PlayersWonEvent;
 import oldmana.md.server.event.TurnEndEvent;
 import oldmana.md.server.event.TurnStartEvent;
+import oldmana.md.server.state.primary.ActionStatePlayerTurn;
 
 public class GameState
 {
 	private MDServer server;
 	
+	private ActionStatePlayerTurn turnState;
+	private List<ActionState> states = new LinkedList<ActionState>();
+	private ActionState lastSentState;
+	
+	private TurnOrder turnOrder;
+	
 	private boolean gameRunning;
 	private boolean clean;
 	
-	private Player activePlayer;
-	private int turns;
-	private boolean waitingDraw;
-	
-	private ActionState state;
-	
-	private String status = "";
-	
 	private boolean winningEnabled = true;
 	
-	private int deferredWinTurns;
+	private int deferredWinCycles;
 	private Player deferredWinPlayer;
 	
 	private boolean stateChanged;
@@ -46,22 +46,26 @@ public class GameState
 	{
 		this.server = server;
 		
-		waitingDraw = true;
+		turnOrder = new TurnOrder();
+	}
+	
+	public TurnOrder getTurnOrder()
+	{
+		return turnOrder;
 	}
 	
 	public Player getActivePlayer()
 	{
-		return activePlayer;
+		return turnOrder.getActivePlayer();
 	}
 	
 	public void undoCard(Card card)
 	{
-		if (state != null)
+		if (getActionState() != null)
 		{
-			state.onCardUndo(card);
+			getActionState().onCardUndo(card);
 		}
-		turns++;
-		nextNaturalActionState();
+		getTurnState().incrementMoves();
 	}
 	
 	public boolean isGameRunning()
@@ -88,7 +92,7 @@ public class GameState
 		gameRunning = true;
 		clean = false;
 		server.getEventManager().callEvent(new GameStartEvent());
-		for (int i = 0 ; i < 5 ; i++)
+		for (int i = 0 ; i < server.getGameRules().getCardsDealt() ; i++)
 		{
 			for (Player player : server.getPlayers())
 			{
@@ -100,19 +104,26 @@ public class GameState
 	
 	public void endGame()
 	{
+		endGame("");
+	}
+	
+	public void endGame(String status)
+	{
 		gameRunning = false;
 		server.getEventManager().callEvent(new GameEndEvent());
-		if (activePlayer != null)
+		if (getActivePlayer() != null)
 		{
-			activePlayer.clearRevocableCards();
-			activePlayer = null;
+			getActivePlayer().clearRevocableCards();
+			//activePlayer = null;
 		}
 		for (Player player : server.getPlayers())
 		{
 			player.clearStatusEffects();
 		}
-		setStatus("");
-		setActionState(new ActionStateDoNothing());
+		states.clear();
+		removeTurnState();
+		addActionState(new ActionStateDoNothing(status));
+		System.out.println("Game Ended: " + status);
 	}
 	
 	/**
@@ -182,121 +193,226 @@ public class GameState
 	
 	public void nextTurn()
 	{
-		List<Player> players = server.getPlayers();
-		if (activePlayer != null && deferredWinPlayer == activePlayer)
+		if (deferredWinPlayer != null && deferredWinPlayer == getActivePlayer())
 		{
-			deferredWinTurns -= 1;
-			if (deferredWinTurns < 1)
+			deferredWinCycles--;
+			if (deferredWinCycles < 1)
 			{
 				deferredWinPlayer = null;
 				server.broadcastMessage("Winning is now possible.", true);
 			}
 			else
 			{
-				server.broadcastMessage("Winning is deferred for " + deferredWinTurns + " turn" + (deferredWinTurns != 1 ? "s" : "") 
+				server.broadcastMessage("Winning is deferred for " + deferredWinCycles + " turn cycle" + (deferredWinCycles != 1 ? "s" : "")
 						+ ". (After " + deferredWinPlayer.getName() + "'s turn)", true);
 			}
 		}
-		if (activePlayer != null)
+		
+		Player player = getActivePlayer();
+		if (player != null)
 		{
-			activePlayer.clearRevocableCards();
-			server.getEventManager().callEvent(new TurnEndEvent(activePlayer));
-			activePlayer = players.get((players.indexOf(activePlayer) + 1) % players.size());
-		}
-		else
-		{
-			activePlayer = players.get(new Random().nextInt(players.size()));
+			player.clearRevocableCards();
+			server.getEventManager().callEvent(new TurnEndEvent(player));
 		}
 		
-		turns = 3;
-		waitingDraw = true;
-		System.out.println("New Turn: " + activePlayer.getName() + " (ID: " + activePlayer.getID() + ")");
-		nextNaturalActionState();
-		server.getEventManager().callEvent(new TurnStartEvent(activePlayer));
+		if (checkWin())
+		{
+			return;
+		}
+		
+		states.clear();
+		turnState = turnOrder.nextTurn();
+		player = getActivePlayer();
+		
+		System.out.println("New Turn: " + player.getName() + " (ID: " + player.getID() + ")");
+		checkCurrentState();
+		server.getEventManager().callEvent(new TurnStartEvent(player));
 	}
 	
 	public void setTurn(Player player, boolean draw)
 	{
-		activePlayer = player;
-		waitingDraw = draw;
+		states.clear();
+		turnState = turnOrder.setTurn(player);
+		turnState.sendState();
+		broadcastStatus();
+		setStateChanged();
 	}
 	
-	public void setTurns(int turns)
+	public void setMoves(int moves)
 	{
-		this.turns = turns;
+		getTurnState().setMoves(moves);
 	}
 	
-	public int getTurnsRemaining()
+	public int getMovesRemaining()
 	{
-		return turns;
+		return getTurnState().getMoves();
 	}
 	
-	public void decrementTurn()
+	public void decrementMoves()
 	{
-		turns--;
-		nextNaturalActionState();
+		getTurnState().decrementMoves();
 	}
 	
-	public void decrementTurns(int amount)
+	public void decrementMoves(int amount)
 	{
-		turns = Math.max(turns - amount, 0);
-		nextNaturalActionState();
+		getTurnState().decrementMoves(amount);
 	}
 	
-	public void markDrawn()
+	public void setDrawn()
 	{
-		waitingDraw = false;
+		getTurnState().setDrawn();
 	}
 	
+	/**
+	 * Get the focused action state, or the turn state if there's no other states in queue.
+	 * @return The action state currently being processed
+	 */
 	public ActionState getActionState()
 	{
-		return state;
+		return states.isEmpty() ? turnState : states.get(0);
 	}
 	
-	public void setActionState(ActionState state)
+	public ActionStatePlayerTurn getTurnState()
 	{
-		setStateChanged();
-		if (state instanceof ActionStateDoNothing)
+		return turnState;
+	}
+	
+	public boolean hasTurnState()
+	{
+		return turnState != null;
+	}
+	
+	/**
+	 * Removing the turn state causes the game to halt, effectively ending the game.
+	 */
+	private void removeTurnState()
+	{
+		turnState = null;
+		server.broadcastPacket(new PacketActionStatePlayerTurn(-1, TurnState.REMOVE_STATE, 0));
+	}
+	
+	/**
+	 * Add an action state to the top of the queue of execution.
+	 * @param state The state to append
+	 */
+	public void addActionState(ActionState state)
+	{
+		if (!(state instanceof ActionStateDoNothing) && checkWin())
 		{
-			this.state = state;
-			server.broadcastPacket(this.state.constructPacket());
 			return;
 		}
-		
-		if (!checkWin())
+		if (states.contains(state) || state.isFinished())
 		{
-			ActionStateChangingEvent changingEvent = new ActionStateChangingEvent(this.state, state);
-			server.getEventManager().callEvent(changingEvent);
-			if (!state.isFinished())
-			{
-				if (!changingEvent.isCanceled())
-				{
-					ActionState lastState = this.state;
-					this.state = state;
-					server.broadcastPacket(this.state.constructPacket());
-					for (Player player : state.getAccepted())
-					{
-						server.broadcastPacket(new PacketUpdateActionStateAccepted(player.getID(), true));
-					}
-					ActionStateChangedEvent changedEvent = new ActionStateChangedEvent(lastState, state);
-					server.getEventManager().callEvent(changedEvent);
-				}
-			}
-			else
-			{
-				nextNaturalActionState();
-			}
+			return;
+		}
+		states.removeIf(s -> !s.isImportant());
+		states.add(0, state);
+		checkCurrentState();
+	}
+	
+	/**
+	 * Add an action state to the top of the queue, changing the currently focused action state.
+	 * @param state The state to immediately run
+	 */
+	public void addLowPriorityActionState(ActionState state)
+	{
+		if (checkWin())
+		{
+			return;
+		}
+		if (states.contains(state) || state.isFinished())
+		{
+			return;
+		}
+		states.removeIf(s -> !s.isImportant());
+		states.add(state);
+		checkCurrentState();
+	}
+	
+	/**
+	 * Promotes an already existing action state to the top of the execution queue.
+	 * @param state The state to promote
+	 */
+	public void promoteActionState(ActionState state)
+	{
+		if (checkWin())
+		{
+			return;
+		}
+		states.remove(state);
+		addActionState(state);
+		checkCurrentState();
+	}
+	
+	/**
+	 * Replace the old action state with the new action state provided, maintaining the same action state priority.
+	 * @param oldState The action state to take out
+	 * @param newState The action state to put in place of the old one
+	 */
+	public void swapActionState(ActionState oldState, ActionState newState)
+	{
+		if (checkWin())
+		{
+			return;
+		}
+		int index = states.indexOf(oldState);
+		if (index < 0)
+		{
+			throw new IllegalArgumentException("Old state does not exist!");
+		}
+		states.remove(index);
+		if (index == 0)
+		{
+			addActionState(newState);
 		}
 		else
 		{
-			nextNaturalActionState();
+			states.add(index, newState);
+		}
+		checkCurrentState();
+	}
+	
+	public void removeActionState(ActionState state)
+	{
+		if (checkWin())
+		{
+			return;
+		}
+		states.remove(state);
+		checkCurrentState();
+	}
+	
+	private void checkCurrentState()
+	{
+		ActionState state = getActionState();
+		if (state != lastSentState)
+		{
+			if (state != null)
+			{
+				state.sendState();
+			}
+			
+			if (states.isEmpty())
+			{
+				server.broadcastPacket(new PacketActionStateBasic(-1, BasicActionState.NO_STATE, 0));
+			}
+			broadcastStatus();
+			ActionState lastState = lastSentState;
+			lastSentState = state;
+			setStateChanged();
+			server.getEventManager().callEvent(new ActionStateChangedEvent(lastState != null ? lastState : getTurnState(),
+					state != null ? state : getTurnState()));
+			for (Player player : server.getPlayers())
+			{
+				player.checkEmptyHand();
+			}
 		}
 	}
 	
 	public boolean checkWin()
 	{
 		List<Player> winners = server.getGameRules().getWinCondition().getWinners();
-		if (!winners.isEmpty() && deferredWinTurns < 1 && isWinningEnabled())
+		if (!winners.isEmpty() && deferredWinCycles < 1 && isWinningEnabled())
 		{
 			PlayersWonEvent event = new PlayersWonEvent(winners);
 			server.getEventManager().callEvent(event);
@@ -304,29 +420,29 @@ public class GameState
 			{
 				deferWinBy(event.getWinDeferredTurns());
 			}
-			if (event.isCanceled())
+			if (event.isCancelled())
 			{
 				return false;
 			}
 			winners = event.getWinners();
 			
-			if (!winners.isEmpty() && deferredWinTurns < 1 && isWinningEnabled())
+			if (!winners.isEmpty() && deferredWinCycles < 1 && isWinningEnabled())
 			{
-				endGame();
+				String statusText;
 				if (winners.size() > 1)
 				{
-					String statusText = "Tie between " + winners.get(0).getName();
+					statusText = "Tie between " + winners.get(0).getName();
 					for (int i = 1 ; i < winners.size() ; i++)
 					{
 						statusText += ", " + winners.get(i).getName();
 					}
 					statusText += "!";
-					setStatus(statusText);
 				}
 				else
 				{
-					setStatus(winners.get(0).getName() + " has won!");
+					statusText = winners.get(0).getName() + " has won!";
 				}
+				endGame(statusText);
 				return true;
 			}
 		}
@@ -335,79 +451,56 @@ public class GameState
 	
 	public void resendActionState(Player player)
 	{
-		if (state != null)
-		{
-			player.sendPacket(state.constructPacket());
-			
-			for (Player accepted : state.getAccepted())
-			{
-				player.sendPacket(new PacketUpdateActionStateAccepted(accepted.getID(), true));
-			}
-			for (Player refused : state.getRefused())
-			{
-				player.sendPacket(new PacketUpdateActionStateRefusal(refused.getID(), true));
-			}
-		}
+		ActionState state = getActionState();
+		state.sendState(player);
+		sendStatus(player);
 	}
 	
 	public void resendActionState()
 	{
-		if (state != null)
+		ActionState state = getActionState();
+		state.sendState();
+		server.broadcastPacket(new PacketStatus(state.getStatus()));
+	}
+	
+	public void resendTurnState(Player player)
+	{
+		if (turnState != null)
 		{
-			server.broadcastPacket(state.constructPacket());
-			
-			for (Player accepted : state.getAccepted())
-			{
-				server.broadcastPacket(new PacketUpdateActionStateAccepted(accepted.getID(), true));
-			}
-			for (Player refused : state.getRefused())
-			{
-				server.broadcastPacket(new PacketUpdateActionStateRefusal(refused.getID(), true));
-			}
+			player.sendPacket(turnState.constructPacket());
 		}
 	}
 	
-	public void nextNaturalActionState()
+	/**
+	 * Removes all finished action states from the queue and sends the new current state to clients, if changed.
+	 */
+	public void proceed()
 	{
-		Player player = getActivePlayer();
-		if (player != null)
-		{
-			if (waitingDraw)
-			{
-				setActionState(new ActionStateDraw(player));
-			}
-			else if (turns > 0)
-			{
-				setActionState(new ActionStatePlay(player));
-			}
-			else
-			{
-				if (player.getHand().getCardCount() > 7)
-				{
-					setActionState(new ActionStateDiscard(player));
-				}
-				else
-				{
-					setActionState(new ActionStateFinishTurn(player));
-				}
-			}
-		}
+		states.removeIf(state -> state.isFinished());
+		checkCurrentState();
 	}
 	
-	public void setStatus(String status)
+	/**
+	 * Updates the turn state and resends it to clients.
+	 */
+	public void updateTurnState()
 	{
-		this.status = status == null ? "" : status;
-		server.broadcastPacket(new PacketStatus(this.status));
+		turnState.updateState(true);
+	}
+	
+	public String getStatus()
+	{
+		return getActionState().getStatus();
 	}
 	
 	public void broadcastStatus()
 	{
-		server.broadcastPacket(new PacketStatus(status));
+		server.broadcastPacket(new PacketStatus(getStatus()));
 	}
 	
 	public void sendStatus(Player player)
 	{
-		player.sendPacket(new PacketStatus(status));
+		player.sendPacket(new PacketStatus(getStatus()));
 	}
 	
 	/**
@@ -429,8 +522,16 @@ public class GameState
 	
 	public void tick()
 	{
+		if (turnState == null && states.isEmpty())
+		{
+			nextTurn();
+		}
 		if (stateChanged)
 		{
+			if (turnState != null)
+			{
+				turnState.updateState();
+			}
 			for (Player player : server.getPlayers())
 			{
 				player.getHand().updateCardButtons();
@@ -451,7 +552,7 @@ public class GameState
 	
 	public void deferWinBy(int turns)
 	{
-		deferredWinTurns = turns;
-		deferredWinPlayer = activePlayer;
+		deferredWinCycles = turns;
+		deferredWinPlayer = getActivePlayer();
 	}
 }

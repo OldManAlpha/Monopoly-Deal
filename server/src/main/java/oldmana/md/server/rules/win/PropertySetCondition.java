@@ -1,11 +1,18 @@
 package oldmana.md.server.rules.win;
 
 import oldmana.md.server.Player;
+import oldmana.md.server.rules.GameRule;
 
 public class PropertySetCondition extends WinCondition
 {
 	private int sets;
 	private boolean unique = true;
+	
+	public PropertySetCondition(GameRule rule)
+	{
+		sets = rule.getSubrule("setsRequired").getInteger();
+		unique = rule.getSubrule("unique").getBoolean();
+	}
 	
 	public PropertySetCondition(int sets)
 	{

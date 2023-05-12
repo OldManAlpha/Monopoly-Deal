@@ -3,7 +3,6 @@ package oldmana.md.client.gui.screen;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Graphics;
-import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -17,9 +16,9 @@ import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDComponent;
 import oldmana.md.client.gui.component.MDLabel;
 import oldmana.md.client.gui.component.MDText;
-import oldmana.md.client.gui.component.MDButton.ButtonColorScheme;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
+import oldmana.md.common.playerui.ButtonColorScheme;
 
 public class IngameMenuScreen extends MDComponent
 {
@@ -51,6 +50,18 @@ public class IngameMenuScreen extends MDComponent
 				{
 					if (event.getKeyCode() == KeyEvent.VK_ESCAPE)
 					{
+						if (getClient().getTableScreen().getActionScreen() != null && getClient().getTableScreen().getActionScreen().isVisible())
+						{
+							if (getClient().getGameState().getClientActionState() != null)
+							{
+								getClient().getGameState().setClientActionState(null);
+							}
+							else
+							{
+								getClient().getTableScreen().getActionScreen().setVisible(false);
+							}
+							return true;
+						}
 						setVisible(true);
 						requestFocus();
 						return true;
@@ -81,12 +92,13 @@ public class IngameMenuScreen extends MDComponent
 		Color whiteish = new Color(230, 230, 230);
 		
 		menuText = new MDLabel("Menu");
+		menuText.setPadding(60);
 		menuText.setSize(50);
 		add(menuText);
 		
 		quit = new MDButton("Leave Game");
 		quit.setFontSize(26);
-		quit.setColorScheme(ButtonColorScheme.OLD);
+		quit.setColor(ButtonColorScheme.GRAY);
 		quit.addClickListener(() ->
 		{
 			setVisible(false);
@@ -96,7 +108,7 @@ public class IngameMenuScreen extends MDComponent
 		
 		resume = new MDButton("Return to Game");
 		resume.setFontSize(26);
-		resume.setColorScheme(ButtonColorScheme.OLD);
+		resume.setColor(ButtonColorScheme.GRAY);
 		resume.addClickListener(() -> setVisible(false));
 		add(resume);
 		
@@ -105,11 +117,12 @@ public class IngameMenuScreen extends MDComponent
 		uiScaleText.setHorizontalAlignment(Alignment.CENTER);
 		uiScaleText.setColor(whiteish);
 		uiScaleText.setBold(true);
+		uiScaleText.setOutlineThickness(4);
 		add(uiScaleText);
 		
 		enlargeUI = new MDButton("+");
 		enlargeUI.setFontSize(26);
-		enlargeUI.setColorScheme(ButtonColorScheme.OLD);
+		enlargeUI.setColor(ButtonColorScheme.GRAY);
 		enlargeUI.addClickListener(() ->
 		{
 			GraphicsUtils.setScale(Math.min(GraphicsUtils.SCALE + 0.1, 4.0));
@@ -124,7 +137,7 @@ public class IngameMenuScreen extends MDComponent
 		
 		shrinkUI = new MDButton("-");
 		shrinkUI.setFontSize(26);
-		shrinkUI.setColorScheme(ButtonColorScheme.OLD);
+		shrinkUI.setColor(ButtonColorScheme.GRAY);
 		shrinkUI.addClickListener(() ->
 		{
 			GraphicsUtils.setScale(Math.max(GraphicsUtils.SCALE - 0.1, 0.5));
@@ -142,6 +155,7 @@ public class IngameMenuScreen extends MDComponent
 		uiScale.setHorizontalAlignment(Alignment.CENTER);
 		uiScale.setVerticalAlignment(Alignment.CENTER);
 		uiScale.setColor(whiteish);
+		uiScale.setOutlineThickness(3);
 		add(uiScale);
 		
 		
@@ -150,11 +164,12 @@ public class IngameMenuScreen extends MDComponent
 		fpsText.setHorizontalAlignment(Alignment.CENTER);
 		fpsText.setColor(whiteish);
 		fpsText.setBold(true);
+		fpsText.setOutlineThickness(4);
 		add(fpsText);
 		
 		increaseFPS = new MDButton("+");
 		increaseFPS.setFontSize(26);
-		increaseFPS.setColorScheme(ButtonColorScheme.OLD);
+		increaseFPS.setColor(ButtonColorScheme.GRAY);
 		increaseFPS.addClickListener(() ->
 		{
 			getClient().getScheduler().setFPS(Math.min(MDScheduler.getFPS() + 5, 500), true);
@@ -169,7 +184,7 @@ public class IngameMenuScreen extends MDComponent
 		
 		decreaseFPS = new MDButton("-");
 		decreaseFPS.setFontSize(26);
-		decreaseFPS.setColorScheme(ButtonColorScheme.OLD);
+		decreaseFPS.setColor(ButtonColorScheme.GRAY);
 		decreaseFPS.addClickListener(() ->
 		{
 			getClient().getScheduler().setFPS(Math.max(MDScheduler.getFPS() - 5, 5), true);
@@ -187,6 +202,7 @@ public class IngameMenuScreen extends MDComponent
 		fps.setHorizontalAlignment(Alignment.CENTER);
 		fps.setVerticalAlignment(Alignment.CENTER);
 		fps.setColor(whiteish);
+		fps.setOutlineThickness(3);
 		add(fps);
 		
 		
@@ -196,7 +212,7 @@ public class IngameMenuScreen extends MDComponent
 		
 		debug = new MDButton("Debug");
 		debug.setFontSize(16);
-		debug.setColorScheme(ButtonColorScheme.OLD);
+		debug.setColor(ButtonColorScheme.GRAY);
 		debug.addMouseListener(new MouseAdapter()
 		{
 			@Override
@@ -228,8 +244,9 @@ public class IngameMenuScreen extends MDComponent
 		@Override
 		public void layoutContainer(Container container)
 		{
-			menuText.setLocation((getWidth() / 2) - scale(100), scale(30));
-			menuText.setSize(scale(200), scale(52));
+			menuText.setSize(scale(50));
+			menuText.setLocationCentered((getWidth() / 2), scale(60));
+			//menuText.setSize(scale(200), scale(52));
 			
 			uiScaleText.setLocation((getWidth() / 2) - scale(150), menuText.getMaxY() + scale(40));
 			uiScaleText.setSize(scale(300), scale(32));

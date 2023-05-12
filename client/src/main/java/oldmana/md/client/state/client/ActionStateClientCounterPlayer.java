@@ -4,26 +4,26 @@ import oldmana.md.client.Player;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardButton;
 import oldmana.md.client.gui.component.MDButton;
-import oldmana.md.client.gui.component.MDComponent;
 import oldmana.md.client.gui.component.MDSelection;
-import oldmana.md.client.gui.component.collection.MDHand;
-import oldmana.md.client.gui.util.GraphicsUtils;
+import oldmana.md.client.gui.component.large.MDPlayer;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.net.packet.client.action.PacketActionUseCardButton;
 
 import java.awt.Color;
-import java.awt.Point;
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ContainerAdapter;
+import java.awt.event.ContainerEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ActionStateClientCounterPlayer extends ActionStateClient
 {
 	private Card card;
 	private CardButton cardButton;
 	
-	private List<MDComponent> cardSelect;
-	private List<MDSelection> selects;
-	private MDButton cancel;
+	private HandCardSelection cardSelection;
+	private Map<Player, MDSelection> selects;
 	
 	private Player selectedPlayer;
 	private MDSelection selectedPlayerUI;
@@ -36,26 +36,25 @@ public class ActionStateClientCounterPlayer extends ActionStateClient
 	}
 	
 	@Override
+	public void updateUI()
+	{
+		cardSelection.destroy();
+		cardSelection.create(() -> removeState());
+		selects.forEach((player, select) -> select.setSize(player.getUI().getSize()));
+	}
+	
+	@Override
 	public void setup()
 	{
-		MDHand hand = ((MDHand) getClient().getThePlayer().getHand().getUI());
-		cardSelect = hand.placeSelectedView(card, 90, Color.BLUE);
-		
-		int width = GraphicsUtils.getCardWidth(2);
-		int height = GraphicsUtils.getCardHeight(2);
-		Point loc = hand.getScreenLocationOf(card);
-		cancel = new MDButton("Cancel");
-		cancel.setSize((int) (width * 0.8), (int) (height * 0.2));
-		cancel.setLocation((int) (width * 0.1) + loc.getX(), (int) (height * 0.4) + loc.getY());
-		cancel.setListener(() -> removeState());
-		getClient().addTableComponent(cancel, 92);
+		cardSelection = new HandCardSelection(card);
+		cardSelection.create(() -> removeState());
 		
 		ActionState state = getGameState().getActionState();
-		selects = new ArrayList<MDSelection>();
+		selects = new HashMap<Player, MDSelection>();
 		for (Player other : state.getRefused())
 		{
+			MDPlayer ui = other.getUI();
 			MDSelection select = new MDSelection();
-			select.setLocation(other.getUI().getLocation());
 			select.setSize(other.getUI().getSize());
 			select.addClickListener(() ->
 			{
@@ -68,8 +67,28 @@ public class ActionStateClientCounterPlayer extends ActionStateClient
 				selectedPlayerUI.setColor(Color.BLUE);
 				updateButton();
 			});
-			getClient().addTableComponent(select, 100);
-			selects.add(select);
+			
+			ComponentAdapter resizeListener = new ComponentAdapter()
+			{
+				@Override
+				public void componentResized(ComponentEvent e)
+				{
+					select.setSize(ui.getSize());
+				}
+			};
+			ContainerAdapter removeListener = new ContainerAdapter()
+			{
+				@Override
+				public void componentRemoved(ContainerEvent e)
+				{
+					ui.removeComponentListener(resizeListener);
+					ui.removeContainerListener(this);
+				}
+			};
+			ui.addComponentListener(resizeListener);
+			ui.addContainerListener(removeListener);
+			ui.add(select, 0);
+			selects.put(other, select);
 		}
 		updateButton();
 	}
@@ -106,9 +125,8 @@ public class ActionStateClientCounterPlayer extends ActionStateClient
 	public void cleanup()
 	{
 		getGameState().getActionState().removeActionCounter();
-		getClient().removeTableComponents(cardSelect);
-		getClient().removeTableComponents(selects);
-		getClient().removeTableComponent(cancel);
+		cardSelection.destroy();
+		selects.forEach((player, select) -> player.getUI().remove(select));
 		getClient().getTableScreen().repaint();
 	}
 }

@@ -27,7 +27,7 @@ public class CommandSetTurn extends Command
 			}
 			Player player = getServer().getPlayerByID(Integer.parseInt(args[0]));
 			getServer().getGameState().setTurn(getServer().getPlayerByID(Integer.parseInt(args[0])), draw);
-			getServer().getGameState().nextNaturalActionState();
+			getServer().getGameState().proceed();
 			sender.sendMessage("Set it to be " + player.getName() + "'s turn");
 		}
 	}

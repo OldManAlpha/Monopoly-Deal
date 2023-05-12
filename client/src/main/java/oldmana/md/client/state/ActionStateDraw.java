@@ -10,9 +10,14 @@ public class ActionStateDraw extends ActionState
 	}
 	
 	@Override
+	public boolean isTurnState()
+	{
+		return true;
+	}
+	
+	@Override
 	public void setup()
 	{
-		getGameState().setWhoseTurn(getActionOwner());
-		getGameState().setTurns(0);
+	
 	}
 }

@@ -6,4 +6,10 @@ public class VoidCollection extends CardCollection
 	{
 		super(id, true);
 	}
+	
+	@Override
+	public void addUnknownCards(int amount) {}
+	
+	@Override
+	public void removeUnknownCards(int amount) {}
 }

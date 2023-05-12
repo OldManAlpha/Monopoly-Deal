@@ -1,5 +1,7 @@
 package oldmana.md.client.gui.component;
 
+import oldmana.md.common.playerui.ButtonColorScheme;
+
 import java.awt.event.MouseAdapter;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,7 +33,7 @@ public class MDLayeredButton extends MDButton
 		else
 		{
 			setText("");
-			setColorScheme(ButtonColorScheme.NORMAL);
+			setColor(ButtonColorScheme.NORMAL);
 			removeListener();
 		}
 	}
@@ -52,7 +54,7 @@ public class MDLayeredButton extends MDButton
 		public void applyLayer()
 		{
 			setText(text);
-			setColorScheme(color);
+			setColor(color);
 			setListener(listener);
 		}
 	}

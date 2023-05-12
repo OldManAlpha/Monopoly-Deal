@@ -12,8 +12,8 @@ public class ConnectionThread extends Thread
 {
 	private MJConnection connection;
 	
-	private List<Packet> inPackets;
-	private List<Packet> outPackets;
+	private final List<Packet> inPackets;
+	private final List<Packet> outPackets;
 	
 	private boolean close = false;
 	
@@ -21,8 +21,8 @@ public class ConnectionThread extends Thread
 	{
 		this.connection = connection;
 		
-		inPackets = Collections.synchronizedList(new ArrayList<Packet>());
-		outPackets = Collections.synchronizedList(new ArrayList<Packet>());
+		inPackets = new ArrayList<Packet>();
+		outPackets = new ArrayList<Packet>();
 		
 		setDaemon(true);
 		start();
@@ -80,6 +80,11 @@ public class ConnectionThread extends Thread
 	public boolean isClosed()
 	{
 		return connection.isClosed();
+	}
+	
+	public MJConnection getConnection()
+	{
+		return connection;
 	}
 	
 	@Override

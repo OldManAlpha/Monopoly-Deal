@@ -17,7 +17,7 @@ import oldmana.md.net.packet.client.action.*;
 import oldmana.md.net.packet.server.*;
 import oldmana.md.net.packet.universal.PacketChat;
 import oldmana.md.net.packet.universal.PacketKeepConnected;
-import oldmana.md.server.ChatLinkHandler.ChatLink;
+import oldmana.md.server.playerui.ChatLinkHandler.ChatLink;
 import oldmana.md.server.Client;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
@@ -33,9 +33,7 @@ import oldmana.md.server.card.collection.PropertySet;
 import oldmana.md.server.card.control.CardButton;
 import oldmana.md.server.event.PlayerJoinedEvent;
 import oldmana.md.server.event.PlayerReconnectedEvent;
-import oldmana.md.server.event.UndoCardEvent;
 import oldmana.md.server.state.ActionState;
-import oldmana.md.server.state.ActionStateDraw;
 import oldmana.md.server.state.ActionStateRent;
 import oldmana.md.server.state.ActionStateTargetAnyProperty;
 import oldmana.md.server.state.ActionStateTargetPlayer;
@@ -98,7 +96,7 @@ public class NetServerHandler extends NetHandler
 			{
 				if (server.isVerbose())
 				{
-					System.out.println("Processing: " + packetName + " (Connecting Client)");
+					System.out.println("Processing: " + packetName + " (" + client.getHostAddress() + ")");
 				}
 				if (packet instanceof PacketInitiateLogin)
 				{
@@ -118,77 +116,124 @@ public class NetServerHandler extends NetHandler
 	
 	public void handleInitiateLogin(Client client, PacketInitiateLogin packet)
 	{
+		if (packet.protocolVersion < 19) // Explicitly checking for versions before this one because the login packet has changed
+		{
+			System.out.println("Client attempted login with an invalid protocol version (" + packet.protocolVersion + ")");
+			System.out.println("We're on version " + NetHandler.PROTOCOL_VERSION);
+			server.disconnectClient(client, "Invalid version! Server is on " + MDServer.VERSION);
+			return;
+		}
 		client.sendPacket(new PacketServerInfo(PROTOCOL_VERSION, server.getServerKey()));
 	}
 	
 	public void handleLogin(Client client, PacketLogin packet)
 	{
 		int version = packet.protocolVersion;
-		if (version == NetHandler.PROTOCOL_VERSION)
+		if (version != NetHandler.PROTOCOL_VERSION)
 		{
-			ByteBuffer buffer = ByteBuffer.wrap(packet.id);
-			UUID uuid = new UUID(buffer.getLong(), buffer.getLong());
-			PlayerRegistry registry = server.getPlayerRegistry();
-			
-			server.removeClient(client);
-			if (server.isPlayerWithUUIDLoggedIn(uuid))
-			{
-				Player player = server.getPlayerByUUID(uuid);
-				if (player.isOnline())
-				{
-					player.sendPacket(new PacketKick("Logged in from another client!"));
-					System.out.println("Previously connected client of " + player.getDescription() + " was kicked");
-				}
-				player.setOnline(true);
-				player.setNet(client.getNet());
-				player.refresh();
-				System.out.println("Player " + player.getDescription() + " reconnected");
-				server.getEventManager().callEvent(new PlayerReconnectedEvent(player));
-			}
-			else
-			{
-				if (packet.name.isEmpty())
-				{
-					server.disconnectClient(client, "Must provide a name");
-					System.out.println("Disconnected client for not providing a name");
-					return;
-				}
-				else if (packet.name.length() > 24)
-				{
-					server.disconnectClient(client, "Max name length allowed is 24 characters");
-					System.out.println("Disconnected client for too long name: " + (packet.name.length() > 200 ?
-							packet.name.length() + " characters" : packet.name));
-					return;
-				}
-				RegisteredPlayer rp = registry.getRegisteredPlayerByUUID(uuid);
-				boolean newPlayer = rp == null;
-				if (rp == null)
-				{
-					rp = registry.registerPlayer(uuid, packet.name);
-				}
-				if (!rp.staticName)
-				{
-					rp.name = packet.name;
-					registry.savePlayers();
-				}
-				if (server.getPlayerByName(rp.name) != null)
-				{
-					server.disconnectClient(client, "A player is already logged in with that name!");
-					System.out.println("Disconnected client for using same name as an already logged in player: " + rp.name);
-					return;
-				}
-				Player player = new Player(server, uuid, client.getNet(), rp.name, rp.op);
-				server.addPlayer(player);
-				player.setOnline(true);
-				player.refresh();
-				System.out.println((newPlayer ? "New player " : "Player ") + player.getName() + " logged in with ID " + player.getID());
-				server.getEventManager().callEvent(new PlayerJoinedEvent(player));
-			}
+			System.out.println("Client attempted login with an invalid protocol version (" + packet.clientVersion + " / " + version + ")");
+			System.out.println("We're on version " + NetHandler.PROTOCOL_VERSION);
+			server.disconnectClient(client, "Invalid version! Server is on " + MDServer.VERSION);
+			return;
 		}
-		else
+		
+		ByteBuffer buffer = ByteBuffer.wrap(packet.id);
+		UUID uuid = new UUID(buffer.getLong(), buffer.getLong());
+		PlayerRegistry registry = server.getPlayerRegistry();
+		
+		server.removeClient(client);
+		
+		if (server.isPlayerWithUUIDLoggedIn(uuid))
 		{
-			System.out.println("Client attempted login with an invalid protocol version (" + version + ")");
-			server.disconnectClient(client, "Invalid protocol version");
+			Player player = server.getPlayerByUUID(uuid);
+			if (player.isOnline())
+			{
+				player.disconnect("Logged in from another client!");
+				System.out.println("Previously connected client of " + player.getDescription() + " at " +
+						player.getHostAddress() + " was kicked");
+			}
+			if (!checkName(client, uuid, packet.name).isSuccessful())
+			{
+				return;
+			}
+			player.setOnline(true);
+			String prevName = player.getName();
+			player.setName(packet.name);
+			player.setNet(client.getNet());
+			player.refresh();
+			System.out.println("Player " + player.getDescription() +
+					(!prevName.equals(player.getName()) ? " (Previously named " + prevName + ")" : "") +
+					" reconnected from " + player.getHostAddress());
+			server.getEventManager().callEvent(new PlayerReconnectedEvent(player));
+			return;
+		}
+		
+		NameCheckResult result = checkName(client, uuid, packet.name);
+		if (!result.isSuccessful())
+		{
+			return;
+		}
+		RegisteredPlayer rp = registry.getRegisteredPlayerByUUID(uuid);
+		Player player = new Player(server, uuid, client.getNet(), rp.name, rp.op);
+		server.addPlayer(player);
+		player.setOnline(true);
+		player.refresh();
+		System.out.println((result == NameCheckResult.SUCCESS_NEW_PLAYER ? "New player " : "Player ") +
+				player.getName() + " logged in with ID " + player.getID() + " from " + player.getHostAddress());
+		server.getEventManager().callEvent(new PlayerJoinedEvent(player));
+	}
+	
+	private NameCheckResult checkName(Client client, UUID uuid, String name)
+	{
+		if (name.isEmpty())
+		{
+			server.disconnectClient(client, "Must provide a name");
+			System.out.println("Disconnected client for not providing a name");
+			return NameCheckResult.FAILED;
+		}
+		else if (name.length() > 24)
+		{
+			server.disconnectClient(client, "Max name length allowed is 24 characters");
+			System.out.println("Disconnected client for too long name: " + (name.length() > 200 ?
+					name.length() + " characters" : name));
+			return NameCheckResult.FAILED;
+		}
+		PlayerRegistry registry = server.getPlayerRegistry();
+		RegisteredPlayer rp = registry.getRegisteredPlayerByUUID(uuid);
+		boolean newPlayer = rp == null;
+		if (newPlayer)
+		{
+			rp = registry.registerPlayer(uuid, name);
+		}
+		if (!rp.staticName && !rp.name.equals(name))
+		{
+			rp.name = name;
+			registry.savePlayers();
+		}
+		Player sameNamed = server.getPlayerByName(rp.name);
+		if (sameNamed != null && !sameNamed.getUUID().equals(uuid))
+		{
+			server.disconnectClient(client, "A player is already logged in with that name!");
+			System.out.println("Disconnected client for using same name as an already logged in player: " + rp.name);
+			return NameCheckResult.FAILED;
+		}
+		return newPlayer ? NameCheckResult.SUCCESS_NEW_PLAYER : NameCheckResult.SUCCESS;
+	}
+	
+	private enum NameCheckResult
+	{
+		SUCCESS(true), SUCCESS_NEW_PLAYER(true), FAILED(false);
+		
+		private final boolean successful;
+		
+		NameCheckResult(boolean successful)
+		{
+			this.successful = successful;
+		}
+		
+		boolean isSuccessful()
+		{
+			return successful;
 		}
 	}
 	
@@ -211,7 +256,7 @@ public class NetServerHandler extends NetHandler
 	public void handleDraw(Player player, PacketActionDraw packet)
 	{
 		ActionState state = server.getGameState().getActionState();
-		if (state instanceof ActionStateDraw && state.getActionOwner() == player)
+		if (player.canDraw())
 		{
 			player.draw();
 		}
@@ -228,13 +273,7 @@ public class NetServerHandler extends NetHandler
 		if (checkIntegrity(player, card, true))
 		{
 			PropertySet set = player.getPropertySetById(packet.setID);
-			building.transfer(set);
-			
-			player.addRevocableCard(card);
-			
-			player.checkEmptyHand();
-			
-			server.getGameState().decrementTurn();
+			player.playCardBuilding(building, set);
 		}
 	}
 	
@@ -295,6 +334,13 @@ public class NetServerHandler extends NetHandler
 			return;
 		}
 		CardProperty property = (CardProperty) card;
+		PropertySet prevSet = (PropertySet) property.getOwningCollection();
+		if (prevSet.isMonopoly() && prevSet.hasBuildings())
+		{
+			System.out.println(player.getName() + " tried to move a property off of a monopoly with buildings!");
+			player.resendActionState();
+			return;
+		}
 		if (packet.setId > -1)
 		{
 			PropertySet set = player.getPropertySetById(packet.setId);
@@ -314,7 +360,7 @@ public class NetServerHandler extends NetHandler
 		PropertyColor color = PropertyColor.fromID(packet.color);
 		if (set.getPossibleBaseColors().contains(color))
 		{
-			set.setEffectiveColor(PropertyColor.fromID(packet.color));
+			set.setEffectiveColor(color);
 		}
 		player.resendActionState();
 		server.getGameState().checkWin();
@@ -371,18 +417,7 @@ public class NetServerHandler extends NetHandler
 	
 	public void handleActionUndoCard(Player player, PacketActionUndoCard packet)
 	{
-		if (!player.canRevokeCard())
-		{
-			player.sendUndoStatus();
-			return;
-		}
-		UndoCardEvent event = new UndoCardEvent(player, player.getLastRevocableCard());
-		server.getEventManager().callEvent(event);
-		if (!event.isCanceled())
-		{
-			server.getGameState().undoCard(player.getLastRevocableCard());
-			player.undoCard();
-		}
+		player.undoCard();
 	}
 	
 	public void handleActionAccept(Player player, PacketActionAccept packet)
@@ -397,10 +432,7 @@ public class NetServerHandler extends NetHandler
 		{
 			state.removeActionTarget(target);
 		}
-		if (state.isFinished())
-		{
-			server.getGameState().nextNaturalActionState();
-		}
+		server.getGameState().proceed();
 	}
 	
 	public void handleKeepConnected(Player player, PacketKeepConnected packet)
@@ -438,9 +470,18 @@ public class NetServerHandler extends NetHandler
 		}
 	}
 	
+	public void handleRemoveBuilding(Player player, PacketActionRemoveBuilding packet)
+	{
+		Card card = Card.getCard(packet.card);
+		if (card instanceof CardBuilding && card.getOwner() == player && card.getOwningCollection() instanceof PropertySet)
+		{
+			card.transfer(player.getBank());
+		}
+	}
+	
 	public void handleChat(Player player, PacketChat packet)
 	{
-		String msg = packet.message;
+		String msg = packet.getMessage().getUnformattedMessage();
 		if (msg.startsWith("/"))
 		{
 			player.executeCommand(msg.substring(1));

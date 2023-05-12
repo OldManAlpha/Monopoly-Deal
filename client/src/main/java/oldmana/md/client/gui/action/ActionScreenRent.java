@@ -5,16 +5,22 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.LayoutManager2;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 
 import oldmana.md.client.Player;
 import oldmana.md.client.card.Card;
+import oldmana.md.client.card.CardBuilding;
+import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.collection.Bank;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.component.MDButton;
@@ -52,17 +58,8 @@ public class ActionScreenRent extends ActionScreen
 		cardSelect = new CardSelectUI();
 		scrollPane.setViewportView(cardSelect);
 		viewTable = new MDButton("View Table");
-		viewTable.setLocation(10, 840);
-		viewTable.setSize(180, 50);
 		viewTable.setFontSize(24);
-		viewTable.addMouseListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseReleased(MouseEvent event)
-			{
-				setVisible(false);
-			}
-		});
+		viewTable.addClickListener(() -> setVisible(false));
 		add(viewTable);
 		
 		rentLabel = new MDLabel("Rent: " + rent + "M");
@@ -72,27 +69,21 @@ public class ActionScreenRent extends ActionScreen
 		add(selectedLabel);
 		
 		pay = new MDButton("Pay");
-		pay.setLocation(710, 825);
-		pay.setSize(180, 50);
 		pay.setFontSize(24);
 		add(pay);
-		pay.addMouseListener(new MouseAdapter()
+		pay.addClickListener(() ->
 		{
-			@Override
-			public void mouseReleased(MouseEvent event)
+			if (isRequiredAmountSelected())
 			{
-				if (isRequiredAmountSelected())
+				List<Card> selectedCards = new ArrayList<Card>();
+				for (MDCardSelection select : cardSelect.getSelects())
 				{
-					List<Card> selectedCards = new ArrayList<Card>();
-					for (MDCardSelection select : cardSelect.getSelects())
+					if (select.isSelected())
 					{
-						if (select.isSelected())
-						{
-							selectedCards.add(select.getCard());
-						}
+						selectedCards.add(select.getCard());
 					}
-					state.payRent(selectedCards);
 				}
+				state.payRent(selectedCards);
 			}
 		});
 		
@@ -106,14 +97,7 @@ public class ActionScreenRent extends ActionScreen
 		int selectedValue = getAmountSelected();
 		selectedLabel.setText("Selected: " + selectedValue + "M");
 		selectedLabel.repaint();
-		if (isRequiredAmountSelected())
-		{
-			pay.setEnabled(true);
-		}
-		else
-		{
-			pay.setEnabled(false);
-		}
+		pay.setEnabled(isRequiredAmountSelected());
 	}
 	
 	public int getAmountSelected()
@@ -140,7 +124,7 @@ public class ActionScreenRent extends ActionScreen
 		private MDLabel propLabel;
 		
 		private List<MDCardSelection> bankSelects = new ArrayList<MDCardSelection>();
-		private List<MDCardSelection> propSelects = new ArrayList<MDCardSelection>();
+		private Map<Card, MDCardSelection> propSelects = new LinkedHashMap<Card, MDCardSelection>();
 		
 		public CardSelectUI()
 		{
@@ -162,9 +146,8 @@ public class ActionScreenRent extends ActionScreen
 			// Bank
 			Bank bank = player.getBank();
 			List<Card> cards = bank.getCards();
-			for (int i = 0 ; i < cards.size() ; i++)
+			for (Card card : cards)
 			{
-				Card card = cards.get(i);
 				MDCardSelection cs = constructSelect(card, mustPayEverything, mustPayEverything && card.getValue() > 0);
 				bankSelects.add(cs);
 				add(cs);
@@ -172,17 +155,110 @@ public class ActionScreenRent extends ActionScreen
 			
 			// Properties
 			List<PropertySet> propSets = player.getPropertySets();
-			for (int i = 0 ; i < propSets.size() ; i++)
+			for (PropertySet set : propSets)
 			{
-				PropertySet set = propSets.get(i);
 				for (int e = 0 ; e < set.getCardCount() ; e++)
 				{
 					Card card = set.getCardAt(e);
 					MDCardSelection cs = constructSelect(card, mustPayEverything, mustPayEverything && card.getValue() > 0);
-					propSelects.add(cs);
+					propSelects.put(card, cs);
 					add(cs);
 				}
 			}
+		}
+		
+		public boolean isSelected(Card card)
+		{
+			return propSelects.get(card).isSelected();
+		}
+		
+		public boolean canSelect(Card card)
+		{
+			if (!(card.getOwningCollection() instanceof PropertySet))
+			{
+				return true;
+			}
+			PropertySet set = (PropertySet) card.getOwningCollection();
+			if (!set.hasBuildings())
+			{
+				return true;
+			}
+			
+			if (card instanceof CardProperty)
+			{
+				for (CardBuilding building : set.getBuildingCards())
+				{
+					if (!isSelected(building))
+					{
+						return false;
+					}
+				}
+				return true;
+			}
+			
+			if (card instanceof CardBuilding)
+			{
+				CardBuilding building = (CardBuilding) card;
+				int lowestSelectedTier = set.getHighestBuildingTier() + 1;
+				List<CardBuilding> buildings = set.getBuildingCards();
+				for (CardBuilding b : buildings)
+				{
+					if (isSelected(b))
+					{
+						lowestSelectedTier = Math.min(lowestSelectedTier, b.getTier());
+					}
+				}
+				return lowestSelectedTier - 1 == building.getTier();
+			}
+			return false;
+		}
+		
+		public boolean canUnselect(Card card)
+		{
+			if (!(card.getOwningCollection() instanceof PropertySet))
+			{
+				return true;
+			}
+			PropertySet set = (PropertySet) card.getOwningCollection();
+			if (!set.hasBuildings())
+			{
+				return true;
+			}
+			
+			if (card instanceof CardProperty)
+			{
+				for (CardBuilding building : set.getBuildingCards())
+				{
+					if (!isSelected(building))
+					{
+						return false;
+					}
+				}
+				return true;
+			}
+			
+			if (card instanceof CardBuilding)
+			{
+				for (CardProperty prop : set.getPropertyCards())
+				{
+					if (isSelected(prop))
+					{
+						return false;
+					}
+				}
+				CardBuilding building = (CardBuilding) card;
+				int lowestSelectedTier = set.getHighestBuildingTier();
+				List<CardBuilding> buildings = set.getBuildingCards();
+				for (CardBuilding b : buildings)
+				{
+					if (isSelected(b))
+					{
+						lowestSelectedTier = Math.min(lowestSelectedTier, b.getTier());
+					}
+				}
+				return lowestSelectedTier == building.getTier();
+			}
+			return false;
 		}
 		
 		public MDCardSelection constructSelect(Card card, boolean disabled, boolean selected)
@@ -198,7 +274,13 @@ public class ActionScreenRent extends ActionScreen
 				@Override
 				public boolean preSelect()
 				{
-					return !isRequiredAmountSelected() && card.getValue() != 0;
+					return canSelect(card) && !isRequiredAmountSelected() && card.getValue() != 0;
+				}
+				
+				@Override
+				public boolean preUnselect()
+				{
+					return canUnselect(card);
 				}
 				
 				@Override
@@ -216,7 +298,8 @@ public class ActionScreenRent extends ActionScreen
 			int y = scale(10);
 			
 			bankLabel.setLocation(scale(10), y);
-			bankLabel.setSize(scale(80), scale(40));
+			bankLabel.setSize(scale(40));
+			//bankLabel.setSize(scale(80), scale(40));
 			
 			y += scale(50);
 			
@@ -225,11 +308,12 @@ public class ActionScreenRent extends ActionScreen
 			y += scale(190 + 10);
 			
 			propLabel.setLocation(scale(10), y);
-			propLabel.setSize(scale(160), scale(40));
+			propLabel.setSize(scale(40));
+			//propLabel.setSize(scale(160), scale(40));
 			
 			y += scale(50);
 			
-			y = layoutSelects(propSelects, width, y);
+			y = layoutSelects(propSelects.values(), width, y);
 			
 			y += scale(180);
 			
@@ -237,7 +321,7 @@ public class ActionScreenRent extends ActionScreen
 			setPreferredSize(new Dimension(width, y));
 		}
 		
-		public int layoutSelects(List<MDCardSelection> selects, int width, int y)
+		public int layoutSelects(Collection<MDCardSelection> selects, int width, int y)
 		{
 			int x = scale(5);
 			for (MDCardSelection select : selects)
@@ -257,7 +341,7 @@ public class ActionScreenRent extends ActionScreen
 		public List<MDCardSelection> getSelects()
 		{
 			List<MDCardSelection> selects = new ArrayList<MDCardSelection>(bankSelects);
-			selects.addAll(propSelects);
+			selects.addAll(propSelects.values());
 			return selects;
 		}
 		

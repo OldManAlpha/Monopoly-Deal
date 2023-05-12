@@ -1,6 +1,5 @@
 package oldmana.md.server.command;
 
-import java.io.File;
 import java.io.IOException;
 
 import oldmana.md.server.ChatColor;
@@ -11,7 +10,7 @@ public class CommandCreateDeck extends Command
 {
 	public CommandCreateDeck()
 	{
-		super("createdeck", new String[] {}, new String[] {"/createdeck"}, true);
+		super("createdeck", new String[] {"savedeck"}, new String[] {"/createdeck"}, true);
 	}
 	
 	@Override
@@ -28,10 +27,10 @@ public class CommandCreateDeck extends Command
 			sender.sendMessage(ChatColor.PREFIX_ALERT + "That deck name is reserved.");
 			return;
 		}
-		CustomDeck deck = new CustomDeck(name, getServer().getDeck().getCards());
+		CustomDeck deck = new CustomDeck(name, getServer().getDeck().getCards(), getServer().getGameRules().getRootRule());
 		try
 		{
-			deck.writeDeck(new File("decks" + File.separator + name + ".json"));
+			deck.writeDeck();
 		}
 		catch (IOException e)
 		{
@@ -42,5 +41,10 @@ public class CommandCreateDeck extends Command
 		getServer().getDeckStacks().put(name, deck);
 		getServer().getDeck().setDeckStack(deck);
 		sender.sendMessage("Saved deck as '" + name + "'");
+		
+		if (!getServer().getDiscardPile().isEmpty() || getServer().getPlayers().stream().anyMatch(p -> !p.getAllCards().isEmpty()))
+		{
+			sender.sendMessage(ChatColor.PREFIX_ALERT + ChatColor.LIGHT_RED + "Warning: Cards that are not currently in the deck are not saved!");
+		}
 	}
 }

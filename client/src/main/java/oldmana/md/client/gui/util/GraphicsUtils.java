@@ -272,7 +272,8 @@ public class GraphicsUtils
 		int[] rgb = new int[3];
 		for (int i = 0 ; i < origRgb.length ; i++)
 		{
-			//rgb[i] = (int) ((origRgb[i] + (255 * lightFactor)) / (lightFactor + 1));
+			rgb[i] = (int) (origRgb[i] - Math.min((255 - origRgb[i]) * darkFactor, origRgb[i]));
+			//rgb[i] = (int) ((origRgb[i] + (255 * darkFactor)) / (darkFactor + 1));
 		}
 		
 		return new Color(rgb[0], rgb[1], rgb[2]);
@@ -283,7 +284,7 @@ public class GraphicsUtils
 		int[] c1Rgb = new int[] {c1.getRed(), c1.getGreen(), c1.getBlue()};
 		int[] c2Rgb = new int[] {c2.getRed(), c2.getGreen(), c2.getBlue()};
 		int[] rgb = new int[3];
-		for (int i = 0 ; i < rgb.length ; i++)
+		for (int i = 0 ; i < 3 ; i++)
 		{
 			rgb[i] = (int) ((c1Rgb[i] * -(progress - 1)) + (c2Rgb[i] * progress));
 		}

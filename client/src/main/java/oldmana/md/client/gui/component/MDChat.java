@@ -14,26 +14,28 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.ListIterator;
 
 import oldmana.md.client.MDClient;
 import oldmana.md.client.MDScheduler;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
+import oldmana.md.common.Message;
 import oldmana.md.net.packet.client.action.PacketActionClickLink;
 import oldmana.md.net.packet.universal.PacketChat;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import javax.swing.SwingUtilities;
 
 public class MDChat extends MDComponent
 {
-	private List<Message> messages = new ArrayList<Message>();
+	private List<ChatMessage> messages = new ArrayList<ChatMessage>();
 	private int scroll;
 	private int lineCount;
 	
@@ -55,6 +57,8 @@ public class MDChat extends MDComponent
 	private MouseMotionAdapter motionListener;
 	private MouseWheelListener wheelListener;
 	
+	private MDChatHover hoverText;
+	
 	public MDChat()
 	{
 		getClient().getScheduler().scheduleFrameboundTask(task ->
@@ -64,7 +68,7 @@ public class MDChat extends MDComponent
 			{
 				if (messages.size() > i)
 				{
-					Message m = messages.get(i);
+					ChatMessage m = messages.get(i);
 					if (m.tick())
 					{
 						update = true;
@@ -135,7 +139,7 @@ public class MDChat extends MDComponent
 				{
 					if (typed.length() > 0)
 					{
-						getClient().sendPacket(new PacketChat(typed.toString()));
+						getClient().sendPacket(PacketChat.ofSimpleString(typed.toString()));
 						if (history.isEmpty() || !history.get(0).equals(typed.toString()))
 						{
 							history.add(0, typed.toString());
@@ -159,26 +163,26 @@ public class MDChat extends MDComponent
 				else if (event.getKeyCode() == KeyEvent.VK_UP)
 				{
 					if (historyPos < 0)
-		        	{
-		        		startedMsg = typed.toString();
-		        	}
-		        	historyPos = Math.min(historyPos + 1, history.size() - 1);
-		        	if (historyPos >= 0)
-		        	{
-		        		typed = new StringBuilder(history.get(historyPos));
-		        	}
+					{
+						startedMsg = typed.toString();
+					}
+					historyPos = Math.min(historyPos + 1, history.size() - 1);
+					if (historyPos >= 0)
+					{
+						typed = new StringBuilder(history.get(historyPos));
+					}
 				}
 				else if (event.getKeyCode() == KeyEvent.VK_DOWN)
 				{
 					historyPos = Math.max(historyPos - 1, -1);
-		        	if (historyPos < 0)
-		        	{
-		        		typed = new StringBuilder(startedMsg);
-		        	}
-		        	else
-		        	{
-		        		typed = new StringBuilder(history.get(historyPos));
-		        	}
+					if (historyPos < 0)
+					{
+						typed = new StringBuilder(startedMsg);
+					}
+					else
+					{
+						typed = new StringBuilder(history.get(historyPos));
+					}
 				}
 				else if (event.getKeyCode() == KeyEvent.VK_ESCAPE)
 				{
@@ -192,22 +196,18 @@ public class MDChat extends MDComponent
 			}
 		});
 		
-		wheelListener = new MouseWheelListener()
+		wheelListener = event ->
 		{
-			@Override
-			public void mouseWheelMoved(MouseWheelEvent event)
+			int amt = event.getUnitsToScroll();
+			if (amt < 0)
 			{
-				int amt = event.getUnitsToScroll();
-				if (amt < 0)
-				{
-					scroll = Math.min(Math.max(lineCount - getMaxChatHistoryLines(), 0), scroll + 1);
-				}
-				else if (amt > 0)
-				{
-					scroll = Math.max(0, scroll - 1);
-				}
-				repaint();
+				scroll = Math.min(Math.max(lineCount - getMaxChatHistoryLines(), 0), scroll + 1);
 			}
+			else if (amt > 0)
+			{
+				scroll = Math.max(0, scroll - 1);
+			}
+			repaint();
 		};
 		
 		mouseListener = new MouseAdapter()
@@ -216,10 +216,23 @@ public class MDChat extends MDComponent
 			public void mouseReleased(MouseEvent event)
 			{
 				TextSegment seg = getSegmentAt(event.getX(), event.getY());
-				if (seg != null && seg.linkID > -1)
+				if (seg != null)
 				{
-					System.out.println("LINK: " + seg.linkID);
-					getClient().sendPacket(new PacketActionClickLink(seg.linkID));
+					if (seg.linkID > -1)
+					{
+						getClient().sendPacket(new PacketActionClickLink(seg.linkID));
+					}
+					if (seg.cmd != null)
+					{
+						getClient().sendPacket(PacketChat.ofSimpleString("/" + seg.cmd));
+					}
+					if (seg.fillCmd != null)
+					{
+						typed = new StringBuilder("/" + seg.fillCmd);
+						typeOffset = 0;
+						historyPos = -1;
+						repaint();
+					}
 				}
 			}
 		};
@@ -230,33 +243,85 @@ public class MDChat extends MDComponent
 			public void mouseMoved(MouseEvent event)
 			{
 				TextSegment seg = getSegmentAt(event.getX(), event.getY());
-				if (seg != null && seg.linkID > -1 && !hoveringLink)
+				
+				if (seg != null)
 				{
-					Cursor cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR); 
-					setCursor(cursor);
-					hoveringLink = true;
+					if (seg.isClickable() && !hoveringLink)
+					{
+						setHovering(true);
+					}
+					else if (!seg.isClickable() && hoveringLink)
+					{
+						setHovering(false);
+					}
+					if (seg.hasHoverText())
+					{
+						if (hoverText == null || hoverText.getText() != seg.getHoverText())
+						{
+							if (hoverText != null)
+							{
+								getClient().getTableScreen().remove(hoverText);
+								getClient().getTableScreen().repaint();
+							}
+							hoverText = new MDChatHover(seg.getHoverText());
+							getClient().addTableComponent(hoverText, 151);
+						}
+						hoverText.setLocation(SwingUtilities.convertPoint(MDChat.this, event.getX(), event.getY() - hoverText.getHeight() - scale(10), getClient().getTableScreen()));
+					}
+					else if (hoverText != null)
+					{
+						getClient().getTableScreen().remove(hoverText);
+						getClient().getTableScreen().repaint();
+						hoverText = null;
+					}
 				}
-				else if ((seg == null || seg.linkID == -1) && hoveringLink)
+				else
 				{
-					setCursor(Cursor.getDefaultCursor());
-					hoveringLink = false;
+					if (hoveringLink)
+					{
+						setHovering(false);
+					}
+					if (hoverText != null)
+					{
+						getClient().getTableScreen().remove(hoverText);
+						getClient().getTableScreen().repaint();
+						hoverText = null;
+					}
 				}
 			}
 		};
 	}
 	
-	public void addMessage(String text)
+	public void addMessage(Message message)
 	{
-		Message m = new Message(text);
+		ChatMessage m = new ChatMessage(message);
 		messages.add(0, m);
 		lineCount += m.getLineCount();
 		repaint();
 	}
 	
+	public void addMessage(String text)
+	{
+		JSONArray array = new JSONArray();
+		JSONObject obj = new JSONObject();
+		obj.put("txt", text);
+		array.put(obj);
+		ChatMessage m = new ChatMessage(new Message(array));
+		messages.add(0, m);
+		lineCount += m.getLineCount();
+		repaint();
+	}
+	
+	public void setHovering(boolean hovering)
+	{
+		setCursor(hovering ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) : Cursor.getDefaultCursor());
+		hoveringLink = hovering;
+	}
+	
 	public void calculateLineCount()
 	{
 		lineCount = 0;
-		for (Message m : messages)
+		for (ChatMessage m : messages)
 		{
 			lineCount += m.getLineCount();
 		}
@@ -282,6 +347,11 @@ public class MDChat extends MDComponent
 			typeOffset = 0;
 			scroll = 0;
 			typed = new StringBuilder();
+			if (hoverText != null)
+			{
+				getClient().getTableScreen().remove(hoverText);
+				getClient().getTableScreen().repaint();
+			}
 		}
 		chatOpen = open;
 	}
@@ -291,20 +361,20 @@ public class MDChat extends MDComponent
 		return chatOpen;
 	}
 	
-	public Map<TextSegment[], Integer> getVisibleLines()
+	public List<ChatLine> getVisibleLines()
 	{
-		Map<TextSegment[], Integer> lines = new LinkedHashMap<TextSegment[], Integer>(getMaxChatHistoryLines());
+		List<ChatLine> lines = new ArrayList<ChatLine>(getMaxChatHistoryLines());
 		int linesLeft = getMaxChatHistoryLines();
 		int pos = scroll;
 		for (int i = 0 ; i < messages.size() ; i++)
 		{
-			Message m = messages.get(i);
+			ChatMessage m = messages.get(i);
 			pos -= m.getLineCount();
 			if (pos < 0)
 			{
 				for (int index = -pos - 1 ; index >= 0 ; index--)
 				{
-					lines.put(m.getLineAt(index), m.getDisplayTime());
+					lines.add(new ChatLine(m.getLineAt(index), m.getDisplayTime()));
 					if (--linesLeft == 0)
 					{
 						break;
@@ -322,20 +392,21 @@ public class MDChat extends MDComponent
 	
 	public TextSegment getSegmentAt(int x, int y)
 	{
-		List<TextSegment[]> lines = new ArrayList<TextSegment[]>(getVisibleLines().keySet());
+		List<ChatLine> lines = getVisibleLines();
 		int interval = getChatHistoryInterval();
 		int curY = getChatHistoryHeight();
 		for (int i = 0 ; i < lines.size() ; i++)
 		{
+			List<TextSegment> segments = lines.get(i).getSegments();
 			if (y < curY && y >= curY - interval)
 			{
 				int curX = getChatHistoryXOffset();
-				for (int e = 0 ; e < lines.get(i).length ; e++)
+				for (int e = 0 ; e < segments.size() ; e++)
 				{
-					int width = lines.get(i)[e].getWidth();
+					int width = segments.get(e).getWidth();
 					if (x >= curX && x < curX + width)
 					{
-						return lines.get(i)[e];
+						return segments.get(e);
 					}
 					curX += width;
 				}
@@ -393,17 +464,16 @@ public class MDChat extends MDComponent
 		
 		Font f = getFont();
 		
-		Map<TextSegment[], Integer> lines = getVisibleLines();
-		List<Entry<TextSegment[], Integer>> iter = new ArrayList<>(lines.entrySet());
+		List<ChatLine> lines = getVisibleLines();
 		
 		// Draw visible messages
-		for (int i = 0 ; i < iter.size() ; i++)
+		for (int i = 0 ; i < lines.size() ; i++)
 		{
-			Entry<TextSegment[], Integer> line = iter.get(i);
+			ChatLine line = lines.get(i);
 			double opacity = 1;
 			if (!chatOpen)
 			{
-				opacity = Math.min(1, line.getValue() * (1 / 1500.0));
+				opacity = Math.min(1, line.getDisplayTime() * (1 / 1500.0));
 			}
 			int pos = -(i - maxLines + 1);
 			// Draw Transparent Text Area
@@ -411,7 +481,7 @@ public class MDChat extends MDComponent
 			g.fillRect(xOffset, interval * pos, offsetWidth, interval);
 			
 			int width = 0;
-			for (TextSegment seg : line.getKey())
+			for (TextSegment seg : line.getSegments())
 			{
 				Color c = seg.getColor();
 				// Draw Text Shadow
@@ -490,18 +560,29 @@ public class MDChat extends MDComponent
 	 */
 	public static void print(String msg)
 	{
-		MDClient.getInstance().getTableScreen().getChat().addMessage(msg);
+		if (MDClient.getInstance().getWindow() != null)
+		{
+			MDClient.getInstance().getTableScreen().getChat().addMessage(msg);
+		}
 	}
 	
-	public class Message
+	public class ChatMessage
 	{
+		private Message message;
+		
 		private String text;
-		private List<TextSegment[]> lines = new ArrayList<TextSegment[]>();
+		private List<List<TextSegment>> lines = new ArrayList<List<TextSegment>>();
 		private int displayTime = 6000;
 		
-		public Message(String text)
+		public ChatMessage(String text)
 		{
 			this.text = text;
+			calculateLines();
+		}
+		
+		public ChatMessage(Message message)
+		{
+			this.message = message;
 			calculateLines();
 		}
 		
@@ -515,12 +596,12 @@ public class MDChat extends MDComponent
 			return lines.size();
 		}
 		
-		public List<TextSegment[]> getLines()
+		public List<List<TextSegment>> getLines()
 		{
 			return lines;
 		}
 		
-		public TextSegment[] getLineAt(int index)
+		public List<TextSegment> getLineAt(int index)
 		{
 			return lines.get(index);
 		}
@@ -542,163 +623,130 @@ public class MDChat extends MDComponent
 		
 		public List<TextSegment> calculateSegments()
 		{
-			char[] chars = text.toCharArray();
-			
-			Color color = Color.WHITE;
-			int linkID = -1;
-			int linkLen = -1;
-			
-			List<TextSegment> segments = new ArrayList<TextSegment>();
-			
-			TextSegment seg = new TextSegment(color, -1);
-			
-			for (int i = 0 ; i < chars.length ; i++)
+			List<TextSegment> segments = new ArrayList<TextSegment>(message.getMessage().length());
+			for (Object o : message.getMessage())
 			{
-				while (chars[i] == '§')
+				JSONObject json = (JSONObject) o;
+				TextSegment segment = new TextSegment(json.getString("txt"),
+						json.has("color") ? new Color(Integer.parseUnsignedInt(json.getString("color"), 16)) : Color.WHITE);
+				if (json.has("link"))
 				{
-					// 0 = Print next character
-					// 1 = Chat color [Color {2 chars}]
-					// 2 = Link [ID {2 chars}, Length of text{1 char}]
-					i++;
-					char cmd = chars[i];
-					i++;
-					if (cmd == '0')
-					{
-						
-					}
-					else if (cmd == '1')
-					{
-						ByteBuffer buffer = ByteBuffer.allocate(4);
-						for (int e = 0 ; e < 2 ; e++)
-						{
-							buffer.putChar(chars[i]);
-							i++;
-						}
-						buffer.position(0);
-						color = new Color(buffer.getInt());
-						if (seg.getText().length() > 0)
-						{
-							segments.add(seg);
-						}
-						seg = new TextSegment(color, linkID);
-						
-					}
-					else if (cmd == '2')
-					{
-						ByteBuffer buffer = ByteBuffer.allocate(6);
-						for (int e = 0 ; e < 3 ; e++)
-						{
-							buffer.putChar(chars[i]);
-							i++;
-						}
-						buffer.position(0);
-						linkID = buffer.getInt();
-						linkLen = buffer.getShort();
-						if (seg.getText().length() > 0)
-						{
-							segments.add(seg);
-						}
-						seg = new TextSegment(color, linkID);
-					}
+					segment.setLinkID(json.getInt("link"));
 				}
-				
-				seg.appendChar(chars[i]);
-				if (linkLen > 0)
+				if (json.has("cmd"))
 				{
-					linkLen--;
-					if (linkLen == 0)
-					{
-						linkID = -1;
-						linkLen = -1;
-						
-						if (seg.getText().length() > 0)
-						{
-							segments.add(seg);
-						}
-						seg = new TextSegment(color, linkID);
-					}
+					segment.setCommand(json.getString("cmd"));
 				}
-			}
-			if (!seg.getText().equals(""))
-			{
-				segments.add(seg);
+				if (json.has("fillCmd"))
+				{
+					segment.setFillCommand(json.getString("fillCmd"));
+				}
+				if (json.has("hover"))
+				{
+					JSONArray array = json.getJSONArray("hover");
+					List<String> hoverText = new ArrayList<String>(array.length());
+					for (Object str : array)
+					{
+						hoverText.add((String) str);
+					}
+					segment.setHoverText(hoverText);
+				}
+				segments.add(segment);
 			}
 			return segments;
 		}
 		
 		public void calculateLines()
 		{
-			Font f = getFont();
-			
-			int maxWidth = getChatHistoryWidth();
-			
-			String line = "";
-			
 			List<TextSegment> segments = calculateSegments();
-			List<TextSegment> lineSegments = new ArrayList<TextSegment>();
+			
+			String wholeText = "";
 			for (TextSegment seg : segments)
 			{
-				String text = seg.getText();
-				System.out.println(text);
-				int startPos = line.length();
-				line += text;
-				List<String> split = GraphicsUtils.splitString(line, f, maxWidth);
-				if (split.size() == 1)
+				wholeText += seg.getText();
+			}
+			List<String> wholeSplit = GraphicsUtils.splitString(wholeText, getFont(), getChatHistoryWidth());
+			System.out.println(wholeSplit);
+			ListIterator<TextSegment> it = segments.listIterator();
+			for (String str : wholeSplit)
+			{
+				int strLen = str.length();
+				List<TextSegment> lineSegments = new ArrayList<TextSegment>();
+				int curPos = 0;
+				while (it.hasNext())
 				{
-					lineSegments.add(new TextSegment(text, seg.getColor(), seg.getLinkID()));
-				}
-				else if (split.size() > 1)
-				{
-					for (int i = 0 ; i < split.size() ; i++)
+					TextSegment segment = it.next();
+					// Remove first space if this is the first segment of the line
+					if (curPos == 0)
 					{
-						String splStr = split.get(i);
-						if (i == 0)
+						String text = segment.getText();
+						if (text.length() > 0)
 						{
-							lineSegments.add(new TextSegment(split.get(0).substring(startPos), seg.getColor(), seg.getLinkID()));
-						}
-						else
-						{
-							lineSegments.add(new TextSegment(splStr, seg.getColor(), seg.getLinkID()));
-						}
-						if (i < split.size() - 1)
-						{
-							lines.add(lineSegments.toArray(new TextSegment[lineSegments.size()]));
-							lineSegments.clear();
+							if (text.charAt(0) == ' ')
+							{
+								segment.setText(text.substring(1));
+							}
 						}
 					}
-					line = split.get(split.size() - 1);
+					
+					int len = segment.getText().length();
+					if (curPos + len > strLen)
+					{
+						List<TextSegment> segSplit = segment.splitSegmentAt(strLen - curPos);
+						lineSegments.add(segSplit.get(0));
+						lines.add(lineSegments);
+						lineSegments = null;
+						it.set(segSplit.get(1)); // Carry over remainder to next line
+						it.previous();
+						break;
+					}
+					else
+					{
+						lineSegments.add(segment);
+						curPos += len;
+					}
 				}
-			}
-			if (lineSegments.size() > 0)
-			{
-				lines.add(lineSegments.toArray(new TextSegment[lineSegments.size()]));
+				if (lineSegments != null && !lineSegments.isEmpty())
+				{
+					lines.add(lineSegments);
+				}
 			}
 		}
 	}
 	
 	public class TextSegment
 	{
-		private String str;
+		private String text;
 		private Color color = Color.WHITE;
 		private int linkID = -1;
+		private String cmd;
+		private String fillCmd;
+		private List<String> hoverText;
 		
-		public TextSegment(String str, Color color, int linkID)
+		public TextSegment(String text, TextSegment context)
 		{
-			this.str = str;
-			this.color = color;
-			this.linkID = linkID;
+			this.text = text;
+			this.color = context.color;
+			this.linkID = context.linkID;
+			this.cmd = context.cmd;
+			this.fillCmd = context.fillCmd;
+			this.hoverText = context.hoverText;
 		}
 		
-		public TextSegment(Color color, int linkID)
+		public TextSegment(String text, Color color)
 		{
-			str = "";
+			this.text = text;
 			this.color = color;
-			this.linkID = linkID;
 		}
 		
 		public String getText()
 		{
-			return str;
+			return text;
+		}
+		
+		public void setText(String text)
+		{
+			this.text = text;
 		}
 		
 		public Color getColor()
@@ -711,14 +759,82 @@ public class MDChat extends MDComponent
 			return linkID;
 		}
 		
-		public int getWidth()
+		public void setLinkID(int linkID)
 		{
-			return getFontMetrics(getFont()).stringWidth(str);
+			this.linkID = linkID;
 		}
 		
-		public void appendChar(char c)
+		public String getCommand()
 		{
-			str += c;
+			return cmd;
+		}
+		
+		public void setCommand(String cmd)
+		{
+			this.cmd = cmd;
+		}
+		
+		public String getFillCommand()
+		{
+			return fillCmd;
+		}
+		
+		public void setFillCommand(String fillCmd)
+		{
+			this.fillCmd = fillCmd;
+		}
+		
+		public boolean hasHoverText()
+		{
+			return hoverText != null;
+		}
+		
+		public List<String> getHoverText()
+		{
+			return hoverText;
+		}
+		
+		public void setHoverText(List<String> hoverText)
+		{
+			this.hoverText = hoverText;
+		}
+		
+		public boolean isClickable()
+		{
+			return linkID > -1 || cmd != null || fillCmd != null;
+		}
+		
+		public int getWidth()
+		{
+			return getFontMetrics(getFont()).stringWidth(text);
+		}
+		
+		public List<TextSegment> splitSegmentAt(int index)
+		{
+			return Arrays.asList(new TextSegment(text.substring(0, index), this),
+					new TextSegment(text.substring(index), this));
+		}
+	}
+	
+	public static class ChatLine
+	{
+		private List<TextSegment> segments;
+		private int displayTime;
+		
+		public ChatLine(List<TextSegment> segments, int displayTime)
+		{
+			this.segments = segments;
+			this.displayTime = displayTime;
+		}
+		
+		public List<TextSegment> getSegments()
+		{
+			return segments;
+		}
+		
+		public int getDisplayTime()
+		{
+			return displayTime;
 		}
 	}
 }

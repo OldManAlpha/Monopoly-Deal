@@ -6,7 +6,11 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Map.Entry;
 
+import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.Bank;
 import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.gui.util.GraphicsUtils;
@@ -15,9 +19,50 @@ import oldmana.md.client.gui.util.TextPainter.Alignment;
 
 public class MDBank extends MDCardCollection
 {
+	private Card hovered;
+	
 	public MDBank(Bank bank)
 	{
 		super(bank);
+		
+		MouseAdapter listener = new MouseAdapter()
+		{
+			@Override
+			public void mouseExited(MouseEvent e)
+			{
+				setHovered(null);
+			}
+			
+			@Override
+			public void mouseMoved(MouseEvent e)
+			{
+				if (e.getY() > scale(25))
+				{
+					for (int i = getCardCount() - 1 ; i >= 0 ; i--)
+					{
+						Point loc = getLocationOf(i, getCardCount());
+						if (loc.getX() < e.getX() && loc.getX() + GraphicsUtils.getCardWidth() > e.getX())
+						{
+							setHovered(getCollection().getCardAt(i));
+							return;
+						}
+					}
+				}
+				setHovered(null);
+			}
+		};
+		
+		addMouseListener(listener);
+		addMouseMotionListener(listener);
+	}
+	
+	public void setHovered(Card card)
+	{
+		if (hovered != card)
+		{
+			hovered = card;
+			repaint();
+		}
 	}
 	
 	@Override
@@ -57,10 +102,10 @@ public class MDBank extends MDCardCollection
 		if ((getCardCount() == 1 && getModification() == CollectionMod.ADDITION) || getCardCount() == 0)
 		{
 			g.setColor(outlineColor);
-			g.fillRoundRect(scale(0), scale(25), getWidth(), getHeight() - scale(25), scale(15), scale(15));
+			g.fillRoundRect(scale(0), scale(20), getWidth(), getHeight() - scale(20), scale(15), scale(15));
 		}
 		g.setColor(textColor);
-		TextPainter tp = new TextPainter("BANK", GraphicsUtils.getBoldMDFont(scale(18)), new Rectangle(0, scale(6), getWidth() - scale(5), scale(20)));
+		TextPainter tp = new TextPainter("BANK", GraphicsUtils.getBoldMDFont(scale(18)), new Rectangle(0, scale(1), getWidth() - scale(5), scale(20)));
 		tp.setHorizontalAlignment(Alignment.RIGHT);
 		tp.setVerticalAlignment(Alignment.CENTER);
 		tp.paint(g);
@@ -77,7 +122,28 @@ public class MDBank extends MDCardCollection
 		if (getClient().isDebugEnabled())
 		{
 			debug.setColor(Color.GREEN);
-			GraphicsUtils.drawDebug(debug, "ID: " + getCollection().getID(), scale(20), getWidth(), getHeight() + scale(25));
+			GraphicsUtils.drawDebug(debug, "ID: " + getCollection().getID(), scale(15), getWidth(), getHeight() + scale(25));
+		}
+	}
+	
+	@Override
+	public void paintCards(Graphics2D g)
+	{
+		for (Entry<Card, Point> entry : getCurrentCardPositions().entrySet())
+		{
+			Card card = entry.getKey();
+			if (card == hovered && !isBeingModified())
+			{
+				continue;
+			}
+			Point p = entry.getValue();
+			g.drawImage(card.getGraphics(getScale() * getCardScale()), p.x, p.y, GraphicsUtils.getCardWidth(getCardScale()),
+					GraphicsUtils.getCardHeight(getCardScale()), null);
+		}
+		if (hovered != null && !isBeingModified())
+		{
+			Point p = getLocationOf(hovered);
+			g.drawImage(hovered.getGraphics(GraphicsUtils.SCALE), p.x, p.y - scale(10), null);
 		}
 	}
 	
@@ -95,6 +161,6 @@ public class MDBank extends MDCardCollection
 	@Override
 	public Point getLocationOf(int cardIndex, int cardCount)
 	{
-		return new Point(getWidth() - GraphicsUtils.getCardWidth() - (int) (cardIndex * getInterval(cardCount)), scale(25));
+		return new Point(getWidth() - GraphicsUtils.getCardWidth() - (int) (cardIndex * getInterval(cardCount)), scale(20));
 	}
 }

@@ -1,9 +1,17 @@
 package oldmana.md.client.gui.util;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +27,8 @@ public class TextPainter
 	
 	private Alignment horizontal = Alignment.LEFT;
 	private Alignment vertical = Alignment.TOP;
+	
+	private Outline outline;
 	
 	public TextPainter(List<String> text, Font font, Rectangle bounds, boolean autoReturn, boolean attachWords)
 	{
@@ -44,9 +54,42 @@ public class TextPainter
 		this.attachWords = attachWords;
 	}
 	
+	public TextPainter(List<String> text, Font font, Rectangle bounds, boolean autoReturn, boolean attachWords, Outline outline)
+	{
+		this.text = text;
+		this.font = font;
+		
+		this.bounds = bounds;
+		
+		this.autoReturn = autoReturn;
+		this.attachWords = attachWords;
+		
+		this.outline = outline;
+	}
+	
+	public TextPainter(String text, Font font, Rectangle bounds, boolean autoReturn, boolean attachWords, Outline outline)
+	{
+		List<String> list = new ArrayList<String>(1);
+		list.add(text);
+		this.text = list;
+		this.font = font;
+		
+		this.bounds = bounds;
+		
+		this.autoReturn = autoReturn;
+		this.attachWords = attachWords;
+		
+		this.outline = outline;
+	}
+	
 	public TextPainter(String text, Font font, Rectangle bounds)
 	{
 		this(text, font, bounds, true, true);
+	}
+	
+	public TextPainter(String text, Font font, Rectangle bounds, Outline outline)
+	{
+		this(text, font, bounds, true, true, outline);
 	}
 	
 	public void setHorizontalAlignment(Alignment a)
@@ -65,6 +108,11 @@ public class TextPainter
 			throw new IllegalArgumentException("Invalid alignment for the given axis.");
 		}
 		vertical = a;
+	}
+	
+	public void setOutline(Outline outline)
+	{
+		this.outline = outline;
 	}
 	
 	public void paint(Graphics2D whole)
@@ -153,7 +201,26 @@ public class TextPainter
 				{
 					horizontalAddition = (int) bounds.getWidth() - m.stringWidth(lines.get(i));
 				}
-				g.drawString(lines.get(i), horizontalAddition, verticalAddition + (i * font.getSize()) + getAscent());
+				if (outline != null)
+				{
+					Graphics2D g2d = (Graphics2D) g.create();
+					g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+					//AffineTransform transform = g2d.getTransform();
+					g2d.translate(horizontalAddition, verticalAddition + (i * font.getSize()) + getAscent());
+					//g2d.transform(transform);
+					g2d.setColor(outline.color);
+					FontRenderContext frc = g2d.getFontRenderContext();
+					TextLayout tl = new TextLayout(lines.get(i), font, frc);
+					Shape shape = tl.getOutline(null);
+					g2d.setStroke(new BasicStroke((float) outline.size));
+					g2d.draw(shape);
+					g2d.setColor(g.getColor());
+					g2d.fill(shape);
+				}
+				else
+				{
+					g.drawString(lines.get(i), horizontalAddition, verticalAddition + (i * font.getSize()) + getAscent());
+				}
 			}
 		}
 		else
@@ -200,7 +267,26 @@ public class TextPainter
 				{
 					horizontalAddition = (int) bounds.getWidth() - m.stringWidth(text.get(i));
 				}
-				g.drawString(text.get(i), horizontalAddition, verticalAddition + (i * font.getSize()) + getAscent());
+				if (outline != null)
+				{
+					Graphics2D g2d = (Graphics2D) g.create();
+					g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+					//AffineTransform transform = g2d.getTransform();
+					g2d.translate(horizontalAddition, verticalAddition + (i * font.getSize()) + getAscent());
+					//g2d.transform(transform);
+					g2d.setColor(outline.color);
+					FontRenderContext frc = g2d.getFontRenderContext();
+					TextLayout tl = new TextLayout(text.get(i), font, frc);
+					Shape shape = tl.getOutline(null);
+					g2d.setStroke(new BasicStroke((float) outline.size));
+					g2d.draw(shape);
+					g2d.setColor(g.getColor());
+					g2d.fill(shape);
+				}
+				else
+				{
+					g.drawString(text.get(i), horizontalAddition, verticalAddition + (i * font.getSize()) + getAscent());
+				}
 			}
 		}
 		g.translate(-bounds.getMinX(), -bounds.getMinY());
@@ -245,8 +331,48 @@ public class TextPainter
 		}
 	}
 	
+	public static class Outline
+	{
+		public Color color;
+		public double size;
+		
+		private Outline(Color color, double size)
+		{
+			this.color = color;
+			this.size = size;
+		}
+		
+		public static Outline of(Color color, double size)
+		{
+			return new Outline(color, size);
+		}
+	}
+	
 	public enum Alignment
 	{
 		LEFT, RIGHT, TOP, BOTTOM, CENTER
+	}
+	
+	public static void paint(Graphics g, String text, Font font, int startX, int startY, int width, int height)
+	{
+		TextPainter tp = new TextPainter(text, font, new Rectangle(startX, startY, width, height));
+		tp.paint((Graphics2D) g);
+	}
+	
+	public static void paint(Graphics g, String text, Font font, int startX, int startY, int width, int height, Alignment horizontal, Alignment vertical)
+	{
+		TextPainter tp = new TextPainter(text, font, new Rectangle(startX, startY, width, height));
+		tp.setHorizontalAlignment(horizontal);
+		tp.setVerticalAlignment(vertical);
+		tp.paint((Graphics2D) g);
+	}
+	
+	public static void paint(Graphics g, String text, Font font, int startX, int startY, int width, int height, Alignment horizontal, Alignment vertical, Outline outline)
+	{
+		TextPainter tp = new TextPainter(text, font, new Rectangle(startX, startY, width, height));
+		tp.setHorizontalAlignment(horizontal);
+		tp.setVerticalAlignment(vertical);
+		tp.setOutline(outline);
+		tp.paint((Graphics2D) g);
 	}
 }

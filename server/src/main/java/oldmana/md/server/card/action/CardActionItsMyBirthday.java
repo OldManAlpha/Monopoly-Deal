@@ -11,12 +11,13 @@ public class CardActionItsMyBirthday extends CardAction
 	@Override
 	public void playCard(Player player)
 	{
-		getServer().getGameState().setActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player), 2));
+		getServer().getGameState().addActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player), 2));
 	}
 	
 	private static CardType<CardActionItsMyBirthday> createType()
 	{
-		CardType<CardActionItsMyBirthday> type = new CardType<CardActionItsMyBirthday>(CardActionItsMyBirthday.class, "It's My Birthday",
+		CardType<CardActionItsMyBirthday> type = new CardType<CardActionItsMyBirthday>(CardActionItsMyBirthday.class,
+				CardActionItsMyBirthday::new, "It's My Birthday",
 				"Birthday");
 		CardTemplate template = type.getDefaultTemplate();
 		template.put("value", 2);

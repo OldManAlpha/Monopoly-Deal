@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Supplier;
 
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
@@ -44,7 +45,7 @@ public class MDMovingCard extends MDComponent
 	public BufferedImage flashCache;
 	
 	private Point startPos;
-	private Point endPos;
+	private Supplier<Point> endPosSupplier;
 	private double startScale;
 	private double endScale;
 	private double time;
@@ -61,27 +62,27 @@ public class MDMovingCard extends MDComponent
 	
 	private CardAnimationType animType;
 	
-	public MDMovingCard(Card card, Point startPos, double startScale, Point endPos, double endScale, double time)
+	public MDMovingCard(Card card, Point startPos, double startScale, Supplier<Point> endPosSupplier, double endScale, double time)
 	{
-		this(card, startPos, startScale, card, endPos, endScale, time);
+		this(card, startPos, startScale, card, endPosSupplier, endScale, time);
 	}
 	
-	public MDMovingCard(Card start, Point startPos, double startScale, Card end, Point endPos, double endScale, double time)
+	public MDMovingCard(Card start, Point startPos, double startScale, Card end, Supplier<Point> endPosSupplier, double endScale, double time)
 	{
-		this(start, startPos, startScale, end, endPos, endScale, time, CardAnimationType.NORMAL);
+		this(start, startPos, startScale, end, endPosSupplier, endScale, time, CardAnimationType.NORMAL);
 	}
 	
-	public MDMovingCard(Card start, Point startPos, double startScale, Card end, Point endPos, double endScale, double time,
+	public MDMovingCard(Card start, Point startPos, double startScale, Card end, Supplier<Point> endPosSupplier, double endScale, double time,
 	                    CardAnimationType animType)
 	{
-		this(start, startPos, startScale, end, endPos, endScale, time, animType, null);
+		this(start, startPos, startScale, end, endPosSupplier, endScale, time, animType, null);
 	}
 	
-	public MDMovingCard(Card start, Point startPos, double startScale, Card end, Point endPos, double endScale, double time,
+	public MDMovingCard(Card start, Point startPos, double startScale, Card end, Supplier<Point> endPosSupplier, double endScale, double time,
 	                    CardAnimationType animType, Card flash)
 	{
 		this.startPos = startPos;
-		this.endPos = endPos;
+		this.endPosSupplier = endPosSupplier;
 		this.startScale = startScale;
 		this.endScale = endScale;
 		this.start = start;
@@ -91,8 +92,6 @@ public class MDMovingCard extends MDComponent
 		
 		startPos.setLocation(startPos.getX() + (GraphicsUtils.getCardWidth(startScale) / 2),
 				startPos.getY() + (GraphicsUtils.getCardHeight(startScale) / 2));
-		endPos.setLocation(endPos.getX() + (GraphicsUtils.getCardWidth(endScale) / 2),
-				endPos.getY() + (GraphicsUtils.getCardHeight(endScale) / 2));
 		
 		double largestScale = getLargestScale();
 		int largestWidth = getLargestWidth();
@@ -157,6 +156,9 @@ public class MDMovingCard extends MDComponent
 		
 		Rectangle rec = new Rectangle();
 		
+		Point endPos = endPosSupplier.get();
+		endPos.setLocation(endPos.getX() + (GraphicsUtils.getCardWidth(endScale) / 2),
+				endPos.getY() + (GraphicsUtils.getCardHeight(endScale) / 2));
 		if (animType == CardAnimationType.NORMAL)
 		{
 			double scale = (startScale * 1) + ((endScale - startScale) * posProg);
@@ -169,7 +171,7 @@ public class MDMovingCard extends MDComponent
 			TableScreen screen = getClient().getTableScreen();
 			// 0 - 0.25: Moving To Front
 			// 0.25 - 0.75: Front
-			// 0.75 - 1: Moving To Destination
+			// 0.8 - 1: Moving To Destination
 			if (posProg < 0.25)
 			{
 				double scale = (startScale * 1) + ((4 - startScale) * getProgressBetween(0, 0.25, posProg));
@@ -221,7 +223,9 @@ public class MDMovingCard extends MDComponent
 		
 		Rectangle loc = sizeLocMap[pos];
 		setSize(loc.getWidth() + 30, loc.getHeight() + 30);
-		setLocationCentered(loc.getX(), loc.getY());
+		//setLocationCentered(loc.getX(), loc.getY());
+		Rectangle rec = getSizeLoc(posMap[pos]);
+		setLocationCentered(rec.getX(), rec.getY());
 		
 		if (nextCache < Math.min(pos + 10, frames))
 		{
@@ -236,9 +240,9 @@ public class MDMovingCard extends MDComponent
 		return frames;
 	}
 	
-	private double getCurrentPosition()
+	public double getCurrentPosition()
 	{
-		return posMap[pos];
+		return pos + 1 < posMap.length ? posMap[pos] : 1;
 	}
 	
 	private double getProgressBetween(double start, double end, double num)

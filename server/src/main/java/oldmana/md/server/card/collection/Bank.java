@@ -8,6 +8,8 @@ import oldmana.md.server.card.Card;
 
 public class Bank extends CardCollection
 {
+	private boolean hidden;
+	
 	public Bank(Player owner)
 	{
 		super(owner);
@@ -27,7 +29,7 @@ public class Bank extends CardCollection
 	@Override
 	public boolean isVisibleTo(Player player)
 	{
-		return true;
+		return !hidden || player == getOwner();
 	}
 	
 	@Override

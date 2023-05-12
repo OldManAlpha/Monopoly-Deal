@@ -1,12 +1,11 @@
 package oldmana.md.net.packet.server.actionstate;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.PacketCardCollectionData.CardCollectionType;
 
 public class PacketActionStateBasic extends Packet
 {
 	public int player;
-	public int type;
+	public byte type;
 	public int data;
 	
 	public PacketActionStateBasic() {}
@@ -14,16 +13,22 @@ public class PacketActionStateBasic extends Packet
 	public PacketActionStateBasic(int player, BasicActionState type, int data)
 	{
 		this.player = player;
-		this.type = type.getID();
+		this.type = (byte) type.getID();
 		this.data = data;
 	}
 	
-	public static enum BasicActionState
+	public BasicActionState getType()
 	{
-		DO_NOTHING(-1), DRAW(0), PLAY(1), DISCARD(2), FINISH_TURN(3), TARGET_PLAYER(4), TARGET_PLAYER_PROPERTY(5), TARGET_SELF_PLAYER_PROPERTY(6), 
-		TARGET_ANY_PROPERTY(7), TARGET_PLAYER_MONOPOLY(8), PLAYER_TARGETED(9);
+		return BasicActionState.fromID(type);
+	}
+	
+	public enum BasicActionState
+	{
+		NO_STATE(-1), DO_NOTHING(0), TARGET_PLAYER(4),
+		TARGET_SELF_PROPERTY(5), TARGET_PLAYER_PROPERTY(6), TARGET_SELF_PLAYER_PROPERTY(7), TARGET_ANY_PROPERTY(8),
+		TARGET_PLAYER_MONOPOLY(9), PLAYER_TARGETED(10);
 		
-		int id;
+		private final int id;
 		
 		BasicActionState(int id)
 		{

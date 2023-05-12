@@ -166,13 +166,21 @@ public abstract class CardCollection implements Iterable<Card>
 		transferCard(card, to, index, time, flash ? CardAnimationType.IMPORTANT : CardAnimationType.NORMAL, flash);
 	}
 	
+	/**
+	 * Every card movement must ultimately call this method.
+	 */
 	public void transferCard(Card card, CardCollection to, int index, double time, CardAnimationType anim, boolean flash)
 	{
-		if (hasCard(card))
+		// TODO: Modify move card packets to always use indices instead of card IDs
+		int fromIndex = getCards().indexOf(card);
+		if (fromIndex == -1)
 		{
-			removeCard(card);
-			to.addCard(card, index);
+			throw new IllegalArgumentException("Collection does not contain specified card.");
 		}
+		removeCard(card);
+		//getCards().remove(fromIndex);
+		to.addCard(card, index);
+		
 		for (Player player : getServer().getPlayers())
 		{
 			player.sendPacket(getCardTransferPacket(player, card, to, time, anim, flash));
@@ -192,17 +200,17 @@ public abstract class CardCollection implements Iterable<Card>
 	public Packet getCardTransferPacket(Player viewer, Card card, CardCollection to, double time,
 	                                    CardAnimationType anim, boolean flash)
 	{
-		int fromIndex = to.getIndexOf(card);
+		int toIndex = to.getIndexOf(card);
 		boolean canSeeFrom = isVisibleTo(viewer);
 		boolean canSeeTo = to.isVisibleTo(viewer);
 		Packet packet = null;
 		if (canSeeFrom)
 		{
-			packet = new PacketMoveCard(card.getID(), to.getID(), fromIndex, time, anim.getID());
+			packet = new PacketMoveCard(card.getID(), to.getID(), toIndex, time, anim.getID());
 		}
 		else if ((!canSeeFrom && canSeeTo) || flash)
 		{
-			packet = new PacketMoveRevealCard(card.getID(), getID(), to.getID(), fromIndex, time, anim.getID());
+			packet = new PacketMoveRevealCard(card.getID(), getID(), to.getID(), toIndex, time, anim.getID());
 		}
 		else if (!canSeeFrom && !canSeeTo)
 		{
@@ -254,6 +262,11 @@ public abstract class CardCollection implements Iterable<Card>
 	public static void registerCardCollection(CardCollection collection)
 	{
 		collections.put(collection.getID(), collection);
+	}
+	
+	public static void unregisterCardCollection(CardCollection collection)
+	{
+		collections.remove(collection.getID(), collection);
 	}
 	
 	public static Map<Integer, CardCollection> getRegisteredCardCollections()

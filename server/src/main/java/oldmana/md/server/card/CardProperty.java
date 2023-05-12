@@ -9,8 +9,6 @@ import oldmana.md.net.packet.server.PacketCardPropertyData;
 import oldmana.md.server.card.control.CardButton;
 import oldmana.md.server.card.control.CardButton.CardButtonType;
 import oldmana.md.server.card.control.CardControls;
-import oldmana.md.server.state.ActionStatePlay;
-import oldmana.md.server.state.GameState;
 
 public class CardProperty extends Card
 {
@@ -32,11 +30,7 @@ public class CardProperty extends Card
 	{
 		CardControls actions = super.createControls();
 		CardButton play = new CardButton("Play", CardButton.TOP, CardButtonType.PROPERTY);
-		play.setCondition((player, card) ->
-		{
-			GameState gs = getServer().getGameState();
-			return gs.getActivePlayer() == player && gs.getActionState() instanceof ActionStatePlay;
-		});
+		play.setCondition((player, card) -> player.canPlayCards());
 		play.setListener((player, card, data) ->
 		{
 			if (!player.getHand().hasCard(card))
@@ -60,16 +54,16 @@ public class CardProperty extends Card
 		return colors.size() == 2;
 	}
 	
-	/**If a card is a base, it may be a color without having supporting properties
+	/**If a property is a base, its colors may be used as a foundation for a set's color.
 	 * 
-	 * @return True if card is base
+	 * @return True if card is a base
 	 */
 	public boolean isBase()
 	{
 		return base;
 	}
 	
-	/**If there are multiple colors on the card, the first color is returned
+	/**If there are multiple colors on the card, the first color is returned.
 	 * 
 	 * @return First color of the card
 	 */
@@ -164,15 +158,14 @@ public class CardProperty extends Card
 	
 	private static CardType<CardProperty> createType()
 	{
-		CardType<CardProperty> type = new CardType<CardProperty>(CardProperty.class, "Property");
+		CardType<CardProperty> type = new CardType<CardProperty>(CardProperty.class, CardProperty::new, "Property");
 		type.addExemptReduction("colors");
 		type.addExemptReduction("base");
 		type.addExemptReduction("value");
 		CardTemplate dt = type.getDefaultTemplate();
 		dt.put("name", "Generic Property");
-		dt.putStrings("description", "Property cards can be played on your table. They are used to rent on and contribute " +
-				"towards winning the game. They can be used to pay rent, either by choice or forcibly if you do not have the " +
-				"money to pay the rent.");
+		dt.putStrings("description", "Property cards can be placed down, allowing you to charge rent to other players " +
+				"using Rent cards. Properties that are placed down can also be used to pay rent with.");
 		dt.put("revocable", true);
 		dt.put("clearsRevocableCards", false);
 		dt.putColors("colors", PropertyColor.RAILROAD);

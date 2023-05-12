@@ -50,7 +50,7 @@ public class CardMoney extends Card
 	
 	private static CardType<CardMoney> createType()
 	{
-		CardType<CardMoney> type = new CardType<CardMoney>(CardMoney.class, "Money");
+		CardType<CardMoney> type = new CardType<CardMoney>(CardMoney.class, CardMoney::new, "Money");
 		type.addExemptReduction("value");
 		CardTemplate dt = type.getDefaultTemplate();
 		dt.put("value", 1);
@@ -84,5 +84,19 @@ public class CardMoney extends Card
 		type.addTemplate(TEN_MIL, "10M");
 		
 		return type;
+	}
+	
+	public static CardMoney create(int value)
+	{
+		switch (value)
+		{
+			case 1: return ONE_MIL.createCard();
+			case 2: return TWO_MIL.createCard();
+			case 3: return THREE_MIL.createCard();
+			case 4: return FOUR_MIL.createCard();
+			case 5: return FIVE_MIL.createCard();
+			case 10: return TEN_MIL.createCard();
+			default: return new CardTemplate(CardType.MONEY.getDefaultTemplate()).put("value", value).createCard();
+		}
 	}
 }

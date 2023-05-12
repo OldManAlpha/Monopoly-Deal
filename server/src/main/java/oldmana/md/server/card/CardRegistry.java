@@ -71,7 +71,7 @@ public class CardRegistry
 		}
 		catch (ReflectiveOperationException e)
 		{
-			throw new RuntimeException("Error while creating the card type in class " + cardClass.getName());
+			throw new RuntimeException("Error while creating the card type in class " + cardClass.getName(), e);
 		}
 	}
 }

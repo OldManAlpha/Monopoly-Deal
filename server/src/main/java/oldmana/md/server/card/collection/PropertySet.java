@@ -101,17 +101,18 @@ public class PropertySet extends CardCollection
 				}
 				if (!cardAdded)
 				{
-					super.addCard(card);
+					super.addCard(card, props.size());
 				}
 			}
 			else
 			{
-				super.addCard(card);
+				super.addCard(card, getPropertyCardCount());
 			}
 			
-			if (effectiveColor == null && card.isBase())
+			if (effectiveColor == null)
 			{
-				setEffectiveColor(card.getColor());
+				List<PropertyColor> possible = getPossibleBaseColors();
+				setEffectiveColor(!possible.isEmpty() ? possible.get(0) : null);
 			}
 		}
 		else if (isCompatibleWith(card))
@@ -123,7 +124,7 @@ public class PropertySet extends CardCollection
 	
 	public void removeCard(CardProperty card)
 	{
-		getCards().remove(card);
+		super.removeCard(card);
 		if (getCardCount() > 0)
 		{
 			if (!hasBase())
@@ -149,7 +150,7 @@ public class PropertySet extends CardCollection
 	
 	public boolean canBuild()
 	{
-		return hasBase() && isMonopoly();
+		return hasBase() && isMonopoly() && effectiveColor.isBuildable();
 	}
 	
 	public boolean hasBuildings()
@@ -166,7 +167,7 @@ public class PropertySet extends CardCollection
 	
 	public int getHighestBuildingTier()
 	{
-		int highestTier = -1;
+		int highestTier = 0;
 		for (CardBuilding card : getBuildingCards())
 		{
 			highestTier = Math.max(highestTier, card.getTier());
@@ -187,7 +188,11 @@ public class PropertySet extends CardCollection
 	public List<PropertyColor> getPossibleColors()
 	{
 		List<CardProperty> props = getPropertyCards();
-		List<PropertyColor> colors = new ArrayList<PropertyColor>(((CardProperty) props.get(0)).getColors());
+		if (props.isEmpty())
+		{
+			return new ArrayList<PropertyColor>();
+		}
+		List<PropertyColor> colors = new ArrayList<PropertyColor>(props.get(0).getColors());
 		if (props.size() > 1)
 		{
 			for (int i = 1 ; i < props.size() ; i++)
@@ -238,7 +243,7 @@ public class PropertySet extends CardCollection
 	
 	public boolean isMonopoly()
 	{
-		return effectiveColor != null && getCardCount() >= effectiveColor.getMaxProperties();
+		return effectiveColor != null && getPropertyCardCount() >= effectiveColor.getMaxProperties();
 	}
 	
 	public boolean hasSingleColorProperty()
@@ -253,14 +258,64 @@ public class PropertySet extends CardCollection
 		return false;
 	}
 	
+	/**
+	 * Verifies that the structure of this property set is valid and makes changes if necessary.
+	 */
+	public void checkLegality()
+	{
+		checkMaxProperties();
+		checkBuildings();
+	}
+	
+	/**
+	 * Checks to see if the property set is full and if so, moves wilds cards at end of the set elsewhere. If the set
+	 * has all solid colored properties, this does nothing.
+	 */
 	public void checkMaxProperties()
 	{
-		List<CardProperty> cards = getPropertyCards();
-		if (cards.size() > effectiveColor.getMaxProperties())
+		if (getPropertyCardCount() > effectiveColor.getMaxProperties())
 		{
-			PropertySet newSet = getOwner().createPropertySet();
-			Card card = cards.get(cards.size() - 1);
-			card.transfer(newSet);
+			List<CardProperty> properties = getPropertyCards();
+			
+			for (int i = properties.size() - 1 ; i >= 0 ; i--)
+			{
+				if (properties.get(i).isSingleColor() || getPropertyCardCount() <= effectiveColor.getMaxProperties())
+				{
+					break;
+				}
+				getOwner().safelyGrantProperty(properties.get(i));
+			}
+		}
+	}
+	
+	/**
+	 * Checks the structure of buildings on this set and moves them to the owner's bank if they're deemed invalid.
+	 */
+	public void checkBuildings()
+	{
+		if (hasBuildings())
+		{
+			List<CardBuilding> buildings = getBuildingCards();
+			if (!isMonopoly())
+			{
+				for (CardBuilding building : getBuildingCards())
+				{
+					building.transfer(getOwner().getBank());
+				}
+				return;
+			}
+			
+			for (int i = 0 ; i < buildings.size() ; i++)
+			{
+				CardBuilding building = buildings.get(i);
+				if (building.getTier() != i + 1)
+				{
+					building.transfer(getOwner().getBank());
+					System.out.println("Invalid building structure in set " + getID() + ": Tier " + building.getTier() + " at index " + i);
+					checkBuildings();
+					return;
+				}
+			}
 		}
 	}
 	
@@ -283,8 +338,12 @@ public class PropertySet extends CardCollection
 	
 	public void setEffectiveColor(PropertyColor color)
 	{
-		effectiveColor = color;
-		getServer().broadcastPacket(new PacketPropertySetColor(getID(), effectiveColor != null ? effectiveColor.getID() : -1));
+		if (effectiveColor != color)
+		{
+			effectiveColor = color;
+			getServer().broadcastPacket(new PacketPropertySetColor(getID(), effectiveColor != null ? effectiveColor.getID() : -1));
+			getServer().getGameState().setStateChanged();
+		}
 	}
 	
 	public List<CardProperty> getPropertyCards()
@@ -300,6 +359,19 @@ public class PropertySet extends CardCollection
 		return properties;
 	}
 	
+	public int getPropertyCardCount()
+	{
+		int cardCount = 0;
+		for (Card card : getCards())
+		{
+			if (card instanceof CardProperty)
+			{
+				cardCount++;
+			}
+		}
+		return cardCount;
+	}
+	
 	public List<CardBuilding> getBuildingCards()
 	{
 		List<CardBuilding> buildings = new ArrayList<CardBuilding>();
@@ -311,6 +383,63 @@ public class PropertySet extends CardCollection
 			}
 		}
 		return buildings;
+	}
+	
+	public int getBuildingCardCount()
+	{
+		int cardCount = 0;
+		for (Card card : getCards())
+		{
+			if (card instanceof CardBuilding)
+			{
+				cardCount++;
+			}
+		}
+		return cardCount;
+	}
+	
+	/**
+	 * Moves all the cards out of this property set to a new owner, trying to maintain its structure as closely as possible.
+	 * If there's solid colored cards in this set and the target player also has a solid set of the same color, this
+	 * set will merge with that one.
+	 * <br><br>
+	 * This property set instance is considered destroyed after this method returns and should not be used again.
+	 * @param player The player to give this set to
+	 */
+	public void transferSet(Player player)
+	{
+		if (player == getOwner())
+		{
+			return;
+		}
+		if (hasSingleColorProperty() && player.hasSolidPropertySet(getEffectiveColor()))
+		{
+			PropertySet targetSet = player.getSolidPropertySet(getEffectiveColor());
+			for (CardProperty prop : getPropertyCards())
+			{
+				if (prop.isSingleColor() || !targetSet.isMonopoly())
+				{
+					prop.transfer(targetSet, -1, 0.8);
+					targetSet.checkLegality();
+				}
+				else
+				{
+					player.safelyGrantProperty(prop, 0.8);
+				}
+			}
+			for (CardBuilding building : getBuildingCards())
+			{
+				building.transfer(targetSet, -1, 0.8);
+			}
+		}
+		else
+		{
+			PropertySet targetSet = player.createPropertySet();
+			for (Card card : getCards(true))
+			{
+				card.transfer(targetSet, -1, 0.8);
+			}
+		}
 	}
 	
 	@Override

@@ -2,12 +2,15 @@ package oldmana.md.client.state;
 
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
+import oldmana.md.client.gui.component.MDChat;
 import oldmana.md.client.state.client.ActionStateClient;
+import oldmana.md.client.state.primary.ActionStatePlayerTurn;
+
+import javax.swing.SwingUtilities;
 
 public class GameState
 {
-	private Player turn;
-	private int turns;
+	private ActionStatePlayerTurn turn;
 	
 	private ActionState state;
 	private ActionStateClient clientState;
@@ -19,27 +22,39 @@ public class GameState
 	
 	public Player getWhoseTurn()
 	{
-		return turn;
+		return turn != null ? turn.getActionOwner() : null;
 	}
 	
-	public void setWhoseTurn(Player player)
+	public int getMoves()
 	{
-		turn = player;
-	}
-	
-	public int getTurns()
-	{
-		return turns;
-	}
-	
-	public void setTurns(int turns)
-	{
-		this.turns = turns;
+		return turn != null ? turn.getMoves() : 0;
 	}
 	
 	public ActionState getActionState()
 	{
 		return state;
+	}
+	
+	public void setPlayerTurn(ActionStatePlayerTurn state)
+	{
+		turn = state;
+		if (state == null)
+		{
+			if (this.state != null && this.state.isTurnState())
+			{
+				setActionState(null);
+			}
+			return;
+		}
+		if (this.state == null || this.state.isTurnState())
+		{
+			setActionState(state.createClientState());
+		}
+	}
+	
+	public ActionStatePlayerTurn getPlayerTurn()
+	{
+		return turn;
 	}
 	
 	public void setActionState(ActionState state)
@@ -48,17 +63,35 @@ public class GameState
 		{
 			this.state.cleanup();
 		}
-		this.state = state;
-		MDClient client = MDClient.getInstance();
-		if (state != null && (state.isTarget(client.getThePlayer()) || state.getActionOwner() == client.getThePlayer()))
+		if (state == null)
 		{
-			client.getWindow().setAlert(true);
+			if (turn == null)
+			{
+				return;
+			}
+			this.state = turn.createClientState();
+			state = this.state;
+			System.out.println(this.state.getClass().getName());
+		}
+		else
+		{
+			System.out.println(state.getClass().getName());
+			this.state = state;
+		}
+		MDClient client = MDClient.getInstance();
+		if (state.isTarget(client.getThePlayer()) || state.getActionOwner() == client.getThePlayer())
+		{
+			if (state.isTarget(client.getThePlayer()))
+			{
+				client.getTableScreen().getTopbar().triggerAlert();
+			}
+			if (state.isTarget(client.getThePlayer()) || state.getActionOwner() == client.getThePlayer())
+			{
+				client.getWindow().setAlert(true);
+			}
 		}
 		setClientActionState(null);
-		if (state != null)
-		{
-			state.setup();
-		}
+		state.setup();
 	}
 	
 	public ActionStateClient getClientActionState()
@@ -81,13 +114,17 @@ public class GameState
 	
 	public void updateUI()
 	{
-		if (state != null)
+		SwingUtilities.invokeLater(() ->
 		{
-			state.updateUI();
-		}
-		if (clientState != null)
-		{
-			clientState.updateUI();
-		}
+			if (state != null)
+			{
+				state.updateUI();
+			}
+			if (clientState != null)
+			{
+				clientState.updateUI();
+			}
+			MDClient.getInstance().getTableScreen().repaint();
+		});
 	}
 }

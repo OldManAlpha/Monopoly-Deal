@@ -6,20 +6,20 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardBuilding;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.CardProperty.PropertyColor;
-import oldmana.md.client.card.collection.Bank;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.action.ActionScreenModifyPropertySet;
 import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.component.MDCreateSet;
+import oldmana.md.client.gui.component.MDPlayerPropertySets;
 import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.component.collection.MDPropertySet;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.net.packet.client.action.PacketActionChangeSetColor;
 import oldmana.md.net.packet.client.action.PacketActionMoveProperty;
+import oldmana.md.net.packet.client.action.PacketActionRemoveBuilding;
 
 public class ActionStateClientModifyPropertySet extends ActionStateClient
 {
@@ -27,6 +27,7 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 	
 	private ActionScreenModifyPropertySet screen;
 	
+	private CardProperty card;
 	private MDCard cardView;
 	private MDSelection selection;
 	
@@ -38,87 +39,24 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 		this.set = set;
 	}
 	
-	public void propertySelected(Card card)
+	public void moveProperty(CardProperty card)
 	{
 		getClient().getTableScreen().removeActionScreen();
 		getClient().getTableScreen().repaint();
-		CardProperty property = (CardProperty) card;
 		
-		cardView = new MDCard(card);
-		cardView.setLocation(card.getOwningCollection().getUI().getScreenLocationOf(card.getOwningCollection().getIndexOf(card)));
-		getClient().addTableComponent(cardView, 90);
-		selection = new MDSelection(Color.BLUE);
-		selection.setLocation(cardView.getLocation());
-		selection.setSize(cardView.getSize());
-		selection.addMouseListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseReleased(MouseEvent event)
-			{
-				removeState();
-				getClient().getTableScreen().repaint();
-			}
-		});
-		getClient().addTableComponent(selection, 91);
+		this.card = card;
 		
-		for (PropertySet set : getClient().getThePlayer().getPropertySets(true))
-		{
-			if (set == this.set)
-			{
-				continue;
-			}
-			if (!set.isMonopoly() && set.isCompatibleWith(property))
-			{
-				MDPropertySet setUI = (MDPropertySet) set.getUI();
-				setUI.enableSelection(new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						getClient().sendPacket(new PacketActionMoveProperty(property.getID(), set.getID()));
-						getClient().setAwaitingResponse(true);
-						
-						removeState();
-					}
-				});
-				setSelects.add(set);
-			}
-		}
-		createSet = new MDCreateSet(getClient().getThePlayer());
-		createSet.setSize(GraphicsUtils.getCardWidth(), GraphicsUtils.getCardHeight());
-		getClient().addTableComponent(createSet, 90);
-		createSet.addMouseListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseReleased(MouseEvent event)
-			{
-				getClient().sendPacket(new PacketActionMoveProperty(property.getID(), -1));
-				getClient().setAwaitingResponse(true);
-				
-				removeState();
-			}
-		});
+		createMoveUI();
 	}
 	
-	public void buildingSelected(Card card)
+	public void moveBuilding(CardBuilding card)
 	{
-		CardBuilding building = (CardBuilding) card;
-		Bank bank = card.getOwner().getBank();
-		selection = new MDSelection(Color.BLUE);
-		selection.setLocation(bank.getUI().getLocation());
-		selection.setSize(bank.getUI().getSize());
-		getClient().addTableComponent(selection, 91);
-		selection.addMouseListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseReleased(MouseEvent event)
-			{
-				// TODO: Move building to bank packet
-				getClient().setAwaitingResponse(true);
-				
-				removeState();
-			}
-		});
+		getClient().getTableScreen().removeActionScreen();
+		getClient().getTableScreen().repaint();
+		
+		getClient().sendPacket(new PacketActionRemoveBuilding(card.getID()));
+		
+		removeState();
 	}
 	
 	public void colorSelected(PropertyColor color)
@@ -137,6 +75,60 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 		removeState();
 	}
 	
+	private void createMoveUI()
+	{
+		MDPropertySet setUI = (MDPropertySet) card.getOwningCollection().getUI();
+		
+		cardView = new MDCard(card);
+		cardView.setLocation(setUI.getLocationOf(card));
+		selection = new MDSelection(Color.BLUE);
+		selection.setLocation(cardView.getLocation());
+		selection.setSize(cardView.getSize());
+		selection.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseReleased(MouseEvent event)
+			{
+				removeState();
+				getClient().getTableScreen().repaint();
+			}
+		});
+		setUI.add(selection);
+		setUI.add(cardView);
+		
+		for (PropertySet set : getClient().getThePlayer().getPropertySets(true))
+		{
+			if (set == this.set)
+			{
+				continue;
+			}
+			if (!set.isMonopoly() && set.isCompatibleWith(card))
+			{
+				((MDPropertySet) set.getUI()).enableSelection(() ->
+				{
+					getClient().sendPacket(new PacketActionMoveProperty(card.getID(), set.getID()));
+					getClient().setAwaitingResponse(true);
+					
+					removeState();
+				});
+				setSelects.add(set);
+			}
+		}
+		
+		MDPlayerPropertySets setsUI = getClient().getThePlayer().getUI().getPropertySets();
+		createSet = new MDCreateSet(getClient().getThePlayer());
+		createSet.setLocation(setsUI.getNextPropertySetLocX(), 0);
+		createSet.setSize(GraphicsUtils.getCardWidth(), GraphicsUtils.getCardHeight());
+		setsUI.add(createSet);
+		createSet.addClickListener(() ->
+		{
+			getClient().sendPacket(new PacketActionMoveProperty(cardView.getCard().getID(), -1));
+			getClient().setAwaitingResponse(true);
+			
+			removeState();
+		});
+	}
+	
 	@Override
 	public void setup()
 	{
@@ -147,9 +139,10 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 	@Override
 	public void cleanup()
 	{
+		getClient().getTableScreen().removeActionScreen();
 		if (createSet != null)
 		{
-			getClient().getTableScreen().remove(createSet);
+			createSet.getParent().remove(createSet);
 		}
 		for (PropertySet set : setSelects)
 		{
@@ -157,20 +150,21 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 		}
 		if (cardView != null)
 		{
-			getClient().removeTableComponent(cardView);
+			cardView.getParent().remove(cardView);
 		}
 		if (selection != null)
 		{
-			getClient().removeTableComponent(selection);
+			selection.getParent().remove(selection);
 		}
 	}
 	
 	@Override
 	public void updateUI()
 	{
-		if (createSet != null)
+		if (card != null)
 		{
-			createSet.setSize(GraphicsUtils.getCardWidth(), GraphicsUtils.getCardHeight());
+			cleanup();
+			createMoveUI();
 		}
 	}
 }

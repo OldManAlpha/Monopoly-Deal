@@ -1,5 +1,6 @@
 package oldmana.md.server.command;
 
+import oldmana.md.common.Message;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.MessageBuilder;
@@ -40,7 +41,7 @@ public class CommandListRegisteredCards extends Command
 		}
 	}
 	
-	public String getMessage(CardType<?> type, CommandSender sender)
+	public Message getMessage(CardType<?> type, CommandSender sender)
 	{
 		MessageBuilder mb = new MessageBuilder();
 		mb.addString("- " + type.getFriendlyName());
@@ -61,7 +62,7 @@ public class CommandListRegisteredCards extends Command
 		return mb.getMessage();
 	}
 	
-	public String getMessage(Entry<CardTemplateInfo, CardTemplate> entry, CommandSender sender)
+	public Message getMessage(Entry<CardTemplateInfo, CardTemplate> entry, CommandSender sender)
 	{
 		CardTemplateInfo info = entry.getKey();
 		CardTemplate template = entry.getValue();

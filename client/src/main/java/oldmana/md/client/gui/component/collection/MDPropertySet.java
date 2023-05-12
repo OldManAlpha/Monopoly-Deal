@@ -6,23 +6,27 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.SwingUtilities;
 
+import oldmana.md.client.ThePlayer;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.component.MDCardView;
 import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.util.GraphicsUtils;
+import oldmana.md.client.gui.util.TextPainter;
+import oldmana.md.client.gui.util.TextPainter.Alignment;
+import oldmana.md.client.gui.util.TextPainter.Outline;
 import oldmana.md.client.state.client.ActionStateClientModifyPropertySet;
 
 public class MDPropertySet extends MDCardCollection
 {
-	public static Dimension PROPERTY_SET_SIZE = new Dimension(MDCard.CARD_SIZE.width + 2, MDCard.CARD_SIZE.height + MDCard.CARD_SIZE.width + 2);
-	
 	private MDCardView view;
 	private MDSelection select;
 	private Runnable selectTask;
@@ -30,8 +34,18 @@ public class MDPropertySet extends MDCardCollection
 	public MDPropertySet(PropertySet set)
 	{
 		super(set);
-		setSize(PROPERTY_SET_SIZE);
 		addMouseListener(new MDPropertySetListener());
+		addComponentListener(new ComponentAdapter()
+		{
+			@Override
+			public void componentResized(ComponentEvent e)
+			{
+				if (select != null)
+				{
+					select.setSize(getSize());
+				}
+			}
+		});
 	}
 	
 	@Override
@@ -108,14 +122,23 @@ public class MDPropertySet extends MDCardCollection
 		return select;
 	}
 	
-	public int getInterval(int cardCount)
+	public double getInterval(int cardCount)
 	{
-		return GraphicsUtils.getCardWidth() / Math.max(3, cardCount - 1);
+		return (getMaxHeight() - GraphicsUtils.getCardHeight() - (getOutlineWidth() * 2)) / Math.max(2.2, cardCount - 1);
 	}
 	
-	public int getInterval()
+	public double getInterval()
 	{
 		return getInterval(getCollection().getCardCount());
+	}
+	
+	public int getMaxHeight()
+	{
+		if (getParent() == null)
+		{
+			return 100;
+		}
+		return getParent().getHeight();
 	}
 	
 	public void onMouseEntered()
@@ -125,7 +148,7 @@ public class MDPropertySet extends MDCardCollection
 		view = new MDCardView(set.getCards(), set.getEffectiveColor() != null ? set.getEffectiveColor().getColor() : Color.GRAY);
 		getClient().addTableComponent(view, 95);
 		view.setLocation(SwingUtilities.convertPoint(this, new Point(-(view.getWidth() / 2) + (GraphicsUtils.getCardWidth() / 2), 
-				set.getOwner().getUIPosition() > 1 ? scale(-200) : scale(100)), getClient().getTableScreen()));
+				set.getOwner() instanceof ThePlayer ? scale(-200) : scale(100)), getClient().getTableScreen()));
 	}
 	
 	public void onMouseExited()
@@ -159,7 +182,7 @@ public class MDPropertySet extends MDCardCollection
 				}
 				else
 				{
-					shiftOffset = -getInterval();
+					shiftOffset = (int) -getInterval();
 				}
 			}
 			else if (isCardBeingRemoved())
@@ -170,7 +193,7 @@ public class MDPropertySet extends MDCardCollection
 				}
 				else
 				{
-					shiftOffset = -getInterval();
+					shiftOffset = (int) -getInterval();
 				}
 			}
 			g.fillRoundRect(0, 0, getWidth(), getHeight() + shiftOffset, scale(12), scale(12));
@@ -179,18 +202,35 @@ public class MDPropertySet extends MDCardCollection
 		{
 			paintCards(g);
 		}
+		if (set.isMonopoly() && !isBeingModified())
+		{
+			int drawY = getHeight() - (int) (GraphicsUtils.getCardHeight() * 0.75);
+			g.setColor(new Color(255, 215, 0, 100));
+			g.fillRect(0, drawY - scale(12), getWidth(), scale(24));
+			g.setColor(Color.DARK_GRAY);
+			g.drawLine(0, drawY - scale(12), getWidth(), drawY - scale(12));
+			g.drawLine(0, drawY + scale(12), getWidth(), drawY + scale(12));
+			g.setColor(new Color(255, 215, 0));
+			TextPainter.paint(g, "Full Set", GraphicsUtils.getBoldMDFont(scale(16)), 0, drawY - scale(10),
+					getWidth(), scale(26), Alignment.CENTER, Alignment.CENTER, Outline.of(Color.DARK_GRAY, scale(4)));
+		}
 		if (getClient().isDebugEnabled())
 		{
 			g.setColor(Color.CYAN);
 			GraphicsUtils.drawDebug(g, "ID: " + set.getID(), scale(16), getWidth(), (int) (GraphicsUtils.getCardHeight() * 0.5));
 		}
 	}
+	
+	public int getOutlineWidth()
+	{
+		return (int) Math.max(GraphicsUtils.SCALE + 0.3, 1);
+	}
 
 	@Override
 	public Point getLocationOf(int cardIndex, int cardCount)
 	{
-		int outlineWidth = (int) Math.max(GraphicsUtils.SCALE + 0.3, 1);
-		return new Point(outlineWidth, outlineWidth + (getInterval(cardCount) * cardIndex));
+		int outlineWidth = getOutlineWidth();
+		return new Point(outlineWidth, (int) (outlineWidth + (getInterval(cardCount) * cardIndex)));
 	}
 	
 	public class MDPropertySetListener extends MouseAdapter

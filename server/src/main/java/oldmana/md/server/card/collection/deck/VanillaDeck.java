@@ -87,6 +87,14 @@ public class VanillaDeck extends DeckStack
 		{
 			addCard(CardType.PASS_GO.createCard());
 		}
+		for (int i = 0 ; i < 3 ; i++)
+		{
+			addCard(CardType.HOUSE.createCard());
+		}
+		for (int i = 0 ; i < 2 ; i++)
+		{
+			addCard(CardType.HOTEL.createCard());
+		}
 		
 		for (int i = 0 ; i < 2 ; i++)
 		{
@@ -121,11 +129,11 @@ public class VanillaDeck extends DeckStack
 		{
 			addCard(CardMoney.TWO_MIL.createCard());
 		}
-		for (int i = 0 ; i < 3 + 3 ; i++) // +3 to compensate for houses
+		for (int i = 0 ; i < 3 ; i++)
 		{
 			addCard(CardMoney.THREE_MIL.createCard());
 		}
-		for (int i = 0 ; i < 3 + 2 ; i++) // +2 to compensate for hotels
+		for (int i = 0 ; i < 3 ; i++)
 		{
 			addCard(CardMoney.FOUR_MIL.createCard());
 		}
@@ -134,5 +142,7 @@ public class VanillaDeck extends DeckStack
 			addCard(CardMoney.FIVE_MIL.createCard());
 		}
 		addCard(CardMoney.TEN_MIL.createCard());
+		
+		setDeckRules(getServer().getGameRules().getRootRuleStruct().generateDefaults());
 	}
 }

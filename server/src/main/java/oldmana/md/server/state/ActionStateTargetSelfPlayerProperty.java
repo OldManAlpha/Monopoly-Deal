@@ -8,6 +8,10 @@ import oldmana.md.server.card.CardProperty;
 
 public abstract class ActionStateTargetSelfPlayerProperty extends ActionState
 {
+	private boolean canTargetSelfMonopoly = true;
+	private boolean canTargetOtherMonopoly = false;
+	private boolean canTargetNonBase = false;
+	
 	public ActionStateTargetSelfPlayerProperty(Player player)
 	{
 		super(player);
@@ -24,6 +28,19 @@ public abstract class ActionStateTargetSelfPlayerProperty extends ActionState
 	@Override
 	public Packet constructPacket()
 	{
-		return new PacketActionStateBasic(getActionOwner().getID(), BasicActionState.TARGET_SELF_PLAYER_PROPERTY, 0);
+		int data = 0;
+		if (canTargetSelfMonopoly)
+		{
+			data |= 1 << 0;
+		}
+		if (canTargetOtherMonopoly)
+		{
+			data |= 1 << 1;
+		}
+		if (canTargetNonBase)
+		{
+			data |= 1 << 2;
+		}
+		return new PacketActionStateBasic(getActionOwner().getID(), BasicActionState.TARGET_SELF_PLAYER_PROPERTY, data);
 	}
 }

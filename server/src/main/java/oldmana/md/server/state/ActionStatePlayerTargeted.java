@@ -15,6 +15,6 @@ public class ActionStatePlayerTargeted extends ActionState
 	@Override
 	public Packet constructPacket()
 	{
-		return new PacketActionStateBasic(getActionOwner().getID(), BasicActionState.PLAYER_TARGETED, getActionTarget().getPlayer().getID());
+		return new PacketActionStateBasic(getActionOwner().getID(), BasicActionState.PLAYER_TARGETED, getTargetPlayer().getID());
 	}
 }

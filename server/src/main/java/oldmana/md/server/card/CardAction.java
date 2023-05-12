@@ -8,8 +8,6 @@ import oldmana.md.server.card.control.CardButton;
 
 public class CardAction extends Card
 {
-	public CardAction() {}
-	
 	public void playCard(Player player) {}
 	
 	public boolean canPlayCard(Player player)
@@ -50,6 +48,6 @@ public class CardAction extends Card
 	
 	private static CardType<CardAction> createType()
 	{
-		return new CardType<CardAction>(CardAction.class, "Action Card", false);
+		return new CardType<CardAction>(CardAction.class, "Action Card");
 	}
 }

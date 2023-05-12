@@ -3,7 +3,7 @@ package oldmana.md.server.event;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;
 
-public class PreActionCardPlayedEvent extends CancelableEvent
+public class PreActionCardPlayedEvent extends CancellableEvent
 {
 	private Player player;
 	private CardAction card;

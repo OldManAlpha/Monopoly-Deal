@@ -2,10 +2,9 @@ package oldmana.md.server.card.control;
 
 import oldmana.md.net.packet.server.PacketCardButton;
 import oldmana.md.net.packet.server.PacketDestroyCardButton;
-import oldmana.md.server.ButtonColorScheme;
+import oldmana.md.common.playerui.ButtonColorScheme;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
-import oldmana.md.server.card.control.condition.AbstractButtonCondition;
 
 public class CardButton
 {
@@ -20,8 +19,7 @@ public class CardButton
 	private int pos;
 	private ButtonColorScheme color = ButtonColorScheme.NORMAL;
 	
-	private AbstractButtonCondition condition;
-	private ButtonCondition newCondition;
+	private ButtonCondition condition;
 	
 	private CardButtonClickListener listener;
 	
@@ -43,7 +41,7 @@ public class CardButton
 	public CardButton(String text, int pos, ButtonCondition condition)
 	{
 		this(text, pos);
-		this.newCondition = condition;
+		this.condition = condition;
 	}
 	
 	public CardButton(String text, int pos, ButtonCondition condition, CardButtonClickListener listener)
@@ -87,14 +85,9 @@ public class CardButton
 		return lastEval;
 	}
 	
-	public void setCondition(AbstractButtonCondition condition)
-	{
-		this.condition = condition;
-	}
-	
 	public void setCondition(ButtonCondition condition)
 	{
-		this.newCondition = condition;
+		this.condition = condition;
 	}
 	
 	public void setListener(CardButtonClickListener listener)
@@ -134,7 +127,7 @@ public class CardButton
 	 */
 	public boolean evaluate(Player player)
 	{
-		return newCondition.evaluate(player, card);
+		return condition.evaluate(player, card);
 	}
 	
 	public void click(Player player, int data)

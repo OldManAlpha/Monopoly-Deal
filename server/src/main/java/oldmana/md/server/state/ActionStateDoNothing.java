@@ -11,6 +11,18 @@ public class ActionStateDoNothing extends ActionState
 		super(null);
 	}
 	
+	public ActionStateDoNothing(String status)
+	{
+		this();
+		setStatus(status);
+	}
+	
+	@Override
+	public boolean isImportant()
+	{
+		return false;
+	}
+	
 	@Override
 	public boolean isFinished()
 	{

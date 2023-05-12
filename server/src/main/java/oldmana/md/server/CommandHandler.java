@@ -28,11 +28,9 @@ public class CommandHandler
 		registerCommand(new CommandListPlayers());
 		registerCommand(new CommandListDecks());
 		registerCommand(new CommandHelp());
-		//registerCommand(new CommandRegisterPlayer());
-		//registerCommand(new CommandUnregisterPlayer());
 		registerCommand(new CommandListRegisteredPlayers());
 		registerCommand(new CommandSetTurn());
-		registerCommand(new CommandSetTurns());
+		registerCommand(new CommandSetMoves());
 		registerCommand(new CommandNextTurn());
 		registerCommand(new CommandGameRule());
 		registerCommand(new CommandKickPlayer());
@@ -48,6 +46,7 @@ public class CommandHandler
 		registerCommand(new CommandBroadcast());
 		registerCommand(new CommandAddBot());
 		registerCommand(new CommandToggleBot());
+		registerCommand(new CommandShufflePlayers());
 		
 		
 		// Registering test/debug commands through reflection, as they're only used in a development environment.
@@ -91,24 +90,24 @@ public class CommandHandler
 			return;
 		}
 		String[] args = Arrays.copyOfRange(split, 1, split.length);
-		try
+		PreCommandExecuteEvent event = new PreCommandExecuteEvent(cmd, sender, fullCmd, args);
+		MDServer.getInstance().getEventManager().callEvent(event);
+		if (!event.isCancelled())
 		{
-			PreCommandExecuteEvent event = new PreCommandExecuteEvent(cmd, sender, fullCmd, args);
-			MDServer.getInstance().getEventManager().callEvent(event);
-			if (!event.isCanceled())
+			try
 			{
 				cmd.executeCommand(sender, args);
-				MDServer.getInstance().getEventManager().callEvent(new CommandExecutedEvent(cmd, sender, fullCmd, args));
 			}
-		}
-		catch (Exception e)
-		{
-			System.out.println("Error while executing command: " + fullCmd);
-			if (sender instanceof Player)
+			catch (Exception e)
 			{
-				sender.sendMessage("Error: " + e.getMessage());
+				System.out.println("Error while executing command: " + fullCmd);
+				e.printStackTrace();
+				if (sender instanceof Player)
+				{
+					sender.sendMessage("Error: " + e.getMessage());
+				}
 			}
-			e.printStackTrace();
+			MDServer.getInstance().getEventManager().callEvent(new CommandExecutedEvent(cmd, sender, fullCmd, args));
 		}
 	}
 	

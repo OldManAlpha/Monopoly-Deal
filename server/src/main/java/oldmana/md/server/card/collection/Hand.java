@@ -23,7 +23,7 @@ public class Hand extends CardCollection
 	
 	public boolean hasTooManyCards()
 	{
-		return getCardCount() > 7;
+		return getCardCount() > getServer().getGameRules().getMaxCardsInHand();
 	}
 	
 	public boolean hasAllProperties()

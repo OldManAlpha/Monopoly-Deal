@@ -22,6 +22,11 @@ public class Client
 		return net;
 	}
 	
+	public String getHostAddress()
+	{
+		return net.getConnection().getSocket().getInetAddress().getHostAddress();
+	}
+	
 	public boolean isConnected()
 	{
 		return net != null;

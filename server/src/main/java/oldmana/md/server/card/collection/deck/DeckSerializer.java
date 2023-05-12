@@ -19,11 +19,7 @@ public class DeckSerializer
 		Map<CardTemplate, Integer> cardAmounts = new HashMap<CardTemplate, Integer>();
 		for (Card card : deck.getCards())
 		{
-			CardTemplate template = card.getTemplate();
-			if (cardAmounts.putIfAbsent(template, 1) != null)
-			{
-				cardAmounts.compute(template, (k, v) -> v + 1);
-			}
+			cardAmounts.merge(card.getTemplate(), 1, Integer::sum);
 		}
 		JSONArray arr = new JSONArray();
 		for (Entry<CardTemplate, Integer> entry : cardAmounts.entrySet())
@@ -41,14 +37,11 @@ public class DeckSerializer
 		for (Object o : array)
 		{
 			JSONObject obj = (JSONObject) o;
-			int amount = obj.getInt("amount");
+			int amount = obj.has("amount") ? obj.getInt("amount") : 1;
 			obj.remove("amount");
 			CardType<?> type = CardRegistry.getTypeByName(obj.getString("type"));
 			CardTemplate template = new CardTemplate(type.getDefaultTemplate(), obj);
-			if (templates.putIfAbsent(template, amount) != null)
-			{
-				templates.compute(template, (k, v) -> v + 1);
-			}
+			templates.merge(template, amount, Integer::sum);
 		}
 		return templates;
 	}

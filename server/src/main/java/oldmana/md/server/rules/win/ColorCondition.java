@@ -6,10 +6,16 @@ import java.util.List;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.PropertyColor;
+import oldmana.md.server.rules.GameRule;
 
 public class ColorCondition extends WinCondition
 {
 	private int colorTypes;
+	
+	public ColorCondition(GameRule rule)
+	{
+		colorTypes = rule.getInteger();
+	}
 	
 	public ColorCondition(int colorTypes)
 	{

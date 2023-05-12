@@ -5,8 +5,6 @@ import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 
 import oldmana.md.client.MDSoundSystem;
@@ -42,36 +40,28 @@ public class FirstRunScreen extends MDComponent
 		
 		local = new MDButton("Local");
 		local.setFontSize(24);
-		local.addMouseListener(new MouseAdapter()
+		local.addClickListener(() ->
 		{
-			@Override
-			public void mouseReleased(MouseEvent event)
-			{
-				File folder = getClient().getLocalFolder();
-				folder.mkdirs();
-				getClient().setDataFolder(folder);
-				getClient().getSettings().setLocation(folder);
-				MDSoundSystem.loadCache();
-				System.out.println("Created local files");
-				getClient().getWindow().displayMenu();
-			}
+			File folder = getClient().getLocalFolder();
+			folder.mkdirs();
+			getClient().setDataFolder(folder);
+			getClient().getSettings().setLocation(folder);
+			MDSoundSystem.loadCache();
+			System.out.println("Created local files");
+			getClient().getWindow().displayMenu();
 		});
 		add(local);
 		
 		portable = new MDButton("Portable");
 		portable.setFontSize(24);
-		portable.addMouseListener(new MouseAdapter()
+		portable.addClickListener(() ->
 		{
-			@Override
-			public void mouseReleased(MouseEvent event)
-			{
-				File folder = getClient().getJarFolder();
-				getClient().setDataFolder(folder);
-				getClient().getSettings().setLocation(folder);
-				MDSoundSystem.loadCache();
-				System.out.println("Created portable files");
-				getClient().getWindow().displayMenu();
-			}
+			File folder = getClient().getJarFolder();
+			getClient().setDataFolder(folder);
+			getClient().getSettings().setLocation(folder);
+			MDSoundSystem.loadCache();
+			System.out.println("Created portable files");
+			getClient().getWindow().displayMenu();
 		});
 		add(portable);
 		

@@ -9,6 +9,7 @@ import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.LinearGradientPaint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -34,6 +35,8 @@ import oldmana.md.client.state.GameState;
 
 public class MDPlayer extends MDComponent
 {
+	public static final int PLAYER_SIZE = 145;
+	
 	private Player player;
 	
 	private MDInvisibleHand hand;
@@ -77,14 +80,12 @@ public class MDPlayer extends MDComponent
 	
 	public MDClientButton getAndCreateButton(Player view, int id)
 	{
-		for (MDClientButton button : buttons)
+		MDClientButton button = getButton(id);
+		if (button != null)
 		{
-			if (button.getID() == id)
-			{
-				return button;
-			}
+			return button;
 		}
-		MDClientButton button = new MDClientButton(view, id);
+		button = new MDClientButton(view, id);
 		add(button);
 		buttons.add(button);
 		return button;
@@ -134,9 +135,49 @@ public class MDPlayer extends MDComponent
 		add(bank);
 	}
 	
-	public MDClient getClient()
+	private static Color[][] colors = new Color[][]
 	{
-		return MDClient.getInstance();
+		{GraphicsUtils.DARK_BLUE, GraphicsUtils.GREEN, GraphicsUtils.ORANGE, GraphicsUtils.RED, new Color(100, 100, 100)},
+		{GraphicsUtils.LIGHT_BLUE, GraphicsUtils.GREEN.brighter(), new Color(240, 240, 100), new Color(255, 169, 112), Color.LIGHT_GRAY},
+		{new Color(232, 237, 240), new Color(235, 240, 235), new Color(240, 240, 235), new Color(240, 235, 235), new Color(236, 236, 236)}
+	};
+	
+	public Color getColor(int type)
+	{
+		GameState gs = getClient().getGameState();
+		ActionState state = gs.getActionState();
+		if (gs.getWhoseTurn() == player)
+		{
+			return colors[type][0];
+		}
+		if (state != null && state.isTarget(player))
+		{
+			if (state.isAccepted(player))
+			{
+				return colors[type][1];
+			}
+			if (state.isRefused(player))
+			{
+				return colors[type][2];
+			}
+			return colors[type][3];
+		}
+		return colors[type][4];
+	}
+	
+	public Color getBorderColor()
+	{
+		return getColor(0);
+	}
+	
+	public Color getNameplateColor()
+	{
+		return getColor(1);
+	}
+	
+	public Color getInnerColor()
+	{
+		return getColor(2);
 	}
 	
 	@Override
@@ -145,44 +186,12 @@ public class MDPlayer extends MDComponent
 		super.paintComponent(gr);
 		Graphics2D g = (Graphics2D) gr;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		GameState gs = getClient().getGameState();
-		ActionState state = gs.getActionState();
-		Color border = null;
-		Color nameplate = null;
-		Color inner = null;
-		if (gs.getWhoseTurn() == player)
-		{
-			border = GraphicsUtils.DARK_BLUE;
-			nameplate = GraphicsUtils.LIGHT_BLUE;
-			inner = new Color(232, 237, 240);
-		}
-		else if (state != null && state.isTarget(player))
-		{
-			if (state.isAccepted(player))
-			{
-				border = GraphicsUtils.GREEN;
-				nameplate = border.brighter();
-				inner = new Color(235, 240, 235);
-			}
-			else if (state.isRefused(player))
-			{
-				border = Color.BLUE;
-				nameplate = new Color(100, 100, 255);
-				inner = new Color(240, 240, 255);
-			}
-			else
-			{
-				border = GraphicsUtils.RED;
-				nameplate = new Color(255, 169, 112);
-				inner = new Color(240, 235, 235);
-			}
-		}
-		else
-		{
-			border = Color.BLACK;
-			nameplate = Color.LIGHT_GRAY;
-			inner = new Color(240, 240, 240);
-		}
+		Color border = getBorderColor();
+		Color nameplate = getNameplateColor();
+		Color inner = getInnerColor();
+		//Color innerDarker = GraphicsUtils.getDarkerColor(inner, 0.3);
+		//LinearGradientPaint background = new LinearGradientPaint(0, 0, getWidth(), getHeight(), new float[] {0, 1}, new Color[] {inner, innerDarker});
+		//g.setPaint(background);
 		g.setColor(inner);
 		g.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, scale(10), scale(10));
 		g.setColor(border);
@@ -213,14 +222,14 @@ public class MDPlayer extends MDComponent
 		public void layoutContainer(Container container)
 		{
 			boolean hasButtons = buttons.size() > 0;
-			Point bankPos = new Point(scale(20), scale(5 + (hasButtons ? 0 : 15)));
-			Dimension bankSize = new Dimension(scale(340 + 10), scale(90 + 25));
+			Point bankPos = new Point(scale(20), scale(hasButtons ? 5 : 15));
+			Dimension bankSize = new Dimension(scale(340 + 10), scale(90 + 20));
 			if (hand != null)
 			{
-				hand.setLocation(scale(20), scale(30 + (hasButtons ? 0 : 15)));
+				hand.setLocation(scale(20), scale(20 + (hasButtons ? 5 : 15)));
 				hand.setSize(scale(160), scale(90));
-				bankPos = new Point(scale(200), scale(5 + (hasButtons ? 0 : 15)));
-				bankSize = new Dimension(scale(160 + 10), scale(90 + 25));
+				bankPos = new Point(scale(200), scale(hasButtons ? 5 : 15));
+				bankSize = new Dimension(scale(160 + 10), scale(90 + 20));
 			}
 			if (bank != null)
 			{
@@ -247,8 +256,8 @@ public class MDPlayer extends MDComponent
 					for (MDClientButton button : priorityButtons)
 					{
 						int buttonSize = (int) ((button.getMaxSize() * space) / Math.max(totalSize, 1));
-						button.setSize(buttonSize, scale(30));
-						button.setLocation(scale(20) + pos, scale(125));
+						button.setSize(buttonSize, scale(25));
+						button.setLocation(scale(20) + pos, scale(118));
 						pos += buttonSize + padding;
 					}
 				}
@@ -265,5 +274,10 @@ public class MDPlayer extends MDComponent
 		{
 			layoutContainer(MDPlayer.this);
 		}
+	}
+	
+	public static int getPlayerSize()
+	{
+		return GraphicsUtils.scale(PLAYER_SIZE);
 	}
 }

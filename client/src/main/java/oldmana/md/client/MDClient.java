@@ -21,10 +21,12 @@ import oldmana.md.client.card.collection.Deck;
 import oldmana.md.client.card.collection.DiscardPile;
 import oldmana.md.client.card.collection.VoidCollection;
 import oldmana.md.client.gui.MDFrame;
+import oldmana.md.client.gui.component.MDChat;
 import oldmana.md.client.gui.component.collection.MDHand;
 import oldmana.md.client.gui.screen.TableScreen;
 import oldmana.md.client.net.ConnectionThread;
 import oldmana.md.client.net.NetClientHandler;
+import oldmana.md.client.rules.GameRules;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.ActionStateDiscard;
 import oldmana.md.client.state.ActionStateDraw;
@@ -38,7 +40,7 @@ public class MDClient
 {
 	private static MDClient instance;
 	
-	public static final String VERSION = "0.6.5.1";
+	public static final String VERSION = "0.7 Dev";
 	
 	private MDFrame window;
 	
@@ -49,9 +51,12 @@ public class MDClient
 	private MDScheduler scheduler;
 	
 	private ThePlayer thePlayer;
-	private List<Player> otherPlayers = new ArrayList<Player>(3);
+	private List<Player> otherPlayers = new ArrayList<Player>();
+	private List<Player> turnOrder = new ArrayList<Player>();
 	
 	private GameState gameState;
+	
+	private GameRules rules;
 	
 	private boolean awaitingResponse;
 	
@@ -103,7 +108,7 @@ public class MDClient
 				{
 					getTableScreen().getTopbar().setText("Disconnected: Timed out");
 					getTableScreen().getTopbar().repaint();
-					connection.close();
+					connection.closeGracefully();
 				}
 			}
 		}, 1000, true);
@@ -113,6 +118,8 @@ public class MDClient
 		netHandler = new NetClientHandler(this);
 		
 		gameState = new GameState();
+		
+		rules = new GameRules();
 		
 		settings = new Settings();
 		
@@ -239,6 +246,11 @@ public class MDClient
 		return eventQueue;
 	}
 	
+	public ConnectionThread getConnectionThread()
+	{
+		return connection;
+	}
+	
 	public void connectToServer(String ip, int port) throws Exception
 	{
 		MJConnection connect = new MJConnection();
@@ -300,6 +312,18 @@ public class MDClient
 		return otherPlayers;
 	}
 	
+	public List<Player> getTurnOrder()
+	{
+		return turnOrder;
+	}
+	
+	public void setTurnOrder(List<Player> order)
+	{
+		turnOrder = order;
+		System.out.println(turnOrder);
+		getTableScreen().getOpponents().cacheOrder();
+	}
+	
 	public Player getPlayerByID(int id)
 	{
 		if (thePlayer.getID() == id)
@@ -318,7 +342,7 @@ public class MDClient
 	
 	public List<Player> getPlayersByIDs(int[] ids)
 	{
-		List<Player> players = new ArrayList<Player>();
+		List<Player> players = new ArrayList<Player>(ids.length);
 		for (int id : ids)
 		{
 			players.add(getPlayerByID(id));
@@ -329,16 +353,27 @@ public class MDClient
 	public void addPlayer(Player player)
 	{
 		otherPlayers.add(player);
-		getTableScreen().add(player.getUI());
-		getTableScreen().positionPlayers();
+		turnOrder.add(player);
+		getTableScreen().addPlayer(player);
 	}
 	
 	public void destroyPlayer(Player player)
 	{
 		otherPlayers.remove(player);
-		getTableScreen().remove(player.getUI());
-		getTableScreen().positionPlayers();
+		turnOrder.remove(player);
+		getTableScreen().removePlayer(player);
 		getTableScreen().repaint();
+	}
+	
+	public List<Player> getOtherPlayersOrdered()
+	{
+		List<Player> ordered = new ArrayList<Player>();
+		int selfIndex = turnOrder.indexOf(getThePlayer());
+		for (int i = 1 ; i < turnOrder.size() ; i++)
+		{
+			ordered.add(turnOrder.get((selfIndex + i) % turnOrder.size()));
+		}
+		return ordered;
 	}
 	
 	public Player getThePlayer()
@@ -371,8 +406,8 @@ public class MDClient
 	public void createThePlayer(int id, String name)
 	{
 		thePlayer = new ThePlayer(this, id, name);
-		window.getTableScreen().add(thePlayer.getUI());
-		getTableScreen().positionPlayers();
+		turnOrder.add(thePlayer);
+		getTableScreen().addPlayer(thePlayer);
 	}
 	
 	public boolean canDraw()
@@ -395,6 +430,11 @@ public class MDClient
 	public GameState getGameState()
 	{
 		return gameState;
+	}
+	
+	public GameRules getRules()
+	{
+		return rules;
 	}
 	
 	public void setAwaitingResponse(boolean awaitingResponse)
@@ -511,6 +551,7 @@ public class MDClient
 	public void resetGame()
 	{
 		getGameState().setActionState(null);
+		getGameState().setPlayerTurn(null);
 		
 		if (eventQueue.getCurrentTask() instanceof CardMove)
 		{
@@ -527,12 +568,17 @@ public class MDClient
 		discard = null;
 		voidCollection = null;
 		
-		for (Player p : getAllPlayers())
+		for (Player p : new ArrayList<Player>(getOtherPlayers()))
 		{
-			removeTableComponent(p.getUI());
+			destroyPlayer(p);
+		}
+		if (thePlayer != null)
+		{
+			getTableScreen().removePlayer(thePlayer);
 		}
 		thePlayer = null;
 		otherPlayers.clear();
+		turnOrder.clear();
 		
 		Card.getRegisteredCards().clear();
 		CardCollection.getRegisteredCardCollections().clear();

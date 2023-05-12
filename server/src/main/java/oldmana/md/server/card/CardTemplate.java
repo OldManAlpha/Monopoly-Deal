@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class CardTemplate
+public class CardTemplate implements Cloneable
 {
 	private static CardTemplate DEFAULT_TEMPLATE = new CardTemplate(true);
 	static
@@ -35,18 +35,13 @@ public class CardTemplate
 		this(DEFAULT_TEMPLATE);
 	}
 	
+	/**
+	 * Create a CardTemplate that is empty if the parameter is true, otherwise has default values.
+	 * @param clean Whether the CardTemplate should be empty to start
+	 */
 	private CardTemplate(boolean clean)
 	{
-		json = new JSONObject();
-	}
-	
-	public CardTemplate(JSONObject json)
-	{
-		this.json = new JSONObject(json.toMap());
-		if (has("type"))
-		{
-			associatedType = CardRegistry.getTypeByName(json.getString("type"));
-		}
+		this(clean ? new JSONObject() : DEFAULT_TEMPLATE.getJson());
 	}
 	
 	/**
@@ -59,6 +54,15 @@ public class CardTemplate
 		if (template.getAssociatedType() != null)
 		{
 			this.associatedType = template.getAssociatedType();
+		}
+	}
+	
+	public CardTemplate(JSONObject json)
+	{
+		this.json = new JSONObject(json.toMap());
+		if (has("type"))
+		{
+			associatedType = CardRegistry.getTypeByName(json.getString("type"));
 		}
 	}
 	
@@ -81,9 +85,10 @@ public class CardTemplate
 		return json.has(key);
 	}
 	
-	public void put(String key, Object obj)
+	public CardTemplate put(String key, Object obj)
 	{
 		json.put(key, obj);
+		return this;
 	}
 	
 	/**
@@ -131,9 +136,10 @@ public class CardTemplate
 		return (List<T>) json.getJSONArray(key).toList();
 	}
 	
-	public void putStrings(String key, String... strs)
+	public CardTemplate putStrings(String key, String... strs)
 	{
 		json.put(key, Arrays.asList(strs));
+		return this;
 	}
 	
 	public PropertyColor getColor(String key, PropertyColor color)
@@ -153,19 +159,22 @@ public class CardTemplate
 		return list.stream().map(name -> PropertyColor.fromName(name)).collect(Collectors.toCollection(ArrayList::new));
 	}
 	
-	public void putColor(String key, PropertyColor color)
+	public CardTemplate putColor(String key, PropertyColor color)
 	{
 		json.put(key, color.getName());
+		return this;
 	}
 	
-	public void putColors(String key, PropertyColor... colors)
+	public CardTemplate putColors(String key, PropertyColor... colors)
 	{
 		json.put(key, Arrays.stream(colors).map(color -> color.getName()).collect(Collectors.toList()));
+		return this;
 	}
 	
-	public void putColors(String key, List<PropertyColor> colors)
+	public CardTemplate putColors(String key, List<PropertyColor> colors)
 	{
 		json.put(key, colors.stream().map(color -> color.getName()).collect(Collectors.toList()));
+		return this;
 	}
 	
 	public CardType<?> getAssociatedType()

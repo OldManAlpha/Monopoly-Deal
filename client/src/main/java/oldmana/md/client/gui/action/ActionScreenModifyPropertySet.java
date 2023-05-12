@@ -1,11 +1,6 @@
 package oldmana.md.client.gui.action;
 
-import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.LayoutManager2;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,8 +9,9 @@ import oldmana.md.client.card.CardBuilding;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.PropertySet;
+import oldmana.md.client.gui.LayoutAdapter;
 import oldmana.md.client.gui.component.MDButton;
-import oldmana.md.client.gui.component.MDCard;
+import oldmana.md.client.gui.component.MDCardOption;
 import oldmana.md.client.gui.component.MDColorSelection;
 import oldmana.md.client.gui.component.MDLabel;
 import oldmana.md.client.gui.util.GraphicsUtils;
@@ -29,7 +25,7 @@ public class ActionScreenModifyPropertySet extends ActionScreen
 	private MDLabel propLabel;
 	private MDLabel colorLabel;
 	
-	private List<MDCard> cards = new ArrayList<MDCard>();
+	private List<MDCardOption> cards = new ArrayList<MDCardOption>();
 	private List<MDColorSelection> colors = new ArrayList<MDColorSelection>();
 	
 	private MDButton cancel;
@@ -39,9 +35,9 @@ public class ActionScreenModifyPropertySet extends ActionScreen
 		super();
 		this.state = state;
 		this.set = set;
-		propLabel = new MDLabel("Select Property To Move");
+		propLabel = new MDLabel("Property Set Options");
 		add(propLabel);
-		colorLabel = new MDLabel("Select Property Set Color");
+		colorLabel = new MDLabel("Choose Property Set Color");
 		add(colorLabel);
 		setup();
 		setLayout(new ModifyPropertySetLayout());
@@ -49,86 +45,67 @@ public class ActionScreenModifyPropertySet extends ActionScreen
 	
 	public void setup()
 	{
-		int cardCount = set.getCardCount();
-		int offset = ((cardCount - 1) * (MDCard.CARD_SIZE.width + 25)) + MDCard.CARD_SIZE.width;
 		List<Card> cards = set.getCards();
-		for (int i = 0 ; i < cardCount ; i++)
+		for (Card card : cards)
 		{
-			Card card = (Card) cards.get(i);
-			MDCard ui = new MDCard(card, 2);
-			//ui.setLocation(800 - offset + (i * (MDCard.CARD_SIZE.width * 2 + 50)), 150);
+			MDCardOption ui = new MDCardOption(card);
 			add(ui);
 			this.cards.add(ui);
 			if (card instanceof CardProperty)
 			{
 				CardProperty prop = (CardProperty) card;
-				if (prop.isSingleColor())
+				if (set.hasBuildings())
 				{
-					ui.setBanner("Locked");
+					ui.getCardUI().setBanner("Locked");
+				}
+				else if (prop.isSingleColor())
+				{
+					ui.getCardUI().setBanner("Unmovable");
 				}
 				else
 				{
-					ui.addMouseListener(new MouseAdapter()
-					{
-						@Override
-						public void mouseReleased(MouseEvent event)
-						{
-							state.propertySelected(ui.getCard());
-						}
-					});
+					Runnable listener = () -> state.moveProperty((CardProperty) card);
+					ui.getCardUI().addClickListener(listener);
+					MDButton moveButton = new MDButton("Move Property");
+					moveButton.setListener(listener);
+					ui.addButton(moveButton);
 				}
 			}
 			else if (card instanceof CardBuilding)
 			{
-				
+				if (((CardBuilding) card).getTier() == set.getHighestBuildingTier())
+				{
+					MDButton bankButton = new MDButton("Move to Bank");
+					bankButton.setListener(() -> state.moveBuilding((CardBuilding) card));
+					ui.addButton(bankButton);
+				}
 			}
 		}
 		List<PropertyColor> colors = set.getPossibleBaseColors();
-		offset = ((colors.size() - 1) * (40 + 15)) + 40;
-		for (int i = 0 ; i < colors.size() ; i++)
+		for (PropertyColor color : colors)
 		{
-			boolean selected = set.getEffectiveColor() == colors.get(i);
-			MDColorSelection ui = new MDColorSelection(colors.get(i), selected);
-			ui.setLocation(800 - offset + (i * (80 + 30)), 500);
+			boolean selected = set.getEffectiveColor() == color;
+			MDColorSelection ui = new MDColorSelection(color, selected);
 			add(ui);
 			this.colors.add(ui);
 			if (!selected)
 			{
-				ui.addMouseListener(new MouseAdapter()
-				{
-					@Override
-					public void mouseReleased(MouseEvent event)
-					{
-						state.colorSelected(ui.getColor());
-					}
-				});
+				ui.addClickListener(() -> state.colorSelected(ui.getColor()));
 			}
 		}
 		cancel = new MDButton("Cancel");
-		cancel.setSize(180, 50);
-		cancel.setLocation(800 - 90, 900 - 50 - 10);
 		cancel.setFontSize(24);
-		cancel.addMouseListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseReleased(MouseEvent event)
-			{
-				state.cancel();
-			}
-		});
+		cancel.addClickListener(() -> state.cancel());
 		add(cancel);
 	}
 	
 	public void cleanup()
 	{
-		
+	
 	}
 	
-	public class ModifyPropertySetLayout implements LayoutManager2
+	public class ModifyPropertySetLayout extends LayoutAdapter
 	{
-		@Override
-		public void addLayoutComponent(String arg0, Component arg1) {}
-
 		@Override
 		public void layoutContainer(Container arg0)
 		{
@@ -138,11 +115,11 @@ public class ActionScreenModifyPropertySet extends ActionScreen
 			int offset = ((cards.size() - 1) * (GraphicsUtils.getCardWidth() + scale(25))) + GraphicsUtils.getCardWidth();
 			for (int i = 0 ; i < cards.size() ; i++)
 			{
-				MDCard ui = cards.get(i);
+				MDCardOption ui = cards.get(i);
 				ui.setLocation((int) (getWidth() * 0.5) - offset + (i * (GraphicsUtils.getCardWidth() * 2 + 50)), propLabel.getMaxY() + scale(20));
 			}
 			
-			int maxCardY = propLabel.getMaxY() + scale(10) + GraphicsUtils.getCardHeight(2);
+			int maxCardY = propLabel.getMaxY() + MDCardOption.getComponentHeight();
 			
 			colorLabel.setSize(scale(40));
 			colorLabel.setLocationCentered(getWidth() * 0.5, maxCardY + scale(70));
@@ -159,30 +136,9 @@ public class ActionScreenModifyPropertySet extends ActionScreen
 		}
 
 		@Override
-		public Dimension minimumLayoutSize(Container arg0) {return null;}
-
-		@Override
-		public Dimension preferredLayoutSize(Container arg0) {return null;}
-
-		@Override
-		public void removeLayoutComponent(Component arg0) {}
-
-		@Override
-		public void addLayoutComponent(Component comp, Object constraints) {}
-
-		@Override
-		public float getLayoutAlignmentX(Container target) {return 0;}
-
-		@Override
-		public float getLayoutAlignmentY(Container target) {return 0;}
-
-		@Override
 		public void invalidateLayout(Container target)
 		{
 			layoutContainer(target);
 		}
-
-		@Override
-		public Dimension maximumLayoutSize(Container target) {return null;}
 	}
 }

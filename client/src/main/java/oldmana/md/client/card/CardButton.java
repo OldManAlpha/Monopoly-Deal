@@ -1,6 +1,6 @@
 package oldmana.md.client.card;
 
-import oldmana.md.client.gui.component.MDButton.ButtonColorScheme;
+import oldmana.md.common.playerui.ButtonColorScheme;
 
 public class CardButton
 {

@@ -22,7 +22,7 @@ public class RentPaymentEvent extends Event
 		this.target = target;
 		
 		this.originalPayment = new ArrayList<Card>(payment);
-		this.payment = new ArrayList<Card>(payment);
+		this.payment = originalPayment;
 		
 		this.charge = charge;
 	}

@@ -9,10 +9,10 @@ import java.util.Map.Entry;
 
 public class EventManager
 {
-	// Mappings: MDEventListener -> (Event Class -> List of Methods)
-	private Map<MDEventListener, Map<Class<? extends Event>, List<Method>>> listenerMap = new HashMap<MDEventListener, Map<Class<? extends Event>, List<Method>>>();
+	// Mappings: EventListener -> (Event Class -> List of Methods)
+	private Map<EventListener, Map<Class<? extends Event>, List<Method>>> listenerMap = new HashMap<EventListener, Map<Class<? extends Event>, List<Method>>>();
 	
-	public void registerEvents(MDEventListener listener)
+	public void registerEvents(EventListener listener)
 	{
 		Map<Class<? extends Event>, List<Method>> eventMap = new HashMap<Class<? extends Event>, List<Method>>();
 		for (Method m : listener.getClass().getMethods())
@@ -34,18 +34,18 @@ public class EventManager
 		listenerMap.put(listener, eventMap);
 	}
 	
-	public void unregisterEvents(MDEventListener listener)
+	public void unregisterEvents(EventListener listener)
 	{
 		listenerMap.remove(listener);
 	}
 	
 	public void callEvent(Event event)
 	{
-		Map<MDEventListener, Map<Class<? extends Event>, List<Method>>> listenerMap = new HashMap<MDEventListener, Map<Class<? extends Event>, 
+		Map<EventListener, Map<Class<? extends Event>, List<Method>>> listenerMap = new HashMap<EventListener, Map<Class<? extends Event>,
 				List<Method>>>(this.listenerMap);
 		for (EventPriority priority : EventPriority.values())
 		{
-			for (Entry<MDEventListener, Map<Class<? extends Event>, List<Method>>> listener : listenerMap.entrySet())
+			for (Entry<EventListener, Map<Class<? extends Event>, List<Method>>> listener : listenerMap.entrySet())
 			{
 				Map<Class<? extends Event>, List<Method>> eventMap = listener.getValue();
 				if (eventMap.containsKey(event.getClass()))

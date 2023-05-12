@@ -49,6 +49,10 @@ public class MDScheduler
 	
 	public void runTick()
 	{
+		if (tasks.isEmpty())
+		{
+			return;
+		}
 		for (MDTask task : new ArrayList<MDTask>(tasks))
 		{
 			if (task.isCancelled())

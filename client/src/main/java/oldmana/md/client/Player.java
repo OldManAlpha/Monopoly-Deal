@@ -15,7 +15,7 @@ import oldmana.md.client.gui.component.large.MDPlayer;
 
 public class Player
 {
-	private MDClient client;
+	protected MDClient client;
 	
 	private int id;
 	
@@ -23,9 +23,9 @@ public class Player
 	
 	private boolean connected = true;
 	
-	private Hand hand;
-	private Bank bank;
-	private List<PropertySet> propertySets;
+	protected Hand hand;
+	protected Bank bank;
+	protected List<PropertySet> propertySets;
 	
 	//private List<Card> turnHistory = new ArrayList<Card>();
 	
@@ -54,6 +54,12 @@ public class Player
 		return name;
 	}
 	
+	public void setName(String name)
+	{
+		this.name = name;
+		getUI().repaint();
+	}
+	
 	public void setConnected(boolean connected)
 	{
 		this.connected = connected;
@@ -67,14 +73,7 @@ public class Player
 	public void setHand(Hand hand)
 	{
 		this.hand = hand;
-		if (this instanceof ThePlayer)
-		{
-			client.getTableScreen().setHand(hand);
-		}
-		else
-		{
-			ui.setHand((MDInvisibleHand) hand.getUI());
-		}
+		ui.setHand((MDInvisibleHand) hand.getUI());
 	}
 	
 	public Hand getHand()
@@ -95,21 +94,7 @@ public class Player
 	
 	public boolean hasAllPropertiesInHand()
 	{
-		if (this instanceof ThePlayer)
-		{
-			for (Card card : getHand().getCards())
-			{
-				if (!(card instanceof CardProperty))
-				{
-					return false;
-				}
-			}
-		}
-		else
-		{
-			return false;
-		}
-		return true;
+		throw new UnsupportedOperationException("Only applicable to the client player");
 	}
 	
 	public List<PropertySet> getPropertySets()
@@ -273,15 +258,5 @@ public class Player
 	public MDPlayer getUI()
 	{
 		return ui;
-	}
-	
-	public int getUIPosition()
-	{
-		return uiPos;
-	}
-	
-	public void setUIPosition(int pos)
-	{
-		uiPos = pos;
 	}
 }

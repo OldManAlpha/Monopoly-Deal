@@ -10,7 +10,7 @@ public class CommandKickPlayer extends Command
 {
 	public CommandKickPlayer()
 	{
-		super("kickplayer", new String[] {"kick"}, new String[] {"/kick [Player ID] <Reason>"}, true);
+		super("kick", new String[] {"kickplayer"}, new String[] {"/kick [Player ID] <Reason>"}, true);
 	}
 	
 	@Override
@@ -33,7 +33,7 @@ public class CommandKickPlayer extends Command
 		{
 			reason = getFullStringArgument(args, 1);
 		}
-		sender.sendMessage("Kicked player " + player.getName() + " (ID: " + player.getID() + ") for '" + reason + "'", true);
 		getServer().kickPlayer(player, reason);
+		sender.sendMessage("Kicked player " + player.getName() + " (ID: " + player.getID() + ") for '" + reason + "'", true);
 	}
 }

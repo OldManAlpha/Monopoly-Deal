@@ -40,24 +40,20 @@ import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.card.collection.VoidCollection;
 import oldmana.md.client.gui.component.MDMovingCard.CardAnimationType;
 import oldmana.md.client.gui.component.MDUndoButton;
-import oldmana.md.client.gui.component.MDButton.ButtonColorScheme;
 import oldmana.md.client.gui.component.MDClientButton;
 import oldmana.md.client.gui.component.collection.MDHand;
 import oldmana.md.client.state.ActionState;
-import oldmana.md.client.state.ActionStateDiscard;
 import oldmana.md.client.state.ActionStateDoNothing;
-import oldmana.md.client.state.ActionStateDraw;
-import oldmana.md.client.state.ActionStateFinishTurn;
-import oldmana.md.client.state.ActionStatePlay;
 import oldmana.md.client.state.ActionStatePlayerTargeted;
 import oldmana.md.client.state.ActionStatePropertiesSelected;
 import oldmana.md.client.state.ActionStateRent;
-import oldmana.md.client.state.ActionStateStealMonopoly;
-import oldmana.md.client.state.ActionStateTargetAnyProperty;
+import oldmana.md.client.state.ActionStatePropertySetTargeted;
 import oldmana.md.client.state.ActionStateTargetPlayer;
 import oldmana.md.client.state.ActionStateTargetPlayerMonopoly;
-import oldmana.md.client.state.ActionStateTargetPlayerProperty;
-import oldmana.md.client.state.ActionStateTargetSelfPlayerProperty;
+import oldmana.md.client.state.ActionStateTargetProperties;
+import oldmana.md.client.state.ActionStateTargetProperties.TargetMode;
+import oldmana.md.client.state.primary.ActionStatePlayerTurn;
+import oldmana.md.common.playerui.ButtonColorScheme;
 import oldmana.md.net.NetHandler;
 import oldmana.md.net.packet.client.PacketLogin;
 import oldmana.md.net.packet.client.PacketSoundCache;
@@ -65,6 +61,7 @@ import oldmana.md.net.packet.server.*;
 import oldmana.md.net.packet.server.PacketCardCollectionData.CardCollectionType;
 import oldmana.md.net.packet.server.actionstate.*;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
+import oldmana.md.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
 import oldmana.md.net.packet.universal.PacketChat;
 import oldmana.md.net.packet.universal.PacketKeepConnected;
 
@@ -153,7 +150,7 @@ public class NetClientHandler extends NetHandler
 				digest.update(salt.getBytes());
 			}
 		}
-		client.sendPacket(new PacketLogin(PROTOCOL_VERSION, digest.digest(), client.getSettings().getString("lastName")));
+		client.sendPacket(new PacketLogin(PROTOCOL_VERSION, MDClient.VERSION, digest.digest(), client.getSettings().getString("lastName")));
 		client.getTableScreen().getTopbar().setText("Authenticating..");
 		client.getTableScreen().getTopbar().repaint();
 	}
@@ -181,12 +178,6 @@ public class NetClientHandler extends NetHandler
 	public void handlePropertyColors(PacketPropertyColors packet)
 	{
 		int len = packet.name.length;
-		System.out.println(packet.name.length);
-		System.out.println(packet.label.length);
-		System.out.println(packet.color.length);
-		System.out.println(packet.rents.length);
-		System.out.println(packet.buildable.length);
-		System.out.println(packet.rents.length);
 		for (int i = 0 ; i < len ; i++)
 		{
 			PropertyColor.create(i, packet.name[i], packet.label[i], new Color(packet.color[i]), packet.buildable[i], packet.rents[i]);
@@ -195,6 +186,7 @@ public class NetClientHandler extends NetHandler
 	
 	public void handleKick(PacketKick packet)
 	{
+		client.getConnectionThread().closeGracefully();
 		client.getTableScreen().getTopbar().setText("Disconnected: " + packet.reason);
 		client.getTableScreen().getTopbar().repaint();
 	}
@@ -284,9 +276,10 @@ public class NetClientHandler extends NetHandler
 		}
 	}
 	
-	public void handlePlayerStatus(PacketPlayerStatus packet)
+	public void handleUpdatePlayer(PacketUpdatePlayer packet)
 	{
 		Player player = client.getPlayerByID(packet.player);
+		player.setName(packet.name);
 		player.setConnected(packet.connected);
 		player.getUI().repaint();
 	}
@@ -383,47 +376,59 @@ public class NetClientHandler extends NetHandler
 	}
 	
 	@Queued
+	public void handleActionStatePlayerTurn(PacketActionStatePlayerTurn packet)
+	{
+		if (packet.getTurnState() == TurnState.REMOVE_STATE)
+		{
+			client.getGameState().setPlayerTurn(null);
+		}
+		else
+		{
+			client.getGameState().setPlayerTurn(new ActionStatePlayerTurn(client.getPlayerByID(packet.player),
+					packet.getTurnState(), packet.moves));
+		}
+		client.setAwaitingResponse(false);
+		client.getTableScreen().repaint();
+	}
+	
+	@Queued
 	public void handleActionStateBasic(PacketActionStateBasic packet)
 	{
 		BasicActionState type = BasicActionState.fromID(packet.type);
 		
 		System.out.println("BASIC ACTION STATE " + packet.type);
 		Player player = client.getPlayerByID(packet.player);
-		if (type == BasicActionState.DO_NOTHING)
+		if (type == BasicActionState.NO_STATE)
+		{
+			client.getGameState().setActionState(null);
+		}
+		else if (type == BasicActionState.DO_NOTHING)
 		{
 			client.getGameState().setActionState(new ActionStateDoNothing());
 		}
-		else if (type == BasicActionState.DRAW)
-		{
-			client.getGameState().setActionState(new ActionStateDraw(player));
-		}
-		else if (type == BasicActionState.PLAY)
-		{
-			client.getGameState().setActionState(new ActionStatePlay(player, packet.data));
-		}
-		else if (type == BasicActionState.DISCARD)
-		{
-			client.getGameState().setActionState(new ActionStateDiscard(player));
-		}
-		else if (type == BasicActionState.FINISH_TURN)
-		{
-			client.getGameState().setActionState(new ActionStateFinishTurn(player));
-		}
 		else if (type == BasicActionState.TARGET_PLAYER)
 		{
-			client.getGameState().setActionState(new ActionStateTargetPlayer(player));
+			client.getGameState().setActionState(new ActionStateTargetPlayer(player, packet.data == 1));
+		}
+		else if (type == BasicActionState.TARGET_SELF_PROPERTY)
+		{
+			client.getGameState().setActionState(new ActionStateTargetProperties(player, TargetMode.SELF,
+					(packet.data & 1 << 0) != 0, (packet.data & 1 << 1) != 0, (packet.data & 1 << 2) != 0));
 		}
 		else if (type == BasicActionState.TARGET_PLAYER_PROPERTY)
 		{
-			client.getGameState().setActionState(new ActionStateTargetPlayerProperty(player));
+			client.getGameState().setActionState(new ActionStateTargetProperties(player, TargetMode.OTHER,
+					(packet.data & 1 << 0) != 0, (packet.data & 1 << 1) != 0, (packet.data & 1 << 2) != 0));
 		}
 		else if (type == BasicActionState.TARGET_SELF_PLAYER_PROPERTY)
 		{
-			client.getGameState().setActionState(new ActionStateTargetSelfPlayerProperty(player));
+			client.getGameState().setActionState(new ActionStateTargetProperties(player, TargetMode.SELF_OTHER,
+					(packet.data & 1 << 0) != 0, (packet.data & 1 << 1) != 0, (packet.data & 1 << 2) != 0));
 		}
 		else if (type == BasicActionState.TARGET_ANY_PROPERTY)
 		{
-			client.getGameState().setActionState(new ActionStateTargetAnyProperty(player));
+			client.getGameState().setActionState(new ActionStateTargetProperties(player, TargetMode.ANY,
+					(packet.data & 1 << 0) != 0, (packet.data & 1 << 1) != 0, (packet.data & 1 << 2) != 0));
 		}
 		else if (type == BasicActionState.TARGET_PLAYER_MONOPOLY)
 		{
@@ -483,50 +488,12 @@ public class NetClientHandler extends NetHandler
 	}
 	
 	@Queued
-	public void handleActionStateStealMonopoly(PacketActionStateStealMonopoly packet)
+	public void handleActionStatePropertySetTargeted(PacketActionStatePropertySetTargeted packet)
 	{
 		client.setAwaitingResponse(false);
-		client.getGameState().setActionState(new ActionStateStealMonopoly(client.getPlayerByID(packet.thief),
+		client.getGameState().setActionState(new ActionStatePropertySetTargeted(client.getPlayerByID(packet.player),
 				(PropertySet) CardCollection.getCardCollection(packet.collection)));
 		client.getTableScreen().repaint();
-	}
-	
-	@Queued
-	public void handleUpdateActionStateAccepted(PacketUpdateActionStateAccepted packet)
-	{
-		ActionState state = client.getGameState().getActionState();
-		Player player = client.getPlayerByID(packet.target);
-		if (state != null && state.isTarget(player))
-		{
-			client.setAwaitingResponse(false);
-			state.setAccepted(player, packet.accepted);
-			player.getUI().repaint();
-		}
-		else
-		{
-			System.err.println("Server sent illegal action state update (acceptance)");
-		}
-	}
-	
-	@Queued
-	public void handleUpdateActionStateRefusal(PacketUpdateActionStateRefusal packet)
-	{
-		ActionState state = client.getGameState().getActionState();
-		Player player = client.getPlayerByID(packet.target);
-		if (state != null && state.isTarget(player))
-		{
-			client.setAwaitingResponse(false);
-			state.setRefused(player, packet.refused);
-			player.getUI().repaint();
-			if ((packet.refused && state.getActionOwner() == client.getThePlayer()) || (!packet.refused && player == client.getThePlayer()))
-			{
-				client.getWindow().setAlert(true);
-			}
-		}
-		else
-		{
-			System.err.println("Server sent illegal action state update (refusal)");
-		}
 	}
 	
 	@Queued
@@ -537,14 +504,11 @@ public class NetClientHandler extends NetHandler
 		{
 			client.setAwaitingResponse(false);
 			Player player = client.getPlayerByID(packet.target);
-			if (!packet.isTarget)
-			{
-				state.setTarget(player, false);
-			}
+			state.setTargetState(player, packet.getTargetState());
 		}
 		else
 		{
-			System.err.println("Server sent illegal action state update (target)");
+			System.err.println("Server sent illegal action state update: " + packet.getTargetState().name());
 		}
 	}
 	
@@ -569,7 +533,7 @@ public class NetClientHandler extends NetHandler
 	
 	public void handleChat(PacketChat packet)
 	{
-		client.getTableScreen().getChat().addMessage(packet.message);
+		client.getTableScreen().getChat().addMessage(packet.getMessage());
 	}
 	
 	public void handleSoundData(PacketSoundData packet)
@@ -583,12 +547,12 @@ public class NetClientHandler extends NetHandler
 	}
 	
 	@Queued
-	public void handleButton(PacketButton packet)
+	public void handleButton(PacketPlayerButton packet)
 	{
 		Player player = client.getPlayerByID(packet.playerID);
 		MDClientButton b = player.getUI().getAndCreateButton(player, packet.id);
 		b.setEnabled(packet.enabled);
-		b.setColorScheme(ButtonColorScheme.fromID(packet.color));
+		b.setColor(ButtonColorScheme.fromID(packet.color));
 		b.setText(packet.name);
 		b.setPriority(packet.priority);
 		b.setMaxSize(packet.maxSize);
@@ -624,6 +588,19 @@ public class NetClientHandler extends NetHandler
 		Card card = Card.getCard(packet.cardID);
 		card.removeButton(CardButtonPosition.fromID(packet.pos));
 		queueTask(() -> ((MDHand) client.getThePlayer().getHand().getUI()).removeOverlay());
+	}
+	
+	@Queued
+	public void handleTurnOrder(PacketTurnOrder packet)
+	{
+		client.setTurnOrder(client.getPlayersByIDs(packet.order));
+	}
+	
+	@Queued
+	public void handleGameRules(PacketGameRules packet)
+	{
+		client.getRules().applyGameRules(packet.getGameRules());
+		client.getTableScreen().getMoves().updateVisibleMaxMoves();
 	}
 	
 	/**

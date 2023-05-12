@@ -29,7 +29,6 @@ public class CardActionRent extends CardAction
 		{
 			str += color.getLabel() + "/";
 		}
-		str.substring(0, str.length() - 1);
 		str += " (" + getValue() + "M)";
 		return str;
 	}

@@ -2,7 +2,10 @@ package oldmana.md.server.ai;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,6 +31,8 @@ public abstract class PlayerAI
 	private static Map<List<CardProperty>, List<PropertyCombo>> comboCache = new HashMap<List<CardProperty>, List<PropertyCombo>>();
 	private static Queue<List<CardProperty>> comboCacheOrder = new ArrayDeque<List<CardProperty>>();
 	
+	private int responseTime;
+	
 	public PlayerAI(Player player)
 	{
 		this.player = player;
@@ -38,9 +43,37 @@ public abstract class PlayerAI
 		return player;
 	}
 	
+	public List<Player> getOpponents()
+	{
+		return getServer().getPlayersExcluding(getPlayer());
+	}
+	
 	protected Random getRandom()
 	{
 		return rand;
+	}
+	
+	public int getResponseTime()
+	{
+		return responseTime;
+	}
+	
+	public void triggerResponse()
+	{
+		if (responseTime > 0)
+		{
+			responseTime = 40;
+		}
+	}
+	
+	public boolean willRespondSoon()
+	{
+		return responseTime > 0;
+	}
+	
+	public boolean decrementResponseTime()
+	{
+		return --responseTime == 0;
 	}
 	
 	protected MDServer getServer()
@@ -62,6 +95,22 @@ public abstract class PlayerAI
 			return comboCache.get(cards);
 		}
 		
+		List<PropertyCombo> combos = new LinkedList<PropertyCombo>();
+		Iterator<PropertyCombo> it = getPossibleCombosIterator(cards);
+		while (it.hasNext())
+		{
+			combos.add(it.next());
+		}
+		List<PropertyCombo> arrayCombos = new ArrayList<PropertyCombo>(combos);
+		comboCache.put(cards, arrayCombos);
+		comboCacheOrder.offer(cards);
+		if (comboCacheOrder.size() > 200)
+		{
+			comboCache.remove(comboCacheOrder.poll());
+		}
+		return arrayCombos;
+		
+		/*
 		List<PropertyCombo> possibleCombos = new ArrayList<PropertyCombo>();
 		
 		List<CardProperty> solids = new ArrayList<CardProperty>();
@@ -110,6 +159,8 @@ public abstract class PlayerAI
 			comboCache.remove(comboCacheOrder.poll());
 		}
 		return possibleCombos;
+		
+		 */
 	}
 	
 	public void applyCombos(List<PropertyCombo> combos, List<CardProperty> properties, boolean base)
@@ -132,12 +183,153 @@ public abstract class PlayerAI
 					combos.add(comboCopy);
 					if (combos.size() >= 100000)
 					{
-						System.out.println("WARNING: AI didn't complete calculating all property combinations because" +
+						System.out.println("WARNING: AI didn't complete calculating all property combinations because " +
 								"there's over 100,000!");
 						return;
 					}
 				}
 			}
+		}
+	}
+	
+	public Iterator<PropertyCombo> getPossibleCombosIterator(List<CardProperty> cards)
+	{
+		PropertyCombo baseCombo = new PropertyCombo();
+		List<CardProperty> wilds = new ArrayList<CardProperty>();
+		for (CardProperty prop : cards)
+		{
+			if (prop.isSingleColor())
+			{
+				baseCombo.addProperty(prop.getColor(), prop);
+			}
+			else
+			{
+				wilds.add(prop);
+			}
+		}
+		wilds.sort(Comparator.comparingInt(p -> (p.isBase() ? -1 : 1)));
+		return new Iterator<PropertyCombo>()
+		{
+			private ComboStack stack = new ComboStack(baseCombo, wilds);
+			
+			private PropertyCombo nextCached;
+			
+			@Override
+			public boolean hasNext()
+			{
+				if (nextCached == null)
+				{
+					nextCached = stack.next();
+				}
+				return nextCached != null;
+			}
+			
+			@Override
+			public PropertyCombo next()
+			{
+				PropertyCombo combo = nextCached != null ? nextCached : stack.next();
+				nextCached = null;
+				return combo;
+			}
+		};
+	}
+	
+	public static class ComboStack
+	{
+		private ComboStack innerStack;
+		
+		private PropertyCombo combo;
+		private List<CardProperty> properties;
+		private int currentProperty = 0;
+		private int currentColor = -1;
+		
+		private boolean exhausted;
+		
+		public ComboStack(PropertyCombo combo, List<CardProperty> properties)
+		{
+			this.combo = combo;
+			this.properties = properties;
+		}
+		
+		public PropertyCombo next()
+		{
+			if (innerStack != null)
+			{
+				PropertyCombo innerCombo = innerStack.next();
+				if (innerCombo != null)
+				{
+					//exhausted = true; // The base combo here is redundant if there's a combo with more properties
+					return innerCombo;
+				}
+			}
+			
+			if (canAdvanceColor())
+			{
+				PropertyColor color = advanceColor();
+				if (!isCursorCompatible())
+				{
+					return next();
+				}
+				PropertyCombo newCombo = new PropertyCombo(combo, color, getCurrentProperty());
+				innerStack = new ComboStack(newCombo, getPropertiesMinusCursor());
+				return next();
+			}
+			
+			if (canAdvanceProperty())
+			{
+				advanceProperty();
+				return next();
+			}
+			
+			if (exhausted || combo.getMap().isEmpty())
+			{
+				return null;
+			}
+			exhausted = true;
+			return combo;
+		}
+		
+		private List<CardProperty> getPropertiesMinusCursor()
+		{
+			return properties.subList(currentProperty + 1, properties.size());
+		}
+		
+		public CardProperty getCurrentProperty()
+		{
+			return properties.get(currentProperty);
+		}
+		
+		public PropertyColor getCurrentColor()
+		{
+			return getCurrentProperty().getColors().get(currentColor);
+		}
+		
+		public boolean canAdvanceProperty()
+		{
+			return properties.size() > currentProperty + 1;
+		}
+		
+		public void advanceProperty()
+		{
+			currentProperty++;
+			currentColor = -1;
+		}
+		
+		public boolean canAdvanceColor()
+		{
+			return !properties.isEmpty() && getCurrentProperty().getColors().size() > currentColor + 1;
+		}
+		
+		public PropertyColor advanceColor()
+		{
+			currentColor++;
+			return getCurrentColor();
+		}
+		
+		public boolean isCursorCompatible()
+		{
+			CardProperty prop = getCurrentProperty();
+			return prop.isBase() || combo.hasColor(getCurrentColor());
 		}
 	}
 	
@@ -149,7 +341,6 @@ public abstract class PlayerAI
 	public int getCardsNeededToWin(List<CardProperty> properties)
 	{
 		List<PropertyCombo> combos = getPossibleCombos(properties);
-		
 		int leastNeededCombo = 7;
 		
 		for (PropertyCombo combo : combos)
@@ -210,6 +401,20 @@ public abstract class PlayerAI
 	{
 		properties.add(with);
 		return getCardsNeededToWin(properties);
+	}
+	
+	public int getCardsNeededToWinWith(List<CardProperty> properties, List<CardProperty> with)
+	{
+		List<CardProperty> all = new ArrayList<CardProperty>(properties);
+		all.addAll(with);
+		return getCardsNeededToWin(all);
+	}
+	
+	public int getCardsNeededToWinWithout(List<CardProperty> properties, List<CardProperty> without)
+	{
+		List<CardProperty> all = new ArrayList<CardProperty>(properties);
+		all.removeAll(without);
+		return getCardsNeededToWin(all);
 	}
 	
 	public int getCardsNeededToWinWithWithout(List<CardProperty> properties, CardProperty with, CardProperty without)
@@ -286,6 +491,99 @@ public abstract class PlayerAI
 		return combos;
 	}
 	
+	public Iterator<RentCombo> getRentCombosIterator(List<Card> cards, int rent)
+	{
+		return new Iterator<RentCombo>()
+		{
+			private RentStack stack = new RentStack(cards.stream().filter(card -> card.getValue() > 0)
+					.collect(Collectors.toCollection(ArrayList::new)), new ArrayList<Card>(), rent);
+			
+			private RentCombo nextCached;
+			
+			@Override
+			public boolean hasNext()
+			{
+				if (nextCached == null)
+				{
+					nextCached = stack.next();
+				}
+				return nextCached != null;
+			}
+			
+			@Override
+			public RentCombo next()
+			{
+				RentCombo combo = nextCached != null ? nextCached : stack.next();
+				nextCached = null;
+				return combo;
+			}
+		};
+	}
+	
+	public static class RentStack
+	{
+		private List<Card> cards;
+		private List<Card> accepted;
+		private List<Card> selected;
+		private int rent;
+		
+		private int pos;
+		private RentStack innerStack;
+		
+		public RentStack(List<Card> cards, List<Card> selected, int rent)
+		{
+			this.cards = cards;
+			accepted = new ArrayList<Card>();
+			for (Card card : cards)
+			{
+				// If none of the currently accepted are the same value or are a property with the same colors, add to accepted
+				if (accepted.stream().noneMatch(c -> (c.getValue() == card.getValue() && !(c instanceof CardProperty)) ||
+						(c instanceof CardProperty && c.getValue() == card.getValue() && card instanceof CardProperty &&
+								((CardProperty) c).isBase() == ((CardProperty) card).isBase() &&
+								((CardProperty) c).getColors().equals(((CardProperty) card).getColors()))))
+				{
+					accepted.add(card);
+				}
+			}
+			this.selected = selected;
+			this.rent = rent;
+		}
+		
+		public RentCombo next()
+		{
+			if (innerStack != null)
+			{
+				RentCombo combo = innerStack.next();
+				if (combo != null)
+				{
+					return combo;
+				}
+				innerStack = null;
+			}
+			if (pos == cards.size())
+			{
+				return null;
+			}
+			Card card = cards.get(pos);
+			pos++;
+			if (!accepted.contains(card))
+			{
+				return next();
+			}
+			RentCombo combo = new RentCombo(selected, card);
+			if (combo.getValue() >= rent)
+			{
+				return combo;
+			}
+			else if (cards.size() > 1)
+			{
+				innerStack = new RentStack(cards.subList(pos, cards.size()), combo.getCards(), rent);
+				return innerStack.next();
+			}
+			return null;
+		}
+	}
+	
 	
 	public abstract void doAction();
 	
@@ -302,6 +600,12 @@ public abstract class PlayerAI
 		public PropertyCombo(PropertyCombo toCopy)
 		{
 			toCopy.getMap().forEach((color, props) -> combo.put(color, new ArrayList<CardProperty>(props)));
+		}
+		
+		public PropertyCombo(PropertyCombo base, PropertyColor addColor, CardProperty addProperty)
+		{
+			this(base);
+			addProperty(addColor, addProperty);
 		}
 		
 		public Map<PropertyColor, List<CardProperty>> getMap()

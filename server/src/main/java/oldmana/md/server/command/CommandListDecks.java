@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
+import oldmana.md.server.MessageBuilder;
 import oldmana.md.server.card.collection.deck.DeckStack;
 
 public class CommandListDecks extends Command
@@ -21,10 +22,22 @@ public class CommandListDecks extends Command
 		sender.sendMessage("Available decks(" + decks.size() + "):");
 		for (Entry<String, DeckStack> entry : decks.entrySet())
 		{
+			String deckName = entry.getKey();
 			DeckStack stack = entry.getValue();
 			boolean inUse = getServer().getDeck().getDeckStack() == stack;
-			sender.sendMessage((inUse ? ChatColor.LIGHT_BLUE : "") + entry.getKey() + ": " + stack.getCards().size() + " Cards (" + 
-			stack.getClass().getSimpleName() + ")" + (inUse ? " (In Use)" : ""));
+			String txt = deckName + ": " + stack.getCards().size() + " Cards (" +
+					stack.getClass().getSimpleName() + ")";
+			MessageBuilder message = new MessageBuilder();
+			if (inUse)
+			{
+				message.addString(ChatColor.LIGHT_YELLOW + txt + " (In Use)");
+			}
+			else
+			{
+				message.startHoverText("Switch to " + deckName + " deck");
+				message.addCommandString(ChatColor.LINK + txt, "setdeck " + deckName);
+			}
+			sender.sendMessage(message.getMessage());
 		}
 	}
 }

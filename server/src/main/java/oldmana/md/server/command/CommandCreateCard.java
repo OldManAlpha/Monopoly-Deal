@@ -1,9 +1,8 @@
 package oldmana.md.server.command;
 
 import oldmana.md.server.ChatColor;
-import oldmana.md.server.ChatLinkHandler.ChatLink;
+import oldmana.md.server.card.CardBuilding;
 import oldmana.md.server.CommandSender;
-import oldmana.md.server.MDScheduler.MDTask;
 import oldmana.md.server.MessageBuilder;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
@@ -50,7 +49,7 @@ public class CommandCreateCard extends Command
 					if (type.getPrimitive() != null)
 					{
 						Class<?> primitive = type.getPrimitive().getCardClass();
-						if (primitive == CardAction.class && type.isReferringToThis(args[1]))
+						if ((primitive == CardAction.class || primitive == CardBuilding.class) && type.isReferringToThis(args[1]))
 						{
 							card = type.createCard();
 						}
@@ -61,7 +60,8 @@ public class CommandCreateCard extends Command
 					sender.sendMessage("Could not find card '" + args[1] + "'");
 					return;
 				}
-				sender.sendMessage("Created action card " + card.getName() + " with ID " + card.getID(), true);
+				sender.sendMessage("Created action card " + ChatColor.UTILITY + card.getName() + ChatColor.WHITE +
+						" with ID "+ card.getID(), true);
 			}
 			catch (Exception e)
 			{
@@ -108,26 +108,10 @@ public class CommandCreateCard extends Command
 			if (sender instanceof Player)
 			{
 				Player player = (Player) sender;
-				MessageBuilder mb = new MessageBuilder(ChatColor.LINK.toString());
-				ChatLink link = mb.addLinkedString("[Transfer To Hand]");
-				mb.addString(ChatColor.WHITE + " (Link expires in 1 minute)");
-				Card c = card;
-				link.setListener(() -> 
-				{
-					if (c.getOwningCollection() != player.getHand())
-					{
-						c.transfer(player.getHand());
-					}
-				});
+				MessageBuilder mb = new MessageBuilder();
+				mb.addCommandString(ChatColor.LINK + "[Transfer To Hand]",
+						"transfercard " + card.getID() + " " + player.getHand().getID());
 				player.sendMessage(mb.getMessage());
-				getServer().getScheduler().scheduleTask(new MDTask(60 * 20, false)
-				{
-					@Override
-					public void run()
-					{
-						getServer().getChatLinkHandler().deleteChatLink(link);
-					}
-				});
 			}
 		}
 	}

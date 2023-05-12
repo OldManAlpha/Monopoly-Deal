@@ -8,6 +8,7 @@ import oldmana.md.server.card.control.CardButton;
 import oldmana.md.server.card.control.CardButton.CardButtonType;
 import oldmana.md.server.card.control.CardControls;
 import oldmana.md.server.card.CardType;
+import oldmana.md.server.rules.DrawExtraCardsPolicy;
 import oldmana.md.server.state.ActionState;
 
 public class CardActionJustSayNo extends CardAction
@@ -15,21 +16,18 @@ public class CardActionJustSayNo extends CardAction
 	public void playCard(Player player, Player target)
 	{
 		ActionState state = getServer().getGameState().getActionState();
-		if (state.getActionOwner() == player && state.isTarget(target) && state.getActionTarget(target).isRefused())
+		if (state.getActionOwner() == player && state.isRefused(target))
 		{
 			state.setRefused(target, false);
 			transfer(getServer().getDiscardPile(), -1, CardAnimationType.IMPORTANT);
 		}
-		else if (state.isTarget(player) && !state.getActionTarget(player).isRefused())
+		else if (state.isTarget(player) && !state.isRefused(player))
 		{
 			state.setRefused(player, true);
 			transfer(getServer().getDiscardPile(), -1, CardAnimationType.IMPORTANT);
 		}
 		player.checkEmptyHand();
-		if (state.isFinished())
-		{
-			getServer().getGameState().nextNaturalActionState();
-		}
+		getServer().getGameState().proceed();
 	}
 	
 	@Override
@@ -66,7 +64,8 @@ public class CardActionJustSayNo extends CardAction
 	
 	private static CardType<CardActionJustSayNo> createType()
 	{
-		CardType<CardActionJustSayNo> type = new CardType<CardActionJustSayNo>(CardActionJustSayNo.class, "Just Say No!", "JSN");
+		CardType<CardActionJustSayNo> type = new CardType<CardActionJustSayNo>(CardActionJustSayNo.class,
+				CardActionJustSayNo::new, "Just Say No!", "JSN");
 		CardTemplate template = type.getDefaultTemplate();
 		template.put("value", 4);
 		template.put("name", "Just Say No!");

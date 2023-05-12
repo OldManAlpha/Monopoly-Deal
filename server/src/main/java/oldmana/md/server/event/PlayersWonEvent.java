@@ -5,7 +5,7 @@ import java.util.List;
 
 import oldmana.md.server.Player;
 
-public class PlayersWonEvent extends CancelableEvent
+public class PlayersWonEvent extends CancellableEvent
 {
 	private List<Player> players;
 	
@@ -32,13 +32,13 @@ public class PlayersWonEvent extends CancelableEvent
 		players.add(player);
 	}
 	
-	public void setWinDeferredTurns(int turns)
-	{
-		deferredTurns = turns;
-	}
-	
 	public int getWinDeferredTurns()
 	{
 		return deferredTurns;
+	}
+	
+	public void setWinDeferredTurns(int turns)
+	{
+		deferredTurns = turns;
 	}
 }

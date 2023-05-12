@@ -5,10 +5,12 @@ import java.util.List;
 
 import oldmana.md.server.MDServer;
 import oldmana.md.server.card.Card;
+import oldmana.md.server.rules.GameRule;
 
 public abstract class DeckStack
 {
 	private List<Card> cards = new ArrayList<Card>();
+	private GameRule deckRules;
 	
 	public DeckStack()
 	{
@@ -35,6 +37,16 @@ public abstract class DeckStack
 	public List<Card> getCards()
 	{
 		return cards;
+	}
+	
+	public GameRule getDeckRules()
+	{
+		return new GameRule(deckRules);
+	}
+	
+	public void setDeckRules(GameRule deckRules)
+	{
+		this.deckRules = deckRules;
 	}
 	
 	protected MDServer getServer()

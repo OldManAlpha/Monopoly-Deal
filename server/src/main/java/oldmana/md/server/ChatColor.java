@@ -11,31 +11,49 @@ public enum ChatColor
 	LIGHT_BLUE(PropertyColor.LIGHT_BLUE.getColor()),
 	MAGENTA(PropertyColor.MAGENTA.getColor()),
 	ORANGE(PropertyColor.ORANGE.getColor()),
+	LIGHT_RED(new Color(255, 120, 120)),
 	RED(PropertyColor.RED.getColor()),
+	LIGHT_YELLOW(new Color(255, 255, 120)),
 	YELLOW(PropertyColor.YELLOW.getColor()),
 	GREEN(PropertyColor.GREEN.getColor()),
 	DARK_BLUE(PropertyColor.DARK_BLUE.getColor()),
+	RAILROAD(PropertyColor.RAILROAD.getColor()),
 	UTILITY(PropertyColor.UTILITY.getColor()),
 	LIGHT_GREEN(new Color(144,238,144)),
+	WHITE(Color.WHITE),
+	FAINTLY_GRAY(new Color(220, 220, 220)),
 	LIGHT_GRAY(Color.LIGHT_GRAY),
 	GRAY(Color.GRAY),
 	DARK_GRAY(Color.DARK_GRAY),
-	WHITE(Color.WHITE),
+	BLACK(Color.BLACK),
 	LINK(new Color(173, 216, 230));
 	
-	public static String PREFIX_ALERT = "[" + ChatColor.RED + "!" + ChatColor.WHITE + "] ";
+	public static final String PREFIX_ALERT = "[" + ChatColor.RED + "!" + ChatColor.WHITE + "] ";
 	
-	String value;
+	private final Color color;
+	private final String value;
 	
 	ChatColor(Color color)
 	{
+		this.color = color;
 		value = toChatColor(color);
+	}
+	
+	public Color getColor()
+	{
+		return color;
 	}
 	
 	@Override
 	public String toString()
 	{
 		return value;
+	}
+	
+	public static String toHexColor(Color color)
+	{
+		String buf = Integer.toHexString(color.getRGB());
+		return buf.substring(buf.length() - 6);
 	}
 	
 	public static String toChatColor(Color color)

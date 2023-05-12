@@ -2,16 +2,21 @@ package oldmana.md.server.card.action;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardActionRentData;
+import oldmana.md.net.packet.server.PacketStatus;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
+import oldmana.md.server.card.CardAnimationType;
 import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.control.CardButton;
 import oldmana.md.server.card.control.CardControls;
 import oldmana.md.server.card.CardType;
+import oldmana.md.server.rules.GameRules;
 import oldmana.md.server.state.ActionStateRent;
-import oldmana.md.server.state.ActionStateTargetRent;
+import oldmana.md.server.state.ActionStateTargetPlayer;
+
+import java.util.List;
 
 public class CardActionRent extends CardAction
 {
@@ -22,16 +27,13 @@ public class CardActionRent extends CardAction
 	public static CardTemplate GREEN_DARK_BLUE;
 	public static CardTemplate RAILROAD_UTILITY;
 	
-	
-	private PropertyColor[] colors;
-	
-	public CardActionRent() {}
+	private List<PropertyColor> colors;
 	
 	@Override
 	public void applyTemplate(CardTemplate template)
 	{
 		super.applyTemplate(template);
-		this.colors = template.getColorArray("colors");
+		this.colors = template.getColorList("colors");
 		setName(getName(colors));
 	}
 	
@@ -43,7 +45,7 @@ public class CardActionRent extends CardAction
 		doubleButton.setCondition((player, card) ->
 		{
 			if (!((CardActionRent) card).canPlayCard(player) || !player.canPlayCards() ||
-					getServer().getGameState().getTurnsRemaining() < 2)
+					getServer().getGameState().getMovesRemaining() < 2)
 			{
 				return false;
 			}
@@ -73,8 +75,8 @@ public class CardActionRent extends CardAction
 				return;
 			}
 			card.transfer(getServer().getDiscardPile());
-			doubleRent.transfer(getServer().getDiscardPile());
-			getServer().getGameState().decrementTurns(2);
+			doubleRent.transfer(getServer().getDiscardPile(), -1, CardAnimationType.IMPORTANT);
+			getServer().getGameState().decrementMoves(2);
 			if (card.clearsRevocableCards() || doubleRent.clearsRevocableCards())
 			{
 				player.clearRevocableCards();
@@ -85,7 +87,7 @@ public class CardActionRent extends CardAction
 		return controls;
 	}
 	
-	public PropertyColor[] getRentColors()
+	public List<PropertyColor> getRentColors()
 	{
 		return colors;
 	}
@@ -99,13 +101,15 @@ public class CardActionRent extends CardAction
 	public void playCard(Player player, double multiplier)
 	{
 		int rent = (int) (player.getHighestValueRent(colors) * multiplier);
-		if (getServer().getGameRules().doesRentChargeAll() || getServer().getPlayers().size() == 2)
+		GameRules rules = getServer().getGameRules();
+		if ((colors.size() <= 2 && rules.doesTwoColorRentChargeAll()) ||
+				(colors.size() > 2 && rules.doesMultiColorRentChargeAll()) || getServer().getPlayerCount() == 2)
 		{
-			getServer().getGameState().setActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player), rent));
+			getServer().getGameState().addActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player), rent));
 		}
 		else
 		{
-			getServer().getGameState().setActionState(new ActionStateTargetRent(player, rent));
+			getServer().getGameState().addActionState(new ActionStateTargetRent(player, rent));
 		}
 	}
 	
@@ -118,31 +122,18 @@ public class CardActionRent extends CardAction
 	@Override
 	public Packet getCardDataPacket()
 	{
-		byte[] types = new byte[colors.length];
+		byte[] types = new byte[colors.size()];
 		for (int i = 0 ; i < types.length ; i++)
 		{
-			types[i] = colors[i].getID();
+			types[i] = colors.get(i).getID();
 		}
 		return new PacketCardActionRentData(getID(), getName(), getValue(), types, getDescription().getID());
-	}
-	
-	private static String getName(PropertyColor[] colors)
-	{
-		switch (colors.length)
-		{
-			case 1:
-				return colors[0].getName() + " Rent";
-			case 2:
-				return colors[0].getName() + "/" + colors[1].getName() + " Rent";
-			default:
-				return colors.length + "-Color Rent";
-		}
 	}
 	
 	@Override
 	public String toString()
 	{
-		String str = "CardActionRent (" + colors.length + " Color" + (colors.length != 1 ? "s" : "") + ": ";
+		String str = "CardActionRent (" + colors.size() + " Color" + (colors.size() != 1 ? "s" : "") + ": ";
 		for (PropertyColor color : colors)
 		{
 			str += color.getLabel() + "/";
@@ -150,6 +141,19 @@ public class CardActionRent extends CardAction
 		str = str.substring(0, str.length() - 1);
 		str += ") (" + getValue() + "M)";
 		return str;
+	}
+	
+	private static String getName(List<PropertyColor> colors)
+	{
+		switch (colors.size())
+		{
+			case 1:
+				return colors.get(0).getName() + " Rent";
+			case 2:
+				return colors.get(0).getName() + "/" + colors.get(1).getName() + " Rent";
+			default:
+				return colors.size() + "-Color Rent";
+		}
 	}
 	
 	/**
@@ -162,7 +166,7 @@ public class CardActionRent extends CardAction
 	
 	public static CardTemplate createTemplate(int value, PropertyColor... colors)
 	{
-		CardTemplate template = CardType.PROPERTY.getDefaultTemplate().clone();
+		CardTemplate template = CardType.RENT.getDefaultTemplate().clone();
 		template.put("value", value);
 		template.putColors("colors", colors);
 		return template;
@@ -170,15 +174,15 @@ public class CardActionRent extends CardAction
 	
 	private static CardType<CardActionRent> createType()
 	{
-		CardType<CardActionRent> type = new CardType<CardActionRent>(CardActionRent.class, "Rent");
+		CardType<CardActionRent> type = new CardType<CardActionRent>(CardActionRent.class, CardActionRent::new, "Rent");
 		type.addExemptReduction("colors");
 		type.addExemptReduction("value");
 		CardTemplate dt = type.getDefaultTemplate();
 		dt.put("value", 3);
 		dt.put("name", "Rent");
 		dt.putStrings("displayName", "RENT");
-		dt.putStrings("description", "Charge rent to all players on the properties that match the colors on the card. "
-				+ "Only properties put down on your table are valid to rent on. Highest rent possible is automatically calculated.");
+		dt.putStrings("description", "Charge rent using your placed down properties that match the colors on this Rent card. "
+				+ "Refer to your properties to find the amount of rent you can charge.");
 		dt.putColors("colors", PropertyColor.getVanillaColors());
 		dt.put("revocable", false);
 		dt.put("clearsRevocableCards", true);
@@ -208,5 +212,33 @@ public class CardActionRent extends CardAction
 		type.addTemplate(RAILROAD_UTILITY, "Railroad/Utility Rent", "R/U Rent");
 		
 		return type;
+	}
+	
+	public class ActionStateTargetRent extends ActionStateTargetPlayer
+	{
+		private int rent;
+		
+		public ActionStateTargetRent(Player player, int rent)
+		{
+			super(player);
+			this.rent = rent;
+			getServer().broadcastPacket(new PacketStatus(player.getName() + " is using a Rent card"));
+		}
+		
+		@Override
+		public void playerSelected(Player player)
+		{
+			getActionOwner().clearRevocableCards();
+			replaceState(new ActionStateRent(getActionOwner(), player, rent));
+		}
+		
+		@Override
+		public void onCardUndo(Card card)
+		{
+			if (card == CardActionRent.this)
+			{
+				removeState();
+			}
+		}
 	}
 }

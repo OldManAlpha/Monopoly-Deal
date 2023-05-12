@@ -9,6 +9,7 @@ import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.MDEventQueue.CardMove;
 import oldmana.md.client.card.Card;
+import oldmana.md.client.card.CardUnknown;
 import oldmana.md.client.gui.component.MDMovingCard.CardAnimationType;
 import oldmana.md.client.gui.component.collection.MDCardCollectionBase;
 
@@ -24,7 +25,6 @@ public abstract class CardCollection
 	private List<Card> cards;
 	
 	private boolean unknown;
-	private int unknownCardCount;
 	
 	private MDCardCollectionBase ui;
 	
@@ -55,7 +55,8 @@ public abstract class CardCollection
 		this.owner = owner;
 		this.id = id;
 		this.unknown = true;
-		this.unknownCardCount = unknownCards;
+		cards = new ArrayList<Card>();
+		addUnknownCards(unknownCards);
 		registerCardCollection(this);
 	}
 	
@@ -64,6 +65,7 @@ public abstract class CardCollection
 		this.owner = null;
 		this.id = id;
 		this.unknown = unknown;
+		cards = new ArrayList<Card>();
 		registerCardCollection(this);
 	}
 	
@@ -79,14 +81,36 @@ public abstract class CardCollection
 	
 	public void addUnknownCard()
 	{
-		unknownCardCount++;
-		ui.update();
+		addUnknownCards(1);
+	}
+	
+	public void addUnknownCards(int amount)
+	{
+		for (int i = 0 ; i < amount ; i++)
+		{
+			cards.add(new CardUnknown());
+		}
+		if (ui != null)
+		{
+			ui.update();
+		}
 	}
 	
 	public void removeUnknownCard()
 	{
-		unknownCardCount--;
-		ui.update();
+		removeUnknownCards(1);
+	}
+	
+	public void removeUnknownCards(int amount)
+	{
+		for (int i = 0 ; i < amount ; i++)
+		{
+			cards.remove(cards.size() - 1);
+		}
+		if (ui != null)
+		{
+			ui.update();
+		}
 	}
 	
 	public void addCard(Card card)
@@ -136,7 +160,7 @@ public abstract class CardCollection
 	
 	public int getCardCount()
 	{
-		return isUnknown() ? unknownCardCount : cards.size();
+		return cards.size();
 	}
 	
 	public boolean isEmpty()

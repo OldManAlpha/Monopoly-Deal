@@ -42,29 +42,22 @@ public class MDDiscardPile extends MDCardCollection
 		{
 			if (event.getUnitsToScroll() > 0)
 			{
-				if (scrollPos < getCurrentCardCount() - 1)
-				{
-					scrollPos++;
-					if (scrollPos == 1 || scrollPos == 2)
-					{
-						getParent().invalidate();
-					}
-					animDir = true;
-					animDuration = 250;
-					startInfoTask();
-					repaint();
-				}
+				scrollDown();
 			}
 			else if (event.getUnitsToScroll() < 0)
 			{
-				if (scrollPos > 0)
-				{
-					scrollPos--;
-					animDir = false;
-					animDuration = 250;
-					startInfoTask();
-					repaint();
-				}
+				scrollUp();
+			}
+		});
+		addClickListener(event ->
+		{
+			if (event.getButton() == MouseEvent.BUTTON1)
+			{
+				scrollDown();
+			}
+			else if (event.getButton() == MouseEvent.BUTTON3)
+			{
+				scrollUp();
 			}
 		});
 		getClient().getScheduler().scheduleFrameboundTask(task ->
@@ -99,6 +92,34 @@ public class MDDiscardPile extends MDCardCollection
 				}
 			}
 		});
+	}
+	
+	public void scrollUp()
+	{
+		if (scrollPos > 0)
+		{
+			scrollPos--;
+			animDir = false;
+			animDuration = 250;
+			startInfoTask();
+			repaint();
+		}
+	}
+	
+	public void scrollDown()
+	{
+		if (scrollPos < getCurrentCardCount() - 1)
+		{
+			scrollPos++;
+			if (scrollPos == 1 || scrollPos == 2)
+			{
+				getParent().invalidate();
+			}
+			animDir = true;
+			animDuration = 250;
+			startInfoTask();
+			repaint();
+		}
 	}
 	
 	public void cardAdded()

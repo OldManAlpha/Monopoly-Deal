@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
 /**
@@ -2622,6 +2623,11 @@ public class JSONObject {
     public void setMap(Map<String, Object> map)
     {
         this.map = map;
+    }
+    
+    public void forEach(BiConsumer<String, Object> func)
+    {
+        map.forEach(func);
     }
 
     /**

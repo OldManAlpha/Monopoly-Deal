@@ -1,10 +1,8 @@
 package oldmana.md.client.gui.component.collection;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +13,6 @@ import javax.swing.SwingUtilities;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.gui.component.MDCard;
-import oldmana.md.client.gui.component.MDComponent;
 import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.util.GraphicsUtils;
 
@@ -126,16 +123,6 @@ public abstract class MDCardCollection extends MDCardCollectionBase
 		MDCard view = new MDCard(card, getCardScale());
 		view.setLocation(getScreenLocationOf(card));
 		return view;
-	}
-	
-	public List<MDComponent> placeSelectedView(Card card, int baseLayer, Color selectionColor)
-	{
-		MDCard view = createViewOf(card);
-		MDSelection selection = createSelectionOf(card);
-		selection.setColor(selectionColor);
-		getClient().addTableComponent(view, baseLayer);
-		getClient().addTableComponent(selection, baseLayer + 1);
-		return Arrays.asList(view, selection);
 	}
 	
 	//public abstract Point getLocationOf(int index, List<Card> cards);

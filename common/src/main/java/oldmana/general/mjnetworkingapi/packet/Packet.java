@@ -11,10 +11,6 @@ import oldmana.general.mjnetworkingapi.MJConnection;
 import oldmana.general.mjnetworkingapi.MJPacketBuffer;
 import oldmana.general.mjnetworkingapi.packet.field.*;
 
-/**The base class extended by all packets. Subclasses should override <i>fromBytes</i> and <i>toBytes</i>. A blank
- * constructor should always be present.
- *
- */
 public abstract class Packet
 {
 	public static Map<Integer, Class<? extends Packet>> packets = new HashMap<Integer, Class<? extends Packet>>();
@@ -71,6 +67,11 @@ public abstract class Packet
 		Class<? extends Packet> c = packets.get(id);
 		
 		Packet p = c.newInstance();
+		if (p instanceof ComplexPacket)
+		{
+			((ComplexPacket) p).fromBytes(data);
+			return p;
+		}
 		for (Field field : c.getDeclaredFields())
 		{
 			FieldTypeHandler handler = getFieldTypeHandler(field.getType());
@@ -79,7 +80,6 @@ public abstract class Packet
 				handler.fromBytes(field, p, data);
 			}
 		}
-		//p.fromBytes(data);
 		return p;
 	}
 	
@@ -88,6 +88,11 @@ public abstract class Packet
 		int id = getID(p.getClass());
 		try
 		{
+			if (p instanceof ComplexPacket)
+			{
+				((ComplexPacket) p).toBytes(buffer);
+				return;
+			}
 			Class<? extends Packet> c = packets.get(id);
 			for (Field field : c.getDeclaredFields())
 			{
@@ -97,22 +102,6 @@ public abstract class Packet
 					handler.toBytes(field, p, buffer);
 				}
 			}
-			/*
-			String s = "Packet: ";
-			for (byte b : buffer.toByteArray())
-			{
-				if (b < 100)
-				{
-					s += "0";
-				}
-				if (b < 10)
-				{
-					s += "0";
-				}
-				s += b + " ";
-			}
-			System.out.println(s);
-			*/
 		}
 		catch (Exception e)
 		{
@@ -141,22 +130,12 @@ public abstract class Packet
 		toBytes(p, data);
 		buffer.addInt(data.toByteArray().length);
 		buffer.append(data.toByteArray());
-		out.write(/*p.toBytes(buffer)*/buffer.toByteArray());
+		out.write(buffer.toByteArray());
 	}
 	
 	public static void sendPacket(MJConnection connection, Packet p) throws Exception
 	{
 		sendPacket(connection.getSocket(), p);
-		/*
-		OutputStream out = connection.getSocket().getOutputStream();
-		MJPacketBuffer buffer = new MJPacketBuffer();
-		buffer.addShort((short) getID(p.getClass()));
-		MJPacketBuffer data = new MJPacketBuffer();
-		toBytes(p, data);
-		buffer.addInt(data.toByteArray().length);
-		buffer.append(data.toByteArray());
-		out.write(buffer.toByteArray());
-		*/
 	}
 	
 	public static int registerPacket(Class<? extends Packet> clazz)
@@ -167,9 +146,9 @@ public abstract class Packet
 		return nextID;
 	}
 	
-	public static Class<? extends Packet> getPacket(int ID)
+	public static Class<? extends Packet> getPacket(int id)
 	{
-		return packets.get(ID);
+		return packets.get(id);
 	}
 	
 	public static void registerFieldTypeHandler(FieldTypeHandler handler)

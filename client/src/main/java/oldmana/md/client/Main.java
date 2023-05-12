@@ -14,7 +14,16 @@ public class Main
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			}
 			catch (Exception e) {}
-			new MDClient().startClient();
+			try
+			{
+				new MDClient().startClient();
+			}
+			catch (Exception | Error e)
+			{
+				System.err.println("Failed to start client!");
+				e.printStackTrace();
+				System.exit(1);
+			}
 		});
 	}
 }

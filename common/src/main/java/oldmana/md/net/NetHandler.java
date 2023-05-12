@@ -9,7 +9,91 @@ import oldmana.md.net.packet.universal.*;
 
 public class NetHandler
 {
-	public static int PROTOCOL_VERSION = 18;
+	public static int PROTOCOL_VERSION = 19;
+	
+	private Class<? extends Packet>[] packets = new Class[]
+	{
+		// Client <-> Server
+		PacketPing.class,
+		
+		// Client -> Server
+		PacketInitiateLogin.class,
+		PacketLogin.class,
+		
+		// Server -> Client
+		PacketServerInfo.class,
+		PacketHandshake.class,
+		PacketKick.class,
+		
+		// Client -> Server
+		PacketQuit.class,
+		
+		// Client <-> Server
+		PacketChat.class,
+		PacketKeepConnected.class,
+		
+		// ^ Ideally common protocol among future versions ^
+		
+		// Server -> Client
+		PacketPropertyColors.class,
+		PacketCardCollectionData.class,
+		PacketCardData.class,
+		PacketCardActionRentData.class,
+		PacketCardDescription.class,
+		PacketCardPropertyData.class,
+		PacketCardBuildingData.class,
+		PacketDestroyCardCollection.class,
+		PacketPropertySetColor.class,
+		PacketStatus.class,
+		PacketMoveCard.class,
+		PacketMovePropertySet.class,
+		PacketMoveRevealCard.class,
+		PacketMoveUnknownCard.class,
+		PacketPlayerInfo.class,
+		PacketPropertySetData.class,
+		PacketUpdatePlayer.class,
+		PacketDestroyPlayer.class,
+		PacketRefresh.class,
+		PacketUnknownCardCollectionData.class,
+		PacketUndoCardStatus.class,
+		PacketSoundData.class,
+		PacketPlaySound.class,
+		PacketPlayerButton.class,
+		PacketDestroyButton.class,
+		PacketCardButton.class,
+		PacketDestroyCardButton.class,
+		PacketTurnOrder.class,
+		PacketGameRules.class,
+		
+		// Client -> Server
+		PacketActionAccept.class,
+		PacketActionDraw.class,
+		PacketActionEndTurn.class,
+		PacketActionMoveProperty.class,
+		PacketActionChangeSetColor.class,
+		PacketActionPay.class,
+		PacketActionPlayCardBuilding.class,
+		PacketActionDiscard.class,
+		PacketActionSelectPlayer.class,
+		PacketActionSelectProperties.class,
+		PacketActionSelectPlayerMonopoly.class,
+		PacketActionUndoCard.class,
+		PacketActionClickLink.class,
+		PacketActionButtonClick.class,
+		PacketActionUseCardButton.class,
+		PacketActionRemoveBuilding.class,
+		
+		PacketSoundCache.class,
+		
+		// Server -> Client
+		PacketActionStatePlayerTurn.class,
+		PacketActionStateBasic.class,
+		PacketActionStateRent.class,
+		PacketActionStatePropertiesSelected.class,
+		PacketActionStatePropertySetTargeted.class,
+		PacketUpdateActionStateTarget.class
+	};
+	
 	
 	public NetHandler()
 	{
@@ -18,82 +102,9 @@ public class NetHandler
 	
 	public void registerPackets()
 	{
-		// Client <-> Server
-		Packet.registerPacket(PacketPing.class);
-		
-		// Client -> Server
-		Packet.registerPacket(PacketInitiateLogin.class);
-		Packet.registerPacket(PacketLogin.class);
-		
-		// Server -> Client
-		Packet.registerPacket(PacketServerInfo.class);
-		Packet.registerPacket(PacketHandshake.class);
-		Packet.registerPacket(PacketKick.class);
-		
-		// Client -> Server
-		Packet.registerPacket(PacketQuit.class);
-		
-		// Client <-> Server
-		Packet.registerPacket(PacketChat.class);
-		Packet.registerPacket(PacketKeepConnected.class);
-		
-		// ^ Ideally common protocol among future versions ^
-		
-		// Server -> Client
-		Packet.registerPacket(PacketPropertyColors.class);
-		Packet.registerPacket(PacketCardCollectionData.class);
-		Packet.registerPacket(PacketCardData.class);
-		Packet.registerPacket(PacketCardActionRentData.class);
-		Packet.registerPacket(PacketCardDescription.class);
-		Packet.registerPacket(PacketCardPropertyData.class);
-		Packet.registerPacket(PacketCardBuildingData.class);
-		Packet.registerPacket(PacketDestroyCardCollection.class);
-		Packet.registerPacket(PacketPropertySetColor.class);
-		Packet.registerPacket(PacketStatus.class);
-		Packet.registerPacket(PacketMoveCard.class);
-		Packet.registerPacket(PacketMovePropertySet.class);
-		Packet.registerPacket(PacketMoveRevealCard.class);
-		Packet.registerPacket(PacketMoveUnknownCard.class);
-		Packet.registerPacket(PacketPlayerInfo.class);
-		Packet.registerPacket(PacketPropertySetData.class);
-		Packet.registerPacket(PacketPlayerStatus.class);
-		Packet.registerPacket(PacketDestroyPlayer.class);
-		Packet.registerPacket(PacketRefresh.class);
-		Packet.registerPacket(PacketUnknownCardCollectionData.class);
-		Packet.registerPacket(PacketUndoCardStatus.class);
-		Packet.registerPacket(PacketSoundData.class);
-		Packet.registerPacket(PacketPlaySound.class);
-		Packet.registerPacket(PacketButton.class);
-		Packet.registerPacket(PacketDestroyButton.class);
-		Packet.registerPacket(PacketCardButton.class);
-		Packet.registerPacket(PacketDestroyCardButton.class);
-		
-		// Client -> Server
-		Packet.registerPacket(PacketActionAccept.class);
-		Packet.registerPacket(PacketActionDraw.class);
-		Packet.registerPacket(PacketActionEndTurn.class);
-		Packet.registerPacket(PacketActionMoveProperty.class);
-		Packet.registerPacket(PacketActionChangeSetColor.class);
-		Packet.registerPacket(PacketActionPay.class);
-		Packet.registerPacket(PacketActionPlayCardBuilding.class);
-		Packet.registerPacket(PacketActionDiscard.class);
-		Packet.registerPacket(PacketActionSelectPlayer.class);
-		Packet.registerPacket(PacketActionSelectProperties.class);
-		Packet.registerPacket(PacketActionSelectPlayerMonopoly.class);
-		Packet.registerPacket(PacketActionUndoCard.class);
-		Packet.registerPacket(PacketActionClickLink.class);
-		Packet.registerPacket(PacketActionButtonClick.class);
-		Packet.registerPacket(PacketActionUseCardButton.class);
-		
-		Packet.registerPacket(PacketSoundCache.class);
-		
-		// Server -> Client
-		Packet.registerPacket(PacketActionStateBasic.class);
-		Packet.registerPacket(PacketActionStateRent.class);
-		Packet.registerPacket(PacketActionStatePropertiesSelected.class);
-		Packet.registerPacket(PacketActionStateStealMonopoly.class);
-		Packet.registerPacket(PacketUpdateActionStateAccepted.class);
-		Packet.registerPacket(PacketUpdateActionStateRefusal.class);
-		Packet.registerPacket(PacketUpdateActionStateTarget.class);
+		for (Class<? extends Packet> clazz : packets)
+		{
+			Packet.registerPacket(clazz);
+		}
 	}
 }

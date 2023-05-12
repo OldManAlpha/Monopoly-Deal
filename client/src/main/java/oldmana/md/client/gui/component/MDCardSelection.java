@@ -27,9 +27,9 @@ public class MDCardSelection extends MDCard
 			{
 				if (!disabled)
 				{
-					if (listener != null && !selected)
+					if (listener != null)
 					{
-						if (!listener.preSelect())
+						if ((!selected && !listener.preSelect()) || (selected && !listener.preUnselect()))
 						{
 							return;
 						}
@@ -89,10 +89,12 @@ public class MDCardSelection extends MDCard
 		}
 	}
 	
-	public static interface CardSelectListener
+	public interface CardSelectListener
 	{
-		public boolean preSelect();
+		boolean preSelect();
 		
-		public void postSelectToggle();
+		boolean preUnselect();
+		
+		void postSelectToggle();
 	}
 }

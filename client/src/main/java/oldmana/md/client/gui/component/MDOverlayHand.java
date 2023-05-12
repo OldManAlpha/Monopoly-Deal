@@ -9,6 +9,7 @@ import java.util.Map;
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.card.Card;
+import oldmana.md.client.card.CardBuilding;
 import oldmana.md.client.card.CardButton;
 import oldmana.md.client.card.CardButton.CardButtonPosition;
 import oldmana.md.client.card.CardButton.CardButtonType;
@@ -16,6 +17,7 @@ import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.gui.component.collection.MDHand;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.state.ActionState;
+import oldmana.md.client.state.client.ActionStateClientPlayBuilding;
 import oldmana.md.client.state.client.ActionStateClientPlayProperty;
 import oldmana.md.net.packet.client.action.PacketActionUseCardButton;
 
@@ -47,7 +49,7 @@ public class MDOverlayHand extends MDComponent
 		buttons.forEach((pos, button) ->
 		{
 			MDButton uiButton = new MDButton(button.getText());
-			uiButton.setColorScheme(button.getColors());
+			uiButton.setColor(button.getColors());
 			uiButton.setSize((int) (getWidth() * 0.8), (int) (getHeight() * 0.2));
 			uiButton.setLocationCentered((int) (getWidth() * 0.5), (int) (getHeight() * pos.getLocation()));
 			uiButton.addClickListener(() ->
@@ -75,6 +77,10 @@ public class MDOverlayHand extends MDComponent
 				{
 					ActionState state = client.getGameState().getActionState();
 					state.onActionCounter(card, button);
+				}
+				else if (button.getType() == CardButtonType.BUILDING)
+				{
+					client.getGameState().setClientActionState(new ActionStateClientPlayBuilding((CardBuilding) card));
 				}
 				Container parent = getParent();
 				if (parent != null)

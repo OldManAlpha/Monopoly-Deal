@@ -1,9 +1,13 @@
 package oldmana.md.client.gui.component.collection;
 
+import java.awt.Component;
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.gui.component.MDComponent;
 
@@ -139,6 +143,16 @@ public abstract class MDCardCollectionBase extends MDComponent
 	public Point getScreenLocationOf(int cardIndex, int cardCount)
 	{
 		return SwingUtilities.convertPoint(this, getLocationOf(cardIndex, cardCount), getClient().getWindow().getTableScreen());
+	}
+	
+	public Point getLocationOfRelative(int cardIndex, Component component)
+	{
+		return getLocationOfRelative(cardIndex, getCardCount(), component);
+	}
+	
+	public Point getLocationOfRelative(int cardIndex, int cardCount, Component component)
+	{
+		return SwingUtilities.convertPoint(this, getLocationOf(cardIndex, cardCount), component);
 	}
 	
 	public abstract void update();

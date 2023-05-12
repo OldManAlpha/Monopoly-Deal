@@ -21,6 +21,7 @@ import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
+import oldmana.md.client.gui.util.TextPainter.Outline;
 
 public class MDCardInfo extends MDComponent
 {
@@ -88,8 +89,8 @@ public class MDCardInfo extends MDComponent
 			Color[] colors = new Color[colorCount * 2];
 			for (int i = 0 ; i < colorCount * 2 ; i++)
 			{
-				fractions[i] = (i + (i % 2 == 0 ? 0.2F : 0.8F)) / (float) (colorCount * 2);
-				colors[i] = GraphicsUtils.getLighterColor(prop.getColors().get(i / 2).getColor(), 1);
+				fractions[i] = (i + (i % 2 == 0 ? 0.01F : 0.99F)) / (float) (colorCount * 2);
+				colors[i] = /*GraphicsUtils.getLighterColor(*/prop.getColors().get(i / 2).getColor();//, 1);
 			}
 			propPaint = new LinearGradientPaint(0, 0, width, 0,
 					fractions, colors);
@@ -104,6 +105,10 @@ public class MDCardInfo extends MDComponent
 			g.fillRoundRect(scale(2), scale(2), width - (scale(2) * 2), scale(24), scale(18), scale(18));
 			g.fillRect(scale(2), scale(18), width - (scale(2) * 2), scale(10));
 			g.setPaint(null);
+			
+			LinearGradientPaint paint = new LinearGradientPaint(0, scale(2), 0, scale(18), new float[] {0, 1}, new Color[] {new Color(255, 255, 255, 80), new Color(255, 255, 255, 0)});
+			g.setPaint(paint);
+			g.fillRoundRect(scale(2), scale(2), width - (scale(2) * 2), scale(24), scale(18), scale(18));
 		}
 		
 		// Draw dividers
@@ -118,11 +123,17 @@ public class MDCardInfo extends MDComponent
 		{
 			name = card.getValue() + "M";
 		}
+		g.setColor(card instanceof CardProperty ? Color.WHITE : Color.BLACK);
 		TextPainter tp = new TextPainter(name, g.getFont(),
 				new Rectangle(0, scale(2), width, scale(28)));
 		tp.setHorizontalAlignment(Alignment.CENTER);
 		tp.setVerticalAlignment(Alignment.CENTER);
+		if (card instanceof CardProperty)
+		{
+			tp.setOutline(Outline.of(Color.BLACK, scale(3)));
+		}
 		tp.paint(g);
+		g.setColor(Color.BLACK);
 		
 		// Draw card description
 		g.setFont(GraphicsUtils.getThinMDFont(scale(20)));

@@ -19,35 +19,32 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import oldmana.md.net.packet.server.PacketHandshake;
-import oldmana.md.net.packet.server.PacketRefresh;
+import oldmana.md.server.ai.AIManager;
 import oldmana.md.server.card.CardAction;
+import oldmana.md.server.card.CardBuilding;
 import oldmana.md.server.card.CardMoney;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.CardRegistry;
+import oldmana.md.server.card.collection.CardCollection;
 import oldmana.md.server.card.collection.deck.CustomDeck.DeckLoadFailureException;
 import oldmana.md.server.card.CardType;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.PacketCardDescription;
 import oldmana.md.net.packet.server.PacketDestroyPlayer;
 import oldmana.md.net.packet.server.PacketKick;
 import oldmana.md.net.packet.server.PacketPlaySound;
-import oldmana.md.net.packet.server.PacketPlayerStatus;
 import oldmana.md.net.packet.server.PacketSoundData;
 import oldmana.md.net.packet.server.PacketStatus;
 import oldmana.md.net.packet.universal.PacketChat;
 import oldmana.md.net.packet.universal.PacketKeepConnected;
-import oldmana.md.server.MDScheduler.MDTask;
 import oldmana.md.server.card.Card;
-import oldmana.md.server.card.Card.CardDescription;
-import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.action.*;
 import oldmana.md.server.card.collection.Deck;
 import oldmana.md.server.card.collection.DiscardPile;
@@ -59,9 +56,8 @@ import oldmana.md.server.event.EventManager;
 import oldmana.md.server.event.PlayerRemovedEvent;
 import oldmana.md.server.net.IncomingConnectionsThread;
 import oldmana.md.server.net.NetServerHandler;
+import oldmana.md.server.playerui.ChatLinkHandler;
 import oldmana.md.server.rules.GameRules;
-import oldmana.md.server.rules.win.PropertySetCondition;
-import oldmana.md.server.state.ActionState;
 import oldmana.md.server.state.ActionStateDoNothing;
 import oldmana.md.server.state.GameState;
 
@@ -69,9 +65,10 @@ public class MDServer
 {
 	private static MDServer instance;
 	
-	public static final String VERSION = "0.6.5.1";
+	public static final String VERSION = "0.7 Dev";
 	
 	private ScheduledExecutorService serverThread;
+	private Executor syncExecutor = task -> getScheduler().scheduleTask(task);
 	
 	private File dataFolder;
 	
@@ -101,6 +98,8 @@ public class MDServer
 	private CommandHandler cmdHandler = new CommandHandler();
 
 	private MDScheduler scheduler = new MDScheduler();
+	
+	private AIManager aiManager;
 
 	private final List<String> cmdQueue = Collections.synchronizedList(new ArrayList<String>());
 
@@ -151,7 +150,7 @@ public class MDServer
 		registerDefaultCards();
 		
 		gameState = new GameState(this);
-		gameState.setActionState(new ActionStateDoNothing());
+		gameState.addActionState(new ActionStateDoNothing());
 		
 		voidCollection = new VoidCollection();
 		decks.put("vanilla", new VanillaDeck());
@@ -172,7 +171,6 @@ public class MDServer
 			System.exit(0);
 		}
 		System.out.println("Using port " + port);
-		rules.setWinCondition(new PropertySetCondition(3));
 		cmdHandler.registerDefaultCommands();
 		try
 		{
@@ -205,11 +203,13 @@ public class MDServer
 							player.getNet().close();
 							player.setNet(null);
 						}
-						System.out.println(player.getName() + " (ID: " + player.getID() + ") timed out");
+						System.out.println(player.getDescription() + " timed out");
 					}
 				}
 			}
 		});
+		
+		//aiManager = new AIManager();
 		
 		loadSounds();
 		
@@ -269,58 +269,79 @@ public class MDServer
 	
 	public void tickServer()
 	{
-		List<Client> clients = new ArrayList<Client>(newClients);
-		for (Client client : clients)
+		try
 		{
-			if (!client.isConnected())
+			synchronized (newClients)
 			{
-				newClients.remove(client);
-				continue;
-			}
-			netHandler.processPackets(client);
-		}
-		
-		// Process packets
-		for (Player player : getPlayers())
-		{
-			if (player.isConnected())
-			{
-				if (player.getNet().isClosed())
+				List<Client> clients = new ArrayList<Client>(newClients);
+				for (Client client : clients)
 				{
-					player.setNet(null);
-					player.setOnline(false);
-					broadcastPacket(new PacketPlayerStatus(player.getID(), false));
-					continue;
+					if (!client.isConnected())
+					{
+						newClients.remove(client);
+						continue;
+					}
+					netHandler.processPackets(client);
 				}
-				netHandler.processPackets(player);
 			}
-		}
-		
-		// Process commands
-		synchronized (cmdQueue)
-		{
-			for (String line : cmdQueue)
+			
+			// Process packets
+			for (Player player : getPlayers())
 			{
-				getCommandHandler().executeCommand(consoleSender, line);
+				if (player.isConnected())
+				{
+					if (player.getNet().isClosed())
+					{
+						player.setOnline(false);
+						continue;
+					}
+					netHandler.processPackets(player);
+				}
 			}
-			cmdQueue.clear();
+			
+			// Process commands
+			synchronized (cmdQueue)
+			{
+				for (String line : cmdQueue)
+				{
+					getCommandHandler().executeCommand(consoleSender, line);
+				}
+				cmdQueue.clear();
+			}
+			
+			scheduler.runTick();
+			
+			gameState.tick();
+			
+			tickCount++;
+			
+			if (shutdown)
+			{
+				doShutdown();
+			}
 		}
-		
-		scheduler.runTick();
-		
-		gameState.tick();
-		
-		tickCount++;
-		
-		if (shutdown)
+		catch (Exception | Error e)
 		{
-			doShutdown();
+			System.err.println("Server has crashed!");
+			e.printStackTrace();
+			
+			try
+			{
+				doShutdown(true); // Try to gracefully kick players
+			}
+			catch (Exception | Error e2) {}
+			System.exit(1);
 		}
 	}
 	
 	private void doShutdown()
 	{
-		broadcastPacket(new PacketKick("Server shut down"));
+		doShutdown(false);
+	}
+	
+	private void doShutdown(boolean error)
+	{
+		broadcastPacket(new PacketKick(error ? "Server crashed" : "Server shut down"));
 		threadIncConnect.interrupt();
 		while (true)
 		{
@@ -347,9 +368,12 @@ public class MDServer
 			}
 		}
 		System.out.println("Server stopped");
-		System.exit(0);
+		System.exit(error ? 1 : 0);
 	}
 	
+	/**
+	 * Signal for the server to start shutting down at the end of the tick.
+	 */
 	public void shutdown()
 	{
 		shutdown = true;
@@ -402,8 +426,8 @@ public class MDServer
 						{
 							MDMod mod = (MDMod) clazz.newInstance();
 							System.out.println("Loading Mod: " + mod.getName());
-							mod.onLoad();
 							mods.add(mod);
+							mod.onLoad();
 							hasModClass = true;
 							break;
 						}
@@ -425,6 +449,18 @@ public class MDServer
 	public List<MDMod> getMods()
 	{
 		return mods;
+	}
+	
+	public <M extends MDMod> M getMod(Class<M> modClass)
+	{
+		for (MDMod mod : mods)
+		{
+			if (mod.getClass() == modClass)
+			{
+				return (M) mod;
+			}
+		}
+		return null;
 	}
 	
 	public void loadDecks()
@@ -464,7 +500,7 @@ public class MDServer
 		CardType.ACTION = CardRegistry.registerCardType(CardAction.class);
 		CardType.MONEY = CardRegistry.registerCardType(CardMoney.class);
 		CardType.PROPERTY = CardRegistry.registerCardType(CardProperty.class);
-		//CardRegistry.registerCardType(CardBuilding.class); Soon(TM)
+		CardType.BUILDING = CardRegistry.registerCardType(CardBuilding.class);
 		
 		CardType.DEAL_BREAKER = CardRegistry.registerCardType(CardActionDealBreaker.class);
 		CardType.DEBT_COLLECTOR = CardRegistry.registerCardType(CardActionDebtCollector.class);
@@ -475,11 +511,19 @@ public class MDServer
 		CardType.PASS_GO = CardRegistry.registerCardType(CardActionPassGo.class);
 		CardType.RENT = CardRegistry.registerCardType(CardActionRent.class);
 		CardType.SLY_DEAL = CardRegistry.registerCardType(CardActionSlyDeal.class);
+		
+		CardType.HOUSE = CardRegistry.registerCardType(CardActionHouse.class);
+		CardType.HOTEL = CardRegistry.registerCardType(CardActionHotel.class);
 	}
 	
 	public CommandHandler getCommandHandler()
 	{
 		return cmdHandler;
+	}
+	
+	public Console getConsoleSender()
+	{
+		return consoleSender;
 	}
 	
 	public EventManager getEventManager()
@@ -497,15 +541,14 @@ public class MDServer
 		return scheduler;
 	}
 	
+	public AIManager getAIManager()
+	{
+		return aiManager;
+	}
+	
 	public GameState getGameState()
 	{
 		return gameState;
-	}
-	
-	
-	public void setActionState(ActionState state)
-	{
-		gameState.setActionState(state);
 	}
 	
 	public PlayerRegistry getPlayerRegistry()
@@ -532,12 +575,18 @@ public class MDServer
 	
 	public void addClient(Client client)
 	{
-		newClients.add(client);
+		synchronized (newClients)
+		{
+			newClients.add(client);
+		}
 	}
 	
 	public void removeClient(Client client)
 	{
-		newClients.remove(client);
+		synchronized (newClients)
+		{
+			newClients.remove(client);
+		}
 	}
 	
 	public void disconnectClient(Client client)
@@ -555,6 +604,7 @@ public class MDServer
 	public void addPlayer(Player player)
 	{
 		players.add(player);
+		gameState.getTurnOrder().addPlayer(player);
 	}
 	
 	public void kickPlayer(Player player)
@@ -570,18 +620,30 @@ public class MDServer
 			player.getNet().close();
 			player.setNet(null);
 		}
+		for (Card card : player.getAllCards())
+		{
+			card.transfer(getDiscardPile(), -1, 2);
+		}
 		players.remove(player);
+		gameState.getTurnOrder().removePlayer(player);
 		for (Player p : getPlayers())
 		{
 			p.removeButtons(player);
 		}
 		eventManager.callEvent(new PlayerRemovedEvent(player));
+		CardCollection.unregisterCardCollection(player.getHand());
+		CardCollection.unregisterCardCollection(player.getBank());
 		broadcastPacket(new PacketDestroyPlayer(player.getID()));
 	}
 	
 	public List<Player> getPlayers()
 	{
-		return new ArrayList<Player>(players);
+		return getGameState().getTurnOrder().getOrder();
+	}
+	
+	public int getPlayerCount()
+	{
+		return players.size();
 	}
 	
 	public List<Player> getPlayersExcluding(Player excluded)
@@ -771,25 +833,30 @@ public class MDServer
 	
 	public void broadcastMessage(String message, boolean printConsole)
 	{
-		broadcastPacket(new PacketChat(message));
+		broadcastPacket(new PacketChat(MessageBuilder.fromSimple(message)));
 		if (printConsole)
 		{
-			System.out.println(message);
+			System.out.println(ChatColor.stripFormatting(message));
 		}
 	}
 	
 	public void broadcastMessage(String message, Player exception, boolean printConsole)
 	{
-		broadcastPacket(new PacketChat(message), exception);
+		broadcastPacket(new PacketChat(MessageBuilder.fromSimple(message)), exception);
 		if (printConsole)
 		{
-			System.out.println(message);
+			System.out.println(ChatColor.stripFormatting(message));
 		}
 	}
 	
 	public boolean isVerbose()
 	{
 		return verbose;
+	}
+	
+	public Executor getSyncExecutor()
+	{
+		return syncExecutor;
 	}
 	
 	public static MDServer getInstance()

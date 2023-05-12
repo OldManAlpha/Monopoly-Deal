@@ -82,12 +82,17 @@ public class MainMenuScreen extends MDComponent
 				return;
 			}
 			
+			if (ip.getText().isEmpty())
+			{
+				return;
+			}
+			
 			String[] ipPort = ip.getText().split(":");
 			status.setText("Connecting...");
 			status.paintImmediately(status.getVisibleRect());
 			try
 			{
-				client.connectToServer(ipPort[0], Integer.parseInt(ipPort[1]));
+				client.connectToServer(ipPort[0], ipPort.length > 1 ? Integer.parseInt(ipPort[1]) : 27599);
 			}
 			catch (Exception e)
 			{
@@ -98,23 +103,15 @@ public class MainMenuScreen extends MDComponent
 			}
 			status.setText("");
 			settings.put("lastIP", ip.getText());
-			try
+			String name = nameField.getText();
+			settings.put("lastName", name);
+			if (salt != null)
 			{
-				String name = nameField.getText();
-				settings.put("lastName", name);
-				if (salt != null)
-				{
-					settings.put("lastSalt", salt.getText());
-				}
-				settings.saveSettings();
-				client.sendPacket(new PacketInitiateLogin(NetHandler.PROTOCOL_VERSION));
-				client.getWindow().displayTable();
+				settings.put("lastSalt", salt.getText());
 			}
-			catch (NumberFormatException e)
-			{
-				status.setText("Invalid ID");
-				status.repaint();
-			}
+			settings.saveSettings();
+			client.sendPacket(new PacketInitiateLogin(NetHandler.PROTOCOL_VERSION));
+			client.getWindow().displayTable();
 		});
 		
 		

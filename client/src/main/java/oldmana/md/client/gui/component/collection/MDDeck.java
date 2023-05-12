@@ -22,6 +22,7 @@ import oldmana.md.client.gui.util.CardPainter;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
+import oldmana.md.client.gui.util.TextPainter.Outline;
 
 public class MDDeck extends MDCardCollectionUnknown
 {
@@ -166,10 +167,10 @@ public class MDDeck extends MDCardCollectionUnknown
 			}
 			else if (cardCount <= 8 && cardCount > 0)
 			{
-				g.setColor(new Color(240, 240, 240));
-				g.fillRoundRect(GraphicsUtils.getCardWidth(0.4), GraphicsUtils.getCardHeight(1) - scale(10), GraphicsUtils.getCardWidth(1.2), scale(20), scale(8), scale(8));
+				//g.setColor(new Color(240, 240, 240));
+				//g.fillRoundRect(GraphicsUtils.getCardWidth(0.4), GraphicsUtils.getCardHeight(1) - scale(10), GraphicsUtils.getCardWidth(1.2), scale(20), scale(8), scale(8));
 				g.setColor(Color.BLACK);
-				g.drawRoundRect(GraphicsUtils.getCardWidth(0.4), GraphicsUtils.getCardHeight(1) - scale(10), GraphicsUtils.getCardWidth(1.2), scale(20), scale(8), scale(8));
+				//g.drawRoundRect(GraphicsUtils.getCardWidth(0.4), GraphicsUtils.getCardHeight(1) - scale(10), GraphicsUtils.getCardWidth(1.2), scale(20), scale(8), scale(8));
 				
 				Font font = GraphicsUtils.getBoldMDFont(Font.PLAIN, scale(20));
 				g.setFont(font);
@@ -177,6 +178,7 @@ public class MDDeck extends MDCardCollectionUnknown
 						GraphicsUtils.getCardHeight(2)));
 				tp.setHorizontalAlignment(Alignment.CENTER);
 				tp.setVerticalAlignment(Alignment.CENTER);
+				tp.setOutline(Outline.of(Color.WHITE, scale(4)));
 				tp.paint(g);
 			}
 			

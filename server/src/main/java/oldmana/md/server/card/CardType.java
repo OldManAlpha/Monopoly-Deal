@@ -6,6 +6,8 @@ import oldmana.md.server.card.action.CardActionDealBreaker;
 import oldmana.md.server.card.action.CardActionDebtCollector;
 import oldmana.md.server.card.action.CardActionDoubleTheRent;
 import oldmana.md.server.card.action.CardActionForcedDeal;
+import oldmana.md.server.card.action.CardActionHotel;
+import oldmana.md.server.card.action.CardActionHouse;
 import oldmana.md.server.card.action.CardActionItsMyBirthday;
 import oldmana.md.server.card.action.CardActionJustSayNo;
 import oldmana.md.server.card.action.CardActionPassGo;
@@ -19,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * A CardType associates general information and utilities with every card. Every class that extends Card somewhere down
@@ -35,7 +38,7 @@ public class CardType<T extends Card>
 	public static CardType<CardAction> ACTION;
 	public static CardType<CardProperty> PROPERTY;
 	public static CardType<CardBuilding> BUILDING;
-	
+	// Action Cards
 	public static CardType<CardActionDealBreaker> DEAL_BREAKER;
 	public static CardType<CardActionDebtCollector> DEBT_COLLECTOR;
 	public static CardType<CardActionDoubleTheRent> DOUBLE_THE_RENT;
@@ -45,6 +48,9 @@ public class CardType<T extends Card>
 	public static CardType<CardActionPassGo> PASS_GO;
 	public static CardType<CardActionRent> RENT;
 	public static CardType<CardActionSlyDeal> SLY_DEAL;
+	// Building Cards
+	public static CardType<CardActionHouse> HOUSE;
+	public static CardType<CardActionHotel> HOTEL;
 	
 	
 	private Class<T> cardClass;
@@ -56,7 +62,7 @@ public class CardType<T extends Card>
 	private CardType<? super T> parent;
 	private CardType<? super T> primitive;
 	
-	private boolean instantiable;
+	private Supplier<T> factory;
 	
 	private CardTemplate defaultTemplate;
 	
@@ -65,24 +71,27 @@ public class CardType<T extends Card>
 	
 	private List<String> exemptReductions = new ArrayList<String>();
 	
+	/**
+	 * Constructor for card types that cannot be instantiated.
+	 */
 	public CardType(Class<T> cardClass, String friendlyName, String... aliases)
 	{
-		this(cardClass, toInternalName(friendlyName), friendlyName, true, aliases);
+		this(cardClass, toInternalName(friendlyName), friendlyName, null, aliases);
 	}
 	
-	public CardType(Class<T> cardClass, String friendlyName, boolean instantiable, String... aliases)
+	public CardType(Class<T> cardClass, Supplier<T> factory, String friendlyName, String... aliases)
 	{
-		this(cardClass, toInternalName(friendlyName), friendlyName, instantiable, aliases);
+		this(cardClass, toInternalName(friendlyName), friendlyName, factory, aliases);
 	}
 	
 	// Order is like this because of dumb varargs ambiguity
-	public CardType(Class<T> cardClass, String internalName, String friendlyName, boolean instantiable, String... aliases)
+	public CardType(Class<T> cardClass, String internalName, String friendlyName, Supplier<T> factory, String... aliases)
 	{
 		this.cardClass = cardClass;
 		this.internalName = internalName;
 		this.friendlyName = friendlyName;
 		this.aliases = new ArrayList<String>(Arrays.asList(aliases));
-		this.instantiable = instantiable;
+		this.factory = factory;
 		if (Card.class.isAssignableFrom(cardClass.getSuperclass()))
 		{
 			parent = (CardType<? super T>) CardRegistry.getTypeByClass((Class<? extends Card>) cardClass.getSuperclass());
@@ -196,19 +205,36 @@ public class CardType<T extends Card>
 		return false;
 	}
 	
+	/**
+	 * Gets this type's primitive ancestor.
+	 * @return The primitive ancestor
+	 */
 	public CardType<? super T> getPrimitive()
 	{
 		return primitive;
 	}
 	
+	/**
+	 * Primitive types are those that directly extend the Card class, such as CardAction, CardMoney, and CardProperty.
+	 * @return Whether the type is primitive
+	 */
 	public boolean isPrimitive()
 	{
 		return this == primitive;
 	}
 	
+	/**
+	 * Check if this type refers to the root Card class.
+	 * @return True if this is the root card type
+	 */
+	public boolean isRoot()
+	{
+		return cardClass == Card.class;
+	}
+	
 	public boolean isInstantiable()
 	{
-		return instantiable;
+		return factory != null;
 	}
 	
 	public void setDefaultTemplate(CardTemplate template)
@@ -293,7 +319,7 @@ public class CardType<T extends Card>
 	
 	/**
 	 * The Consumer is called after the default template is applied and before the Card is added to the void and is sent to clients.
-	 * @param constructor The function to call
+	 * @param constructor The function to call before adding the card to the void and sending to clients
 	 * @return A newly created Card
 	 */
 	public T createCard(Consumer<T> constructor)
@@ -331,14 +357,7 @@ public class CardType<T extends Card>
 	 */
 	public T createCardRaw()
 	{
-		try
-		{
-			return cardClass.getConstructor().newInstance();
-		}
-		catch (ReflectiveOperationException e)
-		{
-			throw new RuntimeException(e);
-		}
+		return factory.get();
 	}
 	
 	/**

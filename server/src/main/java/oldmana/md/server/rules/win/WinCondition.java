@@ -1,6 +1,7 @@
 package oldmana.md.server.rules.win;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import oldmana.md.server.MDServer;
@@ -12,11 +13,16 @@ public abstract class WinCondition
 	
 	public List<Player> getWinners()
 	{
-		List<Player> winners = new ArrayList<Player>();
+		List<Player> winners = Collections.emptyList();
 		for (Player player : getServer().getPlayers())
 		{
 			if (isWinner(player))
 			{
+				// Lazy initialize ArrayList
+				if (winners.isEmpty())
+				{
+					winners = new ArrayList<Player>();
+				}
 				winners.add(player);
 			}
 		}

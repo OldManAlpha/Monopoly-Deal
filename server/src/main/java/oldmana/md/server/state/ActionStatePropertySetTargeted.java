@@ -1,7 +1,7 @@
 package oldmana.md.server.state;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateStealMonopoly;
+import oldmana.md.net.packet.server.actionstate.PacketActionStatePropertySetTargeted;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.collection.PropertySet;
 
@@ -23,6 +23,6 @@ public class ActionStatePropertySetTargeted extends ActionState
 	@Override
 	public Packet constructPacket()
 	{
-		return new PacketActionStateStealMonopoly(getActionOwner().getID(), targetSet.getID());
+		return new PacketActionStatePropertySetTargeted(getActionOwner().getID(), targetSet.getID());
 	}
 }

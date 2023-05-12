@@ -1,17 +1,13 @@
 package oldmana.md.client.state.client;
 
-import java.awt.Color;
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
 import oldmana.md.client.card.CardButton;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.collection.PropertySet;
-import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDCreateSet;
-import oldmana.md.client.gui.component.MDSelection;
-import oldmana.md.client.gui.component.collection.MDHand;
+import oldmana.md.client.gui.component.MDPlayerPropertySets;
 import oldmana.md.client.gui.component.collection.MDPropertySet;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.net.packet.client.action.PacketActionUseCardButton;
@@ -21,8 +17,7 @@ public class ActionStateClientPlayProperty extends ActionStateClient
 	private CardProperty property;
 	private CardButton button;
 	
-	private MDSelection propSelect;
-	private MDButton cancel;
+	private HandCardSelection cardSelection;
 	private List<PropertySet> setSelects = new ArrayList<PropertySet>();
 	private MDCreateSet createSet;
 	
@@ -32,20 +27,10 @@ public class ActionStateClientPlayProperty extends ActionStateClient
 		this.button = button;
 	}
 	
-	@Override
-	public void setup()
+	public void createSelections()
 	{
-		Point propLoc = ((MDHand) getClient().getThePlayer().getHand().getUI()).getScreenLocationOf(property);
-		propSelect = new MDSelection(Color.BLUE);
-		propSelect.setLocation(propLoc);
-		propSelect.setSize(GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2));
-		getClient().addTableComponent(propSelect, 90);
-		
-		cancel = new MDButton("Cancel");
-		cancel.setSize((int) (propSelect.getWidth() * 0.8), (int) (propSelect.getHeight() * 0.2));
-		cancel.setLocation((int) (propSelect.getWidth() * 0.1) + propSelect.getX(), (int) (propSelect.getHeight() * 0.4) + propSelect.getY());
-		cancel.setListener(() -> removeState());
-		getClient().addTableComponent(cancel, 91);
+		cardSelection = new HandCardSelection(property);
+		cardSelection.create(() -> removeState());
 		
 		for (PropertySet set : getClient().getThePlayer().getPropertySets(true))
 		{
@@ -63,9 +48,12 @@ public class ActionStateClientPlayProperty extends ActionStateClient
 			}
 		}
 		
+		MDPlayerPropertySets setsUI = getClient().getThePlayer().getUI().getPropertySets();
+		
 		createSet = new MDCreateSet(getClient().getThePlayer());
+		createSet.setLocation(setsUI.getNextPropertySetLocX(), 0);
 		createSet.setSize(GraphicsUtils.getCardWidth(), GraphicsUtils.getCardHeight());
-		getClient().getTableScreen().add(createSet, new Integer(90));
+		setsUI.add(createSet);
 		createSet.addClickListener(() ->
 		{
 			getClient().sendPacket(new PacketActionUseCardButton(property.getID(), button.getPosition().getID(), -1));
@@ -73,21 +61,40 @@ public class ActionStateClientPlayProperty extends ActionStateClient
 			
 			removeState();
 		});
+		getClient().getTableScreen().repaint();
 	}
 	
-	@Override
-	public void cleanup()
+	public void destroySelections()
 	{
-		getClient().removeTableComponent(propSelect);
-		getClient().removeTableComponent(cancel);
+		cardSelection.destroy();
+		MDPlayerPropertySets setsUI = getClient().getThePlayer().getUI().getPropertySets();
 		if (createSet != null)
 		{
-			getClient().removeTableComponent(createSet);
+			setsUI.remove(createSet);
 		}
 		for (PropertySet set : setSelects)
 		{
 			((MDPropertySet) set.getUI()).disableSelection();
 		}
 		getClient().getTableScreen().repaint();
+	}
+	
+	@Override
+	public void updateUI()
+	{
+		destroySelections();
+		createSelections();
+	}
+	
+	@Override
+	public void setup()
+	{
+		createSelections();
+	}
+	
+	@Override
+	public void cleanup()
+	{
+		destroySelections();
 	}
 }

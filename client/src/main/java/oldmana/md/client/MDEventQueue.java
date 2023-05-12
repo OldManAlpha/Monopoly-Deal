@@ -1,8 +1,11 @@
 package oldmana.md.client;
 
 import java.awt.Point;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.function.Supplier;
 
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.Bank;
@@ -12,22 +15,20 @@ import oldmana.md.client.gui.component.MDMovingCard;
 import oldmana.md.client.gui.component.MDMovingCard.CardAnimationType;
 import oldmana.md.client.gui.component.collection.MDCardCollection;
 import oldmana.md.client.gui.component.collection.MDCardCollectionBase;
+import oldmana.md.client.gui.component.large.MDOpponents;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.ActionStateRent;
 
+import javax.swing.SwingUtilities;
+
 public class MDEventQueue
 {
-	private List<EventTask> queue = new ArrayList<EventTask>();
+	private Queue<EventTask> queue = new ArrayDeque<EventTask>();
 	private TickingEventTask currentTask;
-	
-	public MDEventQueue()
-	{
-		
-	}
 	
 	public void addTask(EventTask task)
 	{
-		queue.add(task);
+		queue.offer(task);
 	}
 	
 	public boolean hasTasks()
@@ -59,7 +60,7 @@ public class MDEventQueue
 		{
 			while (!queue.isEmpty() && currentTask == null)
 			{
-				EventTask task = queue.remove(0);
+				EventTask task = queue.poll();
 				task.start();
 				if (task instanceof TickingEventTask)
 				{
@@ -71,12 +72,12 @@ public class MDEventQueue
 	
 	public interface EventTask
 	{
-		public void start();
+		void start();
 	}
 	
 	public interface TickingEventTask extends EventTask
 	{
-		public boolean tick();
+		boolean tick();
 	}
 	
 	public static class CardMove implements TickingEventTask
@@ -89,6 +90,10 @@ public class MDEventQueue
 		private CardAnimationType anim;
 		
 		private MDMovingCard moving;
+		
+		private boolean needsAutoScroll;
+		private int opponentScrollStart;
+		private int opponentScrollEnd;
 		
 		public CardMove(Card card, CardCollection from, CardCollection to, int toPos)
 		{
@@ -115,11 +120,25 @@ public class MDEventQueue
 		
 		public void start()
 		{
-			Point p1 = null;
+			Point p1;
 			
 			if (from == null)
 			{
 				from = card.getOwningCollection();
+			}
+			
+			MDOpponents opponents = MDClient.getInstance().getTableScreen().getOpponents();
+			if (SwingUtilities.isDescendingFrom(from.getUI(), opponents))
+			{
+				opponentScrollStart = opponents.getScrollNeededToView(from.getOwner());
+				opponents.setScrollPos(opponentScrollStart);
+			}
+			
+			if (SwingUtilities.isDescendingFrom(to.getUI(), opponents))
+			{
+				needsAutoScroll = true;
+				opponentScrollStart = opponents.getScrollPos();
+				opponentScrollEnd = opponents.getScrollNeededToView(to.getOwner());
 			}
 			
 			if (from.isUnknown())
@@ -136,13 +155,13 @@ public class MDEventQueue
 				ui.startRemoval(card);
 				from.removeCard(card);
 			}
-			Point p2 = null;
+			Supplier<Point> p2Supplier;
 			if (to.isUnknown())
 			{
 				MDCardCollectionBase ui = to.getUI();
 				ui.startAddition(/*toPos > -1 ? toPos : */to.getCardCount());
 				to.addUnknownCard();
-				p2 = ui.getScreenLocationOf(/*toPos > -1 ? toPos : */to.getCardCount() - 1);
+				p2Supplier = () -> ui.getScreenLocationOf(/*toPos > -1 ? toPos : */to.getCardCount() - 1);
 				//ui.cardIncoming();
 			}
 			else
@@ -157,9 +176,9 @@ public class MDEventQueue
 				{
 					to.addCard(card);
 				}
-				p2 = ui.getScreenLocationOf(card);
+				p2Supplier = () -> ui.getScreenLocationOf(card);
 			}
-			moving = new MDMovingCard(from.isUnknown() ? null : card, p1, from.getUI().getCardScale(), to.isUnknown() ? null : card, p2,
+			moving = new MDMovingCard(from.isUnknown() ? null : card, p1, from.getUI().getCardScale(), to.isUnknown() ? null : card, p2Supplier,
 					to.getUI().getCardScale(), time, anim, from.isUnknown() && to.isUnknown() ? card : null);
 			MDClient.getInstance().addTableComponent(moving, 99);
 			
@@ -178,14 +197,21 @@ public class MDEventQueue
 		
 		public boolean tick()
 		{
-			if (moving.tickMove())
+			boolean finished = moving.tickMove();
+			
+			if (needsAutoScroll)
+			{
+				MDOpponents opponents = MDClient.getInstance().getTableScreen().getOpponents();
+				opponents.setScrollPos((int) (opponentScrollStart + ((opponentScrollEnd - opponentScrollStart) * (Math.min(1, moving.getCurrentPosition() * 1.5)))));
+			}
+			
+			if (finished)
 			{
 				to.getUI().cardArrived();
 				to.getUI().modificationFinished();
 				from.getUI().modificationFinished();
 				MDClient.getInstance().removeTableComponent(moving);
 				MDClient.getInstance().getTableScreen().repaint();
-				return true;
 			}
 			else
 			{
@@ -194,7 +220,7 @@ public class MDEventQueue
 				from.getUI().repaint();
 				to.getUI().repaint();
 			}
-			return false;
+			return finished;
 		}
 		
 		public CardCollection getFrom()

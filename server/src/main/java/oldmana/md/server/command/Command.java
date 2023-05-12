@@ -98,15 +98,7 @@ public abstract class Command
 	
 	protected boolean verifyBoolean(String str)
 	{
-		try
-		{
-			Boolean.parseBoolean(str);
-		}
-		catch (Exception e)
-		{
-			return false;
-		}
-		return true;
+		return str.equalsIgnoreCase("true") || str.equalsIgnoreCase("false");
 	}
 	
 	protected boolean parseBoolean(String str)

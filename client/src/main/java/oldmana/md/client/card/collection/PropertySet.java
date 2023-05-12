@@ -3,6 +3,7 @@ package oldmana.md.client.card.collection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import oldmana.md.client.Player;
 import oldmana.md.client.card.Card;
@@ -118,21 +119,15 @@ public class PropertySet extends CardCollection
 				colors.retainAll(prop.getColors());
 			}
 		}
-		return colors == null || !hasBase ? new ArrayList<PropertyColor>() : colors;
+		return colors == null || !hasBase ? new ArrayList<PropertyColor>() : hasBuildings() && getEffectiveColor() != null ?
+				colors.stream().filter(color -> color.getMaxProperties() == getEffectiveColor().getMaxProperties() && color.isBuildable())
+						.collect(Collectors.toCollection(ArrayList::new)) : colors;
 	}
 	
 	public List<PropertyColor> getPossibleMonopolyColors()
 	{
 		List<PropertyColor> colors = getPossibleBaseColors();
-		Iterator<PropertyColor> it = colors.iterator();
-		while (it.hasNext())
-		{
-			PropertyColor color = it.next();
-			if (!color.isBuildable() || color.getMaxProperties() != getPropertyCount())
-			{
-				it.remove();
-			}
-		}
+		colors.removeIf(color -> !color.isBuildable() || color.getMaxProperties() != getPropertyCount());
 		return colors;
 	}
 	
@@ -150,7 +145,7 @@ public class PropertySet extends CardCollection
 	
 	public boolean isMonopoly()
 	{
-		return effectiveColor != null && getCardCount() >= effectiveColor.getMaxProperties();
+		return effectiveColor != null && getPropertyCount() >= effectiveColor.getMaxProperties();
 	}
 	
 	public boolean hasSingleColorProperty()
@@ -206,7 +201,7 @@ public class PropertySet extends CardCollection
 	
 	public int getHighestBuildingTier()
 	{
-		int highestTier = -1;
+		int highestTier = 0;
 		for (CardBuilding card : getBuildingCards())
 		{
 			highestTier = Math.max(highestTier, card.getTier());
@@ -242,6 +237,14 @@ public class PropertySet extends CardCollection
 	
 	public int getPropertyCount()
 	{
-		return getPropertyCards().size();
+		int cardCount = 0;
+		for (Card card : getCards())
+		{
+			if (card instanceof CardProperty)
+			{
+				cardCount++;
+			}
+		}
+		return cardCount;
 	}
 }

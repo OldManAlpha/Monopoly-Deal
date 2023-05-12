@@ -2,7 +2,6 @@ package oldmana.md.client.net;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
@@ -21,12 +20,14 @@ public class ConnectionThread extends Thread
 	
 	private volatile boolean sendingPackets;
 	
+	private volatile boolean closedGracefully;
+	
 	public ConnectionThread(MJConnection connection)
 	{
 		this.connection = connection;
 		
-		inPackets = Collections.synchronizedList(new ArrayList<Packet>());
-		outPackets = Collections.synchronizedList(new ArrayList<Packet>());
+		inPackets = new ArrayList<Packet>();
+		outPackets = new ArrayList<Packet>();
 		
 		start();
 	}
@@ -92,6 +93,12 @@ public class ConnectionThread extends Thread
 		}
 	}
 	
+	public void closeGracefully()
+	{
+		closedGracefully = true;
+		close();
+	}
+	
 	@Override
 	public void run()
 	{
@@ -115,14 +122,7 @@ public class ConnectionThread extends Thread
 			catch (Exception e)
 			{
 				e.printStackTrace();
-				try
-				{
-					connection.close();
-				}
-				catch (IOException e1)
-				{
-					e1.printStackTrace();
-				}
+				close();
 			}
 			try
 			{
@@ -130,11 +130,15 @@ public class ConnectionThread extends Thread
 			}
 			catch (InterruptedException e) {}
 		}
-		SwingUtilities.invokeLater(() ->
+		if (!closedGracefully)
 		{
-			TableScreen ts = MDClient.getInstance().getTableScreen();
-			ts.getTopbar().setText("Lost Connection");
-			ts.repaint();
-		});
+			SwingUtilities.invokeLater(() ->
+			{
+				TableScreen ts = MDClient.getInstance().getTableScreen();
+				ts.getTopbar().setText("Lost Connection");
+				ts.repaint();
+			});
+		}
+		closedGracefully = false;
 	}
 }

@@ -1,8 +1,6 @@
 package oldmana.md.client.state;
 
 import java.awt.Color;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 import oldmana.md.client.Player;
 import oldmana.md.client.card.collection.PropertySet;
@@ -43,21 +41,17 @@ public class ActionStateTargetPlayerMonopoly extends ActionState
 					if (set.isMonopoly())
 					{
 						MDPropertySet ui = (MDPropertySet) set.getUI();
-						ui.enableSelection(new Runnable()
+						ui.enableSelection(() ->
 						{
-							@Override
-							public void run()
+							if (targetSet != set)
 							{
-								if (targetSet != set)
+								ui.getSelection().setColor(Color.BLUE);
+								if (targetSet != null)
 								{
-									ui.getSelection().setColor(Color.BLUE);
-									if (targetSet != null)
-									{
-										((MDPropertySet) targetSet.getUI()).getSelection().setColor(MDSelection.DEFAULT_COLOR);
-									}
-									targetSet = set;
-									updateButton();
+									((MDPropertySet) targetSet.getUI()).getSelection().setColor(MDSelection.DEFAULT_COLOR);
 								}
+								targetSet = set;
+								updateButton();
 							}
 						});
 					}
@@ -75,17 +69,13 @@ public class ActionStateTargetPlayerMonopoly extends ActionState
 			if (targetSet != null)
 			{
 				button.setEnabled(true);
-				button.setListener(new MouseAdapter()
+				button.setListener(() ->
 				{
-					@Override
-					public void mouseReleased(MouseEvent event)
-					{
-						getClient().sendPacket(new PacketActionSelectPlayerMonopoly(targetSet.getID()));
-						cleanup();
-						getClient().setAwaitingResponse(true);
-						button.setEnabled(false);
-						button.removeListener();
-					}
+					getClient().sendPacket(new PacketActionSelectPlayerMonopoly(targetSet.getID()));
+					cleanup();
+					getClient().setAwaitingResponse(true);
+					button.setEnabled(false);
+					button.removeListener();
 				});
 			}
 			else

@@ -1,8 +1,5 @@
 package oldmana.md.client.state;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
 import oldmana.md.client.Player;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.net.packet.client.action.PacketActionEndTurn;
@@ -18,51 +15,38 @@ public class ActionStatePlay extends ActionState
 	}
 	
 	@Override
+	public boolean isTurnState()
+	{
+		return true;
+	}
+	
+	@Override
 	public void setup()
 	{
-		getGameState().setWhoseTurn(getActionOwner());
-		getGameState().setTurns(turns);
 		if (getActionOwner() == getClient().getThePlayer())
 		{
 			MDButton button = getClient().getTableScreen().getMultiButton();
 			button.setText("End Turn");
-			if (getActionOwner().getHand().getCardCount() > 7)
+			int maxCards = getClient().getRules().getMaxCardsInHand();
+			if (getActionOwner().getHand().getCardCount() > maxCards)
 			{
 				button.setEnabled(false);
 			}
 			else
 			{
 				button.setEnabled(true);
-				button.setListener(new MouseAdapter()
+				button.setListener(() ->
 				{
-					@Override
-					public void mouseReleased(MouseEvent event)
+					if (!getClient().isInputBlocked() && getClient().canActFreely() && getActionOwner().getHand().getCardCount() <= maxCards)
 					{
-						if (!getClient().isInputBlocked() && getClient().canActFreely() && getActionOwner().getHand().getCardCount() <= 7)
-						{
-							getClient().sendPacket(new PacketActionEndTurn());
-							getClient().setAwaitingResponse(true);
-							button.setEnabled(false);
-							button.removeListener();
-						}
+						getClient().sendPacket(new PacketActionEndTurn());
+						getClient().setAwaitingResponse(true);
+						button.setEnabled(false);
+						button.removeListener();
 					}
 				});
 			}
 		}
-	}
-	
-	@Override
-	public void cleanup()
-	{
-		super.cleanup();
-		/*
-		if (getActionOwner() == getClient().getThePlayer())
-		{
-			MDButton button = getClient().getTableScreen().getMultiButton();
-			button.setEnabled(false);
-			button.removeListener();
-		}
-		*/
 	}
 	
 	public int getTurns()

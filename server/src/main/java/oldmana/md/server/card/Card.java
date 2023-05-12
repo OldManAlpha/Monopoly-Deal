@@ -14,8 +14,6 @@ import oldmana.md.server.Player;
 import oldmana.md.server.card.collection.CardCollection;
 import oldmana.md.server.card.control.CardControls;
 import oldmana.md.server.card.control.CardButton;
-import oldmana.md.server.state.ActionStateDiscard;
-import oldmana.md.server.state.GameState;
 
 public abstract class Card
 {
@@ -73,15 +71,8 @@ public abstract class Card
 	{
 		CardButton discard = new CardButton("Discard", CardButton.CENTER);
 		discard.setCondition((player, card) ->
-		{
-			GameState gs = getServer().getGameState();
-			return gs.getActivePlayer() == player && gs.getActionState() instanceof ActionStateDiscard &&
-					(!(card instanceof CardProperty) || player.getHand().hasAllProperties());
-		});
-		discard.setListener((player, card, data) ->
-		{
-			player.discard(card);
-		});
+			player.isDiscarding() && (!(card instanceof CardProperty) || player.getHand().hasAllProperties()));
+		discard.setListener((player, card, data) -> player.discard(card));
 		return new CardControls(this, discard);
 	}
 	
@@ -319,7 +310,7 @@ public abstract class Card
 	/**
 	 * Called right before a player discards this card.
 	 * 
-	 * @param player - The player discarding this card
+	 * @param player The player discarding this card
 	 * @return Whether this card should be discarded
 	 */
 	public boolean onDiscard(Player player)
@@ -353,7 +344,7 @@ public abstract class Card
 	
 	private static CardType<Card> createType()
 	{
-		CardType<Card> type = new CardType<Card>(Card.class, "Card", false);
+		CardType<Card> type = new CardType<Card>(Card.class, "Card");
 		type.setDefaultTemplate(new CardTemplate());
 		return type;
 	}

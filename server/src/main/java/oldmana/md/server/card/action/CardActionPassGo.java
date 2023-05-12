@@ -3,7 +3,6 @@ package oldmana.md.server.card.action;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardTemplate;
-import oldmana.md.server.card.collection.Deck;
 import oldmana.md.server.card.CardType;
 
 public class CardActionPassGo extends CardAction
@@ -11,14 +10,13 @@ public class CardActionPassGo extends CardAction
 	@Override
 	public void playCard(Player player)
 	{
-		Deck deck = getServer().getDeck();
-		deck.drawCards(player, 2);
-		getServer().getGameState().nextNaturalActionState();
+		getServer().getDeck().drawCards(player, 2);
 	}
 	
 	private static CardType<CardActionPassGo> createType()
 	{
-		CardType<CardActionPassGo> type = new CardType<CardActionPassGo>(CardActionPassGo.class, "Pass Go", "Go");
+		CardType<CardActionPassGo> type = new CardType<CardActionPassGo>(CardActionPassGo.class, CardActionPassGo::new,
+				"Pass Go", "Go");
 		CardTemplate template = type.getDefaultTemplate();
 		template.put("value", 1);
 		template.put("name", "Pass Go");

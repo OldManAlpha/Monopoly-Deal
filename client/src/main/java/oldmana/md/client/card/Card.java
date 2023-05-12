@@ -61,7 +61,6 @@ public class Card
 		this.fontSize = fontSize;
 		this.displayOffsetY = displayOffsetY;
 		this.description = description;
-		registerCard(this);
 	}
 	
 	public int getID()
