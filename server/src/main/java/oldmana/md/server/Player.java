@@ -205,8 +205,8 @@ public class Player extends Client implements CommandSender
 			return null;
 		}
 		popRevocableCard();
-		card.transfer(getHand());
 		server.getGameState().undoCard(card);
+		card.transfer(getHand());
 		System.out.println(getName() + " undos " + card.getName());
 		return card;
 	}
