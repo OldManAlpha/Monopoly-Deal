@@ -64,7 +64,7 @@ public class NetHandler
 		PacketDestroyCardButton.class,
 		PacketTurnOrder.class,
 		PacketGameRules.class,
-		PacketOpenChat.class,
+		PacketSetChatOpen.class,
 		PacketRemoveMessageCategory.class,
 		
 		// Client -> Server

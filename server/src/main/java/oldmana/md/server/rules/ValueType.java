@@ -1,7 +1,6 @@
 package oldmana.md.server.rules;
 
 import oldmana.md.server.ChatColor;
-import oldmana.md.server.CommandSender;
 
 import java.util.Arrays;
 import java.util.HashMap;

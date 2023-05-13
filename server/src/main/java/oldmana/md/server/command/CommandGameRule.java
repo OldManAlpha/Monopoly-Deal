@@ -1,6 +1,6 @@
 package oldmana.md.server.command;
 
-import oldmana.md.net.packet.server.PacketOpenChat;
+import oldmana.md.net.packet.server.PacketSetChatOpen;
 import oldmana.md.net.packet.server.PacketRemoveMessageCategory;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
@@ -136,7 +136,7 @@ public class CommandGameRule extends Command
 			executeCommand(sender, new String[] {"list", rule.getRuleStruct().getObjectParent().getPath()});
 			if (sender instanceof Player)
 			{
-				((Player) sender).sendPacket(new PacketOpenChat());
+				((Player) sender).sendPacket(new PacketSetChatOpen(true));
 			}
 		}
 		else if (args[0].equalsIgnoreCase("type"))
@@ -156,6 +156,10 @@ public class CommandGameRule extends Command
 			grs.reloadRules();
 			clearMessages(sender, "gamerule");
 			clearMessages(sender, "ruleTypeUsage");
+			if (sender instanceof Player)
+			{
+				((Player) sender).sendPacket(new PacketSetChatOpen(false));
+			}
 			sender.sendMessage(ChatColor.LIGHT_GREEN + "Reloaded the game rules.");
 		}
 	}

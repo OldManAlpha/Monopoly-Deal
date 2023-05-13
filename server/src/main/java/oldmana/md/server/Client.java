@@ -24,7 +24,7 @@ public class Client
 	
 	public String getHostAddress()
 	{
-		return net.getConnection().getSocket().getInetAddress().getHostAddress();
+		return net != null ? net.getConnection().getSocket().getInetAddress().getHostAddress() : "Unknown Address";
 	}
 	
 	public boolean isConnected()
