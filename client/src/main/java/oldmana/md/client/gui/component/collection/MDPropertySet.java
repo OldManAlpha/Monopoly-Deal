@@ -5,15 +5,19 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.SwingUtilities;
 
 import oldmana.md.client.ThePlayer;
+import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.component.MDCard;
@@ -51,7 +55,7 @@ public class MDPropertySet extends MDCardCollection
 	@Override
 	public void update()
 	{
-		int outlineWidth = (int) Math.max(GraphicsUtils.SCALE + 0.3, 1) * 2;
+		int outlineWidth = getOutlineWidth() * 2;
 		setSize(GraphicsUtils.getCardWidth() + outlineWidth, GraphicsUtils.getCardHeight() +
 				(getInterval() * (getCollection().getCardCount() - 1 + (isCardBeingRemoved() ? 1 : 0))) + outlineWidth);
 		repaint();
@@ -161,6 +165,36 @@ public class MDPropertySet extends MDCardCollection
 		}
 	}
 	
+	public Rectangle getBorderBounds()
+	{
+		Entry<Card, Point> top = null;
+		Entry<Card, Point> bottom = null;
+		for (Entry<Card, Point> entry : getCurrentCardPositions().entrySet())
+		{
+			if (top == null)
+			{
+				top = entry;
+				bottom = entry;
+				continue;
+			}
+			Point pos = entry.getValue();
+			if (pos.y < top.getValue().y)
+			{
+				top = entry;
+			}
+			if (pos.y > bottom.getValue().y)
+			{
+				bottom = entry;
+			}
+		}
+		if (top == null)
+		{
+			return new Rectangle(0, 0, 0, 0);
+		}
+		return new Rectangle(0, top.getValue().y - getOutlineWidth(), GraphicsUtils.getCardWidth() + (getOutlineWidth() * 2),
+				(bottom.getValue().y - top.getValue().y) + GraphicsUtils.getCardHeight() + (getOutlineWidth() * 2));
+	}
+	
 	@Override
 	public void paintComponent(Graphics gr)
 	{
@@ -173,30 +207,8 @@ public class MDPropertySet extends MDCardCollection
 		if (effectiveColor != null && set.getCardCount() > 0 && !(set.getCardCount() == 1 && isCardIncoming()))
 		{
 			g.setColor(effectiveColor.getColor());
-			int shiftOffset = 0;
-			if (isCardIncoming())
-			{
-				if (getModIndex() < getCardCount() - 1)
-				{
-					shiftOffset = (int) -(getInterval() - (getVisibleShiftProgress() * getInterval()));
-				}
-				else
-				{
-					shiftOffset = (int) -getInterval();
-				}
-			}
-			else if (isCardBeingRemoved())
-			{
-				if (getModIndex() < getCardCount())
-				{
-					shiftOffset = (int) -(getVisibleShiftProgress() * getInterval());
-				}
-				else
-				{
-					shiftOffset = (int) -getInterval();
-				}
-			}
-			g.fillRoundRect(0, 0, getWidth(), getHeight() + shiftOffset, scale(12), scale(12));
+			Rectangle border = getBorderBounds();
+			g.fillRoundRect(0, border.y, border.width, border.height, scale(12), scale(12));
 		}
 		if (!(set.getCardCount() == 1 && isCardIncoming()))
 		{
