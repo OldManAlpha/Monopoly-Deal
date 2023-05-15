@@ -5,15 +5,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -23,8 +21,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import oldmana.md.server.ai.AIManager;
 import oldmana.md.server.card.CardAction;
@@ -72,12 +68,12 @@ public class MDServer
 	
 	private File dataFolder;
 	
-	private List<MDMod> mods = new ArrayList<MDMod>();
+	private ModLoader modLoader;
 	
 	private ServerConfig config;
 	private PlayerRegistry playerRegistry;
 	
-	private List<Client> newClients = new ArrayList<Client>();
+	private final List<Client> newClients = new ArrayList<Client>();
 	
 	private List<Player> players = new ArrayList<Player>();
 	
@@ -273,12 +269,10 @@ public class MDServer
 		{
 			synchronized (newClients)
 			{
-				List<Client> clients = new ArrayList<Client>(newClients);
-				for (Client client : clients)
+				for (Client client : new ArrayList<Client>(newClients))
 				{
 					if (!client.isConnected())
 					{
-						newClients.remove(client);
 						continue;
 					}
 					netHandler.processPackets(client);
@@ -389,71 +383,31 @@ public class MDServer
 		return dataFolder;
 	}
 	
-	public void loadMods()
+	private void loadMods()
 	{
+		modLoader = new ModLoader();
 		File modsFolder = new File(getDataFolder(), "mods");
 		if (!modsFolder.exists())
 		{
 			modsFolder.mkdir();
 		}
-		for (File f : modsFolder.listFiles())
+		for (File file : modsFolder.listFiles())
 		{
-			try
+			if (file.isFile() && file.getName().endsWith(".jar"))
 			{
-				if (f.isFile() && f.getName().endsWith(".jar"))
-				{
-					List<Class<?>> classes = new ArrayList<Class<?>>();
-					URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] {new URL("jar:file:" + f.getPath() + "!/")},
-							getClass().getClassLoader());
-					JarFile jar = new JarFile(f);
-					Enumeration<JarEntry> entries = jar.entries();
-					while (entries.hasMoreElements())
-					{
-						JarEntry e = entries.nextElement();
-						if (e.isDirectory() || !e.getName().endsWith(".class"))
-						{
-							continue;
-						}
-						String className = e.getName().substring(0, e.getName().length() - 6).replace('/', '.');
-						Class<?> clazz = classLoader.loadClass(className);
-						classes.add(clazz);
-					}
-					jar.close();
-					boolean hasModClass = false;
-					for (Class<?> clazz : classes)
-					{
-						if (MDMod.class.isAssignableFrom(clazz))
-						{
-							MDMod mod = (MDMod) clazz.newInstance();
-							System.out.println("Loading Mod: " + mod.getName());
-							mods.add(mod);
-							mod.onLoad();
-							hasModClass = true;
-							break;
-						}
-					}
-					if (!hasModClass)
-					{
-						System.out.println(f.getName() + " is missing a mod class!");
-					}
-				}
-			}
-			catch (Exception e)
-			{
-				System.out.println("Error loading: " + f.getName());
-				e.printStackTrace();
+				modLoader.loadMod(file);
 			}
 		}
 	}
 	
 	public List<MDMod> getMods()
 	{
-		return mods;
+		return modLoader.getMods();
 	}
 	
 	public <M extends MDMod> M getMod(Class<M> modClass)
 	{
-		for (MDMod mod : mods)
+		for (MDMod mod : modLoader.getMods())
 		{
 			if (mod.getClass() == modClass)
 			{
@@ -463,7 +417,7 @@ public class MDServer
 		return null;
 	}
 	
-	public void loadDecks()
+	private void loadDecks()
 	{
 		File folder = new File(getDataFolder(), "decks");
 		if (!folder.exists())
@@ -720,7 +674,7 @@ public class MDServer
 		return serverKey;
 	}
 	
-	public void loadSounds()
+	private void loadSounds()
 	{
 		File soundsFolder = new File(getDataFolder(), "sounds");
 		if (!soundsFolder.exists())

@@ -71,7 +71,7 @@ public class MDScheduler
 				{
 					task.run();
 				}
-				catch (Exception e)
+				catch (Exception | Error e)
 				{
 					System.err.println("Exception occurred in scheduled task");
 					e.printStackTrace();
