@@ -356,7 +356,7 @@ public class NetServerHandler extends NetHandler
 	
 	public void handleActionChangeSetColor(Player player, PacketActionChangeSetColor packet)
 	{
-		PropertySet set = (PropertySet) CardCollection.getCardCollection(packet.setId);
+		PropertySet set = (PropertySet) CardCollection.getByID(packet.setId);
 		PropertyColor color = PropertyColor.fromID(packet.color);
 		if (set.getPossibleBaseColors().contains(color))
 		{
@@ -407,7 +407,7 @@ public class NetServerHandler extends NetHandler
 		if (state instanceof ActionStateTargetPlayerMonopoly)
 		{
 			player.clearRevocableCards();
-			((ActionStateTargetPlayerMonopoly) state).onSetSelected((PropertySet) CardCollection.getCardCollection(packet.id));
+			((ActionStateTargetPlayerMonopoly) state).onSetSelected((PropertySet) CardCollection.getByID(packet.id));
 		}
 		else
 		{

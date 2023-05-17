@@ -16,8 +16,8 @@ public class CommandTransferAll extends Command
 	@Override
 	public void executeCommand(CommandSender sender, String[] args)
 	{
-		CardCollection from = CardCollection.getCardCollection(Integer.parseInt(args[0]));
-		CardCollection to = CardCollection.getCardCollection(Integer.parseInt(args[1]));
+		CardCollection from = CardCollection.getByID(Integer.parseInt(args[0]));
+		CardCollection to = CardCollection.getByID(Integer.parseInt(args[1]));
 		double time = 1;
 		if (args.length >= 3)
 		{

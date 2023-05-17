@@ -42,7 +42,7 @@ public class CommandTransferCard extends Command
 			int setId = Integer.parseInt(args[1]);
 			if (setId > -1)
 			{
-				CardCollection collection = CardCollection.getCardCollection(setId);
+				CardCollection collection = CardCollection.getByID(setId);
 				if (!(collection instanceof PropertySet) || card instanceof CardProperty || card instanceof CardBuilding)
 				{
 					int index = -1;

@@ -80,6 +80,13 @@ public class MDServer
 	
 	private GameState gameState;
 	
+	private CardRegistry cardRegistry;
+	
+	private Map<Integer, Card> cards = new HashMap<Integer, Card>();
+	private int nextCardID = 0;
+	private Map<Integer, CardCollection> cardCollections = new HashMap<Integer, CardCollection>();
+	private int nextCardCollectionID = 0;
+	
 	private VoidCollection voidCollection;
 	private Deck deck;
 	private DiscardPile discardPile;
@@ -99,7 +106,8 @@ public class MDServer
 	private AIManager aiManager;
 
 	private final List<String> cmdQueue = Collections.synchronizedList(new ArrayList<String>());
-
+	
+	private volatile boolean running = false;
 	private volatile boolean shutdown = false;
 
 	private GameRules rules = new GameRules();
@@ -144,6 +152,7 @@ public class MDServer
 		
 		System.out.println("Starting Monopoly Deal Server Version " + VERSION);
 		
+		cardRegistry = new CardRegistry();
 		registerDefaultCards();
 		
 		gameState = new GameState(this);
@@ -261,6 +270,7 @@ public class MDServer
 		
 		System.out.println("Finished initialization");
 		
+		running = true;
 		serverThread.scheduleAtFixedRate(() -> tickServer(), 50, 50, TimeUnit.MILLISECONDS);
 	}
 	
@@ -376,7 +386,18 @@ public class MDServer
 			}
 		}
 		System.out.println("Server stopped");
-		System.exit(error ? 1 : 0);
+		instance = null;
+		running = false;
+		serverThread.shutdown();
+		if (!isIntegrated())
+		{
+			System.exit(error ? 1 : 0);
+		}
+	}
+	
+	public boolean isRunning()
+	{
+		return running;
 	}
 	
 	/**
@@ -390,6 +411,21 @@ public class MDServer
 	public boolean isShuttingDown()
 	{
 		return shutdown;
+	}
+	
+	/**
+	 * Check if this server is controlled by a client.
+	 * @return True if this server is directly ran by a client
+	 */
+	public boolean isIntegrated()
+	{
+		try
+		{
+			Class.forName("oldmana.md.client.Client");
+			return true;
+		}
+		catch (ClassNotFoundException e) {}
+		return false;
 	}
 	
 	public File getDataFolder()
@@ -528,6 +564,11 @@ public class MDServer
 		return gameState;
 	}
 	
+	public CardRegistry getCardRegistry()
+	{
+		return cardRegistry;
+	}
+	
 	public PlayerRegistry getPlayerRegistry()
 	{
 		return playerRegistry;
@@ -608,8 +649,8 @@ public class MDServer
 			p.removeButtons(player);
 		}
 		eventManager.callEvent(new PlayerRemovedEvent(player));
-		CardCollection.unregisterCardCollection(player.getHand());
-		CardCollection.unregisterCardCollection(player.getBank());
+		CardCollection.unregister(player.getHand());
+		CardCollection.unregister(player.getBank());
 		broadcastPacket(new PacketDestroyPlayer(player.getID()));
 	}
 	
@@ -665,6 +706,26 @@ public class MDServer
 	public GameRules getGameRules()
 	{
 		return rules;
+	}
+	
+	public Map<Integer, Card> getCards()
+	{
+		return cards;
+	}
+	
+	public int nextCardID()
+	{
+		return nextCardID++;
+	}
+	
+	public Map<Integer, CardCollection> getCardCollections()
+	{
+		return cardCollections;
+	}
+	
+	public int nextCardCollectionID()
+	{
+		return nextCardCollectionID++;
 	}
 	
 	public VoidCollection getVoidCollection()

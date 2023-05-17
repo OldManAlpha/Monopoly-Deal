@@ -17,12 +17,7 @@ import oldmana.md.server.card.control.CardButton;
 
 public abstract class Card
 {
-	private static Map<Integer, Card> cards = new HashMap<Integer, Card>();
-	
-	private static int nextID;
-	
-	
-	private int id = -1;
+	private int id;
 	
 	private CardCollection collection;
 	
@@ -44,8 +39,8 @@ public abstract class Card
 	
 	public Card()
 	{
-		id = nextID++;
-		registerCard(this);
+		id = getServer().nextCardID();
+		register(this);
 		controls = createControls();
 	}
 	
@@ -84,17 +79,6 @@ public abstract class Card
 	public void updateButtons()
 	{
 		controls.updateButtons();
-	}
-	
-	public void registerCard()
-	{
-		if (id > -1)
-		{
-			System.out.println("Tried to register card that is already registered!");
-			return;
-		}
-		id = nextID++;
-		registerCard(this);
 	}
 	
 	public int getID()
@@ -407,17 +391,17 @@ public abstract class Card
 	
 	public static Map<Integer, Card> getRegisteredCards()
 	{
-		return cards;
+		return getCardsMap();
 	}
 	
-	public static void registerCard(Card card)
+	public static void register(Card card)
 	{
-		cards.put(card.getID(), card);
+		getCardsMap().put(card.getID(), card);
 	}
 	
-	public static void unregisterCard(Card card)
+	public static void unregister(Card card)
 	{
-		cards.remove(card.getID());
+		getCardsMap().remove(card.getID());
 	}
 	
 	public static List<Card> getCards(int[] ids)
@@ -432,6 +416,11 @@ public abstract class Card
 	
 	public static Card getCard(int id)
 	{
-		return cards.get(id);
+		return getCardsMap().get(id);
+	}
+	
+	private static Map<Integer, Card> getCardsMap()
+	{
+		return MDServer.getInstance().getCards();
 	}
 }

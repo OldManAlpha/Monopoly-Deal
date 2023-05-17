@@ -21,7 +21,7 @@ public class CommandListCards extends Command
 		{
 			if (verifyInt(args[0]))
 			{
-				CardCollection collection = CardCollection.getCardCollection(Integer.parseInt(args[0]));
+				CardCollection collection = CardCollection.getByID(Integer.parseInt(args[0]));
 				sender.sendMessage(ChatColor.GREEN + "List of cards in collection ID " + collection.getID() + "(Count: " + collection.getCardCount() + ")");
 				boolean gray = false;
 				for (int i = 0 ; i < collection.getCardCount() ; i++)

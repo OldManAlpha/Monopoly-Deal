@@ -2,7 +2,6 @@ package oldmana.md.server.card.collection;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -19,11 +18,6 @@ import oldmana.md.server.event.CardMovedEvent;
 
 public abstract class CardCollection implements Iterable<Card>
 {
-	private static Map<Integer, CardCollection> collections = new HashMap<Integer, CardCollection>();
-	
-	private static int nextID;
-	
-	
 	private int id;
 	
 	private List<Card> cards;
@@ -34,8 +28,8 @@ public abstract class CardCollection implements Iterable<Card>
 		this.owner = owner;
 		cards = new ArrayList<Card>();
 		
-		id = nextID++;
-		registerCardCollection(this);
+		id = getServer().nextCardCollectionID();
+		register(this);
 	}
 	
 	public CardCollection(Player owner, List<Card> cards)
@@ -47,8 +41,8 @@ public abstract class CardCollection implements Iterable<Card>
 			card.setOwningCollection(this);
 		}
 		
-		id = nextID++;
-		registerCardCollection(this);
+		id = getServer().nextCardCollectionID();
+		register(this);
 	}
 	
 	public int getID()
@@ -264,23 +258,28 @@ public abstract class CardCollection implements Iterable<Card>
 	public abstract Packet getCollectionDataPacket();
 	
 	
-	public static void registerCardCollection(CardCollection collection)
+	public static void register(CardCollection collection)
 	{
-		collections.put(collection.getID(), collection);
+		getCollectionsMap().put(collection.getID(), collection);
 	}
 	
-	public static void unregisterCardCollection(CardCollection collection)
+	public static void unregister(CardCollection collection)
 	{
-		collections.remove(collection.getID(), collection);
+		getCollectionsMap().remove(collection.getID(), collection);
 	}
 	
-	public static Map<Integer, CardCollection> getRegisteredCardCollections()
+	public static Map<Integer, CardCollection> getRegistered()
 	{
-		return collections;
+		return getCollectionsMap();
 	}
 	
-	public static CardCollection getCardCollection(int id)
+	public static CardCollection getByID(int id)
 	{
-		return collections.get(id);
+		return getCollectionsMap().get(id);
+	}
+	
+	private static Map<Integer, CardCollection> getCollectionsMap()
+	{
+		return MDServer.getInstance().getCardCollections();
 	}
 }

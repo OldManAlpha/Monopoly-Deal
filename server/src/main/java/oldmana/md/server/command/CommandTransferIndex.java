@@ -26,8 +26,8 @@ public class CommandTransferIndex extends Command
 				time = parseDouble(args[3]);
 			}
 			
-			CardCollection from = CardCollection.getCardCollection(Integer.parseInt(args[0]));
-			CardCollection to = CardCollection.getCardCollection(Integer.parseInt(args[2]));
+			CardCollection from = CardCollection.getByID(Integer.parseInt(args[0]));
+			CardCollection to = CardCollection.getByID(Integer.parseInt(args[2]));
 			int fromIndex = Integer.parseInt(args[1]);
 			int toIndex = args.length >= 4 ? Integer.parseInt(args[3]) : -1;
 			from.getCardAt(fromIndex).transfer(to, toIndex, time);

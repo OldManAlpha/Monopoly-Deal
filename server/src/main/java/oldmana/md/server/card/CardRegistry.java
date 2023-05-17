@@ -1,5 +1,7 @@
 package oldmana.md.server.card;
 
+import oldmana.md.server.MDServer;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,13 +10,13 @@ import java.util.Map;
 
 public class CardRegistry
 {
-	private static List<CardType<?>> registeredCards = new ArrayList<CardType<?>>();
-	private static Map<String, CardType<?>> nameCardTypeMap = new HashMap<String, CardType<?>>();
-	private static Map<Class<? extends Card>, CardType<?>> classCardTypeMap = new HashMap<Class<? extends Card>, CardType<?>>();
+	private List<CardType<?>> registeredCards = new ArrayList<CardType<?>>();
+	private Map<String, CardType<?>> nameCardTypeMap = new HashMap<String, CardType<?>>();
+	private Map<Class<? extends Card>, CardType<?>> classCardTypeMap = new HashMap<Class<? extends Card>, CardType<?>>();
 	
 	public static <T extends Card> CardType<T> getTypeByClass(Class<T> cardClass)
 	{
-		return (CardType<T>) classCardTypeMap.get(cardClass);
+		return (CardType<T>) getCardRegistry().classCardTypeMap.get(cardClass);
 	}
 	
 	/**
@@ -24,12 +26,12 @@ public class CardRegistry
 	 */
 	public static CardType<?> getTypeByName(String name)
 	{
-		return nameCardTypeMap.get(name);
+		return getCardRegistry().nameCardTypeMap.get(name);
 	}
 	
 	public static List<CardType<?>> getRegisteredCards()
 	{
-		return registeredCards;
+		return getCardRegistry().registeredCards;
 	}
 	
 	public static <T extends Card> T createCard(Class<T> cardClass)
@@ -44,9 +46,9 @@ public class CardRegistry
 	
 	public static void registerCardType(CardType<?> type)
 	{
-		registeredCards.add(type);
-		classCardTypeMap.put(type.getCardClass(), type);
-		nameCardTypeMap.put(type.getInternalName(), type);
+		getCardRegistry().registeredCards.add(type);
+		getCardRegistry().classCardTypeMap.put(type.getCardClass(), type);
+		getCardRegistry().nameCardTypeMap.put(type.getInternalName(), type);
 	}
 	
 	/**
@@ -73,5 +75,10 @@ public class CardRegistry
 		{
 			throw new RuntimeException("Error while creating the card type in class " + cardClass.getName(), e);
 		}
+	}
+	
+	private static CardRegistry getCardRegistry()
+	{
+		return MDServer.getInstance().getCardRegistry();
 	}
 }

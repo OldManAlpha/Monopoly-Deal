@@ -379,7 +379,7 @@ public class Player extends Client implements CommandSender
 	public void destroyPropertySet(PropertySet set)
 	{
 		propertySets.remove(set);
-		CardCollection.unregisterCardCollection(set);
+		CardCollection.unregister(set);
 		server.broadcastPacket(new PacketDestroyCardCollection(set.getID()));
 	}
 	

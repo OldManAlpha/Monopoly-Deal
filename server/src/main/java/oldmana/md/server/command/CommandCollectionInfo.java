@@ -15,7 +15,7 @@ public class CommandCollectionInfo extends Command
 	{
 		if (args.length >= 1)
 		{
-			CardCollection collection = CardCollection.getCardCollection(Integer.parseInt(args[0]));
+			CardCollection collection = CardCollection.getByID(Integer.parseInt(args[0]));
 			sender.sendMessage("Collection ID " + collection.getID() + " is a " + collection.getClass().getSimpleName() + " with a card count of " + 
 			collection.getCardCount());
 		}

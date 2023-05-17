@@ -16,7 +16,7 @@ public class CommandListIDs extends Command
 	{
 		if (args.length >= 1)
 		{
-			CardCollection collection = CardCollection.getCardCollection(Integer.parseInt(args[0]));
+			CardCollection collection = CardCollection.getByID(Integer.parseInt(args[0]));
 			sender.sendMessage("List of card IDs in collection ID " + collection.getID() + "(Count: " + collection.getCardCount() + ")");
 			for (Card card : collection.getCards())
 			{
