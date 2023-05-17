@@ -229,53 +229,57 @@ public class GameRules
 		return rootRule.getSubrule(jsonName);
 	}
 	
-	public void setRules(GameRule rootRule)
+	public boolean setRules(GameRule rootRule)
 	{
-		// Apply the default rules, in case the new rules being applied aren't complete or has errors
-		this.rootRule = rootRuleStruct.generateDefaults();
-		reloadRules();
-		// Apply the actual rules
 		this.rootRule = rootRule;
-		reloadRules();
-		if (MDServer.getInstance() != null)
-		{
-			MDServer.getInstance().broadcastPacket(constructPacket());
-			MDServer.getInstance().getEventManager().callEvent(new GameRulesReloadedEvent());
-		}
-	}
-	
-	public void reloadRules()
-	{
-		GameRule winConditionRule = getRule("winCondition").getChoice();
-		applyRule(() -> winCondition = WinConditionType.fromRule(winConditionRule).create(winConditionRule));
-		applyRule(() -> movesPerTurn = getRule("movesPerTurn").getInteger());
-		applyRule(() -> twoColorRentChargesAll = getRule("twoColorRentChargesAll").getBoolean());
-		applyRule(() -> multiColorRentChargesAll = getRule("multiColorRentChargesAll").getBoolean());
-		applyRule(() -> dealBreakersDiscardSets = getRule("dealBreakersDiscardSets").getBoolean());
-		applyRule(() -> allowUndo = getRule("allowUndo").getBoolean());
-		applyRule(() -> maxCardsInHand = getRule("maxCardsInHand").getInteger());
-		applyRule(() -> cardsDealt = getRule("cardsDealt").getInteger());
-		applyRule(() -> cardsDrawnPerTurn = getRule("cardsDrawnPerTurn").getInteger());
-		GameRule emptyHandMechanics = getRule("emptyHandMechanics");
-		applyRule(() -> drawExtraCardsPolicy = DrawExtraCardsPolicy.fromJson(emptyHandMechanics.getSubrule("drawExtraCards").getString()));
-		applyRule(() -> extraCardsDrawn = emptyHandMechanics.getSubrule("extraCardsDrawn").getInteger());
+		return reloadRules();
 	}
 	
 	/**
-	 * Compactly encapsulates a single application so one rule application error doesn't halt the entire process.
-	 * @param application The application to run
+	 * Reloads the rules from the currently set root rule.
+	 * @return True if the application was successful
 	 */
-	private void applyRule(Runnable application)
+	public boolean reloadRules()
 	{
 		try
 		{
-			application.run();
+			applyRules();
 		}
 		catch (Exception e)
 		{
-			System.err.println("Error applying a game rule:");
+			// Apply default rules if application fails
+			System.out.println("Rule application failed, falling back to default rules.");
 			e.printStackTrace();
+			rootRule = rootRuleStruct.generateDefaults();
+			applyRules();
+			return false;
 		}
+		finally
+		{
+			if (MDServer.getInstance() != null)
+			{
+				MDServer.getInstance().broadcastPacket(constructPacket());
+				MDServer.getInstance().getEventManager().callEvent(new GameRulesReloadedEvent());
+			}
+		}
+		return true;
+	}
+	
+	private void applyRules()
+	{
+		GameRule winConditionRule = getRule("winCondition").getChoice();
+		winCondition = WinConditionType.fromRule(winConditionRule).create(winConditionRule);
+		movesPerTurn = getRule("movesPerTurn").getInteger();
+		twoColorRentChargesAll = getRule("twoColorRentChargesAll").getBoolean();
+		multiColorRentChargesAll = getRule("multiColorRentChargesAll").getBoolean();
+		dealBreakersDiscardSets = getRule("dealBreakersDiscardSets").getBoolean();
+		allowUndo = getRule("allowUndo").getBoolean();
+		maxCardsInHand = getRule("maxCardsInHand").getInteger();
+		cardsDealt = getRule("cardsDealt").getInteger();
+		cardsDrawnPerTurn = getRule("cardsDrawnPerTurn").getInteger();
+		GameRule emptyHandMechanics = getRule("emptyHandMechanics");
+		drawExtraCardsPolicy = DrawExtraCardsPolicy.fromJson(emptyHandMechanics.getSubrule("drawExtraCards").getString());
+		extraCardsDrawn = emptyHandMechanics.getSubrule("extraCardsDrawn").getInteger();
 	}
 	
 	public PacketGameRules constructPacket()

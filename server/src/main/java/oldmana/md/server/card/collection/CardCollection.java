@@ -84,6 +84,11 @@ public abstract class CardCollection implements Iterable<Card>
 		return cards.iterator();
 	}
 	
+	/**
+	 * Returns the List that backs this CardCollection. It should not be directly modified, nor should you modify this
+	 * collection while iterating over the cards.
+	 * @return The List of cards in this collection
+	 */
 	public List<Card> getCards()
 	{
 		return cards;
@@ -91,12 +96,12 @@ public abstract class CardCollection implements Iterable<Card>
 	
 	public List<Card> getCards(boolean copy)
 	{
-		return copy ? new ArrayList<Card>(cards) : cards;
+		return copy ? new ArrayList<Card>(cards) : getCards();
 	}
 	
 	public List<Card> getCardsInReverse()
 	{
-		List<Card> cards = new ArrayList<Card>(this.cards);
+		List<Card> cards = getCards(true);
 		Collections.reverse(cards);
 		return cards;
 	}

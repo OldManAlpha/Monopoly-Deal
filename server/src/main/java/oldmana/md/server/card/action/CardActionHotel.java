@@ -10,11 +10,13 @@ public class CardActionHotel extends CardBuilding
 	{
 		CardType<CardActionHotel> type = new CardType<CardActionHotel>(CardActionHotel.class,
 				CardActionHotel::new, "Hotel");
+		type.removeExemptReduction("tier");
+		type.removeExemptReduction("rentAddition");
 		CardTemplate template = type.getDefaultTemplate();
 		template.put("value", 4);
 		template.put("name", "Hotel");
 		template.putStrings("displayName", "HOTEL");
-		template.put("fontSize", 7);
+		template.put("fontSize", 8);
 		template.put("displayOffsetY", 2);
 		template.putStrings("description", "Play onto a full property set to add 4M in rent value. Requires a house " +
 				"to already be built on the set. Only one hotel may be placed per property set. Properties under " +

@@ -94,18 +94,13 @@ public class CommandGameRule extends Command
 					mb.addHoverString(rs.getDisplayValue(rule), choiceStruct.getDescription());
 					if (choiceStruct instanceof RuleStructKey)
 					{
-						mb.addString(" (" + choice.getDeepValue() + ")");
-					}
-					if (choiceStruct instanceof RuleStructObject)
-					{
-						mb.addString(" " + ChatColor.ORANGE + "(" + choice.getDisplayValue() + ")");
-						mb.addString(" ");
-						addListButton(mb, choiceStruct);
-					}
-					else if (choiceStruct instanceof RuleStructKey)
-					{
-						mb.addString(" ");
+						mb.addString(" (" + choice.getDeepValue() + ") ");
 						addEditButton(mb, choiceStruct);
+					}
+					else if (choiceStruct instanceof RuleStructObject)
+					{
+						mb.addString(" " + ChatColor.ORANGE + "(" + choice.getDisplayValue() + ") ");
+						addListButton(mb, choiceStruct);
 					}
 					mb.addString(" ");
 					mb.startHoverText("Change currently selected option");
@@ -114,6 +109,7 @@ public class CommandGameRule extends Command
 				}
 				sender.sendMessage(mb.getMessage());
 			});
+			
 			if (listedRule.getRuleStruct().hasParent())
 			{
 				sendBackButton(sender, listedRule.getRuleStruct().getObjectParent());
@@ -121,6 +117,11 @@ public class CommandGameRule extends Command
 			else
 			{
 				sendApplyRulesButton(sender);
+			}
+			
+			if (sender instanceof Player)
+			{
+				((Player) sender).sendPacket(new PacketSetChatOpen(true));
 			}
 		}
 		else if (args[0].equalsIgnoreCase("set"))
@@ -134,16 +135,13 @@ public class CommandGameRule extends Command
 					rule.getRuleStruct().getName() + ChatColor.WHITE + " from " + ChatColor.ORANGE + prevValue + ChatColor.WHITE +
 					" to " + ChatColor.ORANGE + value);
 			executeCommand(sender, new String[] {"list", rule.getRuleStruct().getObjectParent().getPath()});
-			if (sender instanceof Player)
-			{
-				((Player) sender).sendPacket(new PacketSetChatOpen(true));
-			}
 		}
 		else if (args[0].equalsIgnoreCase("type"))
 		{
 			GameRule rule = root.traverse(args[1]);
 			if (rule.getRuleStruct() instanceof RuleStructKey)
 			{
+				clearMessages(sender, "ruleTypeUsage");
 				List<String> usage = ((RuleStructValue<?>) rule.getValueAsRule().getRuleStruct()).getValueType().getUsage();
 				for (String line : usage)
 				{

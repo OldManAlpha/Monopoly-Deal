@@ -10,11 +10,13 @@ public class CardActionHouse extends CardBuilding
 	{
 		CardType<CardActionHouse> type = new CardType<CardActionHouse>(CardActionHouse.class,
 				CardActionHouse::new, "House");
+		type.removeExemptReduction("tier");
+		type.removeExemptReduction("rentAddition");
 		CardTemplate template = type.getDefaultTemplate();
 		template.put("value", 3);
 		template.put("name", "House");
 		template.putStrings("displayName", "HOUSE");
-		template.put("fontSize", 7);
+		template.put("fontSize", 8);
 		template.put("displayOffsetY", 2);
 		template.putStrings("description", "Place onto a full property set to add 3M in rent value. Only one House may " +
 				"be placed per property set. Cannot be placed on railroads and utilties. Properties under buildings " +

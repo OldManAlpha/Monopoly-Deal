@@ -233,6 +233,10 @@ public class GameState
 	{
 		states.clear();
 		turnState = turnOrder.setTurn(player);
+		if (!draw)
+		{
+			turnState.setDrawn();
+		}
 		turnState.sendState();
 		broadcastStatus();
 		setStateChanged();
@@ -379,6 +383,12 @@ public class GameState
 			return;
 		}
 		states.remove(state);
+		checkCurrentState();
+	}
+	
+	public void clearActionStates()
+	{
+		states.clear();
 		checkCurrentState();
 	}
 	
