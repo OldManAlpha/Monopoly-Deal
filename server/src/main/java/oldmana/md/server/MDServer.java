@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -50,6 +49,8 @@ import oldmana.md.server.card.collection.deck.DeckStack;
 import oldmana.md.server.card.collection.deck.VanillaDeck;
 import oldmana.md.server.event.EventManager;
 import oldmana.md.server.event.PlayerRemovedEvent;
+import oldmana.md.server.mod.Mod;
+import oldmana.md.server.mod.ModLoader;
 import oldmana.md.server.net.IncomingConnectionsThread;
 import oldmana.md.server.net.NetServerHandler;
 import oldmana.md.server.playerui.ChatLinkHandler;
@@ -335,6 +336,19 @@ public class MDServer
 	
 	private void doShutdown(boolean error)
 	{
+		for (Mod mod : getMods())
+		{
+			try
+			{
+				mod.onShutdown();
+			}
+			catch (Exception | Error e)
+			{
+				System.err.println("Error while executing onShutdown in mod " + mod.getName());
+				e.printStackTrace();
+			}
+		}
+		
 		broadcastPacket(new PacketKick(error ? "Server crashed" : "Server shut down"));
 		threadIncConnect.interrupt();
 		while (true)
@@ -391,23 +405,17 @@ public class MDServer
 		{
 			modsFolder.mkdir();
 		}
-		for (File file : modsFolder.listFiles())
-		{
-			if (file.isFile() && file.getName().endsWith(".jar"))
-			{
-				modLoader.loadMod(file);
-			}
-		}
+		modLoader.loadMods(modsFolder);
 	}
 	
-	public List<MDMod> getMods()
+	public List<Mod> getMods()
 	{
 		return modLoader.getMods();
 	}
 	
-	public <M extends MDMod> M getMod(Class<M> modClass)
+	public <M extends Mod> M getMod(Class<M> modClass)
 	{
-		for (MDMod mod : modLoader.getMods())
+		for (Mod mod : modLoader.getMods())
 		{
 			if (mod.getClass() == modClass)
 			{
@@ -415,6 +423,21 @@ public class MDServer
 			}
 		}
 		return null;
+	}
+	
+	public Mod getMod(String name)
+	{
+		return modLoader.getModByName(name);
+	}
+	
+	public boolean isModLoaded(String name)
+	{
+		return modLoader.isModLoaded(name);
+	}
+	
+	public ModLoader getModLoader()
+	{
+		return modLoader;
 	}
 	
 	private void loadDecks()

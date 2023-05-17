@@ -1,10 +1,14 @@
-package oldmana.md.server;
+package oldmana.md.server.mod;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 
+/**
+ * A URLClassLoader for mods that is able to check other mod class loaders for classes. This allows for mods to depend
+ * on other mods.
+ */
 public class ModClassLoader extends URLClassLoader
 {
 	private ModLoader loader;
@@ -18,10 +22,10 @@ public class ModClassLoader extends URLClassLoader
 	@Override
 	protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException
 	{
-		return loadClass0(name, resolve, true);
+		return loadClass(name, resolve, true);
 	}
 	
-	public Class<?> loadClass0(String name, boolean resolve, boolean checkOtherMods) throws ClassNotFoundException
+	public Class<?> loadClass(String name, boolean resolve, boolean checkOtherMods) throws ClassNotFoundException
 	{
 		try
 		{

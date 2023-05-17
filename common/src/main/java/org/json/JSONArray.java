@@ -35,6 +35,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -1579,6 +1581,16 @@ public class JSONArray implements Iterable<Object> {
             }
         }
         return results;
+    }
+    
+    public List<String> toStringList()
+    {
+        return toList().stream().map(o -> (String) o).collect(Collectors.toList());
+    }
+    
+    public Stream<Object> stream()
+    {
+        return toList().stream();
     }
 
     /**
