@@ -6,11 +6,14 @@ import java.util.function.Consumer;
 
 public class MDScheduler
 {
-	private List<MDTask> tasks = new ArrayList<MDTask>();
+	private final List<MDTask> tasks = new ArrayList<MDTask>();
 	
 	public void scheduleTask(MDTask task)
 	{
-		tasks.add(task);
+		synchronized (tasks)
+		{
+			tasks.add(task);
+		}
 	}
 	
 	public void scheduleTask(Runnable task)
@@ -20,7 +23,7 @@ public class MDScheduler
 	
 	public void scheduleTask(int delay, Runnable task)
 	{
-		tasks.add(new MDTask(delay)
+		scheduleTask(new MDTask(delay)
 		{
 			@Override
 			public void run()
@@ -37,7 +40,7 @@ public class MDScheduler
 	
 	public void scheduleTask(int interval, boolean repeats, Consumer<MDTask> task)
 	{
-		tasks.add(new MDTask(interval, repeats)
+		scheduleTask(new MDTask(interval, repeats)
 		{
 			@Override
 			public void run()
@@ -47,17 +50,30 @@ public class MDScheduler
 		});
 	}
 	
+	private void removeTask(MDTask task)
+	{
+		synchronized (tasks)
+		{
+			tasks.remove(task);
+		}
+	}
+	
 	public void runTick()
 	{
-		if (tasks.isEmpty())
+		List<MDTask> tasksToRun;
+		synchronized (tasks)
 		{
-			return;
+			if (tasks.isEmpty())
+			{
+				return;
+			}
+			tasksToRun = new ArrayList<MDTask>(tasks);
 		}
-		for (MDTask task : new ArrayList<MDTask>(tasks))
+		for (MDTask task : tasksToRun)
 		{
 			if (task.isCancelled())
 			{
-				tasks.remove(task);
+				removeTask(task);
 				continue;
 			}
 			task.tick();
@@ -78,7 +94,7 @@ public class MDScheduler
 				}
 				if (task.getNextRun() <= 0)
 				{
-					tasks.remove(task);
+					removeTask(task);
 				}
 			}
 		}
