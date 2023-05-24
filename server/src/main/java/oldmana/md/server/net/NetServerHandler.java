@@ -176,8 +176,8 @@ public class NetServerHandler extends NetHandler
 		RegisteredPlayer rp = registry.getRegisteredPlayerByUUID(uuid);
 		Player player = new Player(server, uuid, client.getNet(), rp.name, rp.op);
 		server.addPlayer(player);
-		player.setOnline(true);
 		player.refresh();
+		player.setOnline(true);
 		System.out.println((result == NameCheckResult.SUCCESS_NEW_PLAYER ? "New player " : "Player ") +
 				player.getName() + " logged in with ID " + player.getID() + " from " + player.getHostAddress());
 		server.getEventManager().callEvent(new PlayerJoinedEvent(player));

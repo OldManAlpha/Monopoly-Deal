@@ -25,7 +25,7 @@ public class Main
 		new MDServer(dataFolder).startServer();
 	}
 	
-	public static File getLocalFolder()
+	public static File getAppDataFolder()
 	{
 		String dirPath;
 		
@@ -43,6 +43,16 @@ public class Main
 				dirPath += "/Library/Application Support";
 			}
 		}
-		return new File(dirPath, "Monopoly Deal" + File.separator + "server");
+		return new File(dirPath);
+	}
+	
+	public static File getLocalFolder()
+	{
+		return new File(getAppDataFolder(), "Monopoly Deal" + File.separator + "server");
+	}
+	
+	public static File getLocalClientFolder()
+	{
+		return new File(getAppDataFolder(), "Monopoly Deal" + File.separator + "localserver");
 	}
 }

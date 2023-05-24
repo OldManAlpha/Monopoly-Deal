@@ -67,13 +67,8 @@ public class MDFrame extends JFrame
 					c.setSize(getContentPane().getSize());
 				}
 			}
-			
-			@Override
-			public Dimension minimumLayoutSize(Container parent)
-			{
-				return new Dimension(200, 200);
-			}
 		});
+		setMinimumSize(new Dimension(300, 400));
 		tableScreen = new TableScreen();
 		tableScreen.setVisible(false);
 		menuScreen = new MainMenuScreen();
@@ -234,5 +229,11 @@ public class MDFrame extends JFrame
 	public TableScreen getTableScreen()
 	{
 		return tableScreen;
+	}
+	
+	@Override
+	public Dimension getMinimumSize()
+	{
+		return new Dimension(GraphicsUtils.scale(800), GraphicsUtils.scale(500));
 	}
 }

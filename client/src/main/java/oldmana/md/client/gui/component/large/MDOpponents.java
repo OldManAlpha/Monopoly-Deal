@@ -34,12 +34,9 @@ public class MDOpponents extends MDComponent
 	
 	private boolean scrollLock;
 	
-	private List<Player> cachedOrder;
-	
 	public MDOpponents()
 	{
 		setLayout(new PlayersLayout());
-		cacheOrder();
 		
 		addMouseWheelListener(event ->
 		{
@@ -91,11 +88,9 @@ public class MDOpponents extends MDComponent
 		});
 	}
 	
-	public void cacheOrder()
+	private List<Player> getOrder()
 	{
-		cachedOrder = getClient().getOtherPlayersOrdered();
-		invalidate();
-		repaint();
+		return getClient().getOtherPlayersOrdered();
 	}
 	
 	public int getMiddleSpace()
@@ -105,13 +100,13 @@ public class MDOpponents extends MDComponent
 	
 	public MDPlayer getTopPlayer()
 	{
-		return !cachedOrder.isEmpty() ? cachedOrder.get(0).getUI() : null;
+		return !getOrder().isEmpty() ? getOrder().get(0).getUI() : null;
 	}
 	
 	public List<MDPlayer> getMiddlePlayers()
 	{
-		return !cachedOrder.isEmpty() ?
-				cachedOrder.subList(1, cachedOrder.size()).stream().map(p -> p.getUI()).collect(Collectors.toList()) :
+		return !getOrder().isEmpty() ?
+				getOrder().subList(1, getOrder().size()).stream().map(p -> p.getUI()).collect(Collectors.toList()) :
 				Collections.emptyList();
 	}
 	
@@ -251,7 +246,7 @@ public class MDOpponents extends MDComponent
 		}
 		else
 		{
-			List<MDPlayer> all = cachedOrder.stream().map(p -> p.getUI()).collect(Collectors.toList());
+			List<MDPlayer> all = getOrder().stream().map(p -> p.getUI()).collect(Collectors.toList());
 			for (int pos = 0 ; pos < all.size() ; pos++)
 			{
 				double yPos = (playerSize + padding) * (pos);

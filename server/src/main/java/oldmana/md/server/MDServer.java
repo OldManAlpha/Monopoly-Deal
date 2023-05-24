@@ -147,8 +147,11 @@ public class MDServer
 	
 	private void startServerSync()
 	{
-		System.setOut(new MDPrintStream(System.out));
-		System.setErr(new MDPrintStream(System.err));
+		if (!isIntegrated())
+		{
+			System.setOut(new MDPrintStream(System.out));
+			System.setErr(new MDPrintStream(System.err));
+		}
 		
 		System.out.println("Starting Monopoly Deal Server Version " + VERSION);
 		
@@ -164,7 +167,7 @@ public class MDServer
 		discardPile = new DiscardPile();
 		config.loadConfig();
 		verbose = config.getBoolean("verbose");
-		int port = config.getInt("port");
+		int port = isIntegrated() ? 0 : config.getInt("port");
 		serverKey = config.getBigInteger("serverKey").toByteArray();
 		try
 		{
@@ -400,6 +403,15 @@ public class MDServer
 		return running;
 	}
 	
+	public void waitForShutdown()
+	{
+		try
+		{
+			serverThread.awaitTermination(100, TimeUnit.HOURS);
+		}
+		catch (InterruptedException e) {}
+	}
+	
 	/**
 	 * Signal for the server to start shutting down at the end of the tick.
 	 */
@@ -421,11 +433,16 @@ public class MDServer
 	{
 		try
 		{
-			Class.forName("oldmana.md.client.Client");
+			Class.forName("oldmana.md.client.MDClient");
 			return true;
 		}
 		catch (ClassNotFoundException e) {}
 		return false;
+	}
+	
+	public int getPort()
+	{
+		return threadIncConnect.getSocket().getLocalPort();
 	}
 	
 	public File getDataFolder()

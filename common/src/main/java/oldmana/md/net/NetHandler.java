@@ -11,7 +11,7 @@ public class NetHandler
 {
 	public static int PROTOCOL_VERSION = 20;
 	
-	private Class<? extends Packet>[] packets = new Class[]
+	private static Class<? extends Packet>[] packets = new Class[]
 	{
 		// Client <-> Server
 		PacketPing.class,
@@ -96,13 +96,7 @@ public class NetHandler
 		PacketUpdateActionStateTarget.class
 	};
 	
-	
-	public NetHandler()
-	{
-		registerPackets();
-	}
-	
-	public void registerPackets()
+	static
 	{
 		for (Class<? extends Packet> clazz : packets)
 		{

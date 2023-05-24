@@ -439,8 +439,11 @@ public class BasicAI extends PlayerAI
 				}
 			}
 		}
-		// Admit defeat
-		System.out.println(getPlayer().getName() + " was forced to give a losing payment");
+		if (getServer().isVerbose())
+		{
+			// Admit defeat
+			System.out.println(getPlayer().getName() + " was forced to give a losing payment");
+		}
 		return combos.get(0).getCards();
 	}
 	
@@ -607,7 +610,10 @@ public class BasicAI extends PlayerAI
 			{
 				aggressiveDesire = rentWith * effectiveness * 10 * Math.max(8 - security, 1);
 				aggressiveDesire = Math.min(getTurnsRemaining() > 1 ? 90 : 40, aggressiveDesire);
-				System.out.println("Aggressive: " + aggressiveDesire);
+				if (getServer().isVerbose())
+				{
+					System.out.println("Aggressive: " + aggressiveDesire);
+				}
 			}
 			
 			return Math.max(aggressiveDesire, Math.max(Math.min(security * 5, 50),

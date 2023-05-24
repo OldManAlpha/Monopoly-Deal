@@ -185,7 +185,6 @@ public class TableScreen extends JLayeredPane
 			return;
 		}
 		opponents.add(player.getUI());
-		opponents.cacheOrder();
 		opponents.invalidate();
 		opponents.repaint();
 	}
@@ -199,7 +198,6 @@ public class TableScreen extends JLayeredPane
 			return;
 		}
 		opponents.remove(player.getUI());
-		opponents.cacheOrder();
 		opponents.invalidate();
 		opponents.repaint();
 	}

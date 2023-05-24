@@ -1,6 +1,7 @@
 package oldmana.md.server.net;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 
 import oldmana.general.mjnetworkingapi.server.MJServer;
 import oldmana.general.mjnetworkingapi.server.MJServer.MJConnectAttempt;
@@ -16,6 +17,11 @@ public class IncomingConnectionsThread extends Thread
 		server = new MJServer(port);
 		setDaemon(true);
 		start();
+	}
+	
+	public ServerSocket getSocket()
+	{
+		return server.getServerSocket();
 	}
 	
 	@Override

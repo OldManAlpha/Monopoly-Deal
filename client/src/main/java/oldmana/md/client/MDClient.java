@@ -35,6 +35,7 @@ import oldmana.md.client.state.ActionStatePlay;
 import oldmana.md.client.state.GameState;
 import oldmana.md.net.packet.client.PacketQuit;
 import oldmana.md.net.packet.client.action.PacketActionDraw;
+import oldmana.md.server.MDServer;
 
 public class MDClient
 {
@@ -53,6 +54,7 @@ public class MDClient
 	private ThePlayer thePlayer;
 	private List<Player> otherPlayers = new ArrayList<Player>();
 	private List<Player> turnOrder = new ArrayList<Player>();
+	private List<Player> othersOrdered = new ArrayList<Player>();
 	
 	private GameState gameState;
 	
@@ -71,6 +73,10 @@ public class MDClient
 	public MDEventQueue eventQueue;
 	
 	public int timeSincePing;
+	
+	
+	private MDServer integratedServer;
+	
 	
 	private boolean debug = false;
 	private boolean developerMode = false;
@@ -320,8 +326,14 @@ public class MDClient
 	public void setTurnOrder(List<Player> order)
 	{
 		turnOrder = order;
-		System.out.println(turnOrder);
-		getTableScreen().getOpponents().cacheOrder();
+		othersOrdered.clear();
+		int selfIndex = turnOrder.indexOf(getThePlayer());
+		for (int i = 1 ; i < turnOrder.size() ; i++)
+		{
+			othersOrdered.add(turnOrder.get((selfIndex + i) % turnOrder.size()));
+		}
+		getTableScreen().getOpponents().invalidate();
+		getTableScreen().getOpponents().repaint();
 	}
 	
 	public Player getPlayerByID(int id)
@@ -354,6 +366,7 @@ public class MDClient
 	{
 		otherPlayers.add(player);
 		turnOrder.add(player);
+		othersOrdered.add(player);
 		getTableScreen().addPlayer(player);
 	}
 	
@@ -367,13 +380,7 @@ public class MDClient
 	
 	public List<Player> getOtherPlayersOrdered()
 	{
-		List<Player> ordered = new ArrayList<Player>();
-		int selfIndex = turnOrder.indexOf(getThePlayer());
-		for (int i = 1 ; i < turnOrder.size() ; i++)
-		{
-			ordered.add(turnOrder.get((selfIndex + i) % turnOrder.size()));
-		}
-		return ordered;
+		return othersOrdered;
 	}
 	
 	public Player getThePlayer()
@@ -538,6 +545,14 @@ public class MDClient
 			}
 			connection.close();
 		}
+		if (hasIntegratedServer())
+		{
+			getIntegratedServer().shutdown();
+			getTableScreen().getTopbar().setText("Shutting down internal server..");
+			getTableScreen().paintImmediately(getTableScreen().getVisibleRect());
+			getIntegratedServer().waitForShutdown();
+			setIntegratedServer(null);
+		}
 		if (!closing)
 		{
 			resetGame();
@@ -583,6 +598,21 @@ public class MDClient
 		Card.getRegisteredCards().clear();
 		CardCollection.getRegisteredCardCollections().clear();
 		PropertyColor.clearColors();
+	}
+	
+	public boolean hasIntegratedServer()
+	{
+		return integratedServer != null;
+	}
+	
+	public MDServer getIntegratedServer()
+	{
+		return integratedServer;
+	}
+	
+	public void setIntegratedServer(MDServer server)
+	{
+		integratedServer = server;
 	}
 	
 	public static MDClient getInstance()
