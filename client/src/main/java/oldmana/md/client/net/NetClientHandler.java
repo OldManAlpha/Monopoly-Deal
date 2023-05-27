@@ -543,7 +543,14 @@ public class NetClientHandler extends NetHandler
 	
 	public void handlePlaySound(PacketPlaySound packet)
 	{
-		MDSoundSystem.playSound(packet.name);
+		if (packet.queued)
+		{
+			queueTask(() -> MDSoundSystem.playSound(packet.name));
+		}
+		else
+		{
+			MDSoundSystem.playSound(packet.name);
+		}
 	}
 	
 	@Queued

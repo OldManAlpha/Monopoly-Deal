@@ -33,7 +33,7 @@ public class GameState
 	private TurnOrder turnOrder;
 	
 	private boolean gameRunning;
-	private boolean clean;
+	private boolean clean = true;
 	
 	private boolean winningEnabled = true;
 	
@@ -41,6 +41,8 @@ public class GameState
 	private Player deferredWinPlayer;
 	
 	private boolean stateChanged;
+	
+	private boolean checkingWin;
 	
 	public GameState(MDServer server)
 	{
@@ -225,8 +227,10 @@ public class GameState
 		player = getActivePlayer();
 		
 		System.out.println("New Turn: " + player.getName() + " (ID: " + player.getID() + ")");
-		checkCurrentState();
-		server.getEventManager().callEvent(new TurnStartEvent(player));
+		if (checkCurrentState())
+		{
+			server.getEventManager().callEvent(new TurnStartEvent(player));
+		}
 	}
 	
 	public void setTurn(Player player, boolean draw)
@@ -240,11 +244,13 @@ public class GameState
 		turnState.sendState();
 		broadcastStatus();
 		setStateChanged();
+		checkCurrentState();
 	}
 	
 	public void setMoves(int moves)
 	{
 		getTurnState().setMoves(moves);
+		checkCurrentState();
 	}
 	
 	public int getMovesRemaining()
@@ -255,16 +261,19 @@ public class GameState
 	public void decrementMoves()
 	{
 		getTurnState().decrementMoves();
+		checkCurrentState();
 	}
 	
 	public void decrementMoves(int amount)
 	{
 		getTurnState().decrementMoves(amount);
+		checkCurrentState();
 	}
 	
 	public void setDrawn()
 	{
 		getTurnState().setDrawn();
+		checkCurrentState();
 	}
 	
 	/**
@@ -301,7 +310,7 @@ public class GameState
 	 */
 	public void addActionState(ActionState state)
 	{
-		if (!(state instanceof ActionStateDoNothing) && checkWin())
+		if (isGameRunning() && checkWin())
 		{
 			return;
 		}
@@ -320,12 +329,9 @@ public class GameState
 	 */
 	public void addLowPriorityActionState(ActionState state)
 	{
-		if (checkWin())
-		{
-			return;
-		}
 		if (states.contains(state) || state.isFinished())
 		{
+			checkCurrentState();
 			return;
 		}
 		states.removeIf(s -> !s.isImportant());
@@ -339,10 +345,6 @@ public class GameState
 	 */
 	public void promoteActionState(ActionState state)
 	{
-		if (checkWin())
-		{
-			return;
-		}
 		states.remove(state);
 		addActionState(state);
 		checkCurrentState();
@@ -355,10 +357,6 @@ public class GameState
 	 */
 	public void swapActionState(ActionState oldState, ActionState newState)
 	{
-		if (checkWin())
-		{
-			return;
-		}
 		int index = states.indexOf(oldState);
 		if (index < 0)
 		{
@@ -378,10 +376,6 @@ public class GameState
 	
 	public void removeActionState(ActionState state)
 	{
-		if (checkWin())
-		{
-			return;
-		}
 		states.remove(state);
 		checkCurrentState();
 	}
@@ -392,8 +386,12 @@ public class GameState
 		checkCurrentState();
 	}
 	
-	private void checkCurrentState()
+	private boolean checkCurrentState()
 	{
+		if (checkWin())
+		{
+			return false;
+		}
 		ActionState state = getActionState();
 		if (state != lastSentState)
 		{
@@ -417,10 +415,16 @@ public class GameState
 				player.checkEmptyHand();
 			}
 		}
+		return true;
 	}
 	
 	public boolean checkWin()
 	{
+		if (checkingWin)
+		{
+			return false;
+		}
+		checkingWin = true;
 		List<Player> winners = server.getGameRules().getWinCondition().getWinners();
 		if (!winners.isEmpty() && deferredWinCycles < 1 && isWinningEnabled())
 		{
@@ -432,6 +436,7 @@ public class GameState
 			}
 			if (event.isCancelled())
 			{
+				checkingWin = false;
 				return false;
 			}
 			winners = event.getWinners();
@@ -453,9 +458,11 @@ public class GameState
 					statusText = winners.get(0).getName() + " has won!";
 				}
 				endGame(statusText);
+				checkingWin = false;
 				return true;
 			}
 		}
+		checkingWin = false;
 		return false;
 	}
 	

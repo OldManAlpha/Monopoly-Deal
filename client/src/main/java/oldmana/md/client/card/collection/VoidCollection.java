@@ -12,4 +12,10 @@ public class VoidCollection extends CardCollection
 	
 	@Override
 	public void removeUnknownCards(int amount) {}
+	
+	@Override
+	public boolean makesPlaceSound()
+	{
+		return false;
+	}
 }

@@ -8,7 +8,6 @@ import oldmana.md.server.card.control.CardButton;
 import oldmana.md.server.card.control.CardButton.CardButtonType;
 import oldmana.md.server.card.control.CardControls;
 import oldmana.md.server.card.CardType;
-import oldmana.md.server.rules.DrawExtraCardsPolicy;
 import oldmana.md.server.state.ActionState;
 
 public class CardActionJustSayNo extends CardAction
@@ -27,7 +26,6 @@ public class CardActionJustSayNo extends CardAction
 			transfer(getServer().getDiscardPile(), -1, CardAnimationType.IMPORTANT);
 		}
 		player.checkEmptyHand();
-		getServer().getGameState().proceed();
 	}
 	
 	@Override

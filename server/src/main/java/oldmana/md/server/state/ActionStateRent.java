@@ -191,7 +191,6 @@ public class ActionStateRent extends ActionState
 			}
 		}
 		setAccepted(player, true);
-		getServer().getGameState().proceed();
 	}
 	
 	@Override

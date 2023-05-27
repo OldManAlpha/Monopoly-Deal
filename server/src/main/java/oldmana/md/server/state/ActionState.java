@@ -123,9 +123,12 @@ public abstract class ActionState
 		if (state == TargetState.NOT_TARGETED)
 		{
 			targets.remove(player);
-			return;
 		}
-		targets.put(player, state);
+		else
+		{
+			targets.put(player, state);
+		}
+		checkFinished();
 	}
 	
 	public void removeActionTarget(Player player)
@@ -248,6 +251,14 @@ public abstract class ActionState
 	public int getNumberOfTargets()
 	{
 		return targets.size();
+	}
+	
+	private void checkFinished()
+	{
+		if (isFinished())
+		{
+			removeState();
+		}
 	}
 	
 	/**

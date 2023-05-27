@@ -253,6 +253,7 @@ public class MDServer
 				catch (IOException e)
 				{
 					e.printStackTrace();
+					break;
 				}
 			}
 		}, "Console Reader Thread");
@@ -837,7 +838,12 @@ public class MDServer
 	
 	public void playSound(String name)
 	{
-		broadcastPacket(new PacketPlaySound(name));
+		playSound(name, false);
+	}
+	
+	public void playSound(String name, boolean queued)
+	{
+		broadcastPacket(new PacketPlaySound(name, queued));
 	}
 	
 	public void verifySounds(Player player, Map<String, Integer> cachedSounds)

@@ -18,7 +18,6 @@ public class CommandSetMoves extends Command
 			return;
 		}
 		getServer().getGameState().setMoves(Integer.parseInt(args[0]));
-		getServer().getGameState().proceed();
 		sender.sendMessage("Set number of moves to " + args[0], true);
 	}
 }

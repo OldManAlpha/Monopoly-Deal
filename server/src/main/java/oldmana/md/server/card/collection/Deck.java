@@ -57,7 +57,17 @@ public class Deck extends CardCollection
 	
 	public void shuffle()
 	{
+		shuffle(true);
+	}
+	
+	public void shuffle(boolean playSound)
+	{
 		Collections.shuffle(getCards());
+		getServer().getGameState().setStateChanged();
+		if (playSound)
+		{
+			getServer().playSound("DeckShuffle", true);
+		}
 	}
 	
 	public Card drawCard(Player player)

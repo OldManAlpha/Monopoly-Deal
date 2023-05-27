@@ -9,14 +9,10 @@ import java.util.UUID;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.NetHandler;
-import oldmana.md.net.packet.client.PacketInitiateLogin;
-import oldmana.md.net.packet.client.PacketLogin;
-import oldmana.md.net.packet.client.PacketQuit;
-import oldmana.md.net.packet.client.PacketSoundCache;
+import oldmana.md.net.packet.client.*;
 import oldmana.md.net.packet.client.action.*;
 import oldmana.md.net.packet.server.*;
-import oldmana.md.net.packet.universal.PacketChat;
-import oldmana.md.net.packet.universal.PacketKeepConnected;
+import oldmana.md.net.packet.universal.*;
 import oldmana.md.server.playerui.ChatLinkHandler.ChatLink;
 import oldmana.md.server.Client;
 import oldmana.md.server.MDServer;
@@ -158,7 +154,10 @@ public class NetServerHandler extends NetHandler
 			}
 			player.setOnline(true);
 			String prevName = player.getName();
-			player.setName(packet.name);
+			if (!server.getPlayerRegistry().getRegisteredPlayerByUUID(uuid).staticName)
+			{
+				player.setName(packet.name);
+			}
 			player.setNet(client.getNet());
 			player.refresh();
 			System.out.println("Player " + player.getDescription() +
@@ -432,7 +431,6 @@ public class NetServerHandler extends NetHandler
 		{
 			state.removeActionTarget(target);
 		}
-		server.getGameState().proceed();
 	}
 	
 	public void handleKeepConnected(Player player, PacketKeepConnected packet)

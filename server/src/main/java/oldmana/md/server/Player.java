@@ -15,6 +15,7 @@ import oldmana.md.net.packet.server.PacketDestroyButton;
 import oldmana.md.net.packet.server.PacketDestroyCardCollection;
 import oldmana.md.net.packet.server.PacketHandshake;
 import oldmana.md.net.packet.server.PacketKick;
+import oldmana.md.net.packet.server.PacketPlaySound;
 import oldmana.md.net.packet.server.PacketPlayerInfo;
 import oldmana.md.net.packet.server.PacketUpdatePlayer;
 import oldmana.md.net.packet.server.PacketRefresh;
@@ -1097,6 +1098,16 @@ public class Player extends Client implements CommandSender
 	private void updatePlayer()
 	{
 		getServer().broadcastPacket(new PacketUpdatePlayer(getID(), getName(), isOnline() || isBot()));
+	}
+	
+	public void playSound(String sound)
+	{
+		playSound(sound, false);
+	}
+	
+	public void playSound(String sound, boolean queued)
+	{
+		sendPacket(new PacketPlaySound(sound, queued));
 	}
 	
 	/**

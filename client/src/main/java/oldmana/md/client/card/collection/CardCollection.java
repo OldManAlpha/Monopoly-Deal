@@ -217,6 +217,11 @@ public abstract class CardCollection
 		return ui;
 	}
 	
+	public boolean makesPlaceSound()
+	{
+		return true;
+	}
+	
 	public MDClient getClient()
 	{
 		return MDClient.getInstance();

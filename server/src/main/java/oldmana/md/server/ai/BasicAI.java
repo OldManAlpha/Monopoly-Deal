@@ -282,7 +282,6 @@ public class BasicAI extends PlayerAI
 				state.removeActionTarget(state.getRefused().get(0));
 			}
 		}
-		getServer().getGameState().proceed();
 	}
 	
 	private void dumbActionStateReply(ActionState state)
@@ -295,7 +294,6 @@ public class BasicAI extends PlayerAI
 				state.setAccepted(player, true);
 			}
 		}
-		getServer().getGameState().proceed();
 	}
 	
 	public void calculateRentPayment(Player to, List<Card> cards, int rent, Consumer<List<Card>> paymentAction)

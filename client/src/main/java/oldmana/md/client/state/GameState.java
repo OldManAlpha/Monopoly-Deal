@@ -1,7 +1,9 @@
 package oldmana.md.client.state;
 
 import oldmana.md.client.MDClient;
+import oldmana.md.client.MDSoundSystem;
 import oldmana.md.client.Player;
+import oldmana.md.client.ThePlayer;
 import oldmana.md.client.gui.component.MDChat;
 import oldmana.md.client.state.client.ActionStateClient;
 import oldmana.md.client.state.primary.ActionStatePlayerTurn;
@@ -59,6 +61,7 @@ public class GameState
 	
 	public void setActionState(ActionState state)
 	{
+		ActionState prevState = this.state;
 		if (this.state != null)
 		{
 			this.state.cleanup();
@@ -92,6 +95,14 @@ public class GameState
 		}
 		setClientActionState(null);
 		state.setup();
+		if (state.getActionOwner() instanceof ThePlayer && state instanceof ActionStateDraw)
+		{
+			if (prevState == null || (prevState.getActionOwner() == state.getActionOwner() && prevState instanceof ActionStateDraw))
+			{
+				return;
+			}
+			MDSoundSystem.playSound("DrawAlert");
+		}
 	}
 	
 	public ActionStateClient getClientActionState()

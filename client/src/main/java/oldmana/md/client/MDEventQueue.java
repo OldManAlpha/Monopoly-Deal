@@ -182,6 +182,9 @@ public class MDEventQueue
 					to.getUI().getCardScale(), time, anim, from.isUnknown() && to.isUnknown() ? card : null);
 			MDClient.getInstance().addTableComponent(moving, 99);
 			
+			MDSoundSystem.playSound(anim == CardAnimationType.IMPORTANT ? "ImportantCardMove" :
+					(from.isUnknown() == to.isUnknown() ? "CardMove" : "CardFlip"));
+			
 			// Update the rent screen if bank/property sets are modified
 			Player player = MDClient.getInstance().getThePlayer();
 			if (((from instanceof Bank || from instanceof PropertySet) && from.getOwner() == player) || 
@@ -212,6 +215,10 @@ public class MDEventQueue
 				from.getUI().modificationFinished();
 				MDClient.getInstance().removeTableComponent(moving);
 				MDClient.getInstance().getTableScreen().repaint();
+				if (to.makesPlaceSound())
+				{
+					MDSoundSystem.playSound("CardPlace");
+				}
 			}
 			else
 			{
