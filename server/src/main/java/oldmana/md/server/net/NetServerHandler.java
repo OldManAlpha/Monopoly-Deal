@@ -1,6 +1,7 @@
 package oldmana.md.server.net;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +52,10 @@ public class NetServerHandler extends NetHandler
 		// Find Packet Handlers
 		for (Method m : getClass().getDeclaredMethods())
 		{
+			if (Modifier.isStatic(m.getModifiers()))
+			{
+				continue;
+			}
 			Class<?>[] params = m.getParameterTypes();
 			if (params.length > 1)
 			{

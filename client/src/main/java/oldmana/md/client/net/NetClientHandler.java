@@ -6,6 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -79,6 +80,10 @@ public class NetClientHandler extends NetHandler
 		// Find Packet Handlers
 		for (Method m : getClass().getDeclaredMethods())
 		{
+			if (Modifier.isStatic(m.getModifiers()))
+			{
+				continue;
+			}
 			Class<?>[] params = m.getParameterTypes();
 			if (params.length > 0)
 			{
