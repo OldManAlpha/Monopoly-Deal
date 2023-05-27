@@ -18,7 +18,7 @@ public class CommandListDecks extends Command
 	@Override
 	public void executeCommand(CommandSender sender, String[] args)
 	{
-		Map<String, DeckStack> decks = getServer().getDeckStacks();
+		Map<String, DeckStack> decks = getServer().getDeck().getDeckStacks();
 		sender.sendMessage("Available decks(" + decks.size() + "):");
 		for (Entry<String, DeckStack> entry : decks.entrySet())
 		{

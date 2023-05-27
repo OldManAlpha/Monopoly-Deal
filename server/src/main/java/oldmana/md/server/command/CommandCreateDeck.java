@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
+import oldmana.md.server.card.collection.Deck;
 import oldmana.md.server.card.collection.deck.CustomDeck;
 
 public class CommandCreateDeck extends Command
@@ -22,15 +23,16 @@ public class CommandCreateDeck extends Command
 			return;
 		}
 		String name = args[0];
-		if (getServer().getDeckStacks().containsKey(name) && !(getServer().getDeckStacks().get(name) instanceof CustomDeck))
+		Deck deck = getServer().getDeck();
+		if (deck.isDeckStackRegistered(name) && !(deck.getDeckStack(name) instanceof CustomDeck))
 		{
 			sender.sendMessage(ChatColor.PREFIX_ALERT + "That deck name is reserved.");
 			return;
 		}
-		CustomDeck deck = new CustomDeck(name, getServer().getDeck().getCards(), getServer().getGameRules().getRootRule());
+		CustomDeck stack = new CustomDeck(name, getServer().getDeck().getCards(), getServer().getGameRules().getRootRule());
 		try
 		{
-			deck.writeDeck();
+			stack.writeDeck();
 		}
 		catch (IOException e)
 		{
@@ -38,8 +40,8 @@ public class CommandCreateDeck extends Command
 			sender.sendMessage(ChatColor.PREFIX_ALERT + "Error saving deck: " + e.getMessage());
 			return;
 		}
-		getServer().getDeckStacks().put(name, deck);
-		getServer().getDeck().setDeckStack(deck);
+		deck.registerDeckStack(name, stack);
+		getServer().getDeck().setDeckStack(stack);
 		sender.sendMessage("Saved deck as '" + name + "'");
 		
 		if (!getServer().getDiscardPile().isEmpty() || getServer().getPlayers().stream().anyMatch(p -> !p.getAllCards().isEmpty()))

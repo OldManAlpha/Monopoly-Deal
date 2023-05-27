@@ -45,11 +45,10 @@ import oldmana.md.server.card.collection.Deck;
 import oldmana.md.server.card.collection.DiscardPile;
 import oldmana.md.server.card.collection.VoidCollection;
 import oldmana.md.server.card.collection.deck.CustomDeck;
-import oldmana.md.server.card.collection.deck.DeckStack;
 import oldmana.md.server.card.collection.deck.VanillaDeck;
 import oldmana.md.server.event.EventManager;
 import oldmana.md.server.event.PlayerRemovedEvent;
-import oldmana.md.server.mod.Mod;
+import oldmana.md.server.mod.ServerMod;
 import oldmana.md.server.mod.ModLoader;
 import oldmana.md.server.net.IncomingConnectionsThread;
 import oldmana.md.server.net.NetServerHandler;
@@ -90,8 +89,6 @@ public class MDServer
 	private VoidCollection voidCollection;
 	private Deck deck;
 	private DiscardPile discardPile;
-	
-	private Map<String, DeckStack> decks = new HashMap<String, DeckStack>();
 	
 	private NetServerHandler netHandler = new NetServerHandler(this);
 	
@@ -162,8 +159,7 @@ public class MDServer
 		gameState.addActionState(new ActionStateDoNothing());
 		
 		voidCollection = new VoidCollection();
-		decks.put("vanilla", new VanillaDeck());
-		deck = new Deck(decks.get("vanilla"));
+		deck = new Deck();
 		discardPile = new DiscardPile();
 		config.loadConfig();
 		verbose = config.getBoolean("verbose");
@@ -235,6 +231,8 @@ public class MDServer
 		}
 		
 		System.out.println("Loading Decks");
+		deck.registerDeckStack("vanilla", new VanillaDeck());
+		deck.setDeckStack("vanilla");
 		loadDecks();
 		
 		Thread consoleReader = new Thread(() ->
@@ -350,7 +348,7 @@ public class MDServer
 	
 	private void doShutdown(boolean error)
 	{
-		for (Mod mod : getMods())
+		for (ServerMod mod : getMods())
 		{
 			try
 			{
@@ -462,14 +460,14 @@ public class MDServer
 		modLoader.loadMods(modsFolder);
 	}
 	
-	public List<Mod> getMods()
+	public List<ServerMod> getMods()
 	{
 		return modLoader.getMods();
 	}
 	
-	public <M extends Mod> M getMod(Class<M> modClass)
+	public <M extends ServerMod> M getMod(Class<M> modClass)
 	{
-		for (Mod mod : modLoader.getMods())
+		for (ServerMod mod : modLoader.getMods())
 		{
 			if (mod.getClass() == modClass)
 			{
@@ -479,7 +477,7 @@ public class MDServer
 		return null;
 	}
 	
-	public Mod getMod(String name)
+	public ServerMod getMod(String name)
 	{
 		return modLoader.getModByName(name);
 	}
@@ -514,7 +512,7 @@ public class MDServer
 				String deckName = f.getName().substring(0, name.length() - 5);
 				try
 				{
-					decks.put(deckName, new CustomDeck(deckName, f));
+					getDeck().registerDeckStack(deckName, new CustomDeck(deckName, f));
 				}
 				catch (DeckLoadFailureException e)
 				{
@@ -759,11 +757,6 @@ public class MDServer
 	public DiscardPile getDiscardPile()
 	{
 		return discardPile;
-	}
-	
-	public Map<String, DeckStack> getDeckStacks()
-	{
-		return decks;
 	}
 	
 	public int getTickCount()

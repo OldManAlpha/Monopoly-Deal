@@ -1,7 +1,9 @@
 package oldmana.md.server.card.collection;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
@@ -14,14 +16,45 @@ import oldmana.md.server.event.DeckReshuffledEvent;
 
 public class Deck extends CardCollection
 {
+	private Map<String, DeckStack> stacks = new HashMap<String, DeckStack>();
+	
 	private DeckStack stack;
 	
 	private Random rand = new Random();
 	
-	public Deck(DeckStack stack)
+	public Deck()
 	{
 		super(null);
-		setDeckStack(stack);
+	}
+	
+	public void registerDeckStack(String name, DeckStack stack)
+	{
+		stacks.put(name, stack);
+	}
+	
+	public DeckStack unregisterDeckStack(String name)
+	{
+		return stacks.remove(name);
+	}
+	
+	public boolean isDeckStackRegistered(String name)
+	{
+		return stacks.containsKey(name);
+	}
+	
+	public DeckStack getDeckStack(String name)
+	{
+		return stacks.get(name);
+	}
+	
+	public Map<String, DeckStack> getDeckStacks()
+	{
+		return stacks;
+	}
+	
+	public void setDeckStack(String name)
+	{
+		setDeckStack(stacks.get(name));
 	}
 	
 	public void setDeckStack(DeckStack stack)
@@ -50,6 +83,10 @@ public class Deck extends CardCollection
 		getServer().getGameRules().setRules(stack.getDeckRules());
 	}
 	
+	/**
+	 * Get the in-use DeckStack.
+	 * @return The stack currently used
+	 */
 	public DeckStack getDeckStack()
 	{
 		return stack;

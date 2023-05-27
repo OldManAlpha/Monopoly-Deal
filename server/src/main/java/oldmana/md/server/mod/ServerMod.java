@@ -8,7 +8,7 @@ import java.util.Set;
 /**
  * Mods can be created to add new behavior to the server.
  */
-public class Mod
+public class ServerMod
 {
 	private String name;
 	private String version;
@@ -72,7 +72,7 @@ public class Mod
 		this.softDependencies = softDependencies;
 	}
 	
-	public boolean dependsOn(Mod mod)
+	public boolean dependsOn(ServerMod mod)
 	{
 		return dependencies.contains(mod.getName()) || softDependencies.contains(mod.getName());
 	}

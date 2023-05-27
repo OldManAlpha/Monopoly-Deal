@@ -15,7 +15,7 @@ import java.util.jar.JarFile;
 
 public class ModLoader
 {
-	private List<Mod> mods = new ArrayList<Mod>();
+	private List<ServerMod> mods = new ArrayList<ServerMod>();
 	private List<ModClassLoader> classLoaders = new CopyOnWriteArrayList<ModClassLoader>();
 	
 	public void loadMods(File modsFolder)
@@ -51,10 +51,10 @@ public class ModLoader
 			loadMod(info);
 		}
 		
-		List<Mod> mods = new ArrayList<Mod>(this.mods);
+		List<ServerMod> mods = new ArrayList<ServerMod>(this.mods);
 		mods.sort((m1, m2) -> m2.dependsOn(m1) ? -1 : 0);
 		
-		for (Mod mod : mods)
+		for (ServerMod mod : mods)
 		{
 			try
 			{
@@ -101,7 +101,7 @@ public class ModLoader
 		return null;
 	}
 	
-	private Mod loadMod(ModInfo info)
+	private ServerMod loadMod(ModInfo info)
 	{
 		File jarFile = info.jarFile;
 		try
@@ -113,13 +113,13 @@ public class ModLoader
 			String modVersion = info.version;
 			
 			Class<?> mainClass = classLoader.loadClass(mainClassPath);
-			if (!Mod.class.isAssignableFrom(mainClass))
+			if (!ServerMod.class.isAssignableFrom(mainClass))
 			{
 				System.out.println("Error loading " + jarFile.getName() + ": " + mainClassPath +
 						" is not an instance of MDMod!");
 				return null;
 			}
-			Mod mod = (Mod) mainClass.newInstance();
+			ServerMod mod = (ServerMod) mainClass.newInstance();
 			mod.setName(modName);
 			mod.setVersion(modVersion);
 			mod.setDependencies(new HashSet<String>(info.dependencies));
@@ -130,15 +130,15 @@ public class ModLoader
 			mod.onLoad();
 			return mod;
 		}
-		catch (Exception e)
+		catch (Exception | Error e)
 		{
-			System.out.println("Error loading " + jarFile.getName() + ":");
+			System.err.println("Error loading " + jarFile.getName() + ":");
 			e.printStackTrace();
 		}
 		return null;
 	}
 	
-	public Mod loadMod(File file)
+	public ServerMod loadMod(File file)
 	{
 		ModInfo info = getModInfo(file);
 		if (info == null)
@@ -149,7 +149,7 @@ public class ModLoader
 		{
 			return null;
 		}
-		Mod mod = loadMod(info);
+		ServerMod mod = loadMod(info);
 		if (mod == null)
 		{
 			return null;
@@ -196,14 +196,14 @@ public class ModLoader
 		return null;
 	}
 	
-	public List<Mod> getMods()
+	public List<ServerMod> getMods()
 	{
 		return Collections.unmodifiableList(mods);
 	}
 	
-	public Mod getModByName(String name)
+	public ServerMod getModByName(String name)
 	{
-		for (Mod mod : mods)
+		for (ServerMod mod : mods)
 		{
 			if (mod.getName().equals(name))
 			{

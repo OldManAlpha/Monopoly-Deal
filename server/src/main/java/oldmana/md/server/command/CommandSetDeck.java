@@ -24,7 +24,7 @@ public class CommandSetDeck extends Command
 		if (args.length >= 1)
 		{
 			String name = args[0];
-			Map<String, DeckStack> decks = getServer().getDeckStacks();
+			Map<String, DeckStack> decks = getServer().getDeck().getDeckStacks();
 			if (decks.containsKey(name))
 			{
 				getServer().getDeck().setDeckStack(decks.get(name));
