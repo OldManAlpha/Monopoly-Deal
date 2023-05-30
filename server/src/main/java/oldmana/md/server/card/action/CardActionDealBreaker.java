@@ -52,6 +52,7 @@ public class CardActionDealBreaker extends CardAction
 		template.putStrings("description", "Steal an entire full property set from another player. Cannot be used to steal partial sets.");
 		template.put("revocable", true);
 		template.put("clearsRevocableCards", false);
+		type.setDefaultTemplate(template);
 		return type;
 	}
 	

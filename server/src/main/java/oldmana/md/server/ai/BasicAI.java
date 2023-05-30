@@ -25,6 +25,7 @@ import oldmana.md.server.card.CardBuilding;
 import oldmana.md.server.card.CardMoney;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.PropertyColor;
+import oldmana.md.server.card.action.CardActionCharge.ActionStateTargetCharge;
 import oldmana.md.server.card.action.CardActionDealBreaker.ActionStateTargetDealBreaker;
 import oldmana.md.server.card.action.CardActionJustSayNo;
 import oldmana.md.server.card.action.CardActionPassGo;
@@ -38,7 +39,6 @@ import oldmana.md.server.state.ActionStateDoNothing;
 import oldmana.md.server.state.ActionStateRent;
 import oldmana.md.server.card.action.CardActionDealBreaker.ActionStateStealMonopoly;
 import oldmana.md.server.card.action.CardActionSlyDeal.ActionStateStealProperty;
-import oldmana.md.server.card.action.CardActionDebtCollector.ActionStateTargetDebtCollector;
 import oldmana.md.server.card.action.CardActionForcedDeal.ActionStateTargetForcedDeal;
 import oldmana.md.server.card.action.CardActionSlyDeal.ActionStateTargetSlyDeal;
 import oldmana.md.server.card.action.CardActionForcedDeal.ActionStateTradeProperties;
@@ -859,9 +859,9 @@ public class BasicAI extends PlayerAI
 			state.onSetSelected(choices.get(getRandom().nextInt(choices.size())));
 		});
 		
-		registerSelfStateHandler(ActionStateTargetDebtCollector.class, state ->
+		registerSelfStateHandler(ActionStateTargetCharge.class, state ->
 		{
-			state.playerSelected(chooseRentTarget(5));
+			state.playerSelected(chooseRentTarget(state.getCharge()));
 		});
 		
 		registerSelfStateHandler(ActionStateTargetRent.class, state ->

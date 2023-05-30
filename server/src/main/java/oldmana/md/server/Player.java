@@ -980,6 +980,26 @@ public class Player extends Client implements CommandSender
 	
 	public void endTurn()
 	{
+		endTurn(false);
+	}
+	
+	public void endTurn(boolean ignoreConditions)
+	{
+		if (!ignoreConditions)
+		{
+			if (getHand().hasTooManyCards())
+			{
+				if (getServer().getGameRules().canDiscardEarly())
+				{
+					getServer().getGameState().setMoves(0);
+				}
+				else
+				{
+					resendActionState();
+				}
+				return;
+			}
+		}
 		server.getGameState().nextTurn();
 	}
 	

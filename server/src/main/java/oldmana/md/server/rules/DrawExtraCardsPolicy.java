@@ -7,8 +7,8 @@ public enum DrawExtraCardsPolicy
 {
 	IMMEDIATELY("Immediately"),
 	IMMEDIATELY_AFTER_ACTION("ImmediatelyAfterAction"),
-	NEVER("Never"),
-	NEXT_DRAW("NextDraw");
+	NEXT_DRAW("NextDraw"),
+	NEVER("Never");
 	
 	private static final Map<String, DrawExtraCardsPolicy> jsonMap = new HashMap<String, DrawExtraCardsPolicy>();
 	static

@@ -18,9 +18,9 @@ public class ValueType<T>
 	private static final Set<String> VALID_FALSE = new HashSet<String>(Arrays.asList("false", "no", "off", "disable", "disabled"));
 	
 	public static final ValueType<Integer> INTEGER = new ValueType<Integer>(Integer.class, input -> Integer.parseInt(input), null,
-			ChatColor.FAINTLY_GRAY + "> Input a non-decimal number. Example: " + ChatColor.ORANGE + "2");
+			ChatColor.FAINTLY_GRAY + "> Input a non-decimal number. Example: " + ChatColor.LIGHT_ORANGE + "2");
 	public static final ValueType<Double> DOUBLE = new ValueType<Double>(Double.class, input -> Double.parseDouble(input), null,
-			ChatColor.FAINTLY_GRAY + "> Input a number. Example: " + ChatColor.ORANGE + "2.4");
+			ChatColor.FAINTLY_GRAY + "> Input a number. Example: " + ChatColor.LIGHT_ORANGE + "2.4");
 	public static final ValueType<Boolean> BOOLEAN = new ValueType<Boolean>(Boolean.class, input ->
 			{
 				input = input.toLowerCase();
@@ -34,8 +34,8 @@ public class ValueType<T>
 				}
 				throw new IllegalArgumentException("Invalid input");
 			}, bool -> bool ? "Yes" : "No",
-			ChatColor.FAINTLY_GRAY + "> Input \"" + ChatColor.ORANGE + "yes" + ChatColor.FAINTLY_GRAY + "\" or \"" +
-					ChatColor.ORANGE + "no" + ChatColor.FAINTLY_GRAY + "\"");
+			ChatColor.FAINTLY_GRAY + "> Input \"" + ChatColor.LIGHT_ORANGE + "yes" + ChatColor.FAINTLY_GRAY + "\" or \"" +
+					ChatColor.LIGHT_ORANGE + "no" + ChatColor.FAINTLY_GRAY + "\"");
 	public static final ValueType<String> STRING = new ValueType<String>(String.class, input -> input, null,
 			ChatColor.FAINTLY_GRAY + "> Input any text");
 	

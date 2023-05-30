@@ -11,6 +11,7 @@ public enum ChatColor
 	LIGHT_BLUE(PropertyColor.LIGHT_BLUE.getColor()),
 	MAGENTA(PropertyColor.MAGENTA.getColor()),
 	ORANGE(PropertyColor.ORANGE.getColor()),
+	LIGHT_ORANGE(new Color(235, 170, 3)),
 	LIGHT_RED(new Color(255, 120, 120)),
 	RED(PropertyColor.RED.getColor()),
 	LIGHT_YELLOW(new Color(255, 255, 120)),

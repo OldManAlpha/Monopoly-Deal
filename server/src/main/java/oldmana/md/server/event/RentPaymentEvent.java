@@ -6,7 +6,7 @@ import java.util.List;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 
-public class RentPaymentEvent extends Event
+public class RentPaymentEvent extends CancellableEvent
 {
 	private Player renter;
 	private Player target;

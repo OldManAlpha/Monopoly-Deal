@@ -27,8 +27,9 @@ public class ActionStatePlay extends ActionState
 		{
 			MDButton button = getClient().getTableScreen().getMultiButton();
 			button.setText("End Turn");
+			boolean ignoreMax = getClient().getRules().canDiscardEarly();
 			int maxCards = getClient().getRules().getMaxCardsInHand();
-			if (getActionOwner().getHand().getCardCount() > maxCards)
+			if (!ignoreMax && getActionOwner().getHand().getCardCount() > maxCards)
 			{
 				button.setEnabled(false);
 			}
@@ -37,7 +38,8 @@ public class ActionStatePlay extends ActionState
 				button.setEnabled(true);
 				button.setListener(() ->
 				{
-					if (!getClient().isInputBlocked() && getClient().canActFreely() && getActionOwner().getHand().getCardCount() <= maxCards)
+					if (!getClient().isInputBlocked() && getClient().canActFreely() &&
+							(ignoreMax || getActionOwner().getHand().getCardCount() <= maxCards))
 					{
 						getClient().sendPacket(new PacketActionEndTurn());
 						getClient().setAwaitingResponse(true);

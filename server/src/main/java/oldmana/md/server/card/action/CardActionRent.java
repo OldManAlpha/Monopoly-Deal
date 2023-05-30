@@ -29,12 +29,24 @@ public class CardActionRent extends CardAction
 	
 	private List<PropertyColor> colors;
 	
+	private RentType rentType = RentType.UNSPECIFIED;
+	
+	public RentType getRentType()
+	{
+		return rentType;
+	}
+	
 	@Override
 	public void applyTemplate(CardTemplate template)
 	{
 		super.applyTemplate(template);
 		this.colors = template.getColorList("colors");
-		setName(getName(colors));
+		String name = template.getString("name");
+		setName(name.equals("Rent") ? getName(colors) : name); // If it's named "Rent", dynamically set the name
+		if (template.has("chargesAll"))
+		{
+			rentType = template.getBoolean("chargesAll") ? RentType.ALL : RentType.SINGLE;
+		}
 	}
 	
 	@Override
@@ -102,8 +114,9 @@ public class CardActionRent extends CardAction
 	{
 		int rent = (int) (player.getHighestValueRent(colors) * multiplier);
 		GameRules rules = getServer().getGameRules();
-		if ((colors.size() <= 2 && rules.doesTwoColorRentChargeAll()) ||
-				(colors.size() > 2 && rules.doesMultiColorRentChargeAll()) || getServer().getPlayerCount() == 2)
+		if (getRentType() == RentType.ALL || getServer().getPlayerCount() <= 2 || (getRentType() == RentType.UNSPECIFIED &&
+				(colors.size() <= 2 && rules.doesTwoColorRentChargeAll()) ||
+				(colors.size() > 2 && rules.doesMultiColorRentChargeAll())))
 		{
 			player.clearRevocableCards();
 			getServer().getGameState().addActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player), rent));
@@ -134,7 +147,7 @@ public class CardActionRent extends CardAction
 	@Override
 	public String toString()
 	{
-		String str = "CardActionRent (" + colors.size() + " Color" + (colors.size() != 1 ? "s" : "") + ": ";
+		String str = "CardActionRent (RentType: " + rentType.name() + ") (" + colors.size() + " Color" + (colors.size() != 1 ? "s" : "") + ": ";
 		for (PropertyColor color : colors)
 		{
 			str += color.getLabel() + "/";
@@ -187,6 +200,7 @@ public class CardActionRent extends CardAction
 		dt.putColors("colors", PropertyColor.getVanillaColors());
 		dt.put("revocable", true);
 		dt.put("clearsRevocableCards", false);
+		type.setDefaultTemplate(dt);
 		RAINBOW = dt;
 		
 		CardTemplate oneMilValue = new CardTemplate(dt);
@@ -246,5 +260,18 @@ public class CardActionRent extends CardAction
 				removeState();
 			}
 		}
+	}
+	
+	/**
+	 * The rent type specifies how many players can be charged by a rent card.
+	 */
+	public enum RentType
+	{
+		/** Fall back to the game rules for direction. */
+		UNSPECIFIED,
+		/** Charge one player rent, regardless of game rules. */
+		SINGLE,
+		/** Charge all players rent, regardless of game rules. */
+		ALL
 	}
 }

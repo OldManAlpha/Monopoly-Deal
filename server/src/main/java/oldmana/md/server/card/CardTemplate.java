@@ -209,7 +209,7 @@ public class CardTemplate implements Cloneable
 		{
 			JSONObject ref = getAssociatedType().getDefaultTemplate().getJson();
 			if (key.equals("type") ||
-					getAssociatedType().isExemptReduction(key) ||
+					getAssociatedType().isExemptReduction(key) || !ref.has(key) ||
 					(!ref.get(key).equals(json.get(key)) && !(ref.get(key) instanceof JSONArray &&
 					ref.getJSONArray(key).similar(json.get(key)))))
 			{

@@ -58,6 +58,7 @@ public class CardMoney extends Card
 		dt.putStrings("description", "Money can be banked to protect your properties from rent.");
 		dt.put("revocable", true);
 		dt.put("clearsRevocableCards", false);
+		type.setDefaultTemplate(dt);
 		
 		ONE_MIL = new CardTemplate(dt);
 		ONE_MIL.put("value", 1);

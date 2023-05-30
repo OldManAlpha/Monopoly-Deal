@@ -81,12 +81,12 @@ public class CommandHandler
 		}
 		if (cmd == null)
 		{
-			sender.sendMessage("Command not found.");
+			sender.sendMessage(ChatColor.PREFIX_ALERT + "Command not found.");
 			return;
 		}
 		if (!cmd.checkPermission(sender))
 		{
-			sender.sendMessage("Insufficient permissions.");
+			sender.sendMessage(ChatColor.PREFIX_ALERT + "Insufficient permissions.");
 			return;
 		}
 		String[] args = Arrays.copyOfRange(split, 1, split.length);
@@ -104,7 +104,7 @@ public class CommandHandler
 				e.printStackTrace();
 				if (sender instanceof Player)
 				{
-					sender.sendMessage("Error: " + e.getMessage());
+					sender.sendMessage(ChatColor.PREFIX_ALERT + "Error: " + e.getMessage());
 				}
 			}
 			MDServer.getInstance().getEventManager().callEvent(new CommandExecutedEvent(cmd, sender, fullCmd, args));

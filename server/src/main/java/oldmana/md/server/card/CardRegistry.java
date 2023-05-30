@@ -1,6 +1,7 @@
 package oldmana.md.server.card;
 
 import oldmana.md.server.MDServer;
+import oldmana.md.server.mod.ServerMod;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -44,8 +45,9 @@ public class CardRegistry
 		return getTypeByClass(cardClass).createCard(template);
 	}
 	
-	public static void registerCardType(CardType<?> type)
+	public static void registerCardType(ServerMod mod, CardType<?> type)
 	{
+		type.setAssociatedMod(mod);
 		getCardRegistry().registeredCards.add(type);
 		getCardRegistry().classCardTypeMap.put(type.getCardClass(), type);
 		getCardRegistry().nameCardTypeMap.put(type.getInternalName(), type);
@@ -54,17 +56,18 @@ public class CardRegistry
 	/**
 	 * Registers a CardType based on the class. The class MUST contain a static method named "createType" that returns
 	 * a CardType. This method can have any access modifier.
+	 * @param mod The mod that is registering this card type
 	 * @param cardClass The class to register
 	 * @return The recently registered type
 	 */
-	public static <T extends Card> CardType<T> registerCardType(Class<T> cardClass)
+	public static <T extends Card> CardType<T> registerCardType(ServerMod mod, Class<T> cardClass)
 	{
 		try
 		{
 			Method m = cardClass.getDeclaredMethod("createType");
 			m.setAccessible(true);
 			CardType<T> type = (CardType<T>) m.invoke(null);
-			registerCardType(type);
+			registerCardType(mod, type);
 			return type;
 		}
 		catch (NoSuchMethodException e)

@@ -3,6 +3,7 @@ package oldmana.md.server.rules;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class GameRule
@@ -195,7 +196,15 @@ public class GameRule
 	{
 		if (value instanceof Map)
 		{
-			return (Map<String, GameRule>) value;
+			return ((Map<String, GameRule>) value).entrySet().stream()
+					.sorted(Map.Entry.comparingByKey())
+					.sorted((e1, e2) ->
+			{
+				RuleStruct e1Struct = e1.getValue().getRuleStruct();
+				RuleStruct e2Struct = e2.getValue().getRuleStruct();
+				return (e1Struct instanceof RuleStructObject || e1Struct instanceof RuleStructOption) &&
+						!(e2Struct instanceof RuleStructObject || e2Struct instanceof RuleStructOption) ? -1 : 0;
+			}).collect(LinkedHashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), Map::putAll);
 		}
 		Map<String, GameRule> map = new HashMap<String, GameRule>();
 		map.put(getJsonName(), getValueAsRule());

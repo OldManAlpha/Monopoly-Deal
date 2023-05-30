@@ -110,21 +110,6 @@ public abstract class MDCardCollection extends MDCardCollectionBase
 		return getLocationOf(cards.indexOf(card), cards.size());
 	}
 	
-	public MDSelection createSelectionOf(Card card)
-	{
-		MDSelection selection = new MDSelection();
-		selection.setLocation(getScreenLocationOf(card));
-		selection.setSize(GraphicsUtils.getCardWidth(getCardScale()), GraphicsUtils.getCardHeight(getCardScale()));
-		return selection;
-	}
-	
-	public MDCard createViewOf(Card card)
-	{
-		MDCard view = new MDCard(card, getCardScale());
-		view.setLocation(getScreenLocationOf(card));
-		return view;
-	}
-	
 	//public abstract Point getLocationOf(int index, List<Card> cards);
 	
 	public Map<Card, Point> getCurrentCardPositions()
@@ -160,26 +145,6 @@ public abstract class MDCardCollection extends MDCardCollectionBase
 							(int) (p2.y + ((p1.y - p2.y) * getVisibleShiftProgress()))));
 				}
 			}
-			
-			/*
-			boolean shift = false;
-			for (int i = 0 ; i < cards.size() ; i++)
-			{
-				Card card = cards.get(i);
-				if (!prevCards.contains(card))
-				{
-					shift = true;
-					continue;
-				}
-				Point p1 = getLocationOf(i - (shift ? 1 : 0), cards.size());
-				Point p2 = getLocationOf(i, prevCards.size());
-				System.out.println("p1: " + p1);
-				System.out.println("p2: " + p2);
-				System.out.println(this.getModIndex());
-				positions.put(card, new Point((int) (p2.x + ((p1.x - p2.x) * (Math.min(1, getCardMoveProgress() * 1.5)))), 
-						(int) (p2.y + ((p1.y - p2.y) * (Math.min(1, getCardMoveProgress() * 1.5))))));
-			}
-			*/
 		}
 		else
 		{

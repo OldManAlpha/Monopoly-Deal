@@ -139,7 +139,19 @@ public class MDServer
 			throw new IllegalStateException("Server already started");
 		}
 		serverThread = Executors.newSingleThreadScheduledExecutor();
-		serverThread.execute(() -> startServerSync());
+		serverThread.execute(() ->
+		{
+			try
+			{
+				startServerSync();
+			}
+			catch (Exception | Error e)
+			{
+				System.err.println("Failed to start server!");
+				e.printStackTrace();
+				System.exit(1);
+			}
+		});
 	}
 	
 	private void startServerSync()
@@ -232,7 +244,10 @@ public class MDServer
 		
 		System.out.println("Loading Decks");
 		deck.registerDeckStack("vanilla", new VanillaDeck());
-		deck.setDeckStack("vanilla");
+		if (deck.getDeckStack() == null)
+		{
+			deck.setDeckStack("vanilla");
+		}
 		loadDecks();
 		
 		Thread consoleReader = new Thread(() ->
@@ -525,24 +540,26 @@ public class MDServer
 	
 	private void registerDefaultCards()
 	{
-		CardType.CARD = CardRegistry.registerCardType(Card.class);
-		CardType.ACTION = CardRegistry.registerCardType(CardAction.class);
-		CardType.MONEY = CardRegistry.registerCardType(CardMoney.class);
-		CardType.PROPERTY = CardRegistry.registerCardType(CardProperty.class);
-		CardType.BUILDING = CardRegistry.registerCardType(CardBuilding.class);
+		CardType.CARD = CardRegistry.registerCardType(null, Card.class);
+		CardType.ACTION = CardRegistry.registerCardType(null, CardAction.class);
+		CardType.MONEY = CardRegistry.registerCardType(null, CardMoney.class);
+		CardType.PROPERTY = CardRegistry.registerCardType(null, CardProperty.class);
+		CardType.BUILDING = CardRegistry.registerCardType(null, CardBuilding.class);
 		
-		CardType.DEAL_BREAKER = CardRegistry.registerCardType(CardActionDealBreaker.class);
-		CardType.DEBT_COLLECTOR = CardRegistry.registerCardType(CardActionDebtCollector.class);
-		CardType.DOUBLE_THE_RENT = CardRegistry.registerCardType(CardActionDoubleTheRent.class);
-		CardType.FORCED_DEAL = CardRegistry.registerCardType(CardActionForcedDeal.class);
-		CardType.ITS_MY_BIRTHDAY = CardRegistry.registerCardType(CardActionItsMyBirthday.class);
-		CardType.JUST_SAY_NO = CardRegistry.registerCardType(CardActionJustSayNo.class);
-		CardType.PASS_GO = CardRegistry.registerCardType(CardActionPassGo.class);
-		CardType.RENT = CardRegistry.registerCardType(CardActionRent.class);
-		CardType.SLY_DEAL = CardRegistry.registerCardType(CardActionSlyDeal.class);
+		CardType.CHARGE = CardRegistry.registerCardType(null, CardActionCharge.class);
 		
-		CardType.HOUSE = CardRegistry.registerCardType(CardActionHouse.class);
-		CardType.HOTEL = CardRegistry.registerCardType(CardActionHotel.class);
+		CardType.DEAL_BREAKER = CardRegistry.registerCardType(null, CardActionDealBreaker.class);
+		CardType.DEBT_COLLECTOR = CardRegistry.registerCardType(null, CardActionDebtCollector.class);
+		CardType.DOUBLE_THE_RENT = CardRegistry.registerCardType(null, CardActionDoubleTheRent.class);
+		CardType.FORCED_DEAL = CardRegistry.registerCardType(null, CardActionForcedDeal.class);
+		CardType.ITS_MY_BIRTHDAY = CardRegistry.registerCardType(null, CardActionItsMyBirthday.class);
+		CardType.JUST_SAY_NO = CardRegistry.registerCardType(null, CardActionJustSayNo.class);
+		CardType.PASS_GO = CardRegistry.registerCardType(null, CardActionPassGo.class);
+		CardType.RENT = CardRegistry.registerCardType(null, CardActionRent.class);
+		CardType.SLY_DEAL = CardRegistry.registerCardType(null, CardActionSlyDeal.class);
+		
+		CardType.HOUSE = CardRegistry.registerCardType(null, CardActionHouse.class);
+		CardType.HOTEL = CardRegistry.registerCardType(null, CardActionHotel.class);
 	}
 	
 	public CommandHandler getCommandHandler()

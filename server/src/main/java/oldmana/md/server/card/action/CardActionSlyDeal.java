@@ -52,6 +52,7 @@ public class CardActionSlyDeal extends CardAction
 				"10-Color property wild cards cannot be stolen with this card.");
 		template.put("revocable", true);
 		template.put("clearsRevocableCards", false);
+		type.setDefaultTemplate(template);
 		return type;
 	}
 	

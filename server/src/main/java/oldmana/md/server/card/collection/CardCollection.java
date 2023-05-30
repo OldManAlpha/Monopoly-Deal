@@ -176,6 +176,10 @@ public abstract class CardCollection implements Iterable<Card>
 		{
 			throw new IllegalArgumentException("Collection does not contain specified card.");
 		}
+		if (to.getCardCount() < index)
+		{
+			throw new IndexOutOfBoundsException("To index out of bounds! Index: " + index + ", Size: " + to.getCardCount());
+		}
 		removeCard(card);
 		//getCards().remove(fromIndex);
 		to.addCard(card, index);

@@ -319,14 +319,12 @@ public class NetServerHandler extends NetHandler
 	
 	public void handleActionEndTurn(Player player, PacketActionEndTurn packet)
 	{
-		if (server.getGameState().getActivePlayer() == player)
-		{
-			player.endTurn();
-		}
-		else
+		if (server.getGameState().getActivePlayer() != player)
 		{
 			player.resendActionState();
+			return;
 		}
+		player.endTurn();
 	}
 	
 	public void handleActionMoveProperty(Player player, PacketActionMoveProperty packet)

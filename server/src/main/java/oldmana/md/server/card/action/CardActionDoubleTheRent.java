@@ -27,6 +27,7 @@ public class CardActionDoubleTheRent extends CardAction
 		template.putStrings("description", "Can be played with a Rent card to double the charge against players. Counts as a move.");
 		template.put("revocable", false);
 		template.put("clearsRevocableCards", true);
+		type.setDefaultTemplate(template);
 		return type;
 	}
 }

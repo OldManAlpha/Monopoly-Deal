@@ -26,8 +26,9 @@ public class ActionStateFinishTurn extends ActionState
 			MDButton button = getClient().getTableScreen().getMultiButton();
 			button.setColor(ButtonColorScheme.ALERT);
 			button.setText("End Turn");
+			boolean ignoreMax = getClient().getRules().canDiscardEarly();
 			int maxCards = getClient().getRules().getMaxCardsInHand();
-			if (getActionOwner().getHand().getCardCount() > maxCards)
+			if (!ignoreMax && getActionOwner().getHand().getCardCount() > maxCards)
 			{
 				button.setEnabled(false);
 			}
@@ -37,7 +38,7 @@ public class ActionStateFinishTurn extends ActionState
 				button.setListener(() ->
 				{
 					if (!getClient().isInputBlocked() && getClient().canActFreely() &&
-							getActionOwner().getHand().getCardCount() <= maxCards)
+							(ignoreMax || getActionOwner().getHand().getCardCount() <= maxCards))
 					{
 						getClient().sendPacket(new PacketActionEndTurn());
 						getClient().setAwaitingResponse(true);

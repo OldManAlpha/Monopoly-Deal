@@ -26,7 +26,7 @@ public class CardAction extends Card
 		actions.addButton(play);
 		
 		CardButton bank = new CardButton("Bank", CardButton.BOTTOM);
-		bank.setCondition((player, card) -> player.canPlayCards());
+		bank.setCondition((player, card) -> getServer().getGameRules().canBankActionCards() && player.canPlayCards());
 		bank.setListener((player, card, data) -> player.playCardBank(card));
 		actions.addButton(bank);
 		

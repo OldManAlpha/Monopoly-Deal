@@ -1,19 +1,10 @@
 package oldmana.md.server.card.action;
 
-import oldmana.md.server.Player;
-import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.CardType;
-import oldmana.md.server.state.ActionStateRent;
 
-public class CardActionItsMyBirthday extends CardAction
+public class CardActionItsMyBirthday extends CardActionCharge
 {
-	@Override
-	public void playCard(Player player)
-	{
-		getServer().getGameState().addActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player), 2));
-	}
-	
 	private static CardType<CardActionItsMyBirthday> createType()
 	{
 		CardType<CardActionItsMyBirthday> type = new CardType<CardActionItsMyBirthday>(CardActionItsMyBirthday.class,
@@ -28,6 +19,9 @@ public class CardActionItsMyBirthday extends CardAction
 		template.putStrings("description", "Charge all other players 2M.");
 		template.put("revocable", false);
 		template.put("clearsRevocableCards", true);
+		template.put("chargesAll", true);
+		template.put("charge", 2);
+		type.setDefaultTemplate(template);
 		return type;
 	}
 }

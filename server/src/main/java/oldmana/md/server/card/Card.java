@@ -14,6 +14,7 @@ import oldmana.md.server.Player;
 import oldmana.md.server.card.collection.CardCollection;
 import oldmana.md.server.card.control.CardControls;
 import oldmana.md.server.card.control.CardButton;
+import oldmana.md.server.rules.DiscardOrderPolicy;
 
 public abstract class Card
 {
@@ -65,8 +66,7 @@ public abstract class Card
 	public CardControls createControls()
 	{
 		CardButton discard = new CardButton("Discard", CardButton.CENTER);
-		discard.setCondition((player, card) ->
-			player.isDiscarding() && (!(card instanceof CardProperty) || player.getHand().hasAllProperties()));
+		discard.setCondition((player, card) -> player.isDiscarding() && card.canDiscard(player));
 		discard.setListener((player, card, data) -> player.discard(card));
 		return new CardControls(this, discard);
 	}
@@ -289,6 +289,18 @@ public abstract class Card
 	public CardAnimationType getPlayAnimation()
 	{
 		return CardAnimationType.NORMAL;
+	}
+	
+	/**
+	 * Check to see if this card can be discarded by the player. By default, this checks other cards in the hand to
+	 * see if an exception should be made.
+	 * @param player The player to potentially discard this card
+	 * @return True if the player should be able to discard this card
+	 */
+	public boolean canDiscard(Player player)
+	{
+		DiscardOrderPolicy policy = getServer().getGameRules().getDiscardOrderPolicy();
+		return policy.canDiscard(this) || policy.canIgnorePolicy(player.getHand().getCards());
 	}
 	
 	/**

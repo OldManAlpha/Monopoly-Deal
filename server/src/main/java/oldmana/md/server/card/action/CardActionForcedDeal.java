@@ -65,6 +65,7 @@ public class CardActionForcedDeal extends CardAction
 				"not part of a full set. 10-Color property wild cards cannot be stolen with this card.");
 		template.put("revocable", true);
 		template.put("clearsRevocableCards", false);
+		type.setDefaultTemplate(template);
 		return type;
 	}
 	

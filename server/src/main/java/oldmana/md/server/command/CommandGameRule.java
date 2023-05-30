@@ -21,17 +21,12 @@ public class CommandGameRule extends Command
 	public CommandGameRule()
 	{
 		super("gamerule", new String[] {"gamerules", "rule", "rules"}, new String[] {"/gamerule", "/gamerule list",
-				"/gamerule set"}, true);
+				"/gamerule set"}, false);
 	}
 	
 	@Override
 	public void executeCommand(CommandSender sender, String[] args)
 	{
-		if (!checkPermission(sender)) // Checking permission again because there might be a recursive call
-		{
-			return;
-		}
-		
 		GameRules grs = getServer().getGameRules();
 		
 		GameRule root = grs.getRootRule();
@@ -73,17 +68,17 @@ public class CommandGameRule extends Command
 				MessageBuilder mb = new MessageBuilder();
 				mb.setCategory("gamerule");
 				mb.addHoverString(ChatColor.LIGHT_YELLOW + rs.getName(), rs.getDescription());
-				mb.addString(ChatColor.WHITE + ": " + ChatColor.ORANGE);
+				mb.addString(ChatColor.WHITE + ": " + ChatColor.LIGHT_ORANGE);
 				if (rs instanceof RuleStructKey)
 				{
 					RuleStructValue<?> child = ((RuleStructKey) rs).getChild();
 					mb.addString(child.getDisplayValue(rule.getValueAsRule()));
 					mb.addString(" ");
-					addEditButton(mb, child);
+					addEditButton(sender, mb, child);
 				}
 				else if (rs instanceof RuleStructObject)
 				{
-					mb.addString(rs.getDisplayValue(rule));
+					mb.addString(ChatColor.ORANGE + rs.getDisplayValue(rule));
 					mb.addString(" ");
 					addListButton(mb, rs);
 				}
@@ -95,17 +90,20 @@ public class CommandGameRule extends Command
 					if (choiceStruct instanceof RuleStructKey)
 					{
 						mb.addString(" (" + choice.getDeepValue() + ") ");
-						addEditButton(mb, choiceStruct);
+						addEditButton(sender, mb, choiceStruct);
 					}
 					else if (choiceStruct instanceof RuleStructObject)
 					{
 						mb.addString(" " + ChatColor.ORANGE + "(" + choice.getDisplayValue() + ") ");
 						addListButton(mb, choiceStruct);
 					}
-					mb.addString(" ");
-					mb.startHoverText("Change currently selected option");
-					mb.addCommandString(ChatColor.UTILITY + "[Choose Option]", "gamerule list " + rs.getPath());
-					mb.endHoverText();
+					if (sender.isOp())
+					{
+						mb.addString(" ");
+						mb.startHoverText("Change currently selected option");
+						mb.addCommandString(ChatColor.UTILITY + "[Choose Option]", "gamerule list " + rs.getPath());
+						mb.endHoverText();
+					}
 				}
 				sender.sendMessage(mb.getMessage());
 			});
@@ -126,18 +124,26 @@ public class CommandGameRule extends Command
 		}
 		else if (args[0].equalsIgnoreCase("set"))
 		{
+			if (!sender.isOp())
+			{
+				return;
+			}
 			clearMessages(sender, "ruleTypeUsage");
 			GameRule rule = root.traverse(args[1]);
 			String prevValue = rule.getRuleStruct() instanceof RuleStructKey ? rule.getValueAsRule().getDisplayValue() : rule.getDisplayValue();
 			rule.setValue(args[2]);
 			String value = rule.getRuleStruct() instanceof RuleStructKey ? rule.getValueAsRule().getDisplayValue() : rule.getDisplayValue();
 			sender.sendMessage(ChatColor.PREFIX_ALERT + ChatColor.WHITE + "Changed " + ChatColor.LIGHT_YELLOW +
-					rule.getRuleStruct().getName() + ChatColor.WHITE + " from " + ChatColor.ORANGE + prevValue + ChatColor.WHITE +
-					" to " + ChatColor.ORANGE + value);
+					rule.getRuleStruct().getName() + ChatColor.WHITE + " from " + ChatColor.LIGHT_ORANGE + prevValue + ChatColor.WHITE +
+					" to " + ChatColor.LIGHT_ORANGE + value);
 			executeCommand(sender, new String[] {"list", rule.getRuleStruct().getObjectParent().getPath()});
 		}
 		else if (args[0].equalsIgnoreCase("type"))
 		{
+			if (!sender.isOp())
+			{
+				return;
+			}
 			GameRule rule = root.traverse(args[1]);
 			if (rule.getRuleStruct() instanceof RuleStructKey)
 			{
@@ -151,6 +157,10 @@ public class CommandGameRule extends Command
 		}
 		else if (args[0].equalsIgnoreCase("reload"))
 		{
+			if (!sender.isOp())
+			{
+				return;
+			}
 			grs.reloadRules();
 			clearMessages(sender, "gamerule");
 			clearMessages(sender, "ruleTypeUsage");
@@ -164,6 +174,10 @@ public class CommandGameRule extends Command
 	
 	private void sendApplyRulesButton(CommandSender sender)
 	{
+		if (!sender.isOp())
+		{
+			return;
+		}
 		MessageBuilder mb = new MessageBuilder();
 		mb.setCategory("gamerule");
 		mb.addString("                                  ");
@@ -182,8 +196,12 @@ public class CommandGameRule extends Command
 		sender.sendMessage(mb.getMessage());
 	}
 	
-	private void addEditButton(MessageBuilder mb, RuleStruct rs)
+	private void addEditButton(CommandSender sender, MessageBuilder mb, RuleStruct rs)
 	{
+		if (!sender.isOp())
+		{
+			return;
+		}
 		mb.startHoverText("Fill in command to edit value");
 		mb.startCommand("gamerule type " + rs.getPath());
 		mb.startFillCommand("gamerule set " + rs.getPath() + " ");

@@ -26,6 +26,7 @@ public class CardActionPassGo extends CardAction
 		template.putStrings("description", "Draw two cards.");
 		template.put("revocable", false);
 		template.put("clearsRevocableCards", false);
+		type.setDefaultTemplate(template);
 		return type;
 	}
 }

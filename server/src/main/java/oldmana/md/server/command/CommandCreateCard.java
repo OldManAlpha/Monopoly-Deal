@@ -103,16 +103,16 @@ public class CommandCreateCard extends Command
 			card = CardProperty.create(value, name, base, PropertyColor.fromIDs(colors).toArray(new PropertyColor[0]));
 			sender.sendMessage("Created property card with ID " + card.getID(), true);
 		}
-		if (card != null)
+		if (card != null && sender instanceof Player)
 		{
-			if (sender instanceof Player)
-			{
-				Player player = (Player) sender;
-				MessageBuilder mb = new MessageBuilder();
-				mb.addCommandString(ChatColor.LINK + "[Transfer To Hand]",
-						"transfercard " + card.getID() + " " + player.getHand().getID());
-				player.sendMessage(mb.getMessage());
-			}
+			Player player = (Player) sender;
+			MessageBuilder mb = new MessageBuilder();
+			mb.addCommandString(ChatColor.LINK + "[Transfer To Hand]",
+					"transfercard " + card.getID() + " " + player.getHand().getID());
+			mb.addString("        ");
+			mb.addCommandString("[Transfer To Deck]",
+					"transfercard " + card.getID() + " " + getServer().getDeck().getID());
+			player.sendMessage(mb.getMessage());
 		}
 	}
 }

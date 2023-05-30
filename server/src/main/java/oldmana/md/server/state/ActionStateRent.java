@@ -13,6 +13,7 @@ import oldmana.md.net.packet.server.actionstate.PacketActionStateRent;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardProperty;
+import oldmana.md.server.card.collection.Bank;
 import oldmana.md.server.event.RentPaymentEvent;
 
 public class ActionStateRent extends ActionState
@@ -166,13 +167,18 @@ public class ActionStateRent extends ActionState
 		
 		RentPaymentEvent event = new RentPaymentEvent(renter, player, cards, getPlayerRent(player));
 		getServer().getEventManager().callEvent(event);
+		if (event.isCancelled())
+		{
+			player.resendActionState();
+			return;
+		}
 		cards = event.getPayment();
 		
 		if (renter != null)
 		{
 			for (Card card : cards)
 			{
-				if (card instanceof CardProperty)
+				if (card instanceof CardProperty && !(card.getOwningCollection() instanceof Bank))
 				{
 					CardProperty property = (CardProperty) card;
 					renter.safelyGrantProperty(property);

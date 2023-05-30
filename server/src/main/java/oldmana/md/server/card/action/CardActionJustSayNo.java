@@ -74,6 +74,7 @@ public class CardActionJustSayNo extends CardAction
 				"Just Say No to cancel it.");
 		template.put("revocable", false);
 		template.put("clearsRevocableCards", false);
+		type.setDefaultTemplate(template);
 		return type;
 	}
 }

@@ -41,6 +41,11 @@ public class CardProperty extends Card
 			player.playCardProperty((CardProperty) card, data);
 		});
 		actions.addButton(play);
+		
+		CardButton bank = new CardButton("Bank", CardButton.BOTTOM);
+		bank.setCondition((player, card) -> getServer().getGameRules().canBankPropertyCards() && player.canPlayCards());
+		bank.setListener((player, card, data) -> player.playCardBank(card));
+		actions.addButton(bank);
 		return actions;
 	}
 	
@@ -170,6 +175,7 @@ public class CardProperty extends Card
 		dt.put("clearsRevocableCards", false);
 		dt.putColors("colors", PropertyColor.RAILROAD);
 		dt.put("base", true);
+		type.setDefaultTemplate(dt);
 		
 		RAINBOW_WILD = new CardTemplate(dt);
 		RAINBOW_WILD.put("value", 0);

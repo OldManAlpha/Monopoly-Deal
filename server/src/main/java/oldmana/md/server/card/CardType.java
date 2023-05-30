@@ -2,6 +2,7 @@ package oldmana.md.server.card;
 
 import oldmana.md.server.MDServer;
 import oldmana.md.server.card.Card.CardDescription;
+import oldmana.md.server.card.action.CardActionCharge;
 import oldmana.md.server.card.action.CardActionDealBreaker;
 import oldmana.md.server.card.action.CardActionDebtCollector;
 import oldmana.md.server.card.action.CardActionDoubleTheRent;
@@ -13,6 +14,7 @@ import oldmana.md.server.card.action.CardActionJustSayNo;
 import oldmana.md.server.card.action.CardActionPassGo;
 import oldmana.md.server.card.action.CardActionRent;
 import oldmana.md.server.card.action.CardActionSlyDeal;
+import oldmana.md.server.mod.ServerMod;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +40,8 @@ public class CardType<T extends Card>
 	public static CardType<CardAction> ACTION;
 	public static CardType<CardProperty> PROPERTY;
 	public static CardType<CardBuilding> BUILDING;
+	// Preliminary Action Cards
+	public static CardType<CardActionCharge> CHARGE;
 	// Action Cards
 	public static CardType<CardActionDealBreaker> DEAL_BREAKER;
 	public static CardType<CardActionDebtCollector> DEBT_COLLECTOR;
@@ -69,7 +73,9 @@ public class CardType<T extends Card>
 	private Map<CardTemplateInfo, CardTemplate> templates = new LinkedHashMap<CardTemplateInfo, CardTemplate>();
 	private Map<String, CardTemplate> nameTemplateMap = new HashMap<String, CardTemplate>(); // For faster lookups
 	
-	private List<String> exemptReductions = new ArrayList<String>();
+	private Map<String, Boolean> exemptReductions = new HashMap<String, Boolean>(); // Key: Json Name / Value: Carry to children?
+	
+	private ServerMod associatedMod;
 	
 	/**
 	 * Constructor for card types that cannot be instantiated.
@@ -102,7 +108,13 @@ public class CardType<T extends Card>
 			}
 			defaultTemplate = parent.getDefaultTemplate().clone();
 			defaultTemplate.setAssociatedType(this);
-			exemptReductions = new ArrayList<String>(parent.getExemptReductions());
+			parent.getExemptReductionsMap().forEach((exempt, carries) ->
+			{
+				if (carries)
+				{
+					exemptReductions.put(exempt, true);
+				}
+			});
 			
 			if (parent.getCardClass() == Card.class)
 			{
@@ -277,7 +289,12 @@ public class CardType<T extends Card>
 	
 	public void addExemptReduction(String exempt)
 	{
-		exemptReductions.add(exempt);
+		addExemptReduction(exempt, true);
+	}
+	
+	public void addExemptReduction(String exempt, boolean carryToChildren)
+	{
+		exemptReductions.put(exempt, carryToChildren);
 	}
 	
 	public void removeExemptReduction(String exempt)
@@ -287,12 +304,27 @@ public class CardType<T extends Card>
 	
 	public List<String> getExemptReductions()
 	{
+		return new ArrayList<String>(exemptReductions.keySet());
+	}
+	
+	public Map<String, Boolean> getExemptReductionsMap()
+	{
 		return exemptReductions;
 	}
 	
 	public boolean isExemptReduction(String key)
 	{
-		return exemptReductions.contains(key);
+		return exemptReductions.containsKey(key);
+	}
+	
+	public ServerMod getAssociatedMod()
+	{
+		return associatedMod;
+	}
+	
+	protected void setAssociatedMod(ServerMod mod)
+	{
+		this.associatedMod = mod;
 	}
 	
 	/**
