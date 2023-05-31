@@ -4,12 +4,12 @@ import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class MDPrintStream extends PrintStream
+public class ServerPrintStream extends PrintStream
 {
 	private PrintStream wrapped;
 	private DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 	
-	public MDPrintStream(PrintStream out)
+	public ServerPrintStream(PrintStream out)
 	{
 		super(out);
 		wrapped = out;

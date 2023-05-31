@@ -158,8 +158,8 @@ public class MDServer
 	{
 		if (!isIntegrated())
 		{
-			System.setOut(new MDPrintStream(System.out));
-			System.setErr(new MDPrintStream(System.err));
+			System.setOut(new ServerPrintStream(System.out));
+			System.setErr(new ServerPrintStream(System.err));
 		}
 		
 		System.out.println("Starting Monopoly Deal Server Version " + VERSION);
