@@ -263,6 +263,7 @@ public class CardType<T extends Card>
 	public void addTemplate(CardTemplate template, String name, String... aliases)
 	{
 		template.setAssociatedType(this);
+		template.put("template", name);
 		CardTemplateInfo info = new CardTemplateInfo(name, aliases);
 		templates.put(info, template);
 		nameTemplateMap.put(name, template);
@@ -274,7 +275,7 @@ public class CardType<T extends Card>
 	
 	public CardTemplate getTemplate(String name)
 	{
-		return nameTemplateMap.get(standardize(name));
+		return nameTemplateMap.get(name);
 	}
 	
 	public Map<CardTemplateInfo, CardTemplate> getTemplates()

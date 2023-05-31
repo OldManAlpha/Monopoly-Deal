@@ -14,6 +14,13 @@ import oldmana.md.server.card.Card;
 
 public class DeckSerializer
 {
+	private static final Map<String, Integer> cardSortOrder = new HashMap<String, Integer>();
+	static
+	{
+		cardSortOrder.put(CardType.MONEY.getInternalName(), -1);
+		cardSortOrder.put(CardType.PROPERTY.getInternalName(), 100);
+	}
+	
 	public static JSONArray serialize(DeckStack deck)
 	{
 		Map<CardTemplate, Integer> cardAmounts = new HashMap<CardTemplate, Integer>();
@@ -25,9 +32,20 @@ public class DeckSerializer
 		for (Entry<CardTemplate, Integer> entry : cardAmounts.entrySet())
 		{
 			JSONObject obj = entry.getKey().getReducedJson();
-			obj.put("amount", entry.getValue());
+			if (entry.getValue() > 1)
+			{
+				obj.put("amount", entry.getValue());
+			}
 			arr.put(obj);
 		}
+		arr.sort((o1, o2) ->
+		{
+			String type1 = ((JSONObject) o1).getString("type");
+			String type2 = ((JSONObject) o2).getString("type");
+			int v1 = cardSortOrder.getOrDefault(type1, Character.getNumericValue(type1.charAt(0)));
+			int v2 = cardSortOrder.getOrDefault(type2, Character.getNumericValue(type2.charAt(0)));
+			return Integer.compare(v1, v2);
+		});
 		return arr;
 	}
 	
@@ -40,7 +58,12 @@ public class DeckSerializer
 			int amount = obj.has("amount") ? obj.getInt("amount") : 1;
 			obj.remove("amount");
 			CardType<?> type = CardRegistry.getTypeByName(obj.getString("type"));
-			CardTemplate template = new CardTemplate(type.getDefaultTemplate(), obj);
+			CardTemplate baseTemplate = type.getDefaultTemplate();
+			if (obj.has("template"))
+			{
+				baseTemplate = type.getTemplate(obj.getString("template"));
+			}
+			CardTemplate template = new CardTemplate(baseTemplate, obj);
 			templates.merge(template, amount, Integer::sum);
 		}
 		return templates;

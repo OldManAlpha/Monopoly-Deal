@@ -32,6 +32,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -249,6 +250,20 @@ public class JSONArray implements Iterable<Object> {
     @Override
     public Iterator<Object> iterator() {
         return this.myArrayList.iterator();
+    }
+    
+    public List<Object> getBackingList()
+    {
+        return myArrayList;
+    }
+    
+    /**
+     * Sorts the backing ArrayList.
+     * @param sorter The sorter to use
+     */
+    public void sort(Comparator<Object> sorter)
+    {
+        myArrayList.sort(sorter);
     }
 
     /**

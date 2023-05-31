@@ -5,13 +5,15 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class CardTemplate implements Cloneable
 {
-	private static CardTemplate DEFAULT_TEMPLATE = new CardTemplate(true);
+	private static final CardTemplate DEFAULT_TEMPLATE = new CardTemplate(true);
 	static
 	{
 		DEFAULT_TEMPLATE.put("value", 1);
@@ -22,6 +24,18 @@ public class CardTemplate implements Cloneable
 		DEFAULT_TEMPLATE.putStrings("description", "Missing Description");
 		DEFAULT_TEMPLATE.put("revocable", true);
 		DEFAULT_TEMPLATE.put("clearRevocableCards", false);
+	}
+	
+	private static final Map<String, Integer> sortOrder = new HashMap<String, Integer>();
+	static
+	{
+		sortOrder.put("type", -10);
+		sortOrder.put("template", -9);
+		sortOrder.put("value", 0);
+		sortOrder.put("name", 1);
+		sortOrder.put("displayName", 2);
+		sortOrder.put("description", 3);
+		sortOrder.put("amount", 100);
 	}
 	
 	private JSONObject json;
@@ -67,7 +81,7 @@ public class CardTemplate implements Cloneable
 	}
 	
 	/**
-	 * Create a CardTemplate, providing a base, then applying a difference
+	 * Create a CardTemplate, providing a base, then applying a difference.
 	 * @param template The base template
 	 * @param diff The difference
 	 */
@@ -199,19 +213,30 @@ public class CardTemplate implements Cloneable
 	}
 	
 	/**
-	 * Create a JSONObject where information that can be deduced by the associated type's default template is removed
+	 * Create a JSONObject where information that can be deduced by the associated type's default template is removed.
 	 * @throws NullPointerException If there's no associated type
 	 */
 	public JSONObject getReducedJson()
 	{
 		JSONObject reduced = new JSONObject();
-		for (String key : json.keySet())
+		boolean usingTemplate = has("template");
+		JSONObject ref = usingTemplate ? getAssociatedType().getTemplate(getString("template")).getJson() :
+				getAssociatedType().getDefaultTemplate().getJson();
+		List<String> keys = new ArrayList<String>(json.keySet());
+		keys.sort((s1, s2) ->
 		{
-			JSONObject ref = getAssociatedType().getDefaultTemplate().getJson();
+			int v1 = sortOrder.getOrDefault(s1, Character.getNumericValue(s1.charAt(0)));
+			int v2 = sortOrder.getOrDefault(s2, Character.getNumericValue(s2.charAt(0)));
+			return Integer.compare(v1, v2);
+		});
+		for (String key : keys)
+		{
 			if (key.equals("type") ||
-					getAssociatedType().isExemptReduction(key) || !ref.has(key) ||
+					key.equals("template") || // Type and template are always included
+					(!usingTemplate && getAssociatedType().isExemptReduction(key)) || // Include exempt reductions, unless using a template
+					!ref.has(key) || // Include if default template doesn't have the key
 					(!ref.get(key).equals(json.get(key)) && !(ref.get(key) instanceof JSONArray &&
-					ref.getJSONArray(key).similar(json.get(key)))))
+					ref.getJSONArray(key).similar(json.get(key))))) // Finally, include if values from templates don't match
 			{
 				reduced.put(key, json.get(key));
 			}
@@ -232,7 +257,7 @@ public class CardTemplate implements Cloneable
 		{
 			return false;
 		}
-		return json.similar(((CardTemplate) other).getJson());
+		return associatedType == ((CardTemplate) other).getAssociatedType() && json.similar(((CardTemplate) other).getJson());
 	}
 	
 	@Override

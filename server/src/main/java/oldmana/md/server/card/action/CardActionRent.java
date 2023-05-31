@@ -201,7 +201,9 @@ public class CardActionRent extends CardAction
 		dt.put("revocable", true);
 		dt.put("clearsRevocableCards", false);
 		type.setDefaultTemplate(dt);
-		RAINBOW = dt;
+		
+		RAINBOW = dt.clone();
+		type.addTemplate(RAINBOW, "Rainbow Rent");
 		
 		CardTemplate oneMilValue = new CardTemplate(dt);
 		oneMilValue.put("value", 1);
