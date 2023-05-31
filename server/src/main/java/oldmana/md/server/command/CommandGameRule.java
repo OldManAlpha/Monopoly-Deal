@@ -20,8 +20,8 @@ public class CommandGameRule extends Command
 {
 	public CommandGameRule()
 	{
-		super("gamerule", new String[] {"gamerules", "rule", "rules"}, new String[] {"/gamerule", "/gamerule list",
-				"/gamerule set"}, false);
+		super("rules", new String[] {"gamerule", "gamerules", "rule"}, new String[] {"/rules", "/rules list",
+				"/rules set"}, false);
 	}
 	
 	@Override

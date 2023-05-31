@@ -241,6 +241,18 @@ public class PropertySet extends CardCollection
 		return false;
 	}
 	
+	public boolean hasStealable()
+	{
+		for (CardProperty property : getPropertyCards())
+		{
+			if (property.isStealable())
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public boolean isMonopoly()
 	{
 		return effectiveColor != null && getPropertyCardCount() >= effectiveColor.getMaxProperties();
@@ -412,9 +424,10 @@ public class PropertySet extends CardCollection
 		{
 			return;
 		}
-		if (hasSingleColorProperty() && player.hasSolidPropertySet(getEffectiveColor()))
+		PropertyColor color = getEffectiveColor();
+		if (hasSingleColorProperty() && player.hasSolidPropertySet(color))
 		{
-			PropertySet targetSet = player.getSolidPropertySet(getEffectiveColor());
+			PropertySet targetSet = player.getSolidPropertySet(color);
 			for (CardProperty prop : getPropertyCards())
 			{
 				if (prop.isSingleColor() || !targetSet.isMonopoly())
@@ -431,6 +444,10 @@ public class PropertySet extends CardCollection
 			{
 				building.transfer(targetSet, -1, 0.8);
 			}
+			if (targetSet.getEffectiveColor() != color)
+			{
+				targetSet.setEffectiveColor(color);
+			}
 		}
 		else
 		{
@@ -438,6 +455,10 @@ public class PropertySet extends CardCollection
 			for (Card card : getCards(true))
 			{
 				card.transfer(targetSet, -1, 0.8);
+			}
+			if (targetSet.getEffectiveColor() != color)
+			{
+				targetSet.setEffectiveColor(color);
 			}
 		}
 	}

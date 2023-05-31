@@ -477,7 +477,7 @@ public class BasicAI extends PlayerAI
 				{
 					for (CardProperty prop : set.getPropertyCards())
 					{
-						if (prop.isBase())
+						if (prop.isStealable())
 						{
 							stealable.add(prop);
 						}
@@ -495,7 +495,7 @@ public class BasicAI extends PlayerAI
 		{
 			for (CardProperty prop : set.getPropertyCards())
 			{
-				if (prop.isBase())
+				if (prop.isStealable())
 				{
 					tradable.add(prop);
 				}

@@ -251,13 +251,14 @@ public class NetClientHandler extends NetHandler
 		{
 			card.setValue(packet.value);
 			card.setName(packet.name);
+			card.setBase(packet.base);
+			card.setStealable(packet.stealable);
 			card.clearGraphicsCache();
 		}
 		else
 		{
-			card = new CardProperty(packet.id, PropertyColor.fromIDs(packet.colors), packet.base, packet.value, packet.name);
+			card = new CardProperty(packet.id, PropertyColor.fromIDs(packet.colors), packet.base, packet.stealable, packet.value, packet.name);
 		}
-		card.setBase(packet.base);
 		card.setColors(PropertyColor.fromIDs(packet.colors));
 		card.setDescription(CardDescription.getDescriptionByID(packet.description));
 	}

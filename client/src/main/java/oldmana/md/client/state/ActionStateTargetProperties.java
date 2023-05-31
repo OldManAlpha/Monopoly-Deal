@@ -27,17 +27,17 @@ public class ActionStateTargetProperties extends ActionState
 	private TargetMode mode;
 	private boolean canTargetSelfMonopoly;
 	private boolean canTargetOtherMonopoly;
-	private boolean canTargetNonBase;
+	private boolean canTargetUnstealable;
 	
 	private Map<Target, TargetedCard> targetMap = new HashMap<Target, TargetedCard>();
 	
-	public ActionStateTargetProperties(Player player, TargetMode mode, boolean canTargetSelfMonopoly, boolean canTargetOtherMonopoly, boolean canTargetNonBase)
+	public ActionStateTargetProperties(Player player, TargetMode mode, boolean canTargetSelfMonopoly, boolean canTargetOtherMonopoly, boolean canTargetUnstealable)
 	{
 		super(player);
 		this.mode = mode;
 		this.canTargetSelfMonopoly = canTargetSelfMonopoly;
 		this.canTargetOtherMonopoly = canTargetOtherMonopoly;
-		this.canTargetNonBase = canTargetNonBase;
+		this.canTargetUnstealable = canTargetUnstealable;
 	}
 	
 	@Override
@@ -70,7 +70,7 @@ public class ActionStateTargetProperties extends ActionState
 								ActionStateTargetProperties.this.propertySelected(target, setUI, set.getPropertyCardAt(0));
 								return;
 							}
-							ActionScreenSelectProperty screen = new ActionScreenSelectProperty(set, canTargetNonBase);
+							ActionScreenSelectProperty screen = new ActionScreenSelectProperty(set, canTargetUnstealable);
 							screen.setListener(new PropertySelectListener()
 							{
 								@Override
@@ -96,7 +96,7 @@ public class ActionStateTargetProperties extends ActionState
 	
 	private boolean canTarget(Player player, PropertySet set)
 	{
-		if (!set.hasBase() && !canTargetNonBase)
+		if (!set.hasStealable() && !canTargetUnstealable)
 		{
 			return false;
 		}

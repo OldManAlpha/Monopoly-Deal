@@ -143,6 +143,18 @@ public class PropertySet extends CardCollection
 		return false;
 	}
 	
+	public boolean hasStealable()
+	{
+		for (CardProperty property : getPropertyCards())
+		{
+			if (property.isStealable())
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public boolean isMonopoly()
 	{
 		return effectiveColor != null && getPropertyCount() >= effectiveColor.getMaxProperties();

@@ -10,20 +10,14 @@ public class CardProperty extends Card
 {
 	private List<PropertyColor> colors;
 	private boolean base;
+	private boolean stealable;
 	
-	public CardProperty(int id, PropertyColor color, int value, String name)
-	{
-		super(id, value, name);
-		colors = new ArrayList<PropertyColor>();
-		colors.add(color);
-		base = true;
-	}
-	
-	public CardProperty(int id, List<PropertyColor> colors, boolean base, int value, String name)
+	public CardProperty(int id, List<PropertyColor> colors, boolean base, boolean stealable, int value, String name)
 	{
 		super(id, value, name);
 		this.colors = colors;
 		this.base = base;
+		this.stealable = stealable;
 	}
 	
 	public boolean isSingleColor()
@@ -49,6 +43,16 @@ public class CardProperty extends Card
 	public void setBase(boolean base)
 	{
 		this.base = base;
+	}
+	
+	public boolean isStealable()
+	{
+		return stealable;
+	}
+	
+	public void setStealable(boolean stealable)
+	{
+		this.stealable = stealable;
 	}
 	
 	public PropertyColor getColor()

@@ -4,6 +4,7 @@ import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
 import oldmana.md.net.packet.server.actionstate.PacketActionStatePropertiesSelected;
+import oldmana.md.server.ChatColor;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
@@ -29,7 +30,7 @@ public class CardActionSlyDeal extends CardAction
 		{
 			for (PropertySet set : other.getPropertySets())
 			{
-				if (!set.isMonopoly() && set.hasBase())
+				if (!set.isMonopoly() && set.hasStealable())
 				{
 					return true;
 				}
@@ -67,6 +68,12 @@ public class CardActionSlyDeal extends CardAction
 		@Override
 		public void onCardSelected(CardProperty card)
 		{
+			if (!card.isStealable())
+			{
+				getActionOwner().sendMessage(ChatColor.PREFIX_ALERT + "That card is not stealable!");
+				getActionOwner().resendActionState();
+				return;
+			}
 			getActionOwner().clearRevocableCards();
 			replaceState(new ActionStateStealProperty(getActionOwner(), card));
 		}

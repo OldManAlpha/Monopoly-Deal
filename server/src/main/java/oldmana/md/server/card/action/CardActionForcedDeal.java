@@ -4,6 +4,7 @@ import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
 import oldmana.md.net.packet.server.actionstate.PacketActionStatePropertiesSelected;
+import oldmana.md.server.ChatColor;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
@@ -26,7 +27,6 @@ public class CardActionForcedDeal extends CardAction
 	public boolean canPlayCard(Player player)
 	{
 		boolean ownerHasProp = false;
-		boolean otherHasProp = false;
 		
 		for (PropertySet set : player.getPropertySets())
 		{
@@ -36,19 +36,22 @@ public class CardActionForcedDeal extends CardAction
 				break;
 			}
 		}
+		if (!ownerHasProp)
+		{
+			return false;
+		}
 		
 		for (Player other : getServer().getPlayersExcluding(player))
 		{
 			for (PropertySet set : other.getPropertySets())
 			{
-				if (!set.isMonopoly() && set.hasBase())
+				if (!set.isMonopoly() && set.hasStealable())
 				{
-					otherHasProp = true;
-					break;
+					return true;
 				}
 			}
 		}
-		return ownerHasProp && otherHasProp;
+		return false;
 	}
 	
 	private static CardType<CardActionForcedDeal> createType()
@@ -80,6 +83,12 @@ public class CardActionForcedDeal extends CardAction
 		@Override
 		public void onCardsSelected(CardProperty self, CardProperty other)
 		{
+			if (!other.isStealable())
+			{
+				getActionOwner().sendMessage(ChatColor.PREFIX_ALERT + "That card is not stealable!");
+				getActionOwner().resendActionState();
+				return;
+			}
 			getActionOwner().clearRevocableCards();
 			replaceState(new ActionStateTradeProperties(self, other));
 		}

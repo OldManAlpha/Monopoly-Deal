@@ -4,7 +4,6 @@ import java.awt.Container;
 import java.util.ArrayList;
 import java.util.List;
 
-import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.LayoutAdapter;
@@ -16,7 +15,7 @@ import oldmana.md.client.gui.util.GraphicsUtils;
 public class ActionScreenSelectProperty extends ActionScreen
 {
 	private PropertySet set;
-	private boolean canTargetNonBase;
+	private boolean canTargetUnstealable;
 	
 	private PropertySelectListener listener;
 	
@@ -26,10 +25,10 @@ public class ActionScreenSelectProperty extends ActionScreen
 	
 	private MDButton cancel;
 	
-	public ActionScreenSelectProperty(PropertySet set, boolean canTargetNonBase)
+	public ActionScreenSelectProperty(PropertySet set, boolean canTargetUnstealable)
 	{
 		this.set = set;
-		this.canTargetNonBase = canTargetNonBase;
+		this.canTargetUnstealable = canTargetUnstealable;
 		
 		propLabel = new MDLabel("Select Property");
 		add(propLabel);
@@ -62,7 +61,7 @@ public class ActionScreenSelectProperty extends ActionScreen
 			MDCard ui = new MDCard(prop, 2);
 			add(ui);
 			this.cards.add(ui);
-			if (canTargetNonBase || prop.isBase())
+			if (canTargetUnstealable || prop.isStealable())
 			{
 				ui.addClickListener(() ->
 				{

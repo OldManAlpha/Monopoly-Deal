@@ -16,6 +16,7 @@ public class CardProperty extends Card
 	
 	private List<PropertyColor> colors;
 	private boolean base;
+	private boolean stealable;
 	
 	@Override
 	public void applyTemplate(CardTemplate template)
@@ -23,6 +24,7 @@ public class CardProperty extends Card
 		super.applyTemplate(template);
 		colors = template.getColorList("colors");
 		base = template.getBoolean("base");
+		stealable = template.getBoolean("stealable");
 	}
 	
 	@Override
@@ -68,6 +70,11 @@ public class CardProperty extends Card
 		return base;
 	}
 	
+	public boolean isStealable()
+	{
+		return stealable;
+	}
+	
 	/**If there are multiple colors on the card, the first color is returned.
 	 * 
 	 * @return First color of the card
@@ -95,12 +102,13 @@ public class CardProperty extends Card
 	@Override
 	public Packet getCardDataPacket()
 	{
+		List<PropertyColor> colors = getColors();
 		byte[] types = new byte[colors.size()];
 		for (int i = 0 ; i < types.length ; i++)
 		{
 			types[i] = colors.get(i).getID();
 		}
-		return new PacketCardPropertyData(getID(), getName(), getValue(), types, isBase(), getDescription().getID());
+		return new PacketCardPropertyData(getID(), getName(), getValue(), types, isBase(), isStealable(), getDescription().getID());
 	}
 	
 	@Override
@@ -175,6 +183,7 @@ public class CardProperty extends Card
 		dt.put("clearsRevocableCards", false);
 		dt.putColors("colors", PropertyColor.RAILROAD);
 		dt.put("base", true);
+		dt.put("stealable", true);
 		type.setDefaultTemplate(dt);
 		
 		RAINBOW_WILD = new CardTemplate(dt);
@@ -185,6 +194,7 @@ public class CardProperty extends Card
 				+ "This card cannot be stolen with Sly Deals, Forced Deals, or rent.");
 		RAINBOW_WILD.putColors("colors", PropertyColor.getVanillaColors());
 		RAINBOW_WILD.put("base", false);
+		RAINBOW_WILD.put("stealable", false);
 		type.addTemplate(RAINBOW_WILD, "Rainbow Wild");
 		return type;
 	}
