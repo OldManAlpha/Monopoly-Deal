@@ -1,5 +1,6 @@
-package oldmana.md.server.rules;
+package oldmana.md.server.rules.struct;
 
+import oldmana.md.server.rules.GameRule;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -25,7 +26,8 @@ public class RuleStructObject extends RuleStructNamed
 	{
 		JSONObject json = (JSONObject) obj;
 		Map<String, GameRule> map = new HashMap<String, GameRule>();
-		json.forEach((key, val) -> map.put(key, new GameRule(getChild(key), val)));
+		children.forEach((key, child) ->
+				map.put(key, json.has(key) ? new GameRule(child, json.get(key)) : child.generateDefaults()));
 		return map;
 	}
 	
@@ -34,14 +36,25 @@ public class RuleStructObject extends RuleStructNamed
 	{
 		Map<String, GameRule> map = rule.getValueAsMap();
 		JSONObject json = new JSONObject();
-		map.forEach((key, subrule) -> json.put(key, subrule.toJSON()));
+		map.forEach((key, subrule) ->
+		{
+			Object subruleJson = subrule.toJSON();
+			if (subruleJson != null) // If it's null, it must've been reduced
+			{
+				json.put(key, subruleJson);
+			}
+		});
+		if (isReducible() && json.isEmpty())
+		{
+			return null;
+		}
 		return json;
 	}
 	
 	@Override
 	public String getDisplayValue(GameRule rule)
 	{
-		return children.size() + " Items";
+		return children.size() + " Item" + (children.size() != 1 ? "s" : "");
 	}
 	
 	@Override

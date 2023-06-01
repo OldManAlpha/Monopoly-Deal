@@ -1,4 +1,6 @@
-package oldmana.md.server.rules;
+package oldmana.md.server.rules.struct;
+
+import oldmana.md.server.rules.GameRule;
 
 /**
  * A key which has a primitive value.
@@ -33,7 +35,7 @@ public class RuleStructKey extends RuleStructNamed implements JsonParsable
 	@Override
 	public Object toJSON(GameRule rule)
 	{
-		return rule.getValueAsRule().toJSON();
+		return getChild().toJSON(rule.getValueAsRule());
 	}
 	
 	@Override

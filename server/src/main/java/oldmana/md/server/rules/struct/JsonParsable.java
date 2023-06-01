@@ -1,4 +1,4 @@
-package oldmana.md.server.rules;
+package oldmana.md.server.rules.struct;
 
 /**
  * Interface for allowing users to input to modify a GameRule.

@@ -1,4 +1,6 @@
-package oldmana.md.server.rules;
+package oldmana.md.server.rules.struct;
+
+import oldmana.md.server.rules.GameRule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +12,7 @@ public abstract class RuleStruct
 	private RuleStruct parent;
 	private String name;
 	private List<String> description;
+	private boolean reducible;
 	
 	public boolean hasParent()
 	{
@@ -92,6 +95,16 @@ public abstract class RuleStruct
 		this.description = description;
 	}
 	
+	public boolean isReducible()
+	{
+		return reducible;
+	}
+	
+	protected void setReducible(boolean reducible)
+	{
+		this.reducible = reducible;
+	}
+	
 	/**
 	 * Generates a default GameRule stemming from this RuleStruct.
 	 * @return A newly generated default GameRule
@@ -134,6 +147,12 @@ public abstract class RuleStruct
 		public B description(String... description)
 		{
 			rule.setDescription(Stream.of(description).collect(Collectors.toList()));
+			return getThis();
+		}
+		
+		public B reducible(boolean reducible)
+		{
+			rule.setReducible(reducible);
 			return getThis();
 		}
 		

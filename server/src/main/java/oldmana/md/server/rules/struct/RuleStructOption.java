@@ -1,5 +1,6 @@
-package oldmana.md.server.rules;
+package oldmana.md.server.rules.struct;
 
+import oldmana.md.server.rules.GameRule;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -25,23 +26,19 @@ public class RuleStructOption extends RuleStructNamed implements JsonParsable
 	@Override
 	public Object fromJSON(Object obj)
 	{
-		try
+		if (obj instanceof JSONObject)
 		{
-			if (getChild(obj.toString()) != null)
-			{
-				return new GameRule(getChild(obj.toString()), obj);
-			}
 			JSONObject json = (JSONObject) obj;
 			String key = json.keys().next();
 			Object val = json.get(key);
 			RuleStruct choice = getChild(key);
 			return new GameRule(choice, val);
 		}
-		catch (Exception e)
+		if (getChild(obj.toString()) != null)
 		{
-			System.err.println("Tried " + obj.toString() + " but had " + choices.toString());
-			throw e;
+			return new GameRule(getChild(obj.toString()), obj);
 		}
+		return generateDefaults();
 	}
 	
 	@Override
@@ -49,6 +46,10 @@ public class RuleStructOption extends RuleStructNamed implements JsonParsable
 	{
 		GameRule choice = rule.getChoice();
 		RuleStruct choiceStruct = choice.getRuleStruct();
+		if (isReducible() && choiceStruct == getDefaultChoice())
+		{
+			return null;
+		}
 		if (choiceStruct instanceof RuleStructNamed) // Either Key or Object
 		{
 			JSONObject obj = new JSONObject();

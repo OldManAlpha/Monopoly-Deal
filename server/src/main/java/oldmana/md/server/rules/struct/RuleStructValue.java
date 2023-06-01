@@ -1,4 +1,7 @@
-package oldmana.md.server.rules;
+package oldmana.md.server.rules.struct;
+
+import oldmana.md.server.rules.GameRule;
+import oldmana.md.server.rules.ValueType;
 
 /**
  * A primitive value.
@@ -31,7 +34,7 @@ public class RuleStructValue<T> extends RuleStruct implements JsonValue<T>, Json
 	@Override
 	public Object toJSON(GameRule rule)
 	{
-		return rule.getValue();
+		return (isReducible() || getParent().isReducible()) && rule.getValue().equals(defaultValue) ? null : rule.getValue();
 	}
 	
 	@Override

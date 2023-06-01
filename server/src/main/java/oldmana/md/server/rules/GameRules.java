@@ -4,9 +4,10 @@ import oldmana.md.net.packet.server.PacketGameRules;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.event.GameRulesReloadedEvent;
-import oldmana.md.server.rules.RuleStructKey.RuleKeyBuilder;
-import oldmana.md.server.rules.RuleStructObject.RuleObjectBuilder;
-import oldmana.md.server.rules.RuleStructOption.RuleOptionBuilder;
+import oldmana.md.server.rules.struct.*;
+import oldmana.md.server.rules.struct.RuleStructKey.RuleKeyBuilder;
+import oldmana.md.server.rules.struct.RuleStructObject.RuleObjectBuilder;
+import oldmana.md.server.rules.struct.RuleStructOption.RuleOptionBuilder;
 import oldmana.md.server.rules.win.WinCondition;
 import oldmana.md.server.rules.win.WinConditionType;
 import org.json.JSONObject;
@@ -228,6 +229,13 @@ public class GameRules
 					.defaultValue(false)
 					.register();
 		}
+		
+		RuleStruct modRules = RuleObjectBuilder.from(rootRuleStruct)
+				.jsonName("modRules")
+				.name("Mod Rules")
+				.description("Rules that mods have added.")
+				.reducible(true)
+				.register();
 		
 		setRules(rootRuleStruct.generateDefaults());
 	}

@@ -1,4 +1,4 @@
-package oldmana.md.server.rules;
+package oldmana.md.server.rules.struct;
 
 public abstract class RuleStructNamed extends RuleStruct
 {

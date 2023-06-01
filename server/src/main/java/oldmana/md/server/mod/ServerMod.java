@@ -1,6 +1,8 @@
 package oldmana.md.server.mod;
 
 import oldmana.md.server.MDServer;
+import oldmana.md.server.rules.struct.RuleStructObject;
+import oldmana.md.server.rules.struct.RuleStructObject.RuleObjectBuilder;
 
 import java.util.Collections;
 import java.util.Set;
@@ -15,6 +17,8 @@ public class ServerMod
 	
 	private Set<String> dependencies;
 	private Set<String> softDependencies;
+	
+	private RuleStructObject modRule;
 	
 	public String getName()
 	{
@@ -75,6 +79,25 @@ public class ServerMod
 	public boolean dependsOn(ServerMod mod)
 	{
 		return dependencies.contains(mod.getName()) || softDependencies.contains(mod.getName());
+	}
+	
+	public RuleStructObject getModRule()
+	{
+		return modRule;
+	}
+	
+	protected void generateModRule()
+	{
+		if (modRule != null)
+		{
+			return;
+		}
+		modRule = RuleObjectBuilder.from(getServer().getGameRules().getRootRuleStruct().getChild("modRules"))
+				.jsonName(getName())
+				.name(getName())
+				.description("Rules for " + getName())
+				.reducible(true)
+				.register();
 	}
 	
 	public MDServer getServer()

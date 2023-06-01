@@ -124,6 +124,7 @@ public class ModLoader
 			mod.setVersion(modVersion);
 			mod.setDependencies(new HashSet<String>(info.dependencies));
 			mod.setSoftDependencies(new HashSet<String>(info.softDependencies));
+			mod.generateModRule();
 			mods.add(mod);
 			classLoaders.add(classLoader);
 			System.out.println("Loading Mod: " + mod.getName() + " Version " + mod.getVersion());

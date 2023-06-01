@@ -1,5 +1,6 @@
 package oldmana.md.server.rules;
 
+import oldmana.md.server.rules.struct.*;
 import org.json.JSONObject;
 
 import java.util.HashMap;

@@ -8,11 +8,11 @@ import oldmana.md.server.MessageBuilder;
 import oldmana.md.server.Player;
 import oldmana.md.server.rules.GameRule;
 import oldmana.md.server.rules.GameRules;
-import oldmana.md.server.rules.RuleStruct;
-import oldmana.md.server.rules.RuleStructKey;
-import oldmana.md.server.rules.RuleStructObject;
-import oldmana.md.server.rules.RuleStructOption;
-import oldmana.md.server.rules.RuleStructValue;
+import oldmana.md.server.rules.struct.RuleStruct;
+import oldmana.md.server.rules.struct.RuleStructKey;
+import oldmana.md.server.rules.struct.RuleStructObject;
+import oldmana.md.server.rules.struct.RuleStructOption;
+import oldmana.md.server.rules.struct.RuleStructValue;
 
 import java.util.List;
 

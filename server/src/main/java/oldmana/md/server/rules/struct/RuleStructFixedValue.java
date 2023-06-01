@@ -1,4 +1,7 @@
-package oldmana.md.server.rules;
+package oldmana.md.server.rules.struct;
+
+import oldmana.md.server.rules.GameRule;
+import oldmana.md.server.rules.ValueType;
 
 import java.util.Arrays;
 
