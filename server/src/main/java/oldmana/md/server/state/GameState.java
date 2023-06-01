@@ -14,6 +14,7 @@ import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.collection.Deck;
 import oldmana.md.server.card.collection.PropertySet;
+import oldmana.md.server.event.ActionStateAddEvent;
 import oldmana.md.server.event.ActionStateChangedEvent;
 import oldmana.md.server.event.GameEndEvent;
 import oldmana.md.server.event.GameStartEvent;
@@ -318,9 +319,14 @@ public class GameState
 		{
 			return;
 		}
-		states.removeIf(s -> !s.isImportant());
-		states.add(0, state);
-		checkCurrentState();
+		ActionStateAddEvent event = new ActionStateAddEvent(state, false);
+		server.getEventManager().callEvent(event);
+		if (!event.isCancelled())
+		{
+			states.removeIf(s -> !s.isImportant());
+			states.add(0, state);
+			checkCurrentState();
+		}
 	}
 	
 	/**
@@ -334,9 +340,14 @@ public class GameState
 			checkCurrentState();
 			return;
 		}
-		states.removeIf(s -> !s.isImportant());
-		states.add(state);
-		checkCurrentState();
+		ActionStateAddEvent event = new ActionStateAddEvent(state, true);
+		server.getEventManager().callEvent(event);
+		if (!event.isCancelled())
+		{
+			states.removeIf(s -> !s.isImportant());
+			states.add(state);
+			checkCurrentState();
+		}
 	}
 	
 	/**
@@ -369,7 +380,12 @@ public class GameState
 		}
 		else
 		{
-			states.add(index, newState);
+			ActionStateAddEvent event = new ActionStateAddEvent(newState, false);
+			server.getEventManager().callEvent(event);
+			if (!event.isCancelled())
+			{
+				states.add(index, newState);
+			}
 		}
 		checkCurrentState();
 	}
