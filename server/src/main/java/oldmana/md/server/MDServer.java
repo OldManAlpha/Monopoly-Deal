@@ -257,28 +257,31 @@ public class MDServer
 		}
 		loadDecks();
 		
-		Thread consoleReader = new Thread(() ->
+		if (!isIntegrated())
 		{
-			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-			while (!shutdown)
+			Thread consoleReader = new Thread(() ->
 			{
-				try
+				BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+				while (!shutdown)
 				{
-					String line = reader.readLine();
-					synchronized (cmdQueue)
+					try
 					{
-						cmdQueue.add(line);
+						String line = reader.readLine();
+						synchronized (cmdQueue)
+						{
+							cmdQueue.add(line);
+						}
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
+						break;
 					}
 				}
-				catch (IOException e)
-				{
-					e.printStackTrace();
-					break;
-				}
-			}
-		}, "Console Reader Thread");
-		consoleReader.setDaemon(true);
-		consoleReader.start();
+			}, "Console Reader Thread");
+			consoleReader.setDaemon(true);
+			consoleReader.start();
+		}
 		
 		// AI ticking task
 		getScheduler().scheduleTask(50, true, task ->
@@ -304,13 +307,16 @@ public class MDServer
 		{
 			synchronized (newClients)
 			{
-				for (Client client : new ArrayList<Client>(newClients))
+				if (!newClients.isEmpty())
 				{
-					if (!client.isConnected())
+					for (Client client : new ArrayList<Client>(newClients))
 					{
-						continue;
+						if (!client.isConnected())
+						{
+							continue;
+						}
+						netHandler.processPackets(client);
 					}
-					netHandler.processPackets(client);
 				}
 			}
 			
@@ -840,7 +846,7 @@ public class MDServer
 			is.read(data);
 			int hash = Arrays.hashCode(is.getMessageDigest().digest());
 			Sound sound = new Sound(name, data, hash);
-			sounds.put(name, sound);
+			sounds.put(name.toLowerCase(), sound);
 			is.close();
 			System.out.println("Loaded sound file: " + file.getName());
 			if (sendPackets)
@@ -857,37 +863,31 @@ public class MDServer
 	
 	public void loadSound(Path path, String name, boolean sendPackets) throws IOException
 	{
-		try
-		{
-			byte[] data = Files.readAllBytes(path);
-			DigestInputStream is = new DigestInputStream(new ByteArrayInputStream(data), MessageDigest.getInstance("MD5"));
-			is.read(new byte[data.length]); // This is big dumb
-			int hash = Arrays.hashCode(is.getMessageDigest().digest());
-			Sound sound = new Sound(name, data, hash);
-			sounds.put(name, sound);
-			is.close();
-			System.out.println("Loaded sound: " + name);
-			if (sendPackets)
-			{
-				broadcastPacket(new PacketSoundData(sound.getName(), sound.getData(), sound.getHash()));
-			}
-		}
-		catch (NoSuchAlgorithmException e)
-		{
-			throw new RuntimeException(e); // Better not happen
-		}
+		loadSound(Files.readAllBytes(path), name, sendPackets);
 	}
 	
 	public void loadSound(URL url, String name, boolean sendPackets) throws IOException
 	{
 		try (InputStream is = url.openStream())
 		{
-			byte[] data = StreamUtil.readAllBytes(is);
+			loadSound(is, name, sendPackets);
+		}
+	}
+	
+	public void loadSound(InputStream is, String name, boolean sendPackets) throws IOException
+	{
+		loadSound(StreamUtil.readAllBytes(is), name, sendPackets);
+	}
+	
+	public void loadSound(byte[] data, String name, boolean sendPackets) throws IOException
+	{
+		try
+		{
 			DigestInputStream dis = new DigestInputStream(new ByteArrayInputStream(data), MessageDigest.getInstance("MD5"));
 			dis.read(new byte[data.length]); // This is big dumb
 			int hash = Arrays.hashCode(dis.getMessageDigest().digest());
 			Sound sound = new Sound(name, data, hash);
-			sounds.put(name, sound);
+			sounds.put(name.toLowerCase(), sound);
 			dis.close();
 			System.out.println("Loaded sound: " + name);
 			if (sendPackets)
@@ -903,7 +903,22 @@ public class MDServer
 	
 	public boolean doesSoundExist(String name)
 	{
-		return sounds.containsKey(name);
+		return sounds.containsKey(name.toLowerCase());
+	}
+	
+	public Sound getSound(String name)
+	{
+		return sounds.get(name);
+	}
+	
+	public void playSound(Sound sound)
+	{
+		playSound(sound, false);
+	}
+	
+	public void playSound(Sound sound, boolean queued)
+	{
+		playSound(sound.getName().toLowerCase(), queued);
 	}
 	
 	public void playSound(String name)

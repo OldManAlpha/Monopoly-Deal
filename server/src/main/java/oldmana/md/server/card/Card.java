@@ -50,7 +50,9 @@ public abstract class Card
 		displayName = template.getStringArray("displayName");
 		fontSize = template.getInt("fontSize");
 		displayOffsetY = template.getInt("displayOffsetY");
-		description = CardDescription.getDescription(template.getStringArray("description"));
+		Object desc = template.getObject("description");
+		description = desc instanceof String ? CardDescription.getDescription((String) desc) :
+				CardDescription.getDescription(template.getStringArray("description"));
 		revocable = template.getBoolean("revocable");
 		clearsRevocableCards = template.getBoolean("clearsRevocableCards");
 	}

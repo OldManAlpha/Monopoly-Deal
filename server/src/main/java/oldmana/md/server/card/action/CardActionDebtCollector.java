@@ -16,8 +16,6 @@ public class CardActionDebtCollector extends CardActionCharge
 		template.put("fontSize", 6);
 		template.put("displayOffsetY", 1);
 		template.putStrings("description", "Select a player and charge 5M against them.");
-		template.put("revocable", true);
-		template.put("clearsRevocableCards", false);
 		template.put("chargesAll", false);
 		template.put("charge", 5);
 		type.setDefaultTemplate(template);

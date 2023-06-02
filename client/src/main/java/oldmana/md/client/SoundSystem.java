@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.sound.sampled.AudioFormat;
@@ -34,8 +35,8 @@ public class SoundSystem
 	
 	private static Map<String, List<Sound>> defaultSounds = new HashMap<String, List<Sound>>();
 	
-	private static List<String> defaultSoundNames = Arrays.asList("CardMove", "CardFlip", "ImportantCardMove", "CardPlace", "DeckShuffle",
-			"Alert", "DrawAlert");
+	private static List<String> defaultSoundNames = Stream.of("CardMove", "CardFlip", "ImportantCardMove", "CardPlace", "DeckShuffle",
+			"Alert", "DrawAlert").map(String::toLowerCase).collect(Collectors.toList());
 	
 	static
 	{
@@ -79,7 +80,7 @@ public class SoundSystem
 					{
 						return;
 					}
-					name = name.substring(0, name.length() - 4);
+					name = name.substring(0, name.length() - 4).toLowerCase();
 					try
 					{
 						Sound sound = new Sound(name, Files.readAllBytes(p), 0);
@@ -143,7 +144,7 @@ public class SoundSystem
 			File folder = new File(MDClient.getInstance().getDataFolder(), "cache" + File.separator + "sounds");
 			File file = new File(folder, name + ".wav");
 			FileOutputStream os = new FileOutputStream(file);
-			os.write(sounds.get(name).getData());
+			os.write(sounds.get(name.toLowerCase()).getData());
 			os.close();
 			System.out.println("Saved sound: " + name);
 		}
@@ -158,7 +159,7 @@ public class SoundSystem
 		try
 		{
 			Sound sound = loadSound(new FileInputStream(file), name);
-			sounds.put(name, sound);
+			sounds.put(name.toLowerCase(), sound);
 			System.out.println("Loaded sound file: " + file.getName());
 		}
 		catch (Exception e)
@@ -180,7 +181,7 @@ public class SoundSystem
 	
 	public static void addSound(String name, byte[] data, int hash)
 	{
-		sounds.put(name, new Sound(name, data, hash));
+		sounds.put(name.toLowerCase(), new Sound(name, data, hash));
 		saveSound(name);
 	}
 	
@@ -188,6 +189,7 @@ public class SoundSystem
 	{
 		try
 		{
+			name = name.toLowerCase();
 			byte[] data = defaultSounds.containsKey(name) ?
 					defaultSounds.get(name).get(ThreadLocalRandom.current().nextInt(defaultSounds.get(name).size())).getData() :
 					sounds.get(name).getData();

@@ -163,7 +163,9 @@ public class CardType<T extends Card>
 	
 	public CardDescription getDescription()
 	{
-		return CardDescription.getDescription(defaultTemplate.getStringArray("description"));
+		Object desc = defaultTemplate.getObject("description");
+		return desc instanceof String ? CardDescription.getDescription((String) desc) :
+				CardDescription.getDescription(defaultTemplate.getStringArray("description"));
 	}
 	
 	public int getFontSize()

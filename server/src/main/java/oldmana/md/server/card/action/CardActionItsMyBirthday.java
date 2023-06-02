@@ -17,8 +17,6 @@ public class CardActionItsMyBirthday extends CardActionCharge
 		template.put("fontSize", 7);
 		template.put("displayOffsetY", 0);
 		template.putStrings("description", "Charge all other players 2M.");
-		template.put("revocable", false);
-		template.put("clearsRevocableCards", true);
 		template.put("chargesAll", true);
 		template.put("charge", 2);
 		type.setDefaultTemplate(template);

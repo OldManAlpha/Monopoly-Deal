@@ -333,7 +333,7 @@ public class GameRules
 	
 	public GameRule getModRule(String modName)
 	{
-		return getRule("modRule").getSubrule(modName);
+		return getRule("modRules").getSubrule(modName);
 	}
 	
 	public boolean setRules(GameRule rootRule)

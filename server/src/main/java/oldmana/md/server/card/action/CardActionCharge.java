@@ -30,6 +30,7 @@ public class CardActionCharge extends CardAction
 	{
 		if (chargesAll || getServer().getPlayerCount() <= 2)
 		{
+			player.clearRevocableCards();
 			getServer().getGameState().addActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player), charge));
 		}
 		else
@@ -59,14 +60,12 @@ public class CardActionCharge extends CardAction
 		CardType<CardActionCharge> type = new CardType<CardActionCharge>(CardActionCharge.class,
 				CardActionCharge::new, "Charge");
 		type.addExemptReduction("value", false);
-		type.addExemptReduction("revocable", false);
-		type.addExemptReduction("clearsRevocableCards", false);
 		type.addExemptReduction("chargesAll", false);
 		type.addExemptReduction("charge", false);
 		CardTemplate template = type.getDefaultTemplate();
 		template.put("value", 1);
-		template.put("revocable", false);
-		template.put("clearsRevocableCards", true);
+		template.put("revocable", true);
+		template.put("clearsRevocableCards", false);
 		template.put("chargesAll", false);
 		template.put("charge", 1);
 		type.setDefaultTemplate(template);

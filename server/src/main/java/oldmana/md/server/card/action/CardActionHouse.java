@@ -17,7 +17,7 @@ public class CardActionHouse extends CardBuilding
 		template.put("fontSize", 8);
 		template.put("displayOffsetY", 2);
 		template.putStrings("description", "Place onto a full property set to add 3M in rent value. Only one House may " +
-				"be placed per property set. Cannot be placed on railroads and utilties. Properties under buildings " +
+				"be placed per property set. Cannot be placed on railroads and utilities. Properties under buildings " +
 				"are immobile. This card may be moved into your bank during your turn.");
 		template.put("tier", 1);
 		template.put("rentAddition", 3);
