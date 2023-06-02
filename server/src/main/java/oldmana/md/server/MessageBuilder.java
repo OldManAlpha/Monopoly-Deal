@@ -79,9 +79,10 @@ public class MessageBuilder
 		return new Message(message).getUnformattedMessage();
 	}
 	
-	public void addString(String str)
+	public MessageBuilder addString(String str)
 	{
 		appendSimple(this, str);
+		return this;
 	}
 	
 	private void addStringRaw(String str)
@@ -90,22 +91,25 @@ public class MessageBuilder
 		currentText.append(str);
 	}
 	
-	public void setColor(ChatColor color)
+	public MessageBuilder setColor(ChatColor color)
 	{
 		finalizeSegment();
 		currentColor = color.getColor();
+		return this;
 	}
 	
-	public void setColor(Color color)
+	public MessageBuilder setColor(Color color)
 	{
 		finalizeSegment();
 		currentColor = color;
+		return this;
 	}
 	
-	public void setColor(int r, int g, int b)
+	public MessageBuilder setColor(int r, int g, int b)
 	{
 		finalizeSegment();
 		currentColor = new Color(r, g, b);
+		return this;
 	}
 	
 	public ChatLink addLinkedString(String str)
@@ -131,92 +135,105 @@ public class MessageBuilder
 		return link;
 	}
 	
-	public void addCommandString(String str, String command)
+	public MessageBuilder addCommandString(String str, String command)
 	{
 		finalizeSegment();
 		cmd = command;
 		appendSimple(this, str);
 		finalizeSegment();
 		cmd = null;
+		return this;
 	}
 	
-	public void addFillCommandString(String str, String fillCommand)
+	public MessageBuilder addFillCommandString(String str, String fillCommand)
 	{
 		finalizeSegment();
 		fillCmd = fillCommand;
 		appendSimple(this, str);
 		finalizeSegment();
 		fillCmd = null;
+		return this;
 	}
 	
-	public void addHoverString(String str, List<String> text)
+	public MessageBuilder addHoverString(String str, List<String> text)
 	{
 		finalizeSegment();
 		currentHoverText = text;
 		appendSimple(this, str);
 		finalizeSegment();
 		currentHoverText = null;
+		return this;
 	}
 	
-	public void addHoverString(String str, String... text)
+	public MessageBuilder addHoverString(String str, String... text)
 	{
 		addHoverString(str, Arrays.asList(text));
+		return this;
 	}
 	
-	public void startHoverText(String... text)
+	public MessageBuilder startHoverText(String... text)
 	{
 		finalizeSegment();
 		currentHoverText = Arrays.asList(text);
+		return this;
 	}
 	
-	public void startHoverText(List<String> text)
+	public MessageBuilder startHoverText(List<String> text)
 	{
 		finalizeSegment();
 		currentHoverText = new ArrayList<String>(text);
+		return this;
 	}
 	
-	public void endHoverText()
+	public MessageBuilder endHoverText()
 	{
 		finalizeSegment();
 		currentHoverText = null;
+		return this;
 	}
 	
-	public void startCommand(String cmd)
+	public MessageBuilder startCommand(String cmd)
 	{
 		finalizeSegment();
 		this.cmd = cmd;
+		return this;
 	}
 	
-	public void endCommand()
+	public MessageBuilder endCommand()
 	{
 		finalizeSegment();
 		cmd = null;
+		return this;
 	}
 	
-	public void startFillCommand(String fillCmd)
+	public MessageBuilder startFillCommand(String fillCmd)
 	{
 		finalizeSegment();
 		this.fillCmd = fillCmd;
+		return this;
 	}
 	
-	public void endFillCommand()
+	public MessageBuilder endFillCommand()
 	{
 		finalizeSegment();
 		fillCmd = null;
+		return this;
 	}
 	
-	public void endSpecial()
+	public MessageBuilder endSpecial()
 	{
 		finalizeSegment();
 		link = null;
 		cmd = null;
 		fillCmd = null;
 		currentHoverText = null;
+		return this;
 	}
 	
-	public void setCategory(String category)
+	public MessageBuilder setCategory(String category)
 	{
 		this.category = category;
+		return this;
 	}
 	
 	public JSONArray toJSON()
