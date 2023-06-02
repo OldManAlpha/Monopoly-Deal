@@ -13,7 +13,7 @@ import javax.swing.Timer;
 import javafx.embed.swing.JFXPanel;
 import oldmana.general.mjnetworkingapi.MJConnection;
 import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.client.MDEventQueue.CardMove;
+import oldmana.md.client.EventQueue.CardMove;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.CardCollection;
@@ -21,7 +21,6 @@ import oldmana.md.client.card.collection.Deck;
 import oldmana.md.client.card.collection.DiscardPile;
 import oldmana.md.client.card.collection.VoidCollection;
 import oldmana.md.client.gui.MDFrame;
-import oldmana.md.client.gui.component.MDChat;
 import oldmana.md.client.gui.component.collection.MDHand;
 import oldmana.md.client.gui.screen.TableScreen;
 import oldmana.md.client.net.ConnectionThread;
@@ -49,7 +48,7 @@ public class MDClient
 	
 	private Settings settings;
 	
-	private MDScheduler scheduler;
+	private Scheduler scheduler;
 	
 	private ThePlayer thePlayer;
 	private List<Player> otherPlayers = new ArrayList<Player>();
@@ -70,7 +69,7 @@ public class MDClient
 	
 	private ConnectionThread connection;
 	
-	public MDEventQueue eventQueue;
+	public EventQueue eventQueue;
 	
 	public int timeSincePing;
 	
@@ -104,7 +103,7 @@ public class MDClient
 			throw new RuntimeException("Could not load fonts");
 		}
 		
-		scheduler = new MDScheduler();
+		scheduler = new Scheduler();
 		scheduler.scheduleFrameboundTask(task -> eventQueue.tick());
 		scheduler.scheduleTask(task ->
 		{
@@ -119,7 +118,7 @@ public class MDClient
 			}
 		}, 1000, true);
 		
-		eventQueue = new MDEventQueue();
+		eventQueue = new EventQueue();
 		
 		netHandler = new NetClientHandler(this);
 		
@@ -147,7 +146,7 @@ public class MDClient
 		{
 			dataFolder = folder;
 			settings.loadSettings(folder);
-			MDSoundSystem.loadCache();
+			SoundSystem.loadCache();
 		}
 		scheduler.setFPS(settings.getInt("framerate"));
 		
@@ -242,12 +241,12 @@ public class MDClient
 		return settings;
 	}
 	
-	public MDScheduler getScheduler()
+	public Scheduler getScheduler()
 	{
 		return scheduler;
 	}
 	
-	public MDEventQueue getEventQueue()
+	public EventQueue getEventQueue()
 	{
 		return eventQueue;
 	}

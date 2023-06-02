@@ -28,11 +28,11 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineEvent.Type;
 
-public class MDSoundSystem
+public class SoundSystem
 {
-	private static Map<String, MDSound> sounds = new HashMap<String, MDSound>();
+	private static Map<String, Sound> sounds = new HashMap<String, Sound>();
 	
-	private static Map<String, List<MDSound>> defaultSounds = new HashMap<String, List<MDSound>>();
+	private static Map<String, List<Sound>> defaultSounds = new HashMap<String, List<Sound>>();
 	
 	private static List<String> defaultSoundNames = Arrays.asList("CardMove", "CardFlip", "ImportantCardMove", "CardPlace", "DeckShuffle",
 			"Alert", "DrawAlert");
@@ -53,7 +53,7 @@ public class MDSoundSystem
 	{
 		for (String name : defaultSoundNames)
 		{
-			defaultSounds.put(name, new ArrayList<MDSound>());
+			defaultSounds.put(name, new ArrayList<Sound>());
 		}
 		
 		FileSystem fs = null;
@@ -82,7 +82,7 @@ public class MDSoundSystem
 					name = name.substring(0, name.length() - 4);
 					try
 					{
-						MDSound sound = new MDSound(name, Files.readAllBytes(p), 0);
+						Sound sound = new Sound(name, Files.readAllBytes(p), 0);
 						for (String defName : defaultSoundNames)
 						{
 							if (name.startsWith(defName))
@@ -157,7 +157,7 @@ public class MDSoundSystem
 	{
 		try
 		{
-			MDSound sound = loadSound(new FileInputStream(file), name);
+			Sound sound = loadSound(new FileInputStream(file), name);
 			sounds.put(name, sound);
 			System.out.println("Loaded sound file: " + file.getName());
 		}
@@ -168,19 +168,19 @@ public class MDSoundSystem
 		}
 	}
 	
-	public static MDSound loadSound(InputStream is, String name) throws Exception
+	public static Sound loadSound(InputStream is, String name) throws Exception
 	{
 		DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
 		byte[] data = new byte[dis.available()];
 		dis.read(data);
 		dis.close();
 		int hash = Arrays.hashCode(dis.getMessageDigest().digest());
-		return new MDSound(name, data, hash);
+		return new Sound(name, data, hash);
 	}
 	
 	public static void addSound(String name, byte[] data, int hash)
 	{
-		sounds.put(name, new MDSound(name, data, hash));
+		sounds.put(name, new Sound(name, data, hash));
 		saveSound(name);
 	}
 	
@@ -211,18 +211,18 @@ public class MDSoundSystem
 		}
 	}
 	
-	public static Map<String, MDSound> getSounds()
+	public static Map<String, Sound> getSounds()
 	{
 		return sounds;
 	}
 	
-	public static class MDSound
+	public static class Sound
 	{
 		private String name;
 		private byte[] data;
 		private int hash;
 		
-		public MDSound(String name, byte[] data, int hash)
+		public Sound(String name, byte[] data, int hash)
 		{
 			this.name = name;
 			this.data = data;

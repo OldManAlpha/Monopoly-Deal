@@ -14,7 +14,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 
-import oldmana.md.client.MDScheduler;
+import oldmana.md.client.Scheduler;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.Deck;
 import oldmana.md.client.gui.component.MDSelection;
@@ -50,12 +50,12 @@ public class MDDeck extends MDCardCollectionUnknown
 			{
 				if (hovered)
 				{
-					animProgress = Math.min(animProgress + (MDScheduler.getFrameDelay() / ((animProgress + 40) / 120)), 250);
+					animProgress = Math.min(animProgress + (Scheduler.getFrameDelay() / ((animProgress + 40) / 120)), 250);
 					notifySelect.setVisible(false);
 				}
 				else
 				{
-					animProgress = Math.max(animProgress - MDScheduler.getFrameDelay(), 0);
+					animProgress = Math.max(animProgress - Scheduler.getFrameDelay(), 0);
 					if (animProgress == 0)
 					{
 						notifySelect.setVisible(true);

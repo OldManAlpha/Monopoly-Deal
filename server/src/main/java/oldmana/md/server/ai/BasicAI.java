@@ -16,11 +16,11 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import oldmana.md.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
-import oldmana.md.server.MDScheduler.MDTask;
+import oldmana.md.server.Scheduler.MDTask;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
-import oldmana.md.server.card.CardAnimationType;
+import oldmana.md.common.card.CardAnimationType;
 import oldmana.md.server.card.CardBuilding;
 import oldmana.md.server.card.CardMoney;
 import oldmana.md.server.card.CardProperty;

@@ -3,6 +3,7 @@ package oldmana.md.server.rules;
 import oldmana.md.net.packet.server.PacketGameRules;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.MDServer;
+import oldmana.md.server.event.GameRulesApplyEvent;
 import oldmana.md.server.event.GameRulesReloadedEvent;
 import oldmana.md.server.rules.struct.*;
 import oldmana.md.server.rules.struct.RuleStructKey.RuleKeyBuilder;
@@ -330,6 +331,11 @@ public class GameRules
 		return rootRule.getSubrule(jsonName);
 	}
 	
+	public GameRule getModRule(String modName)
+	{
+		return getRule("modRule").getSubrule(modName);
+	}
+	
 	public boolean setRules(GameRule rootRule)
 	{
 		this.rootRule = rootRule;
@@ -391,6 +397,10 @@ public class GameRules
 		GameRule bankRules = getRule("bankRules");
 		canBankActionCards = bankRules.getSubrule("canBankActionCards").getBoolean();
 		canBankPropertyCards = bankRules.getSubrule("canBankPropertyCards").getBoolean();
+		if (getServer() != null)
+		{
+			getServer().getEventManager().callEvent(new GameRulesApplyEvent(rootRule));
+		}
 	}
 	
 	public PacketGameRules constructPacket()

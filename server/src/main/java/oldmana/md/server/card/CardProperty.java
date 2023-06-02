@@ -121,6 +121,7 @@ public class CardProperty extends Card
 		}
 		str = str.substring(0, str.length() - 1);
 		str += ") (Base: " + isBase() + ")";
+		str += " (Stealable: " + isStealable() + ")";
 		str += " (Name: " + getName() + ")";
 		str += " (" + getValue() + "M)";
 		return str;

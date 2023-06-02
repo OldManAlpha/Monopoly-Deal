@@ -1,7 +1,7 @@
 package oldmana.md.client.gui.util;
 
 import oldmana.md.client.MDClient;
-import oldmana.md.client.MDScheduler;
+import oldmana.md.client.Scheduler;
 
 import javax.swing.JComponent;
 import java.awt.event.MouseAdapter;
@@ -40,12 +40,12 @@ public class HoverHelper
 			}
 			if (hovered && highlight < 1 && component.isEnabled())
 			{
-				highlight = Math.min(highlight + (MDScheduler.getFrameDelay() / maxHighlightTimeMs), 1);
+				highlight = Math.min(highlight + (Scheduler.getFrameDelay() / maxHighlightTimeMs), 1);
 				component.repaint();
 			}
 			else if ((!hovered && highlight > 0) || !component.isEnabled())
 			{
-				highlight = Math.max(highlight - (MDScheduler.getFrameDelay() / maxHighlightTimeMs), 0);
+				highlight = Math.max(highlight - (Scheduler.getFrameDelay() / maxHighlightTimeMs), 0);
 				component.repaint();
 			}
 		});

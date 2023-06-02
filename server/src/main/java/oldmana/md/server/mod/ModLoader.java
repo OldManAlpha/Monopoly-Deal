@@ -30,6 +30,7 @@ public class ModLoader
 					ModInfo info = getModInfo(file);
 					if (info != null)
 					{
+						info.checkValidity();
 						modInfos.add(info);
 					}
 				}
@@ -146,6 +147,7 @@ public class ModLoader
 		{
 			return null;
 		}
+		info.checkValidity();
 		if (!checkDependencies(info))
 		{
 			return null;
@@ -255,6 +257,14 @@ public class ModLoader
 		public boolean dependsOn(ModInfo other)
 		{
 			return dependencies.contains(other.name) || softDependencies.contains(other.name);
+		}
+		
+		public void checkValidity()
+		{
+			if (name.contains(" ") || name.contains("."))
+			{
+				throw new RuntimeException("Mod name cannot contain spaces or periods. Offender: \"" + name + "\"");
+			}
 		}
 	}
 }

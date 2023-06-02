@@ -111,7 +111,7 @@ public class CustomDeck extends DeckStack
 		
 		if (!object.has("rules"))
 		{
-			System.out.println("Warning: Deck has no rules");
+			System.out.println("Warning: Deck " + name + " has no rules");
 			return;
 		}
 		JSONObject rules = object.getJSONObject("rules");

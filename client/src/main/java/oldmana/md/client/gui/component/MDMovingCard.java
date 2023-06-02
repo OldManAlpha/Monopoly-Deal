@@ -24,10 +24,11 @@ import javafx.scene.effect.PerspectiveTransform;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
-import oldmana.md.client.MDScheduler;
+import oldmana.md.client.Scheduler;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.gui.screen.TableScreen;
 import oldmana.md.client.gui.util.GraphicsUtils;
+import oldmana.md.common.card.CardAnimationType;
 
 import javax.swing.SwingUtilities;
 
@@ -120,7 +121,7 @@ public class MDMovingCard extends MDComponent
 			setFlash(flash);
 		}
 		
-		frames = (int) Math.max(Math.round(MDScheduler.getFPS() * time), 1);
+		frames = (int) Math.max(Math.round(Scheduler.getFPS() * time), 1);
 		
 		frameCache = new BufferedImage[frames];
 		posMap = new double[frames];
@@ -503,34 +504,5 @@ public class MDMovingCard extends MDComponent
 			result = downsize(startCache, (int) sizeLocMap[pos].getWidth(), (int) sizeLocMap[pos].getHeight());
 		}
 		return result;
-	}
-	
-	public enum CardAnimationType
-	{
-		NORMAL(0), IMPORTANT(1);
-		
-		private final int id;
-		
-		CardAnimationType(int id)
-		{
-			this.id = id;
-		}
-		
-		public int getID()
-		{
-			return id;
-		}
-		
-		public static CardAnimationType fromID(int id)
-		{
-			for (CardAnimationType type : values())
-			{
-				if (type.getID() == id)
-				{
-					return type;
-				}
-			}
-			return null;
-		}
 	}
 }

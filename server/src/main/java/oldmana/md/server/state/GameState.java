@@ -126,7 +126,7 @@ public class GameState
 		states.clear();
 		removeTurnState();
 		addActionState(new ActionStateDoNothing(status));
-		System.out.println("Game Ended: " + status);
+		System.out.println("Game Ended: " + (status.equals("") ? "Reset" : status));
 	}
 	
 	/**

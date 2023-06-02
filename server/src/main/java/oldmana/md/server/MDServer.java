@@ -1,12 +1,18 @@
 package oldmana.md.server;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import oldmana.md.common.util.StreamUtil;
 import oldmana.md.server.ai.AIManager;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardBuilding;
@@ -98,7 +105,7 @@ public class MDServer
 	private Console consoleSender = new Console();
 	private CommandHandler cmdHandler = new CommandHandler();
 
-	private MDScheduler scheduler = new MDScheduler();
+	private Scheduler scheduler = new Scheduler();
 	
 	private AIManager aiManager;
 
@@ -113,7 +120,7 @@ public class MDServer
 	
 	private boolean verbose;
 	
-	private Map<String, MDSound> sounds = new HashMap<String, MDSound>();
+	private Map<String, Sound> sounds = new HashMap<String, Sound>();
 	
 	private IncomingConnectionsThread threadIncConnect;
 	
@@ -516,7 +523,7 @@ public class MDServer
 		}
 		if (!folder.isDirectory())
 		{
-			System.out.println("Failed to load decks. Non-directory file named decks in server folder?");
+			System.out.println("Failed to load decks. Non-directory file named \"decks\" in server folder?");
 			return;
 		}
 		for (File f : folder.listFiles())
@@ -531,8 +538,15 @@ public class MDServer
 				}
 				catch (DeckLoadFailureException e)
 				{
-					System.out.println("Failed to load deck file " + name);
-					e.printStackTrace();
+					if (isVerbose())
+					{
+						System.out.println("Failed to load deck file \"" + name + "\"");
+						e.printStackTrace();
+					}
+					else
+					{
+						System.out.println("Failed to load deck file \"" + name + "\": " + e.getMessage());
+					}
 				}
 			}
 		}
@@ -582,7 +596,7 @@ public class MDServer
 		return linkHandler;
 	}
 	
-	public MDScheduler getScheduler()
+	public Scheduler getScheduler()
 	{
 		return scheduler;
 	}
@@ -825,7 +839,7 @@ public class MDServer
 			byte[] data = new byte[is.available()];
 			is.read(data);
 			int hash = Arrays.hashCode(is.getMessageDigest().digest());
-			MDSound sound = new MDSound(name, data, hash);
+			Sound sound = new Sound(name, data, hash);
 			sounds.put(name, sound);
 			is.close();
 			System.out.println("Loaded sound file: " + file.getName());
@@ -838,6 +852,52 @@ public class MDServer
 		{
 			System.out.println("Error loading sound file: " + file.getName());
 			e.printStackTrace();
+		}
+	}
+	
+	public void loadSound(Path path, String name, boolean sendPackets) throws IOException
+	{
+		try
+		{
+			byte[] data = Files.readAllBytes(path);
+			DigestInputStream is = new DigestInputStream(new ByteArrayInputStream(data), MessageDigest.getInstance("MD5"));
+			is.read(new byte[data.length]); // This is big dumb
+			int hash = Arrays.hashCode(is.getMessageDigest().digest());
+			Sound sound = new Sound(name, data, hash);
+			sounds.put(name, sound);
+			is.close();
+			System.out.println("Loaded sound: " + name);
+			if (sendPackets)
+			{
+				broadcastPacket(new PacketSoundData(sound.getName(), sound.getData(), sound.getHash()));
+			}
+		}
+		catch (NoSuchAlgorithmException e)
+		{
+			throw new RuntimeException(e); // Better not happen
+		}
+	}
+	
+	public void loadSound(URL url, String name, boolean sendPackets) throws IOException
+	{
+		try (InputStream is = url.openStream())
+		{
+			byte[] data = StreamUtil.readAllBytes(is);
+			DigestInputStream dis = new DigestInputStream(new ByteArrayInputStream(data), MessageDigest.getInstance("MD5"));
+			dis.read(new byte[data.length]); // This is big dumb
+			int hash = Arrays.hashCode(dis.getMessageDigest().digest());
+			Sound sound = new Sound(name, data, hash);
+			sounds.put(name, sound);
+			dis.close();
+			System.out.println("Loaded sound: " + name);
+			if (sendPackets)
+			{
+				broadcastPacket(new PacketSoundData(sound.getName(), sound.getData(), sound.getHash()));
+			}
+		}
+		catch (NoSuchAlgorithmException e)
+		{
+			throw new RuntimeException(e); // Better not happen
 		}
 	}
 	
@@ -858,11 +918,11 @@ public class MDServer
 	
 	public void verifySounds(Player player, Map<String, Integer> cachedSounds)
 	{
-		Set<Entry<String, MDSound>> sounds = this.sounds.entrySet();
+		Set<Entry<String, Sound>> sounds = this.sounds.entrySet();
 		int i = 1;
-		for (Entry<String, MDSound> entry : sounds)
+		for (Entry<String, Sound> entry : sounds)
 		{
-			MDSound sound = entry.getValue();
+			Sound sound = entry.getValue();
 			if (!cachedSounds.containsKey(sound.getName()) || sound.getHash() != cachedSounds.get(sound.getName()))
 			{
 				player.sendPacket(new PacketStatus("Downloading sound " + i + "/" + sounds.size() + ".."));

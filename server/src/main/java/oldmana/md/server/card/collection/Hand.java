@@ -6,7 +6,7 @@ import oldmana.md.net.packet.server.PacketUnknownCardCollectionData;
 import oldmana.md.net.packet.server.PacketCardCollectionData.CardCollectionType;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
-import oldmana.md.server.card.CardAnimationType;
+import oldmana.md.common.card.CardAnimationType;
 import oldmana.md.server.card.CardProperty;
 
 public class Hand extends CardCollection

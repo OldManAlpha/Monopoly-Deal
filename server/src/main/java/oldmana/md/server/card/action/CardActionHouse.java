@@ -10,8 +10,6 @@ public class CardActionHouse extends CardBuilding
 	{
 		CardType<CardActionHouse> type = new CardType<CardActionHouse>(CardActionHouse.class,
 				CardActionHouse::new, "House");
-		type.removeExemptReduction("tier");
-		type.removeExemptReduction("rentAddition");
 		CardTemplate template = type.getDefaultTemplate();
 		template.put("value", 3);
 		template.put("name", "House");

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class MDScheduler
+public class Scheduler
 {
 	private final List<MDTask> tasks = new ArrayList<MDTask>();
 	

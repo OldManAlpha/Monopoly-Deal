@@ -6,8 +6,8 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 
-import oldmana.md.client.MDEventQueue.CardMove;
-import oldmana.md.client.MDScheduler;
+import oldmana.md.client.EventQueue.CardMove;
+import oldmana.md.client.Scheduler;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.gui.util.GraphicsUtils;
@@ -34,7 +34,7 @@ public class MDVoidCollection extends MDCardCollectionUnknown
 			}
 			
 			//double diff = (23 - Math.max(8, Math.abs(pos))) * 0.045;
-			double diff = (405 - Math.max(140, Math.abs(pos))) * MDScheduler.getFrameDelay() * 0.003;
+			double diff = (405 - Math.max(140, Math.abs(pos))) * Scheduler.getFrameDelay() * 0.003;
 			pos += dir ? diff : -diff;
 			if ((dir && pos > 350) || (!dir && pos < -350))
 			{
@@ -43,16 +43,16 @@ public class MDVoidCollection extends MDCardCollectionUnknown
 			
 			if (isCardIncoming() || isCardMovingFrom() || getClient().isDebugEnabled() || intoVoidTime > 0)
 			{
-				stage = Math.min(500, stage + MDScheduler.getFrameDelay());
+				stage = Math.min(500, stage + Scheduler.getFrameDelay());
 				repaint();
 			}
 			else if (stage > 0)
 			{
-				stage = Math.max(0, stage - MDScheduler.getFrameDelay());
+				stage = Math.max(0, stage - Scheduler.getFrameDelay());
 				repaint();
 			}
 			
-			intoVoidTime = Math.max(intoVoidTime - MDScheduler.getFrameDelay(), 0);
+			intoVoidTime = Math.max(intoVoidTime - Scheduler.getFrameDelay(), 0);
 		});
 	}
 	

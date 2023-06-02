@@ -1,7 +1,6 @@
 package oldmana.md.server.card;
 
 import oldmana.md.server.MDServer;
-import oldmana.md.server.card.Card.CardDescription;
 import oldmana.md.server.card.action.CardActionCharge;
 import oldmana.md.server.card.action.CardActionDealBreaker;
 import oldmana.md.server.card.action.CardActionDebtCollector;
@@ -249,6 +248,20 @@ public class CardType<T extends Card>
 		return factory != null;
 	}
 	
+	public Supplier<T> getFactory()
+	{
+		return factory;
+	}
+	
+	/**
+	 * Set the factory that constructs cards of this type. Try to avoid using this if there's anything else you can do.
+	 * @param factory A factory that supplies this type of card
+	 */
+	public void setFactory(Supplier<T> factory)
+	{
+		this.factory = factory;
+	}
+	
 	public void setDefaultTemplate(CardTemplate template)
 	{
 		defaultTemplate = template;
@@ -345,8 +358,8 @@ public class CardType<T extends Card>
 	public T createCard(CardTemplate template)
 	{
 		T card = createCardRaw(template);
-		MDServer.getInstance().getVoidCollection().addCard(card);
-		MDServer.getInstance().broadcastPacket(card.getCardDataPacket());
+		getServer().getVoidCollection().addCard(card);
+		getServer().broadcastPacket(card.getCardDataPacket());
 		return card;
 	}
 	
@@ -364,8 +377,8 @@ public class CardType<T extends Card>
 	{
 		T card = createCardRaw(template);
 		constructor.accept(card);
-		MDServer.getInstance().getVoidCollection().addCard(card);
-		MDServer.getInstance().broadcastPacket(card.getCardDataPacket());
+		getServer().getVoidCollection().addCard(card);
+		getServer().broadcastPacket(card.getCardDataPacket());
 		return card;
 	}
 	
@@ -418,6 +431,11 @@ public class CardType<T extends Card>
 	private String standardize(String str)
 	{
 		return str.toLowerCase().replace(" ", "").replace("!", "").replace("'", "").replace(".", "");
+	}
+	
+	private MDServer getServer()
+	{
+		return MDServer.getInstance();
 	}
 	
 	private static String toInternalName(String friendlyName)

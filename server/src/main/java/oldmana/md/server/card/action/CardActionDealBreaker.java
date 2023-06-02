@@ -5,7 +5,7 @@ import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActi
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
-import oldmana.md.server.card.CardAnimationType;
+import oldmana.md.common.card.CardAnimationType;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.CardType;
 import oldmana.md.server.card.collection.PropertySet;

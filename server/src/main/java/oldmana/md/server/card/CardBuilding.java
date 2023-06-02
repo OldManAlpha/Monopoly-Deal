@@ -2,7 +2,6 @@ package oldmana.md.server.card;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardBuildingData;
-import oldmana.md.server.card.action.CardActionForcedDeal;
 import oldmana.md.server.card.collection.PropertySet;
 import oldmana.md.server.card.control.CardButton;
 import oldmana.md.server.card.control.CardButton.CardButtonType;
@@ -76,8 +75,8 @@ public class CardBuilding extends Card
 	{
 		CardType<CardBuilding> type = new CardType<CardBuilding>(CardBuilding.class,
 				CardBuilding::new, "Generic Building");
-		type.addExemptReduction("tier");
-		type.addExemptReduction("rentAddition");
+		type.addExemptReduction("tier", false);
+		type.addExemptReduction("rentAddition", false);
 		CardTemplate template = type.getDefaultTemplate();
 		template.put("value", 1);
 		template.put("name", "Generic Building");

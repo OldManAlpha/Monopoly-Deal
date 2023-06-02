@@ -17,9 +17,9 @@ import java.util.Map;
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
-import oldmana.md.client.MDEventQueue.EventTask;
-import oldmana.md.client.MDSoundSystem;
-import oldmana.md.client.MDSoundSystem.MDSound;
+import oldmana.md.client.EventQueue.EventTask;
+import oldmana.md.client.SoundSystem;
+import oldmana.md.client.SoundSystem.Sound;
 import oldmana.md.client.Settings;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.Card.CardDescription;
@@ -39,7 +39,6 @@ import oldmana.md.client.card.collection.DiscardPile;
 import oldmana.md.client.card.collection.Hand;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.card.collection.VoidCollection;
-import oldmana.md.client.gui.component.MDMovingCard.CardAnimationType;
 import oldmana.md.client.gui.component.MDUndoButton;
 import oldmana.md.client.gui.component.MDClientButton;
 import oldmana.md.client.gui.component.collection.MDHand;
@@ -54,6 +53,7 @@ import oldmana.md.client.state.ActionStateTargetPlayerMonopoly;
 import oldmana.md.client.state.ActionStateTargetProperties;
 import oldmana.md.client.state.ActionStateTargetProperties.TargetMode;
 import oldmana.md.client.state.primary.ActionStatePlayerTurn;
+import oldmana.md.common.card.CardAnimationType;
 import oldmana.md.common.playerui.ButtonColorScheme;
 import oldmana.md.net.NetHandler;
 import oldmana.md.net.packet.client.PacketLogin;
@@ -163,12 +163,12 @@ public class NetClientHandler extends NetHandler
 	public void handleHandshake(PacketHandshake packet)
 	{
 		client.createThePlayer(packet.id, packet.name);
-		List<MDSound> sounds = new ArrayList<MDSound>(MDSoundSystem.getSounds().values());
+		List<Sound> sounds = new ArrayList<Sound>(SoundSystem.getSounds().values());
 		String[] soundNames = new String[sounds.size()];
 		int[] soundHashes = new int[sounds.size()];
 		for (int i = 0 ; i < sounds.size() ; i++)
 		{
-			MDSound sound = sounds.get(i);
+			Sound sound = sounds.get(i);
 			soundNames[i] = sound.getName();
 			soundHashes[i] = sound.getHash();
 		}
@@ -544,18 +544,18 @@ public class NetClientHandler extends NetHandler
 	
 	public void handleSoundData(PacketSoundData packet)
 	{
-		MDSoundSystem.addSound(packet.name, packet.data, packet.hash);
+		SoundSystem.addSound(packet.name, packet.data, packet.hash);
 	}
 	
 	public void handlePlaySound(PacketPlaySound packet)
 	{
 		if (packet.queued)
 		{
-			queueTask(() -> MDSoundSystem.playSound(packet.name));
+			queueTask(() -> SoundSystem.playSound(packet.name));
 		}
 		else
 		{
-			MDSoundSystem.playSound(packet.name);
+			SoundSystem.playSound(packet.name);
 		}
 	}
 	

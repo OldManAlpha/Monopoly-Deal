@@ -7,7 +7,7 @@ import java.awt.Graphics2D;
 import javax.swing.SwingUtilities;
 
 import oldmana.md.client.MDClient;
-import oldmana.md.client.MDScheduler;
+import oldmana.md.client.Scheduler;
 
 public class MDSelection extends MDComponent
 {
@@ -35,7 +35,7 @@ public class MDSelection extends MDComponent
 			}
 			else
 			{
-				pos = (pos + (MDScheduler.getFrameDelay() / 16.0)) % lineSize;
+				pos = (pos + (Scheduler.getFrameDelay() / 16.0)) % lineSize;
 				repaint();
 			}
 		});

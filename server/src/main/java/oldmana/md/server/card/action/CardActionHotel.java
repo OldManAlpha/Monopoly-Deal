@@ -10,8 +10,6 @@ public class CardActionHotel extends CardBuilding
 	{
 		CardType<CardActionHotel> type = new CardType<CardActionHotel>(CardActionHotel.class,
 				CardActionHotel::new, "Hotel");
-		type.removeExemptReduction("tier");
-		type.removeExemptReduction("rentAddition");
 		CardTemplate template = type.getDefaultTemplate();
 		template.put("value", 4);
 		template.put("name", "Hotel");

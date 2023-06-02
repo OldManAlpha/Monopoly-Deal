@@ -8,7 +8,7 @@ import java.awt.LinearGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.geom.RoundRectangle2D;
 
-import oldmana.md.client.MDScheduler;
+import oldmana.md.client.Scheduler;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
@@ -30,7 +30,7 @@ public class MDMoves extends MDComponent
 			int moves = getMoves();
 			int maxMoves = getMaxMoves();
 			
-			double fps = MDScheduler.getFPS();
+			double fps = Scheduler.getFPS();
 			
 			if (visibleMoves > moves + 1 || visibleMoves < moves - 1)
 			{

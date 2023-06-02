@@ -9,7 +9,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import oldmana.md.client.MDScheduler;
+import oldmana.md.client.Scheduler;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.gui.LayoutAdapter;
 import oldmana.md.client.gui.component.MDButton;
@@ -172,8 +172,8 @@ public class IngameMenuScreen extends MDComponent
 		increaseFPS.setColor(ButtonColorScheme.GRAY);
 		increaseFPS.addClickListener(() ->
 		{
-			getClient().getScheduler().setFPS(Math.min(MDScheduler.getFPS() + 5, 500), true);
-			fps.setText(MDScheduler.getFPS() + " FPS");
+			getClient().getScheduler().setFPS(Math.min(Scheduler.getFPS() + 5, 500), true);
+			fps.setText(Scheduler.getFPS() + " FPS");
 			getClient().getTableScreen().revalidate();
 			getClient().getTableScreen().repaint();
 			
@@ -187,8 +187,8 @@ public class IngameMenuScreen extends MDComponent
 		decreaseFPS.setColor(ButtonColorScheme.GRAY);
 		decreaseFPS.addClickListener(() ->
 		{
-			getClient().getScheduler().setFPS(Math.max(MDScheduler.getFPS() - 5, 5), true);
-			fps.setText(MDScheduler.getFPS() + " FPS");
+			getClient().getScheduler().setFPS(Math.max(Scheduler.getFPS() - 5, 5), true);
+			fps.setText(Scheduler.getFPS() + " FPS");
 			getClient().getTableScreen().revalidate();
 			getClient().getTableScreen().repaint();
 			
@@ -197,7 +197,7 @@ public class IngameMenuScreen extends MDComponent
 		});
 		add(decreaseFPS);
 		
-		fps = new MDText(MDScheduler.getFPS() + " FPS");
+		fps = new MDText(Scheduler.getFPS() + " FPS");
 		fps.setFontSize(28);
 		fps.setHorizontalAlignment(Alignment.CENTER);
 		fps.setVerticalAlignment(Alignment.CENTER);

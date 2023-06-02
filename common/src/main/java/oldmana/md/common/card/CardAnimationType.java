@@ -1,4 +1,4 @@
-package oldmana.md.server.card;
+package oldmana.md.common.card;
 
 public enum CardAnimationType
 {

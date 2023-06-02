@@ -8,8 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 
-import oldmana.md.client.MDSoundSystem;
-import oldmana.md.client.MDSoundSystem.MDSound;
+import oldmana.md.client.SoundSystem;
 import oldmana.md.client.gui.component.MDComponent;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
@@ -46,7 +45,7 @@ public class MDTopbar extends MDComponent
 	public void triggerAlert()
 	{
 		alertTicks = 6;
-		MDSoundSystem.playSound("Alert");
+		SoundSystem.playSound("Alert");
 		repaint();
 	}
 	

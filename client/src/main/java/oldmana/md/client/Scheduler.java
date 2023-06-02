@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 
 import javax.swing.SwingUtilities;
 
-public class MDScheduler
+public class Scheduler
 {
 	public static int FRAMERATE;
 	public static long FRAME_INTERVAL;
@@ -20,7 +20,7 @@ public class MDScheduler
 	
 	private List<MDTask> tasks = new ArrayList<MDTask>();
 	
-	public MDScheduler()
+	public Scheduler()
 	{
 		setFPS(60);
 	}

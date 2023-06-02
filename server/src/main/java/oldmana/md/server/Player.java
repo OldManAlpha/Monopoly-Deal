@@ -31,7 +31,7 @@ import oldmana.md.server.playerui.PlayerButton.ButtonTag;
 import oldmana.md.server.ai.BasicAI;
 import oldmana.md.server.ai.PlayerAI;
 import oldmana.md.server.card.Card;
-import oldmana.md.server.card.Card.CardDescription;
+import oldmana.md.server.card.CardDescription;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.PropertyColor;
@@ -823,6 +823,9 @@ public class Player extends Client implements CommandSender
 		return isFocused() && getServer().getGameState().getTurnState().getTurnState() == TurnState.DISCARD;
 	}
 	
+	/**
+	 * Make the player draw from the deck. Can only be used at the start of their turn.
+	 */
 	public void draw()
 	{
 		if (!canDraw())
@@ -836,9 +839,18 @@ public class Player extends Client implements CommandSender
 		{
 			cardsToDraw = server.getGameRules().getExtraCardsDrawn();
 		}
-		server.getDeck().drawCards(this, cardsToDraw);
+		drawCards(cardsToDraw);
 		server.getGameState().setDrawn();
 		server.getEventManager().callEvent(new DeckDrawEvent(this));
+	}
+	
+	/**
+	 * Draws an amount of cards from the top of the deck into the player's hand.
+	 * @param amount The amount of cards to draw
+	 */
+	public void drawCards(int amount)
+	{
+		server.getDeck().drawCards(this, amount);
 	}
 	
 	public void playCardBank(Card card)

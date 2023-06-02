@@ -13,7 +13,7 @@ import oldmana.md.net.packet.server.PacketMoveUnknownCard;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
-import oldmana.md.server.card.CardAnimationType;
+import oldmana.md.common.card.CardAnimationType;
 import oldmana.md.server.event.CardMovedEvent;
 
 public abstract class CardCollection implements Iterable<Card>

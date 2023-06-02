@@ -2,8 +2,6 @@ package oldmana.md.client;
 
 import java.awt.Point;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Queue;
 import java.util.function.Supplier;
 
@@ -12,16 +10,16 @@ import oldmana.md.client.card.collection.Bank;
 import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.component.MDMovingCard;
-import oldmana.md.client.gui.component.MDMovingCard.CardAnimationType;
 import oldmana.md.client.gui.component.collection.MDCardCollection;
 import oldmana.md.client.gui.component.collection.MDCardCollectionBase;
 import oldmana.md.client.gui.component.large.MDOpponents;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.ActionStateRent;
+import oldmana.md.common.card.CardAnimationType;
 
 import javax.swing.SwingUtilities;
 
-public class MDEventQueue
+public class EventQueue
 {
 	private Queue<EventTask> queue = new ArrayDeque<EventTask>();
 	private TickingEventTask currentTask;
@@ -182,7 +180,7 @@ public class MDEventQueue
 					to.getUI().getCardScale(), time, anim, from.isUnknown() && to.isUnknown() ? card : null);
 			MDClient.getInstance().addTableComponent(moving, 99);
 			
-			MDSoundSystem.playSound(anim == CardAnimationType.IMPORTANT ? "ImportantCardMove" :
+			SoundSystem.playSound(anim == CardAnimationType.IMPORTANT ? "ImportantCardMove" :
 					(from.isUnknown() == to.isUnknown() ? "CardMove" : "CardFlip"));
 			
 			// Update the rent screen if bank/property sets are modified
@@ -217,7 +215,7 @@ public class MDEventQueue
 				MDClient.getInstance().getTableScreen().repaint();
 				if (to.makesPlaceSound())
 				{
-					MDSoundSystem.playSound("CardPlace");
+					SoundSystem.playSound("CardPlace");
 				}
 			}
 			else

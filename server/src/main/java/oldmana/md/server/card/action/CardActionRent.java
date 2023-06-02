@@ -2,11 +2,10 @@ package oldmana.md.server.card.action;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardActionRentData;
-import oldmana.md.net.packet.server.PacketStatus;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
-import oldmana.md.server.card.CardAnimationType;
+import oldmana.md.common.card.CardAnimationType;
 import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.control.CardButton;

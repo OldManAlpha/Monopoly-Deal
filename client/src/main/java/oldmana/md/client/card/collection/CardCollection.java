@@ -7,11 +7,11 @@ import java.util.Map;
 
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
-import oldmana.md.client.MDEventQueue.CardMove;
+import oldmana.md.client.EventQueue.CardMove;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardUnknown;
-import oldmana.md.client.gui.component.MDMovingCard.CardAnimationType;
 import oldmana.md.client.gui.component.collection.MDCardCollectionBase;
+import oldmana.md.common.card.CardAnimationType;
 
 public abstract class CardCollection
 {

@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import oldmana.md.client.MDClient;
-import oldmana.md.client.MDScheduler;
+import oldmana.md.client.Scheduler;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
@@ -651,7 +651,7 @@ public class MDChat extends MDComponent
 		{
 			if (displayTime > 0)
 			{
-				displayTime = (int) Math.max(displayTime - MDScheduler.getFrameDelay(), 0);
+				displayTime = (int) Math.max(displayTime - Scheduler.getFrameDelay(), 0);
 				return true;
 			}
 			return false;

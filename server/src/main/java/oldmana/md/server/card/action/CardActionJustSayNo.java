@@ -2,7 +2,7 @@ package oldmana.md.server.card.action;
 
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;
-import oldmana.md.server.card.CardAnimationType;
+import oldmana.md.common.card.CardAnimationType;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.control.CardButton;
 import oldmana.md.server.card.control.CardButton.CardButtonType;

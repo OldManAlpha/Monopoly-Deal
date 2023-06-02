@@ -1,6 +1,7 @@
 package oldmana.md.server.mod;
 
 import oldmana.md.server.MDServer;
+import oldmana.md.server.rules.GameRule;
 import oldmana.md.server.rules.struct.RuleStructObject;
 import oldmana.md.server.rules.struct.RuleStructObject.RuleObjectBuilder;
 
@@ -18,7 +19,7 @@ public class ServerMod
 	private Set<String> dependencies;
 	private Set<String> softDependencies;
 	
-	private RuleStructObject modRule;
+	private RuleStructObject modRuleStruct;
 	
 	public String getName()
 	{
@@ -81,23 +82,46 @@ public class ServerMod
 		return dependencies.contains(mod.getName()) || softDependencies.contains(mod.getName());
 	}
 	
-	public RuleStructObject getModRule()
+	public RuleStructObject getModRuleStruct()
 	{
-		return modRule;
+		return modRuleStruct;
+	}
+	
+	public GameRule getModRule()
+	{
+		return getServer().getGameRules().getModRule(getName());
 	}
 	
 	protected void generateModRule()
 	{
-		if (modRule != null)
+		if (modRuleStruct != null)
 		{
 			return;
 		}
-		modRule = RuleObjectBuilder.from(getServer().getGameRules().getRootRuleStruct().getChild("modRules"))
+		modRuleStruct = RuleObjectBuilder.from(getServer().getGameRules().getRootRuleStruct().getChild("modRules"))
 				.jsonName(getName())
 				.name(getName())
-				.description("Rules for " + getName())
+				.description("Rules added by mod " + getName())
 				.reducible(true)
 				.register();
+	}
+	
+	/**
+	 * This fails without throwing an exception if anything goes wrong.
+	 * @param jarPath The path of the sound in the jar
+	 * @param name The name the sound is given
+	 */
+	protected void loadSound(String jarPath, String name)
+	{
+		try
+		{
+			getServer().loadSound(getClass().getResource(jarPath), getName() + "." + name, true);
+		}
+		catch (Exception e)
+		{
+			System.err.println(getName() + " failed to load sound at " + jarPath);
+			e.printStackTrace();
+		}
 	}
 	
 	public MDServer getServer()
@@ -107,6 +131,8 @@ public class ServerMod
 	
 	/**
 	 * Called right after this mod has been instantiated. Only dependencies are guaranteed to be loaded at this stage.
+	 * <br><br>
+	 * It is highly advised to register any Game Rules the mod has during this method call.
 	 */
 	public void onLoad() {}
 	

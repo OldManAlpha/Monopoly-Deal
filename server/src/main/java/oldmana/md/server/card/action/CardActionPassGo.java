@@ -10,7 +10,7 @@ public class CardActionPassGo extends CardAction
 	@Override
 	public void playCard(Player player)
 	{
-		getServer().getDeck().drawCards(player, 2);
+		player.drawCards(2);
 	}
 	
 	private static CardType<CardActionPassGo> createType()

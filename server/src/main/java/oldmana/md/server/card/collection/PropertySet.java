@@ -9,7 +9,7 @@ import oldmana.md.net.packet.server.PacketPropertySetColor;
 import oldmana.md.net.packet.server.PacketPropertySetData;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
-import oldmana.md.server.card.CardAnimationType;
+import oldmana.md.common.card.CardAnimationType;
 import oldmana.md.server.card.CardBuilding;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.PropertyColor;

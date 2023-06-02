@@ -1,12 +1,12 @@
 package oldmana.md.server;
 
-public class MDSound
+public class Sound
 {
 	private String name;
 	private byte[] data;
 	private int hash;
 	
-	public MDSound(String name, byte[] data, int hash)
+	public Sound(String name, byte[] data, int hash)
 	{
 		this.name = name;
 		this.data = data;

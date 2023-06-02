@@ -1,10 +1,9 @@
 package oldmana.md.client.state;
 
 import oldmana.md.client.MDClient;
-import oldmana.md.client.MDSoundSystem;
+import oldmana.md.client.SoundSystem;
 import oldmana.md.client.Player;
 import oldmana.md.client.ThePlayer;
-import oldmana.md.client.gui.component.MDChat;
 import oldmana.md.client.state.client.ActionStateClient;
 import oldmana.md.client.state.primary.ActionStatePlayerTurn;
 
@@ -101,7 +100,7 @@ public class GameState
 			{
 				return;
 			}
-			MDSoundSystem.playSound("DrawAlert");
+			SoundSystem.playSound("DrawAlert");
 		}
 	}
 	

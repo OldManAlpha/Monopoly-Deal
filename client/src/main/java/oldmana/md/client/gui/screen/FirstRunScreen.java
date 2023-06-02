@@ -7,7 +7,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.io.File;
 
-import oldmana.md.client.MDSoundSystem;
+import oldmana.md.client.SoundSystem;
 import oldmana.md.client.gui.LayoutAdapter;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDComponent;
@@ -46,7 +46,7 @@ public class FirstRunScreen extends MDComponent
 			folder.mkdirs();
 			getClient().setDataFolder(folder);
 			getClient().getSettings().setLocation(folder);
-			MDSoundSystem.loadCache();
+			SoundSystem.loadCache();
 			System.out.println("Created local files");
 			getClient().getWindow().displayMenu();
 		});
@@ -59,7 +59,7 @@ public class FirstRunScreen extends MDComponent
 			File folder = getClient().getJarFolder();
 			getClient().setDataFolder(folder);
 			getClient().getSettings().setLocation(folder);
-			MDSoundSystem.loadCache();
+			SoundSystem.loadCache();
 			System.out.println("Created portable files");
 			getClient().getWindow().displayMenu();
 		});

@@ -14,7 +14,7 @@ import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.List;
 
-import oldmana.md.client.MDScheduler;
+import oldmana.md.client.Scheduler;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardMoney;
 import oldmana.md.client.card.CardProperty;
@@ -58,7 +58,7 @@ public class MDCardInfo extends MDComponent
 				task.cancel();
 				return;
 			}
-			existTime = (int) Math.min(existTime + MDScheduler.getFrameDelay(), 200);
+			existTime = (int) Math.min(existTime + Scheduler.getFrameDelay(), 200);
 			repaint();
 		});
 	}

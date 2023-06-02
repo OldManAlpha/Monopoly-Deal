@@ -11,8 +11,8 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import oldmana.md.client.MDScheduler;
-import oldmana.md.client.MDScheduler.MDTask;
+import oldmana.md.client.Scheduler;
+import oldmana.md.client.Scheduler.MDTask;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.DiscardPile;
 import oldmana.md.client.gui.component.MDCardInfo;
@@ -64,7 +64,7 @@ public class MDDiscardPile extends MDCardCollection
 		{
 			if (animDuration > 0)
 			{
-				animDuration -= MDScheduler.getFrameDelay();
+				animDuration -= Scheduler.getFrameDelay();
 				repaint();
 				if (scrollPos == 0 || scrollPos == 1)
 				{
@@ -75,7 +75,7 @@ public class MDDiscardPile extends MDCardCollection
 			{
 				for (int i = 0 ; i < 3 ; i++)
 				{
-					animDuration -= MDScheduler.getFrameDelay();
+					animDuration -= Scheduler.getFrameDelay();
 					if (animDuration <= 0)
 					{
 						if (--scrollPos == 0)
