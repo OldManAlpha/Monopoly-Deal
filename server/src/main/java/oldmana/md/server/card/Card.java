@@ -1,5 +1,6 @@
 package oldmana.md.server.card;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,9 @@ public abstract class Card
 	private int displayOffsetY;
 	private CardDescription description;
 	
+	private Color outerColor;
+	private Color innerColor;
+	
 	private boolean undoable;
 	private boolean clearsUndoableCards;
 	
@@ -74,6 +78,9 @@ public abstract class Card
 		Object desc = template.getObject(DESCRIPTION);
 		description = desc instanceof String ? CardDescription.getDescription((String) desc) :
 				CardDescription.getDescription(template.getStringArray(DESCRIPTION));
+		outerColor = template.getColor(OUTER_COLOR);
+		innerColor = template.has(INNER_COLOR) ?
+				template.getColor(INNER_COLOR) : CardValueColor.getByValue(value).getColor();
 		undoable = template.getBoolean(UNDOABLE);
 		clearsUndoableCards = template.getBoolean(CLEARS_UNDOABLE_ACTIONS);
 		playAnimation = CardAnimationType.fromJson(template.getString(PLAY_ANIMATION));
@@ -260,6 +267,26 @@ public abstract class Card
 	public CardDescription getDescription()
 	{
 		return description;
+	}
+	
+	public Color getOuterColor()
+	{
+		return outerColor;
+	}
+	
+	protected void setOuterColor(Color outerColor)
+	{
+		this.outerColor = outerColor;
+	}
+	
+	public Color getInnerColor()
+	{
+		return innerColor;
+	}
+	
+	protected void setInnerColor(Color innerColor)
+	{
+		this.innerColor = innerColor;
 	}
 	
 	public boolean isUndoable()
@@ -726,4 +753,5 @@ public abstract class Card
 	{
 		return MDServer.getInstance().getCards();
 	}
+	
 }

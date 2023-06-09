@@ -2,9 +2,9 @@ package oldmana.md.client.card;
 
 public class CardMoney extends Card
 {
-	public CardMoney(int id, int value)
+	public CardMoney(int id, int value, String name)
 	{
-		super(id, value, "Money");
+		super(id, value, name);
 	}
 	
 	@Override

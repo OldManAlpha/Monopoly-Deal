@@ -128,7 +128,8 @@ public class CardActionRent extends CardAction
 		{
 			types[i] = colors.get(i).getID();
 		}
-		return new PacketCardActionRentData(getID(), getName(), getValue(), types, getDescription().getID());
+		return new PacketCardActionRentData(getID(), getName(), getValue(), types, getDescription().getID(),
+				getOuterColor().getRGB(), getInnerColor().getRGB());
 	}
 	
 	@Override

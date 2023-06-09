@@ -1,5 +1,6 @@
 package oldmana.md.server.card.collection;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -139,17 +140,23 @@ public class Deck extends CardCollection
 		}
 	}
 	
-	public void drawCards(Player player, int amount)
+	public List<Card> drawCards(Player player, int amount)
 	{
-		drawCards(player, amount, 1);
+		return drawCards(player, amount, 1);
 	}
 	
-	public void drawCards(Player player, int amount, double time)
+	public List<Card> drawCards(Player player, int amount, double time)
 	{
+		List<Card> cards = new ArrayList<Card>(amount);
 		for (int i = 0 ; i < amount ; i++)
 		{
-			drawCard(player, time);
+			Card card = drawCard(player, time);
+			if (card != null)
+			{
+				cards.add(card);
+			}
 		}
+		return cards;
 	}
 	
 	public void insertCardRandomly(Card card)

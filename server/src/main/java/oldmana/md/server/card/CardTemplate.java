@@ -1,9 +1,11 @@
 package oldmana.md.server.card;
 
 import oldmana.md.common.card.CardAnimationType;
+import oldmana.md.common.util.ColorUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,6 +26,7 @@ public class CardTemplate implements Cloneable
 		DEFAULT_TEMPLATE.put(FONT_SIZE, 7);
 		DEFAULT_TEMPLATE.put(DISPLAY_OFFSET_Y, 1);
 		DEFAULT_TEMPLATE.putStrings(DESCRIPTION, "Missing Description");
+		DEFAULT_TEMPLATE.put(OUTER_COLOR, Color.WHITE);
 		DEFAULT_TEMPLATE.put(UNDOABLE, true);
 		DEFAULT_TEMPLATE.put(CLEARS_UNDOABLE_ACTIONS, false);
 		DEFAULT_TEMPLATE.put(PLAY_ANIMATION, CardAnimationType.NORMAL);
@@ -119,8 +122,15 @@ public class CardTemplate implements Cloneable
 		return this;
 	}
 	
+	public CardTemplate put(String key, Color color)
+	{
+		json.put(key, ColorUtil.toRGBHex(color));
+		return this;
+	}
+	
 	/**
-	 * Get value of key of type. Limited to default JSON types, plus String arrays, PropertyColors, and PropertyColor arrays.
+	 * Get value of key of type. Limited to default JSON types, plus String arrays, PropertyColors,
+	 * PropertyColor arrays, and awt Colors.
 	 */
 	public <T> T get(String key, Class<T> type)
 	{
@@ -131,6 +141,14 @@ public class CardTemplate implements Cloneable
 		else if (type == PropertyColor[].class)
 		{
 			return (T) getColorArray(key);
+		}
+		else if (type == PropertyColor.class)
+		{
+			return (T) getPropertyColor(key);
+		}
+		else if (type == Color.class)
+		{
+			return (T) getColor(key);
 		}
 		return (T) json.get(key);
 	}
@@ -170,7 +188,12 @@ public class CardTemplate implements Cloneable
 		return this;
 	}
 	
-	public PropertyColor getColor(String key, PropertyColor color)
+	public Color getColor(String key)
+	{
+		return ColorUtil.fromRGBHex(json.getString(key));
+	}
+	
+	public PropertyColor getPropertyColor(String key)
 	{
 		return PropertyColor.fromName(json.getString(key));
 	}
@@ -261,11 +284,6 @@ public class CardTemplate implements Cloneable
 			}
 		}
 		return reduced;
-	}
-	
-	private boolean shouldReduce()
-	{
-		return false;
 	}
 	
 	@Override

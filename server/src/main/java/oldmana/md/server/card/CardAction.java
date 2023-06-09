@@ -9,14 +9,15 @@ public class CardAction extends Card
 	@Override
 	public boolean canBank(Player player)
 	{
-		return getServer().getGameRules().canBankActionCards();
+		return super.canBank(player) && getServer().getGameRules().canBankActionCards();
 	}
 	
 	@Override
 	public Packet getCardDataPacket()
 	{
-		return new PacketCardData(getID(), getName(), getValue(), 0, isUndoable(), shouldClearUndoableCards(),
-				getDisplayName(), (byte) getFontSize(), (byte) getDisplayOffsetY(), getDescription().getID());
+		return new PacketCardData(getID(), getName(), getValue(), 0,
+				getDisplayName(), (byte) getFontSize(), (byte) getDisplayOffsetY(), getDescription().getID(),
+				getOuterColor().getRGB(), getInnerColor().getRGB());
 	}
 	
 	@Override

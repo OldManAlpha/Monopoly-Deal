@@ -84,9 +84,9 @@ public class CardBuilding extends Card
 	@Override
 	public Packet getCardDataPacket()
 	{
-		return new PacketCardBuildingData(getID(), getName(), getValue(), tier, rentAddition, isUndoable(),
-				shouldClearUndoableCards(), getDisplayName(), (byte) getFontSize(), (byte) getDisplayOffsetY(),
-				getDescription().getID());
+		return new PacketCardBuildingData(getID(), getName(), getValue(), tier, rentAddition, getDisplayName(),
+				(byte) getFontSize(), (byte) getDisplayOffsetY(), getDescription().getID(),
+				getOuterColor().getRGB(), getInnerColor().getRGB());
 	}
 	
 	private static CardType<CardBuilding> createType()

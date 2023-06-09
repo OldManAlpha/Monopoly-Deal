@@ -11,9 +11,12 @@ public class PacketCardActionRentData extends Packet
 	
 	public short description;
 	
+	public int outerColor;
+	public int innerColor;
+	
 	public PacketCardActionRentData() {}
 	
-	public PacketCardActionRentData(int id, String name, int value, byte[] colors, int description)
+	public PacketCardActionRentData(int id, String name, int value, byte[] colors, int description, int outerColor, int innerColor)
 	{
 		this.id = id;
 		this.name = name;
@@ -21,5 +24,8 @@ public class PacketCardActionRentData extends Packet
 		this.colors = colors;
 		
 		this.description = (short) description;
+		
+		this.outerColor = outerColor;
+		this.innerColor = innerColor;
 	}
 }

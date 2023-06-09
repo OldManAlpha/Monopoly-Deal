@@ -3,6 +3,7 @@ package oldmana.md.server;
 import java.awt.Color;
 import java.nio.ByteBuffer;
 
+import oldmana.md.common.util.ColorUtil;
 import oldmana.md.server.card.PropertyColor;
 
 public enum ChatColor
@@ -53,8 +54,7 @@ public enum ChatColor
 	
 	public static String toHexColor(Color color)
 	{
-		String buf = Integer.toHexString(color.getRGB());
-		return buf.substring(buf.length() - 6);
+		return ColorUtil.toRGBHex(color);
 	}
 	
 	public static String toChatColor(Color color)

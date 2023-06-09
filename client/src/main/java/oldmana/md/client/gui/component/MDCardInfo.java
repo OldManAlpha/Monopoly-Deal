@@ -77,7 +77,7 @@ public class MDCardInfo extends MDComponent
 		
 		// Draw base
 		g.setFont(GraphicsUtils.getBoldMDFont(scale(24)));
-		Color background = card instanceof CardProperty ? new Color(240, 240, 240) : card.getValueColor();
+		Color background = card instanceof CardProperty ? new Color(240, 240, 240) : card.getInnerColor();
 		Color foreground = new Color(40, 40, 40);
 		g.setColor(background);
 		LinearGradientPaint propPaint = null;
@@ -118,13 +118,8 @@ public class MDCardInfo extends MDComponent
 		
 		// Draw card name
 		g.setColor(foreground);
-		String name = card.getName();
-		if (card instanceof CardMoney)
-		{
-			name = card.getValue() + "M";
-		}
 		g.setColor(card instanceof CardProperty ? Color.WHITE : Color.BLACK);
-		TextPainter tp = new TextPainter(name, g.getFont(),
+		TextPainter tp = new TextPainter(card.getName(), g.getFont(),
 				new Rectangle(0, scale(2), width, scale(28)));
 		tp.setHorizontalAlignment(Alignment.CENTER);
 		tp.setVerticalAlignment(Alignment.CENTER);
@@ -165,7 +160,7 @@ public class MDCardInfo extends MDComponent
 		tp.setVerticalAlignment(Alignment.CENTER);
 		tp.paint(g);
 		
-		tp = new TextPainter(card.getValue() + "M", g.getFont(), new Rectangle(width - scale(46), height - scale(24), scale(40), scale(24)));
+		tp = new TextPainter(card.getValue() + "M", g.getFont(), new Rectangle(width - scale(80), height - scale(24), scale(74), scale(24)));
 		tp.setHorizontalAlignment(Alignment.RIGHT);
 		tp.setVerticalAlignment(Alignment.CENTER);
 		tp.paint(g);

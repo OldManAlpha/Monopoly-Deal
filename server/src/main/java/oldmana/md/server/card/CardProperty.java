@@ -1,5 +1,6 @@
 package oldmana.md.server.card;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,6 +33,10 @@ public class CardProperty extends Card
 	public void applyTemplate(CardTemplate template)
 	{
 		super.applyTemplate(template);
+		if (!template.has(INNER_COLOR))
+		{
+			setInnerColor(Color.WHITE);
+		}
 		colors = template.getColorList("colors");
 		base = template.getBoolean("base");
 		stealable = template.getBoolean("stealable");
@@ -76,7 +81,7 @@ public class CardProperty extends Card
 	@Override
 	public boolean canBank(Player player)
 	{
-		return getServer().getGameRules().canBankPropertyCards();
+		return super.canBank(player) && getServer().getGameRules().canBankPropertyCards();
 	}
 	
 	public boolean isSingleColor()
@@ -136,7 +141,8 @@ public class CardProperty extends Card
 		{
 			types[i] = colors.get(i).getID();
 		}
-		return new PacketCardPropertyData(getID(), getName(), getValue(), types, isBase(), isStealable(), getDescription().getID());
+		return new PacketCardPropertyData(getID(), getName(), getValue(), types, isBase(), isStealable(),
+				getDescription().getID(), getOuterColor().getRGB(), getInnerColor().getRGB());
 	}
 	
 	@Override

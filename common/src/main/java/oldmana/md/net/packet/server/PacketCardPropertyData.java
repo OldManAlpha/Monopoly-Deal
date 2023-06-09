@@ -13,9 +13,13 @@ public class PacketCardPropertyData extends Packet
 	
 	public short description;
 	
+	public int outerColor;
+	public int innerColor;
+	
 	public PacketCardPropertyData() {}
 	
-	public PacketCardPropertyData(int id, String name, int value, byte[] colors, boolean base, boolean stealable, int description)
+	public PacketCardPropertyData(int id, String name, int value, byte[] colors, boolean base, boolean stealable, int description,
+	                              int outerColor, int innerColor)
 	{
 		this.id = id;
 		this.name = name;
@@ -25,5 +29,8 @@ public class PacketCardPropertyData extends Packet
 		this.stealable = stealable;
 		
 		this.description = (short) description;
+		
+		this.outerColor = outerColor;
+		this.innerColor = innerColor;
 	}
 }

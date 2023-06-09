@@ -222,13 +222,15 @@ public class NetClientHandler extends NetHandler
 			}
 			else
 			{
-				card = new CardMoney(packet.id, packet.value);
+				card = new CardMoney(packet.id, packet.value, packet.name);
 			}
 		}
 		card.setDisplayName(packet.displayName);
 		card.setFontSize(packet.fontSize);
 		card.setDisplayOffsetY(packet.displayOffsetY);
 		card.setDescription(CardDescription.getDescriptionByID(packet.description));
+		card.setOuterColor(new Color(packet.outerColor));
+		card.setInnerColor(new Color(packet.innerColor));
 	}
 	
 	public void handleCardActionRentData(PacketCardActionRentData packet)
@@ -246,6 +248,8 @@ public class NetClientHandler extends NetHandler
 		}
 		card.setRentColors(PropertyColor.fromIDs(packet.colors).toArray(new PropertyColor[packet.colors.length]));
 		card.setDescription(CardDescription.getDescriptionByID(packet.description));
+		card.setOuterColor(new Color(packet.outerColor));
+		card.setInnerColor(new Color(packet.innerColor));
 	}
 	
 	public void handleCardPropertyData(PacketCardPropertyData packet)
@@ -265,6 +269,8 @@ public class NetClientHandler extends NetHandler
 		}
 		card.setColors(PropertyColor.fromIDs(packet.colors));
 		card.setDescription(CardDescription.getDescriptionByID(packet.description));
+		card.setOuterColor(new Color(packet.outerColor));
+		card.setInnerColor(new Color(packet.innerColor));
 	}
 	
 	public void handleCardBuildingData(PacketCardBuildingData packet)
@@ -274,6 +280,9 @@ public class NetClientHandler extends NetHandler
 		card.setFontSize(packet.fontSize);
 		card.setDisplayOffsetY(packet.displayOffsetY);
 		card.setDescription(CardDescription.getDescriptionByID(packet.description));
+		card.setOuterColor(new Color(packet.outerColor));
+		card.setInnerColor(new Color(packet.innerColor));
+		card.clearGraphicsCache();
 	}
 	
 	public void handlePlayerInfo(PacketPlayerInfo packet)

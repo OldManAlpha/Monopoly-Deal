@@ -854,18 +854,19 @@ public class Player extends Client implements CommandSender
 		{
 			cardsToDraw = server.getGameRules().getExtraCardsDrawn();
 		}
-		drawCards(cardsToDraw);
+		List<Card> cards = drawCards(cardsToDraw);
 		server.getGameState().setDrawn();
-		server.getEventManager().callEvent(new PlayerDrawEvent(this));
+		server.getEventManager().callEvent(new PlayerDrawEvent(this, cards));
 	}
 	
 	/**
 	 * Draws an amount of cards from the top of the deck into the player's hand.
 	 * @param amount The amount of cards to draw
+	 * @return The cards that the player just drew
 	 */
-	public void drawCards(int amount)
+	public List<Card> drawCards(int amount)
 	{
-		server.getDeck().drawCards(this, amount);
+		return server.getDeck().drawCards(this, amount);
 	}
 	
 	public void endTurn()

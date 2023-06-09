@@ -11,6 +11,8 @@ public class CardAttributes
 	public static final String FONT_SIZE = "fontSize";
 	public static final String DISPLAY_OFFSET_Y = "displayOffsetY";
 	public static final String DESCRIPTION = "description";
+	public static final String OUTER_COLOR = "outerColor";
+	public static final String INNER_COLOR = "innerColor";
 	public static final String UNDOABLE = "undoable";
 	public static final String CLEARS_UNDOABLE_ACTIONS = "clearsUndoableActions";
 	public static final String PLAY_ANIMATION = "playAnimation";

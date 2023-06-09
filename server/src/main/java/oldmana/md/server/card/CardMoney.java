@@ -42,8 +42,9 @@ public class CardMoney extends Card
 	@Override
 	public Packet getCardDataPacket()
 	{
-		return new PacketCardData(getID(), getName(), getValue(), 1, isUndoable(), shouldClearUndoableCards(),
-				getDisplayName(), (byte) getFontSize(), (byte) getDisplayOffsetY(), getDescription().getID());
+		return new PacketCardData(getID(), getName(), getValue(), 1,
+				getDisplayName(), (byte) getFontSize(), (byte) getDisplayOffsetY(), getDescription().getID(),
+				getOuterColor().getRGB(), getInnerColor().getRGB());
 	}
 	
 	@Override

@@ -27,6 +27,7 @@ import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
 import oldmana.md.common.Message;
+import oldmana.md.common.util.ColorUtil;
 import oldmana.md.net.packet.client.action.PacketActionClickLink;
 import oldmana.md.net.packet.universal.PacketChat;
 import org.json.JSONArray;
@@ -664,7 +665,7 @@ public class MDChat extends MDComponent
 			{
 				JSONObject json = (JSONObject) o;
 				TextSegment segment = new TextSegment(json.getString("txt"),
-						json.has("color") ? new Color(Integer.parseUnsignedInt(json.getString("color"), 16)) : Color.WHITE);
+						json.has("color") ? ColorUtil.fromRGBHex(json.getString("color")) : Color.WHITE);
 				if (json.has("link"))
 				{
 					segment.setLinkID(json.getInt("link"));

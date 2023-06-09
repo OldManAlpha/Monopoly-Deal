@@ -13,6 +13,7 @@ import oldmana.md.client.MDClient;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardAction;
 import oldmana.md.client.card.CardActionRent;
+import oldmana.md.client.card.CardBuilding;
 import oldmana.md.client.card.CardMoney;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.CardProperty.PropertyColor;
@@ -107,6 +108,8 @@ public class CardPainter
 		// Drawing for known cards
 		if (card != null)
 		{
+			Color outerColor = card.getOuterColor();
+			Color innerColor = card.getInnerColor();
 			// Draw Card Outline
 			g.setColor(Color.BLACK);
 			/*
@@ -117,14 +120,14 @@ public class CardPainter
 			*/
 			g.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, getWidth() / 6, getWidth() / 6);
 			// Draw White
-			g.setColor(Color.WHITE);
+			g.setColor(outerColor);
 			//int outlineSize = 1 + (scale(1) / 4);
 			int outlineSize = Math.max(1, scale(0.5));
 			g.fillRoundRect(outlineSize - 1, outlineSize - 1, getWidth() - (outlineSize * 2) + 1, getHeight() - (outlineSize * 2) + 1, (getWidth() / 6) - (outlineSize * 2), (getWidth() / 6) - (outlineSize * 2));
 			// Draw Value Color
-			if (!property)
+			//if (!property)
 			{
-				g.setColor(card.getValueColor());
+				g.setColor(innerColor);
 				//g.fillRoundRect(scale(3), scale(3), getWidth() - scale(6) - 1, getHeight() - scale(6) - 1, getWidth() / 6, getWidth() / 6);
 				g.fillRect(scale(3), scale(3), getWidth() - scale(6) - 1, getHeight() - scale(6) - 1);
 			}
@@ -152,65 +155,58 @@ public class CardPainter
 			}
 			
 			// Draw Card Value And Value Border
-			if (card.getValue() > 0)
+			boolean hasValue = card.getValue() > 0;
+			if (property && hasValue)
 			{
-				if (property)
+				g.setColor(innerColor);
+				g.fillOval(scale(4), scale(4), scale(12), scale(12));
+			}
+			if (!property)
+			{
+				Color gray = Color.GRAY;
+				Color color = new Color((gray.getRed() + innerColor.getRed()) / 2, (gray.getGreen() + innerColor.getGreen()) / 2,
+						(gray.getBlue() + innerColor.getBlue()) / 2);
+				g.setColor(color);
+				g.fillRect(scale(8), scale(8), getWidth() - scale(16) - 1, getHeight() - scale(16) - 1);
+				color = new Color((gray.getRed() + innerColor.getRed() * 5) / 6, (gray.getGreen() + innerColor.getGreen() * 5) / 6,
+						(gray.getBlue() + innerColor.getBlue() * 5) / 6);
+				g.setColor(innerColor);
+				g.fillRect(scale(11), scale(11), getWidth() - scale(22) - 1, getHeight() - scale(22) - 1);
+				g.setColor(color);
+				g.fillRect(scale(12), scale(12), getWidth() - scale(24) - 1, getHeight() - scale(24) - 1);
+			}
+			if (hasValue)
+			{
+				if (!property)
 				{
-					g.setColor(Color.WHITE);
+					g.setColor(innerColor);
 					g.fillOval(scale(4), scale(4), scale(12), scale(12));
+					g.fillOval(scale(56 - 12) - 1, scale(86 - 12) - 1, scale(12), scale(12));
 				}
-				//else
+				
+				if (action || card instanceof CardBuilding)
 				{
-					if (!property)
-					{
-						Color gray = Color.GRAY;
-						Color valueColor = card.getValueColor();
-						Color color = new Color((gray.getRed() + valueColor.getRed()) / 2, (gray.getGreen() + valueColor.getGreen()) / 2, 
-								(gray.getBlue() + valueColor.getBlue()) / 2);
-						g.setColor(color);
-						g.fillRect(scale(8), scale(8), getWidth() - scale(16) - 1, getHeight() - scale(16) - 1);
-						color = new Color((gray.getRed() + valueColor.getRed() * 5) / 6, (gray.getGreen() + valueColor.getGreen() * 5) / 6, 
-								(gray.getBlue() + valueColor.getBlue() * 5) / 6);
-						g.setColor(valueColor);
-						g.fillRect(scale(11), scale(11), getWidth() - scale(22) - 1, getHeight() - scale(22) - 1);
-						g.setColor(color);
-						g.fillRect(scale(12), scale(12), getWidth() - scale(24) - 1, getHeight() - scale(24) - 1);
-					}
-					if (!property)
-					{
-						g.setColor(card.getValueColor());
-						g.fillOval(scale(4), scale(4), scale(12), scale(12));
-						g.fillOval(scale(56 - 12) - 1, scale(86 - 12) - 1, scale(12), scale(12));
-					}
-					if (action)
-					{
-						g.setColor(new Color(200, 0, 0));
-					}
-					else
-					{
-						g.setColor(Color.BLACK);
-					}
-					g.fillOval(scale(4), scale(4), scale(12), scale(12));
-					//g.setColor(Color.BLACK);
-					//g.drawOval(scale(5) - 1, scale(5) - 1, scale(12) + 2, scale(12) + 2);
-					if (!property)
-					{
-						g.fillOval(scale(56 - 12) - 1, scale(86 - 12) - 1, scale(12), scale(12));
-						g.setColor(card.getValueColor());
-						g.fillOval(scale(56 - 12 + 0.5) - 1, scale(86 - 12 + 0.5) - 1, scale(11), scale(11));
-					}
-					if (property)
-					{
-						g.setColor(Color.WHITE);
-					}
-					else
-					{
-						g.setColor(card.getValueColor());
-					}
-					g.fillOval(scale(4 + 0.5), scale(4 + 0.5), scale(11), scale(11));
+					g.setColor(new Color(200, 0, 0));
 				}
+				else
+				{
+					g.setColor(Color.BLACK);
+				}
+				g.fillOval(scale(4), scale(4), scale(12), scale(12));
+				//g.setColor(Color.BLACK);
+				//g.drawOval(scale(5) - 1, scale(5) - 1, scale(12) + 2, scale(12) + 2);
+				if (!property)
+				{
+					g.fillOval(scale(56 - 12) - 1, scale(86 - 12) - 1, scale(12), scale(12));
+					g.setColor(innerColor);
+					g.fillOval(scale(56 - 12 + 0.5) - 1, scale(86 - 12 + 0.5) - 1, scale(11), scale(11));
+				}
+				g.setColor(innerColor);
+				g.fillOval(scale(4 + 0.5), scale(4 + 0.5), scale(11), scale(11));
+				
 				g.setColor(Color.BLACK);
-				Font font = new Font(getFont().getFontName(), Font.BOLD, card.getValue() < 10 ? scale(6) : scale(6));
+				Font font = new Font(getFont().getFontName(), Font.BOLD, card.getValue() < 10 ? scale(6) :
+						(card.getValue() < 100 ? scale(5.5) : scale(4.5)));
 				g.setFont(font);
 				TextPainter tp = new TextPainter(card.getValue() + "M", font, new Rectangle(scale(2.75), scale(5), scale(card.getValue() < 10 ? 15 : 14), scale(10)));
 				tp.setHorizontalAlignment(Alignment.CENTER);
@@ -237,7 +233,7 @@ public class CardPainter
 			{
 				g.setColor(new Color(30, 30, 30));
 				g.fillOval(scale(11), scale(26), scale(38), scale(38));
-				g.setColor(card.getValueColor());
+				g.setColor(innerColor);
 				g.fillOval(scale(12), scale(27), scale(36), scale(36));
 				g.setColor(new Color(30, 30, 30));
 				/*
@@ -254,7 +250,7 @@ public class CardPainter
 				tp.setVerticalAlignment(Alignment.CENTER);
 				tp.paint(g);
 				*/
-				TextPainter tp = null;
+				TextPainter tp;
 				if (card.getDisplayName() != null)
 				{
 					tp = new TextPainter(Arrays.asList(card.getDisplayName()), font, new Rectangle(scale(12) - 1, scale(30) - 1 + scale(card.getDisplayOffsetY()), scale(36) + 1, scale(30) + 1), false, false);
