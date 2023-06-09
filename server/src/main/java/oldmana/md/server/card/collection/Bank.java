@@ -1,6 +1,7 @@
 package oldmana.md.server.card.collection;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.common.card.CardAnimationType;
 import oldmana.md.net.packet.server.PacketCardCollectionData;
 import oldmana.md.net.packet.server.PacketCardCollectionData.CardCollectionType;
 import oldmana.md.server.Player;

@@ -5,8 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import oldmana.md.server.command.*;
-import oldmana.md.server.event.CommandExecutedEvent;
-import oldmana.md.server.event.PreCommandExecuteEvent;
+import oldmana.md.server.event.command.CommandExecutedEvent;
+import oldmana.md.server.event.command.PreCommandExecuteEvent;
 
 public class CommandHandler
 {
@@ -98,7 +98,7 @@ public class CommandHandler
 			{
 				cmd.executeCommand(sender, args);
 			}
-			catch (Exception e)
+			catch (Exception | Error e)
 			{
 				System.out.println("Error while executing command: " + fullCmd);
 				e.printStackTrace();

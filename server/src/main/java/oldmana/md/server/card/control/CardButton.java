@@ -1,58 +1,66 @@
 package oldmana.md.server.card.control;
 
-import oldmana.md.net.packet.server.PacketCardButton;
-import oldmana.md.net.packet.server.PacketDestroyCardButton;
+import oldmana.md.common.playerui.CardButtonBounds;
+import oldmana.md.common.playerui.CardButtonType;
 import oldmana.md.common.playerui.ButtonColorScheme;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 
 public class CardButton
 {
-	public static final int TOP = 1;
-	public static final int CENTER = 2;
-	public static final int BOTTOM = 3;
-	
 	private Card card;
+	
+	private int id;
 	
 	private String text;
 	private CardButtonType type = CardButtonType.NORMAL;
-	private int pos;
+	private CardButtonBounds bounds;
 	private ButtonColorScheme color = ButtonColorScheme.NORMAL;
 	
-	private ButtonCondition condition;
+	private CardButtonCondition condition;
 	
 	private CardButtonClickListener listener;
 	
 	private boolean lastEval = false;
 	
-	public CardButton(String text, int pos)
+	public CardButton(String text, CardButtonBounds bounds)
 	{
 		this.text = text;
-		this.pos = pos;
+		this.bounds = bounds;
 	}
 	
-	public CardButton(String text, int pos, CardButtonType type)
+	public CardButton(String text, CardButtonBounds bounds, CardButtonType type)
 	{
 		this.text = text;
-		this.pos = pos;
+		this.bounds = bounds;
 		this.type = type;
 	}
 	
-	public CardButton(String text, int pos, ButtonCondition condition)
+	public CardButton(String text, CardButtonBounds bounds, CardButtonCondition condition)
 	{
-		this(text, pos);
+		this(text, bounds);
 		this.condition = condition;
 	}
 	
-	public CardButton(String text, int pos, ButtonCondition condition, CardButtonClickListener listener)
+	public CardButton(String text, CardButtonBounds bounds, CardButtonCondition condition, CardButtonClickListener listener)
 	{
-		this(text, pos, condition);
+		this(text, bounds, condition);
 		this.listener = listener;
 	}
 	
 	protected void setAssociatedCard(Card card)
 	{
 		this.card = card;
+	}
+	
+	public int getID()
+	{
+		return id;
+	}
+	
+	protected void setID(int id)
+	{
+		this.id = id;
 	}
 	
 	public String getText()
@@ -65,9 +73,14 @@ public class CardButton
 		return type;
 	}
 	
-	public int getPosition()
+	public void setType(CardButtonType type)
 	{
-		return pos;
+		this.type = type;
+	}
+	
+	public CardButtonBounds getBounds()
+	{
+		return bounds;
 	}
 	
 	public ButtonColorScheme getColor()
@@ -85,7 +98,7 @@ public class CardButton
 		return lastEval;
 	}
 	
-	public void setCondition(ButtonCondition condition)
+	public void setCondition(CardButtonCondition condition)
 	{
 		this.condition = condition;
 	}
@@ -133,45 +146,6 @@ public class CardButton
 	public void click(Player player, int data)
 	{
 		listener.onClick(player, card, data);
-	}
-	
-	public void sendPacket()
-	{
-		card.getOwner().sendPacket(new PacketCardButton(card.getID(), text, pos, type.getID(), color.getID()));
-	}
-	
-	public void sendDestroy()
-	{
-		card.getOwner().sendPacket(new PacketDestroyCardButton(card.getID(), pos));
-	}
-	
-	public enum CardButtonType
-	{
-		NORMAL(0), PROPERTY(1), ACTION_COUNTER(2), BUILDING(3);
-		
-		private final int id;
-		
-		CardButtonType(int id)
-		{
-			this.id = id;
-		}
-		
-		public byte getID()
-		{
-			return (byte) id;
-		}
-		
-		public CardButtonType fromID(int id)
-		{
-			for (CardButtonType type : values())
-			{
-				if (type.getID() == id)
-				{
-					return type;
-				}
-			}
-			return null;
-		}
 	}
 	
 	@FunctionalInterface

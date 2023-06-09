@@ -1,63 +1,54 @@
 package oldmana.md.server.card.action;
 
+import oldmana.md.common.playerui.CardButtonType;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.common.card.CardAnimationType;
+import oldmana.md.server.card.CardPlayStage;
+import oldmana.md.server.card.play.argument.PlayerArgument;
+import oldmana.md.server.card.play.PlayArguments;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.control.CardButton;
-import oldmana.md.server.card.control.CardButton.CardButtonType;
 import oldmana.md.server.card.control.CardControls;
 import oldmana.md.server.card.CardType;
-import oldmana.md.server.state.ActionState;
+
+import static oldmana.md.server.card.CardAttributes.*;
 
 public class CardActionJustSayNo extends CardAction
 {
-	public void playCard(Player player, Player target)
-	{
-		ActionState state = getServer().getGameState().getActionState();
-		if (state.getActionOwner() == player && state.isRefused(target))
-		{
-			state.setRefused(target, false);
-			transfer(getServer().getDiscardPile(), -1, CardAnimationType.IMPORTANT);
-		}
-		else if (state.isTarget(player) && !state.isRefused(player))
-		{
-			state.setRefused(player, true);
-			transfer(getServer().getDiscardPile(), -1, CardAnimationType.IMPORTANT);
-		}
-		player.checkEmptyHand();
-	}
-	
 	@Override
-	public boolean canPlayCard(Player player)
-	{
-		return false;
-	}
-	
-	@Override
-	public CardControls createControls()
+	protected CardControls createControls()
 	{
 		CardControls controls = super.createControls();
-		CardButton play = new CardButton("Play", CardButton.TOP, CardButtonType.ACTION_COUNTER);
-		play.setCondition((player, card) -> getServer().getGameState().getActionState().canRefuseAny(player));
+		CardButton play = controls.getButtonByText("Play");
+		play.setType(CardButtonType.ACTION_COUNTER);
 		play.setListener((player, card, data) ->
-		{
-			Player target = getServer().getPlayerByID(data);
-			ActionState state = getServer().getGameState().getActionState();
-			if (state.canRefuse(player, target))
-			{
-				((CardActionJustSayNo) card).playCard(player, target);
-			}
-		});
-		controls.addButton(play);
-		
+				play(PlayArguments.ofPlayer(getServer().getPlayerByID(data))));
 		return controls;
 	}
 	
 	@Override
-	public String toString()
+	public void doPlay(Player player, PlayArguments args)
 	{
-		return "CardActionJustSayNo (" + getValue() + "M)";
+		if (!args.hasArgument(PlayerArgument.class))
+		{
+			System.out.println("Failed to play " + getName() + ", player argument not present.");
+			return;
+		}
+		Player target = args.getArgument(PlayerArgument.class).getPlayer();
+		getServer().getGameState().getActionState().refuse(player, target);
+	}
+	
+	@Override
+	public boolean canPlay(Player player)
+	{
+		return getServer().getGameState().getActionState().canRefuseAny(player);
+	}
+	
+	@Override
+	public boolean canPlayNow()
+	{
+		return getServer().getGameState().getActionState().canRefuseAny(getOwner());
 	}
 	
 	private static CardType<CardActionJustSayNo> createType()
@@ -65,15 +56,18 @@ public class CardActionJustSayNo extends CardAction
 		CardType<CardActionJustSayNo> type = new CardType<CardActionJustSayNo>(CardActionJustSayNo.class,
 				CardActionJustSayNo::new, "Just Say No!", "JSN");
 		CardTemplate template = type.getDefaultTemplate();
-		template.put("value", 4);
-		template.put("name", "Just Say No!");
-		template.putStrings("displayName", "JUST", "SAY NO!");
-		template.put("fontSize", 8);
-		template.put("displayOffsetY", 1);
-		template.putStrings("description", "Use to stop an action played against you. Can be played against another " +
+		template.put(VALUE, 4);
+		template.put(NAME, "Just Say No!");
+		template.putStrings(DISPLAY_NAME, "JUST", "SAY NO!");
+		template.put(FONT_SIZE, 8);
+		template.put(DISPLAY_OFFSET_Y, 1);
+		template.putStrings(DESCRIPTION, "Use to stop an action played against you. Can be played against another " +
 				"Just Say No to cancel it.");
-		template.put("revocable", false);
-		template.put("clearsRevocableCards", false);
+		template.put(UNDOABLE, false);
+		template.put(CLEARS_UNDOABLE_ACTIONS, false);
+		template.put(PLAY_ANIMATION, CardAnimationType.IMPORTANT);
+		template.put(MOVE_COST, 0);
+		template.put(MOVE_STAGE, CardPlayStage.BEFORE_PLAY);
 		type.setDefaultTemplate(template);
 		return type;
 	}

@@ -35,4 +35,10 @@ public enum DrawExtraCardsPolicy
 	{
 		return jsonMap.get(jsonName);
 	}
+	
+	@Override
+	public String toString()
+	{
+		return getJsonName();
+	}
 }

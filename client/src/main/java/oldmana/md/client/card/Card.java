@@ -12,7 +12,6 @@ import java.util.Map;
 
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
-import oldmana.md.client.card.CardButton.CardButtonPosition;
 import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.component.collection.MDHand;
@@ -36,10 +35,7 @@ public class Card
 	private int displayOffsetY;
 	private CardDescription description;
 	
-	private boolean revocable = true;
-	private boolean marksPreviousCardsUnrevocable = false;
-	
-	private Map<CardButtonPosition, CardButton> buttons = new HashMap<CardButtonPosition, CardButton>();
+	private List<CardButton> buttons = new ArrayList<CardButton>();
 	
 	private BufferedImage graphics;
 	private Map<Double, Image> graphicsCache = new HashMap<Double, Image>();
@@ -108,16 +104,6 @@ public class Card
 		this.name = name;
 	}
 	
-	public boolean isRevocable()
-	{
-		return revocable;
-	}
-	
-	public boolean marksPreviousUnrevocable()
-	{
-		return marksPreviousCardsUnrevocable;
-	}
-	
 	public String[] getDisplayName()
 	{
 		return displayName;
@@ -158,26 +144,20 @@ public class Card
 		return description;
 	}
 	
-	public Map<CardButtonPosition, CardButton> getButtons()
+	public List<CardButton> getButtons()
 	{
 		return buttons;
 	}
 	
-	public void setButton(CardButtonPosition pos, CardButton button)
+	public void addButton(CardButton button)
 	{
-		buttons.put(pos, button);
-		((MDHand) getClient().getThePlayer().getHand().getUI()).removeOverlay();
-	}
-	
-	public void removeButton(CardButtonPosition pos)
-	{
-		buttons.remove(pos);
-		((MDHand) getClient().getThePlayer().getHand().getUI()).removeOverlay();
+		buttons.add(button);
 	}
 	
 	public void clearButtons()
 	{
 		buttons.clear();
+		((MDHand) getClient().getThePlayer().getHand().getUI()).removeOverlay();
 	}
 	
 	public Image getGraphics(double scale)

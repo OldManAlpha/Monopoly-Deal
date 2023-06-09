@@ -54,7 +54,7 @@ import oldmana.md.server.card.collection.VoidCollection;
 import oldmana.md.server.card.collection.deck.CustomDeck;
 import oldmana.md.server.card.collection.deck.VanillaDeck;
 import oldmana.md.server.event.EventManager;
-import oldmana.md.server.event.PlayerRemovedEvent;
+import oldmana.md.server.event.player.PlayerRemovedEvent;
 import oldmana.md.server.mod.ServerMod;
 import oldmana.md.server.mod.ModLoader;
 import oldmana.md.server.net.IncomingConnectionsThread;
@@ -551,7 +551,8 @@ public class MDServer
 					}
 					else
 					{
-						System.out.println("Failed to load deck file \"" + name + "\": " + e.getMessage());
+						Throwable err = e.getCause() != null ? e.getCause() : e;
+						System.out.println("Failed to load deck file \"" + name + "\": " + err.getMessage());
 					}
 				}
 			}
@@ -693,7 +694,7 @@ public class MDServer
 		}
 		for (Card card : player.getAllCards())
 		{
-			card.transfer(getDiscardPile(), -1, 2);
+			card.transfer(getDiscardPile(), -1, 0.5);
 		}
 		players.remove(player);
 		gameState.getTurnOrder().removePlayer(player);

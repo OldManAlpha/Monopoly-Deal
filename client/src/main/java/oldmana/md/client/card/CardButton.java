@@ -1,20 +1,29 @@
 package oldmana.md.client.card;
 
 import oldmana.md.common.playerui.ButtonColorScheme;
+import oldmana.md.common.playerui.CardButtonBounds;
+import oldmana.md.common.playerui.CardButtonType;
 
 public class CardButton
 {
+	private int id;
 	private String text;
-	private CardButtonPosition position;
+	private CardButtonBounds bounds;
 	private CardButtonType type;
 	private ButtonColorScheme colors;
 	
-	public CardButton(String text, CardButtonPosition position, CardButtonType type, ButtonColorScheme colors)
+	public CardButton(int id, String text, CardButtonBounds bounds, CardButtonType type, ButtonColorScheme colors)
 	{
+		this.id = id;
 		this.text = text;
-		this.position = position;
+		this.bounds = bounds;
 		this.type = type;
 		this.colors = colors;
+	}
+	
+	public int getID()
+	{
+		return id;
 	}
 	
 	public String getText()
@@ -22,9 +31,9 @@ public class CardButton
 		return text;
 	}
 	
-	public CardButtonPosition getPosition()
+	public CardButtonBounds getBounds()
 	{
-		return position;
+		return bounds;
 	}
 	
 	public CardButtonType getType()
@@ -35,72 +44,5 @@ public class CardButton
 	public ButtonColorScheme getColors()
 	{
 		return colors;
-	}
-	
-	public enum CardButtonType
-	{
-		NORMAL(0), PROPERTY(1), ACTION_COUNTER(2), BUILDING(3);
-		
-		private final int id;
-		
-		CardButtonType(int id)
-		{
-			this.id = id;
-		}
-		
-		public byte getID()
-		{
-			return (byte) id;
-		}
-		
-		public static CardButtonType fromID(int id)
-		{
-			for (CardButtonType type : values())
-			{
-				if (type.getID() == id)
-				{
-					return type;
-				}
-			}
-			return null;
-		}
-	}
-	
-	public enum CardButtonPosition
-	{
-		TOP(1, 0.25),
-		CENTER(2, 0.5),
-		BOTTOM(3, 0.75);
-		
-		private int id;
-		private double loc;
-		
-		CardButtonPosition(int id, double loc)
-		{
-			this.id = id;
-			this.loc = loc;
-		}
-		
-		public int getID()
-		{
-			return id;
-		}
-		
-		public double getLocation()
-		{
-			return loc;
-		}
-		
-		public static CardButtonPosition fromID(int id)
-		{
-			for (CardButtonPosition pos : values())
-			{
-				if (pos.getID() == id)
-				{
-					return pos;
-				}
-			}
-			return null;
-		}
 	}
 }

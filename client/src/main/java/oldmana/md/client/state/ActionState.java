@@ -108,8 +108,7 @@ public class ActionState
 		Player player = getClient().getThePlayer();
 		if (isTarget(player) && !isAccepted(player) && !isRefused(player))
 		{
-			getClient().sendPacket(new PacketActionUseCardButton(card.getID(),
-					button.getPosition().getID(), getActionOwner().getID()));
+			getClient().sendPacket(new PacketActionUseCardButton(card.getID(), button.getID(), getActionOwner().getID()));
 			disableButton();
 			getClient().setAwaitingResponse(true);
 		}
@@ -117,8 +116,7 @@ public class ActionState
 		{
 			if (getNumberOfRefused() == 1)
 			{
-				getClient().sendPacket(new PacketActionUseCardButton(card.getID(),
-						button.getPosition().getID(), getRefused().get(0).getID()));
+				getClient().sendPacket(new PacketActionUseCardButton(card.getID(), button.getID(), getRefused().get(0).getID()));
 				getClient().setAwaitingResponse(true);
 			}
 			else if (getNumberOfRefused() > 1)

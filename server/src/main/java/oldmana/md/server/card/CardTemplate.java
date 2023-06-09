@@ -1,5 +1,6 @@
 package oldmana.md.server.card;
 
+import oldmana.md.common.card.CardAnimationType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -10,19 +11,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static oldmana.md.server.card.CardAttributes.*;
+
 public class CardTemplate implements Cloneable
 {
 	private static final CardTemplate DEFAULT_TEMPLATE = new CardTemplate(true);
 	static
 	{
-		DEFAULT_TEMPLATE.put("value", 1);
-		DEFAULT_TEMPLATE.put("name", "Unknown Card");
-		DEFAULT_TEMPLATE.putStrings("displayName", "NO DISPLAY", "NAME");
-		DEFAULT_TEMPLATE.put("fontSize", 7);
-		DEFAULT_TEMPLATE.put("displayOffsetY", 1);
-		DEFAULT_TEMPLATE.putStrings("description", "Missing Description");
-		DEFAULT_TEMPLATE.put("revocable", true);
-		DEFAULT_TEMPLATE.put("clearRevocableCards", false);
+		DEFAULT_TEMPLATE.put(VALUE, 1);
+		DEFAULT_TEMPLATE.put(NAME, "Unknown Card");
+		DEFAULT_TEMPLATE.putStrings(DISPLAY_NAME, "NO DISPLAY", "NAME");
+		DEFAULT_TEMPLATE.put(FONT_SIZE, 7);
+		DEFAULT_TEMPLATE.put(DISPLAY_OFFSET_Y, 1);
+		DEFAULT_TEMPLATE.putStrings(DESCRIPTION, "Missing Description");
+		DEFAULT_TEMPLATE.put(UNDOABLE, true);
+		DEFAULT_TEMPLATE.put(CLEARS_UNDOABLE_ACTIONS, false);
+		DEFAULT_TEMPLATE.put(PLAY_ANIMATION, CardAnimationType.NORMAL);
+		DEFAULT_TEMPLATE.put(MOVE_COST, 1);
+		DEFAULT_TEMPLATE.put(CONSUME_MOVES_STAGE, CardPlayStage.RIGHT_BEFORE_PLAY);
+		DEFAULT_TEMPLATE.put(MOVE_STAGE, CardPlayStage.BEFORE_PLAY);
+		
 	}
 	
 	private static final Map<String, Integer> sortOrder = new HashMap<String, Integer>();
@@ -30,10 +38,11 @@ public class CardTemplate implements Cloneable
 	{
 		sortOrder.put("type", -10);
 		sortOrder.put("template", -9);
-		sortOrder.put("value", 0);
-		sortOrder.put("name", 1);
-		sortOrder.put("displayName", 2);
-		sortOrder.put("description", 3);
+		sortOrder.put(VALUE, 0);
+		sortOrder.put(NAME, 1);
+		sortOrder.put(DISPLAY_NAME, 2);
+		sortOrder.put(DESCRIPTION, 3);
+		sortOrder.put(PLAY_ANIMATION, 4);
 		sortOrder.put("amount", 100);
 	}
 	
@@ -101,6 +110,12 @@ public class CardTemplate implements Cloneable
 	public CardTemplate put(String key, Object obj)
 	{
 		json.put(key, obj);
+		return this;
+	}
+	
+	public CardTemplate put(String key, Enum<?> e)
+	{
+		json.put(key, e.toString());
 		return this;
 	}
 	
@@ -246,6 +261,11 @@ public class CardTemplate implements Cloneable
 			}
 		}
 		return reduced;
+	}
+	
+	private boolean shouldReduce()
+	{
+		return false;
 	}
 	
 	@Override

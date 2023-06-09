@@ -10,9 +10,11 @@ import java.lang.reflect.Modifier;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.client.MDClient;
@@ -27,8 +29,9 @@ import oldmana.md.client.card.CardAction;
 import oldmana.md.client.card.CardActionRent;
 import oldmana.md.client.card.CardBuilding;
 import oldmana.md.client.card.CardButton;
-import oldmana.md.client.card.CardButton.CardButtonPosition;
-import oldmana.md.client.card.CardButton.CardButtonType;
+import oldmana.md.client.state.client.ActionStateClientSelectCardCombo;
+import oldmana.md.common.playerui.CardButtonBounds;
+import oldmana.md.common.playerui.CardButtonType;
 import oldmana.md.client.card.CardMoney;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.CardProperty.PropertyColor;
@@ -55,6 +58,7 @@ import oldmana.md.client.state.ActionStateTargetProperties.TargetMode;
 import oldmana.md.client.state.primary.ActionStatePlayerTurn;
 import oldmana.md.common.card.CardAnimationType;
 import oldmana.md.common.playerui.ButtonColorScheme;
+import oldmana.md.common.util.DataUtil;
 import oldmana.md.net.NetHandler;
 import oldmana.md.net.packet.client.PacketLogin;
 import oldmana.md.net.packet.client.PacketSoundCache;
@@ -418,23 +422,27 @@ public class NetClientHandler extends NetHandler
 		}
 		else if (type == BasicActionState.TARGET_SELF_PROPERTY)
 		{
+			boolean[] data = DataUtil.convertByteToBooleans((byte) (packet.data & 0xFF));
 			client.getGameState().setActionState(new ActionStateTargetProperties(player, TargetMode.SELF,
-					(packet.data & 1 << 0) != 0, (packet.data & 1 << 1) != 0, (packet.data & 1 << 2) != 0));
+					data[0], data[1], data[2]));
 		}
 		else if (type == BasicActionState.TARGET_PLAYER_PROPERTY)
 		{
+			boolean[] data = DataUtil.convertByteToBooleans((byte) (packet.data & 0xFF));
 			client.getGameState().setActionState(new ActionStateTargetProperties(player, TargetMode.OTHER,
-					(packet.data & 1 << 0) != 0, (packet.data & 1 << 1) != 0, (packet.data & 1 << 2) != 0));
+					data[0], data[1], data[2]));
 		}
 		else if (type == BasicActionState.TARGET_SELF_PLAYER_PROPERTY)
 		{
+			boolean[] data = DataUtil.convertByteToBooleans((byte) (packet.data & 0xFF));
 			client.getGameState().setActionState(new ActionStateTargetProperties(player, TargetMode.SELF_OTHER,
-					(packet.data & 1 << 0) != 0, (packet.data & 1 << 1) != 0, (packet.data & 1 << 2) != 0));
+					data[0], data[1], data[2]));
 		}
 		else if (type == BasicActionState.TARGET_ANY_PROPERTY)
 		{
+			boolean[] data = DataUtil.convertByteToBooleans((byte) (packet.data & 0xFF));
 			client.getGameState().setActionState(new ActionStateTargetProperties(player, TargetMode.ANY,
-					(packet.data & 1 << 0) != 0, (packet.data & 1 << 1) != 0, (packet.data & 1 << 2) != 0));
+					data[0], data[1], data[2]));
 		}
 		else if (type == BasicActionState.TARGET_PLAYER_MONOPOLY)
 		{
@@ -587,20 +595,28 @@ public class NetClientHandler extends NetHandler
 		}
 	}
 	
-	public void handleCardButton(PacketCardButton packet)
+	@Queued
+	public void handleCardButtons(PacketCardButtons packet)
 	{
 		Card card = Card.getCard(packet.cardID);
-		CardButtonPosition pos = CardButtonPosition.fromID(packet.pos);
-		card.setButton(pos, new CardButton(packet.text, pos, CardButtonType.fromID(packet.type),
-				ButtonColorScheme.fromID(packet.color)));
-		queueTask(() -> ((MDHand) client.getThePlayer().getHand().getUI()).removeOverlay());
+		card.clearButtons();
+		int len = packet.text.length;
+		for (int i = 0 ; i < len ; i++)
+		{
+			card.addButton(new CardButton(packet.id[i], packet.text[i], new CardButtonBounds(packet.x[i], packet.y[i],
+					packet.width[i], packet.height[i]), CardButtonType.fromID(packet.type[i]),
+					ButtonColorScheme.fromID(packet.color[i])));
+		}
+		((MDHand) client.getThePlayer().getHand().getUI()).removeOverlay();
 	}
 	
-	public void handleDestroyCardButton(PacketDestroyCardButton packet)
+	@Queued
+	public void handleSelectCombo(PacketSelectCardCombo packet)
 	{
-		Card card = Card.getCard(packet.cardID);
-		card.removeButton(CardButtonPosition.fromID(packet.pos));
-		queueTask(() -> ((MDHand) client.getThePlayer().getHand().getUI()).removeOverlay());
+		List<Card> selected = Arrays.stream(packet.selectedCards).mapToObj(Card::getCard).collect(Collectors.toList());
+		List<Card> selectable = Arrays.stream(packet.availableCards).mapToObj(Card::getCard).collect(Collectors.toList());
+		client.setAwaitingResponse(false);
+		client.getGameState().setClientActionState(new ActionStateClientSelectCardCombo(selected, selectable));
 	}
 	
 	@Queued
@@ -624,6 +640,12 @@ public class NetClientHandler extends NetHandler
 	public void handleRemoveMessageCategory(PacketRemoveMessageCategory packet)
 	{
 		client.getTableScreen().getChat().removeMessageCategory(packet.category);
+	}
+	
+	@Queued
+	public void handleSetAwaitingResponse(PacketSetAwaitingResponse packet)
+	{
+		client.setAwaitingResponse(packet.awaiting);
 	}
 	
 	/**

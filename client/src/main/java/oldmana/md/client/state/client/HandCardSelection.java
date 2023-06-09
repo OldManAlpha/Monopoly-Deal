@@ -26,7 +26,10 @@ public class HandCardSelection
 			MDHand hand = getHand();
 			Point propLoc = hand.getLocationOf(card);
 			select.setLocation(propLoc);
-			cancel.setLocation((int) (select.getWidth() * 0.1) + select.getX(), (int) (select.getHeight() * 0.4) + select.getY());
+			if (cancel != null)
+			{
+				cancel.setLocation((int) (select.getWidth() * 0.1) + select.getX(), (int) (select.getHeight() * 0.4) + select.getY());
+			}
 		}
 	};
 	
@@ -45,11 +48,14 @@ public class HandCardSelection
 		hand.add(select);
 		hand.addComponentListener(handResizeListener);
 		
-		cancel = new MDButton("Cancel");
-		cancel.setSize((int) (select.getWidth() * 0.8), (int) (select.getHeight() * 0.2));
-		cancel.setLocation((int) (select.getWidth() * 0.1) + select.getX(), (int) (select.getHeight() * 0.4) + select.getY());
-		cancel.setListener(cancelListener);
-		hand.add(cancel);
+		if (cancelListener != null)
+		{
+			cancel = new MDButton("Cancel");
+			cancel.setSize((int) (select.getWidth() * 0.8), (int) (select.getHeight() * 0.2));
+			cancel.setLocation((int) (select.getWidth() * 0.1) + select.getX(), (int) (select.getHeight() * 0.4) + select.getY());
+			cancel.setListener(cancelListener);
+			hand.add(cancel);
+		}
 	}
 	
 	public void destroy()
@@ -57,7 +63,10 @@ public class HandCardSelection
 		MDHand hand = getHand();
 		hand.removeComponentListener(handResizeListener);
 		hand.remove(select);
-		hand.remove(cancel);
+		if (cancel != null)
+		{
+			hand.remove(cancel);
+		}
 	}
 	
 	private MDHand getHand()

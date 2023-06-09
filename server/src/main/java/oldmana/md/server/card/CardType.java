@@ -478,4 +478,9 @@ public class CardType<T extends Card>
 			return aliases;
 		}
 	}
+	
+	public static <T extends Card> CardType<T> getByClass(Class<T> clazz)
+	{
+		return CardRegistry.getTypeByClass(clazz);
+	}
 }

@@ -12,7 +12,7 @@ import oldmana.md.net.packet.server.PacketCardCollectionData.CardCollectionType;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.collection.deck.DeckStack;
-import oldmana.md.server.event.DeckReshuffledEvent;
+import oldmana.md.server.event.card.DeckReshuffledEvent;
 
 public class Deck extends CardCollection
 {

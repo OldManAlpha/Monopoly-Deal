@@ -51,4 +51,10 @@ public enum DiscardOrderPolicy
 	{
 		return jsonMap.get(jsonName);
 	}
+	
+	@Override
+	public String toString()
+	{
+		return getJsonName();
+	}
 }

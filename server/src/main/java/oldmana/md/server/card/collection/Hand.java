@@ -46,11 +46,11 @@ public class Hand extends CardCollection
 		}
 	}
 	
-	public void resendCardButtons()
+	public void sendCardButtons()
 	{
 		for (Card card : this)
 		{
-			card.getControls().resendButtons();
+			card.getControls().sendButtons();
 		}
 	}
 	
@@ -59,6 +59,18 @@ public class Hand extends CardCollection
 	{
 		super.transferCard(card, to, index, time, anim, flash);
 		card.getControls().resetButtons();
+	}
+	
+	@Override
+	public Packet getCardTransferPacket(Player viewer, Card card, CardCollection to, double time,
+	                                    CardAnimationType anim, boolean flash)
+	{
+		// Prevent cards moving inside the hand being shown to external players
+		if (this == to && viewer != getOwner() && anim == CardAnimationType.NORMAL)
+		{
+			return null;
+		}
+		return super.getCardTransferPacket(viewer, card, to, time, anim, flash);
 	}
 	
 	@Override

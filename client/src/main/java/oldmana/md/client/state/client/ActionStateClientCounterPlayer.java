@@ -104,8 +104,7 @@ public class ActionStateClientCounterPlayer extends ActionStateClient
 				button.setEnabled(true);
 				button.setListener(() ->
 				{
-					getClient().sendPacket(new PacketActionUseCardButton(card.getID(),
-							cardButton.getPosition().getID(), selectedPlayer.getID()));
+					getClient().sendPacket(new PacketActionUseCardButton(card.getID(), cardButton.getID(), selectedPlayer.getID()));
 					cleanup();
 					getClient().setAwaitingResponse(true);
 					button.setEnabled(false);

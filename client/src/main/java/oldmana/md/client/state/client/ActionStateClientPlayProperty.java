@@ -39,7 +39,7 @@ public class ActionStateClientPlayProperty extends ActionStateClient
 				MDPropertySet setUI = (MDPropertySet) set.getUI();
 				setUI.enableSelection(() ->
 				{
-					getClient().sendPacket(new PacketActionUseCardButton(property.getID(), button.getPosition().getID(), set.getID()));
+					getClient().sendPacket(new PacketActionUseCardButton(property.getID(), button.getID(), set.getID()));
 					getClient().setAwaitingResponse(true);
 					
 					removeState();
@@ -56,7 +56,7 @@ public class ActionStateClientPlayProperty extends ActionStateClient
 		setsUI.add(createSet);
 		createSet.addClickListener(() ->
 		{
-			getClient().sendPacket(new PacketActionUseCardButton(property.getID(), button.getPosition().getID(), -1));
+			getClient().sendPacket(new PacketActionUseCardButton(property.getID(), button.getID(), -1));
 			getClient().setAwaitingResponse(true);
 			
 			removeState();

@@ -3,8 +3,8 @@ package oldmana.md.server.rules;
 import oldmana.md.net.packet.server.PacketGameRules;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.MDServer;
-import oldmana.md.server.event.GameRulesApplyEvent;
-import oldmana.md.server.event.GameRulesReloadedEvent;
+import oldmana.md.server.event.rule.GameRulesApplyEvent;
+import oldmana.md.server.event.rule.GameRulesReloadedEvent;
 import oldmana.md.server.rules.struct.*;
 import oldmana.md.server.rules.struct.RuleStructKey.RuleKeyBuilder;
 import oldmana.md.server.rules.struct.RuleStructObject.RuleObjectBuilder;
@@ -23,7 +23,9 @@ public class GameRules
 	private int movesPerTurn = 3;
 	private boolean twoColorRentChargesAll = true;
 	private boolean multiColorRentChargesAll = true;
+	private boolean allowMultipleRentModifiers = false;
 	private boolean dealBreakersDiscardSets = false;
+	private DoubleRentPolicy doubleRentPolicy = DoubleRentPolicy.MULTIPLY;
 	private boolean allowUndo = true;
 	private int maxCardsInHand = 7;
 	private int cardsDealt = 5;
@@ -82,6 +84,33 @@ public class GameRules
 						.name("Multi-Color Rent Charges All Players")
 						.description("If enabled, multi-color rent cards will charge all other players instead of just one.")
 						.defaultValue(true)
+						.register();
+				
+				RuleKeyBuilder.from(rent)
+						.jsonName("allowMultipleModifiers")
+						.name("Allow Multiple Rent Modifiers")
+						.description("If enabled, players can play more than just one rent modifier, " +
+								"such as Double The Rent, on a single Rent card.")
+						.defaultValue(false)
+						.register();
+			}
+			
+			RuleStruct doubleRent = RuleObjectBuilder.from(cardRules)
+					.jsonName("doubleTheRent")
+					.name("Double The Rent!")
+					.description("Double The Rent Rules")
+					.register();
+			{
+				RuleOptionBuilder.from(doubleRent)
+						.jsonName("doubleRule")
+						.name("Rent Doubling Rule")
+						.description("In what way to increase rent. This rule has no effect when multiple aren't allowed.")
+						.addChoice("Add", "Add", "Rent will be added by itself for each Double The Rent card played.", " ",
+								"Example: 8M charge with 2 Double Rent = 8+8+8 = 24M")
+						.addChoice("Multiply", "Multiply", "Rent will be multiplied by 2x repeatedly for the number of " +
+										"Double The Rent cards played.", " ",
+								"Example: 8M charge with 2 Double Rent = 8x2x2 = 32M")
+						.defaultChoice("Multiply")
 						.register();
 			}
 		}
@@ -266,9 +295,19 @@ public class GameRules
 		return multiColorRentChargesAll;
 	}
 	
+	public boolean isMultipleRentModifiersAllowed()
+	{
+		return allowMultipleRentModifiers;
+	}
+	
 	public boolean doDealBreakersDiscardSets()
 	{
 		return dealBreakersDiscardSets;
+	}
+	
+	public DoubleRentPolicy getDoubleRentPolicy()
+	{
+		return doubleRentPolicy;
 	}
 	
 	public boolean isUndoAllowed()
@@ -383,7 +422,9 @@ public class GameRules
 		movesPerTurn = getRule("movesPerTurn").getInteger();
 		twoColorRentChargesAll = cardRules.getSubrule("rent").getSubrule("twoColorRentChargesAll").getBoolean();
 		multiColorRentChargesAll = cardRules.getSubrule("rent").getSubrule("multiColorRentChargesAll").getBoolean();
+		allowMultipleRentModifiers = cardRules.getSubrule("rent").getSubrule("allowMultipleModifiers").getBoolean();
 		dealBreakersDiscardSets = cardRules.getSubrule("dealBreaker").getSubrule("dealBreakersDiscardSets").getBoolean();
+		doubleRentPolicy = DoubleRentPolicy.fromJson(cardRules.getSubrule("doubleTheRent").getSubrule("doubleRule").getString());
 		allowUndo = getRule("allowUndo").getBoolean();
 		maxCardsInHand = getRule("maxCardsInHand").getInteger();
 		cardsDealt = getRule("cardsDealt").getInteger();

@@ -1,18 +1,21 @@
 package oldmana.md.server.card.control;
 
-import oldmana.md.net.packet.server.PacketDestroyCardButton;
+import oldmana.md.common.playerui.CardButtonBounds;
+import oldmana.md.net.packet.server.PacketCardButtons;
 import oldmana.md.server.card.Card;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 public class CardControls
 {
 	private Card card;
 	
-	private List<CardButton> buttons = new ArrayList<CardButton>();
+	private Map<Integer, CardButton> buttons = new HashMap<Integer, CardButton>();
+	private List<CardButton> enabled = new ArrayList<CardButton>();
+	private int nextID;
 	
 	public CardControls(Card card)
 	{
@@ -33,22 +36,21 @@ public class CardControls
 		return card;
 	}
 	
-	public List<CardButton> getButtons()
+	public Map<Integer, CardButton> getButtons()
 	{
 		return buttons;
 	}
 	
-	public void addButton(CardButton button)
+	public CardButton getButton(int id)
 	{
-		button.setAssociatedCard(card);
-		buttons.add(button);
+		return buttons.get(id);
 	}
 	
-	public CardButton getEnabledButton(int slot)
+	public CardButton getButtonByText(String text)
 	{
-		for (CardButton button : buttons)
+		for (CardButton button : buttons.values())
 		{
-			if (button.getPosition() == slot && button.isEnabled())
+			if (button.getText().equals(text))
 			{
 				return button;
 			}
@@ -56,25 +58,60 @@ public class CardControls
 		return null;
 	}
 	
-	/**
-	 * This will return a List with 3 elements. If there is no button enabled corresponding to the index, there will
-	 * be a null element.
-	 * @return The List of buttons
-	 */
-	public List<CardButton> getEnabledButtons()
+	public void addButton(CardButton button)
 	{
-		List<CardButton> enabled = new ArrayList<CardButton>();
-		for (int i = 0 ; i < 3 ; i++)
-		{
-			enabled.add(null);
-		}
+		button.setAssociatedCard(card);
+		button.setID(nextID++);
+		buttons.put(button.getID(), button);
+	}
+	
+	public void addButtons(CardButton... buttons)
+	{
 		for (CardButton button : buttons)
 		{
-			if (button.isEnabled())
-			{
-				enabled.set(button.getPosition() - 1, button);
-			}
+			addButton(button);
 		}
+	}
+	
+	public void removeButton(CardButton button)
+	{
+		buttons.remove(button.getID());
+		compressIDs();
+		forceUpdateButtons();
+	}
+	
+	public void replaceButtonByText(String text, CardButton newButton)
+	{
+		removeButton(getButtonByText(text));
+		addButton(newButton);
+	}
+	
+	private void compressIDs()
+	{
+		List<CardButton> buttonList = new ArrayList<CardButton>(buttons.values());
+		buttons.clear();
+		for (int i = 0 ; i < buttonList.size() ; i++)
+		{
+			CardButton button = buttonList.get(i);
+			button.setID(i);
+			buttons.put(i, button);
+		}
+		nextID = buttonList.size();
+	}
+	
+	/**
+	 * Removes all buttons from the controls
+	 */
+	public void clearButtons()
+	{
+		buttons.clear();
+		enabled.clear();
+		nextID = 0;
+		sendButtons();
+	}
+	
+	public List<CardButton> getEnabledButtons()
+	{
 		return enabled;
 	}
 	
@@ -83,56 +120,75 @@ public class CardControls
 	 */
 	public void updateButtons()
 	{
-		Set<Integer> updatedSlots = new HashSet<Integer>();
-		for (CardButton button : buttons)
+		enabled.clear();
+		boolean changed = false;
+		for (CardButton button : buttons.values())
 		{
 			if (button.update())
 			{
-				if (button.isEnabled())
-				{
-					updatedSlots.add(button.getPosition());
-				}
-				else
-				{
-					button.sendDestroy();
-				}
+				changed = true;
+			}
+			if (button.isEnabled())
+			{
+				enabled.add(button);
 			}
 		}
-		for (int slot : updatedSlots)
+		if (changed)
 		{
-			CardButton button = getEnabledButton(slot);
-			if (button != null)
-			{
-				getEnabledButton(slot).sendPacket();
-			}
+			sendButtons();
 		}
 	}
 	
+	private void forceUpdateButtons()
+	{
+		enabled.clear();
+		for (CardButton button : buttons.values())
+		{
+			button.update();
+			if (button.isEnabled())
+			{
+				enabled.add(button);
+			}
+		}
+		sendButtons();
+	}
+	
 	/**
-	 * Resets the current evaluations on the buttons
+	 * Resets the current evaluations on the buttons.
 	 */
 	public void resetButtons()
 	{
-		for (CardButton button : buttons)
+		for (CardButton button : buttons.values())
 		{
 			button.reset();
 		}
 	}
 	
-	public void resendButtons()
+	public void sendButtons()
 	{
 		List<CardButton> buttons = getEnabledButtons();
+		
+		String[] text = new String[buttons.size()];
+		byte[] id = new byte[buttons.size()];
+		byte[] type = new byte[buttons.size()];
+		byte[] color = new byte[buttons.size()];
+		short[] x = new short[buttons.size()];
+		short[] y = new short[buttons.size()];
+		short[] width = new short[buttons.size()];
+		short[] height = new short[buttons.size()];
 		for (int i = 0 ; i < buttons.size() ; i++)
 		{
 			CardButton button = buttons.get(i);
-			if (button != null)
-			{
-				button.sendPacket();
-			}
-			else
-			{
-				card.getOwner().sendPacket(new PacketDestroyCardButton(card.getID(), i + 1));
-			}
+			CardButtonBounds bounds = button.getBounds();
+			text[i] = button.getText();
+			id[i] = (byte) button.getID();
+			type[i] = button.getType().getID();
+			color[i] = (byte) button.getColor().getID();
+			x[i] = bounds.getEncodedX();
+			y[i] = bounds.getEncodedY();
+			width[i] = bounds.getEncodedWidth();
+			height[i] = bounds.getEncodedHeight();
 		}
+		card.getOwner().sendPacket(new PacketCardButtons(card.getID(), text, id, type, color, x, y, width, height));
 	}
 }

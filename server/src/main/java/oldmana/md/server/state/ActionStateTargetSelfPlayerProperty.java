@@ -1,6 +1,7 @@
 package oldmana.md.server.state;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.common.util.DataUtil;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
 import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
 import oldmana.md.server.Player;
@@ -28,19 +29,7 @@ public abstract class ActionStateTargetSelfPlayerProperty extends ActionState
 	@Override
 	public Packet constructPacket()
 	{
-		int data = 0;
-		if (canTargetSelfMonopoly)
-		{
-			data |= 1 << 0;
-		}
-		if (canTargetOtherMonopoly)
-		{
-			data |= 1 << 1;
-		}
-		if (canTargetNonBase)
-		{
-			data |= 1 << 2;
-		}
-		return new PacketActionStateBasic(getActionOwner().getID(), BasicActionState.TARGET_SELF_PLAYER_PROPERTY, data);
+		return new PacketActionStateBasic(getActionOwner().getID(), BasicActionState.TARGET_SELF_PLAYER_PROPERTY,
+				DataUtil.convertBooleansToByte(canTargetSelfMonopoly, canTargetOtherMonopoly, canTargetNonBase));
 	}
 }

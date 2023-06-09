@@ -1,16 +1,24 @@
 package oldmana.md.server.card;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.common.playerui.CardButtonType;
 import oldmana.md.net.packet.server.PacketCardBuildingData;
+import oldmana.md.server.Player;
+import oldmana.md.server.card.play.argument.PropertySetArgument;
+import oldmana.md.server.card.play.PlayArguments;
 import oldmana.md.server.card.collection.PropertySet;
 import oldmana.md.server.card.control.CardButton;
-import oldmana.md.server.card.control.CardButton.CardButtonType;
 import oldmana.md.server.card.control.CardControls;
 
 import java.util.List;
 
+import static oldmana.md.server.card.CardAttributes.*;
+
 public class CardBuilding extends Card
 {
+	public static final String TIER = "tier";
+	public static final String RENT_ADDITION = "rentAddition";
+	
 	private int tier;
 	private int rentAddition;
 	
@@ -18,40 +26,49 @@ public class CardBuilding extends Card
 	public void applyTemplate(CardTemplate template)
 	{
 		super.applyTemplate(template);
-		tier = template.getInt("tier");
-		rentAddition = template.getInt("rentAddition");
+		tier = template.getInt(TIER);
+		rentAddition = template.getInt(RENT_ADDITION);
 	}
+	
+	@Override
+	public void doPlay(Player player, PlayArguments args)
+	{
+		PropertySet set = args.getArgument(PropertySetArgument.class).getTargetSet();
+		transfer(set, getPlayAnimation());
+	}
+	
+	@Override
+	protected void playStageMoveCard(Player player, PlayArguments args) {}
 	
 	@Override
 	public CardControls createControls()
 	{
-		CardControls actions = super.createControls();
+		CardControls controls = super.createControls();
 		
-		CardButton play = new CardButton("Play", CardButton.TOP, CardButtonType.BUILDING);
-		play.setCondition((player, card) ->
+		CardButton play = controls.getButtonByText("Play");
+		play.setType(CardButtonType.BUILDING);
+		
+		return controls;
+	}
+	
+	@Override
+	public boolean canPlay(Player player)
+	{
+		List<PropertySet> sets = player.getPropertySets();
+		for (PropertySet set : sets)
 		{
-			if (player.canPlayCards())
+			if (set.canBuild() && set.getHighestBuildingTier() == tier - 1)
 			{
-				List<PropertySet> sets = player.getPropertySets();
-				for (PropertySet set : sets)
-				{
-					if (set.canBuild() && set.getHighestBuildingTier() == tier - 1)
-					{
-						return true;
-					}
-				}
+				return true;
 			}
-			return false;
-		});
-		play.setListener((player, card, data) -> player.playCardAction((CardAction) card));
-		actions.addButton(play);
-		
-		CardButton bank = new CardButton("Bank", CardButton.BOTTOM);
-		bank.setCondition((player, card) -> getServer().getGameRules().canBankActionCards() && player.canPlayCards());
-		bank.setListener((player, card, data) -> player.playCardBank(card));
-		actions.addButton(bank);
-		
-		return actions;
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean canBank(Player player)
+	{
+		return getServer().getGameRules().canBankActionCards();
 	}
 	
 	public int getTier()
@@ -67,26 +84,28 @@ public class CardBuilding extends Card
 	@Override
 	public Packet getCardDataPacket()
 	{
-		return new PacketCardBuildingData(getID(), getName(), getValue(), tier, rentAddition, isRevocable(), clearsRevocableCards(), getDisplayName(), 
-				(byte) getFontSize(), (byte) getDisplayOffsetY(), getDescription().getID());
+		return new PacketCardBuildingData(getID(), getName(), getValue(), tier, rentAddition, isUndoable(),
+				shouldClearUndoableCards(), getDisplayName(), (byte) getFontSize(), (byte) getDisplayOffsetY(),
+				getDescription().getID());
 	}
 	
 	private static CardType<CardBuilding> createType()
 	{
 		CardType<CardBuilding> type = new CardType<CardBuilding>(CardBuilding.class,
 				CardBuilding::new, "Generic Building");
-		type.addExemptReduction("tier", false);
-		type.addExemptReduction("rentAddition", false);
+		type.addExemptReduction(TIER, false);
+		type.addExemptReduction(RENT_ADDITION, false);
 		CardTemplate template = type.getDefaultTemplate();
-		template.put("value", 1);
-		template.put("name", "Generic Building");
-		template.putStrings("displayName", "GENERIC", "BUILDING");
-		template.put("fontSize", 8);
-		template.put("displayOffsetY", 2);
-		template.put("revocable", true);
-		template.put("clearsRevocableCards", false);
-		template.put("tier", 1);
-		template.put("rentAddition", 1);
+		template.put(VALUE, 1);
+		template.put(NAME, "Generic Building");
+		template.putStrings(DISPLAY_NAME, "GENERIC", "BUILDING");
+		template.put(FONT_SIZE, 8);
+		template.put(DISPLAY_OFFSET_Y, 2);
+		template.put(UNDOABLE, true);
+		template.put(CLEARS_UNDOABLE_ACTIONS, false);
+		template.put(CONSUME_MOVES_STAGE, CardPlayStage.AFTER_PLAY);
+		template.put(TIER, 1);
+		template.put(RENT_ADDITION, 1);
 		type.setDefaultTemplate(template);
 		return type;
 	}

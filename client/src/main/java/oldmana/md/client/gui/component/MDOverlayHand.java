@@ -4,15 +4,15 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.util.Map;
+import java.util.List;
 
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardBuilding;
 import oldmana.md.client.card.CardButton;
-import oldmana.md.client.card.CardButton.CardButtonPosition;
-import oldmana.md.client.card.CardButton.CardButtonType;
+import oldmana.md.common.playerui.CardButtonBounds;
+import oldmana.md.common.playerui.CardButtonType;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.gui.component.collection.MDHand;
 import oldmana.md.client.gui.util.GraphicsUtils;
@@ -44,19 +44,20 @@ public class MDOverlayHand extends MDComponent
 			return;
 		}
 		
-		Map<CardButtonPosition, CardButton> buttons = card.getButtons();
+		List<CardButton> buttons = card.getButtons();
 		
-		buttons.forEach((pos, button) ->
+		for (CardButton button : buttons)
 		{
+			CardButtonBounds bounds = button.getBounds();
 			MDButton uiButton = new MDButton(button.getText());
 			uiButton.setColor(button.getColors());
-			uiButton.setSize((int) (getWidth() * 0.8), (int) (getHeight() * 0.2));
-			uiButton.setLocationCentered((int) (getWidth() * 0.5), (int) (getHeight() * pos.getLocation()));
+			uiButton.setSize((int) Math.round(getWidth() * bounds.getWidth()), (int) Math.round(getHeight() * bounds.getHeight()));
+			uiButton.setLocation((int) Math.round(getWidth() * bounds.getX()), (int) Math.round(getHeight() * bounds.getY()));
 			uiButton.addClickListener(() ->
 			{
 				if (button.getType() == CardButtonType.NORMAL)
 				{
-					getClient().sendPacket(new PacketActionUseCardButton(card.getID(), pos.getID(), 0));
+					getClient().sendPacket(new PacketActionUseCardButton(card.getID(), button.getID(), 0));
 					client.setAwaitingResponse(true);
 				}
 				else if (button.getType() == CardButtonType.PROPERTY)
@@ -64,8 +65,7 @@ public class MDOverlayHand extends MDComponent
 					CardProperty prop = (CardProperty) card;
 					if (prop.isSingleColor() || !player.hasCompatiblePropertySetWithRoom(prop))
 					{
-						client.sendPacket(new PacketActionUseCardButton(prop.getID(), button.getPosition().getID(), -1));
-						//client.sendPacket(new PacketActionPlayCardProperty(prop.getID(), -1));
+						client.sendPacket(new PacketActionUseCardButton(prop.getID(), button.getID(), -1));
 						client.setAwaitingResponse(true);
 					}
 					else
@@ -90,7 +90,7 @@ public class MDOverlayHand extends MDComponent
 			});
 			add(uiButton);
 			hasButtons = true;
-		});
+		}
 	}
 	
 	public Card getCard()

@@ -20,10 +20,10 @@ import oldmana.md.server.Scheduler.MDTask;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
-import oldmana.md.common.card.CardAnimationType;
 import oldmana.md.server.card.CardBuilding;
 import oldmana.md.server.card.CardMoney;
 import oldmana.md.server.card.CardProperty;
+import oldmana.md.server.card.play.PlayArguments;
 import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.action.CardActionCharge.ActionStateTargetCharge;
 import oldmana.md.server.card.action.CardActionDealBreaker.ActionStateTargetDealBreaker;
@@ -265,8 +265,9 @@ public class BasicAI extends PlayerAI
 		
 		if (hasCard(player.getHand().getCards(), CardType.JUST_SAY_NO))
 		{
+			Player target = state.getActionOwner() == player ? state.getRefused().get(0) : state.getActionOwner();
 			CardActionJustSayNo jsn = getCard(player.getHand().getCards(), CardType.JUST_SAY_NO);
-			jsn.playCard(player, state.getActionOwner() == player ? state.getRefused().get(0) : state.getActionOwner());
+			jsn.play(PlayArguments.ofPlayer(target));
 			return true;
 		}
 		return false;
@@ -627,7 +628,7 @@ public class BasicAI extends PlayerAI
 		});
 		registerDesire(CardType.RENT, card ->
 		{
-			if (!card.canPlayCard(player))
+			if (!card.canPlay(player))
 			{
 				return -1;
 			}
@@ -637,7 +638,7 @@ public class BasicAI extends PlayerAI
 		});
 		registerDesire(CardType.SLY_DEAL, card ->
 		{
-			if (!card.canPlayCard(player))
+			if (!card.canPlay(player))
 			{
 				return -1;
 			}
@@ -647,7 +648,7 @@ public class BasicAI extends PlayerAI
 		});
 		registerDesire(CardType.FORCED_DEAL, card ->
 		{
-			if (!card.canPlayCard(player))
+			if (!card.canPlay(player))
 			{
 				return -1;
 			}
@@ -661,7 +662,7 @@ public class BasicAI extends PlayerAI
 		});
 		registerDesire(CardType.DEAL_BREAKER, card ->
 		{
-			return card.canPlayCard(player) ? 60 : -1;
+			return card.canPlay(player) ? 60 : -1;
 		});
 		
 		bankDesire = card ->
@@ -756,7 +757,7 @@ public class BasicAI extends PlayerAI
 					{
 						if (toBank)
 						{
-							player.playCardBank(chosenCard);
+							chosenCard.play(PlayArguments.BANK);
 						}
 						else
 						{
@@ -769,20 +770,17 @@ public class BasicAI extends PlayerAI
 									{
 										if (hasCard(player.getHand().getCards(), CardType.DOUBLE_THE_RENT))
 										{
-											chosenCard.transfer(getServer().getDiscardPile());
-											getCard(player.getHand().getCards(), CardType.DOUBLE_THE_RENT)
-													.transfer(getServer().getDiscardPile(), -1, CardAnimationType.IMPORTANT);
-											getServer().getGameState().decrementMoves(2);
-											((CardActionRent) chosenCard).playCard(player, 2);
+											Card doubleRent = getCard(player.getHand().getCards(), CardType.DOUBLE_THE_RENT);
+											chosenCard.play(PlayArguments.ofCard(doubleRent));
 											return;
 										}
 									}
 								}
-								player.playCardAction((CardAction) chosenCard);
+								chosenCard.play();
 							}
 							else
 							{
-								player.playCardProperty((CardProperty) chosenCard, -1);
+								chosenCard.play(PlayArguments.ofPropertySet(null));
 							}
 						}
 						return;
@@ -800,7 +798,8 @@ public class BasicAI extends PlayerAI
 				List<Card> preferred = nonProps.stream()
 						.filter(card -> !(card instanceof CardAction) || card instanceof CardActionPassGo)
 						.collect(Collectors.toList());
-				player.discard(preferred.isEmpty() ? (nonProps.isEmpty() ? getRandomCard(hand) : nonProps.get(0)) : preferred.get(0));
+				Card choice = preferred.isEmpty() ? (nonProps.isEmpty() ? getRandomCard(hand) : nonProps.get(0)) : preferred.get(0);
+				choice.play(PlayArguments.DISCARD);
 			}
 		});
 		
@@ -889,7 +888,7 @@ public class BasicAI extends PlayerAI
 		
 		registerOtherStateHandler(ActionStateRent.class, state ->
 		{
-			if (state.getTargetPlayers().contains(player) && !state.isRefused(player) && !state.isAccepted(player))
+			if (state.isTarget(player) && !state.isRefused(player) && !state.isAccepted(player))
 			{
 				int rent = state.getPlayerRent(player);
 				int bankValue = player.getBank().getTotalValue();

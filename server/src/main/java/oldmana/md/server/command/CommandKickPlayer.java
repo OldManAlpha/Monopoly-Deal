@@ -26,7 +26,7 @@ public class CommandKickPlayer extends Command
 		GameState gs = getServer().getGameState();
 		if (gs.getActivePlayer() == player)
 		{
-			gs.nextTurn();
+			gs.nextTurn(true);
 		}
 		String reason = "Kicked by operator";
 		if (args.length > 1)

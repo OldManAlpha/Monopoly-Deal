@@ -6,25 +6,28 @@ import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActi
 import oldmana.md.net.packet.server.actionstate.PacketActionStatePropertiesSelected;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.Player;
-import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
+import oldmana.md.server.card.play.PlayArguments;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.CardTemplate;
+import oldmana.md.server.history.UndoableAction;
 import oldmana.md.server.card.collection.PropertySet;
 import oldmana.md.server.card.CardType;
 import oldmana.md.server.state.ActionState;
 import oldmana.md.server.state.ActionStateTargetPlayerProperty;
 
+import static oldmana.md.server.card.CardAttributes.*;
+
 public class CardActionSlyDeal extends CardAction
 {
 	@Override
-	public void playCard(Player player)
+	public void doPlay(Player player, PlayArguments args)
 	{
 		getServer().getGameState().addActionState(new ActionStateTargetSlyDeal(player));
 	}
 	
 	@Override
-	public boolean canPlayCard(Player player)
+	public boolean canPlay(Player player)
 	{
 		for (Player other : getServer().getPlayersExcluding(player))
 		{
@@ -44,15 +47,15 @@ public class CardActionSlyDeal extends CardAction
 		CardType<CardActionSlyDeal> type = new CardType<CardActionSlyDeal>(CardActionSlyDeal.class,
 				CardActionSlyDeal::new, "Sly Deal");
 		CardTemplate template = type.getDefaultTemplate();
-		template.put("value", 3);
-		template.put("name", "Sly Deal");
-		template.putStrings("displayName", "SLY", "DEAL");
-		template.put("fontSize", 9);
-		template.put("displayOffsetY", 2);
-		template.putStrings("description", "Steal a property from another player that is not part of a full set. " +
+		template.put(VALUE, 3);
+		template.put(NAME, "Sly Deal");
+		template.putStrings(DISPLAY_NAME, "SLY", "DEAL");
+		template.put(FONT_SIZE, 9);
+		template.put(DISPLAY_OFFSET_Y, 2);
+		template.putStrings(DESCRIPTION, "Steal a property from another player that is not part of a full set. " +
 				"10-Color property wild cards cannot be stolen with this card.");
-		template.put("revocable", true);
-		template.put("clearsRevocableCards", false);
+		template.put(UNDOABLE, true);
+		template.put(CLEARS_UNDOABLE_ACTIONS, false);
 		type.setDefaultTemplate(template);
 		return type;
 	}
@@ -74,14 +77,14 @@ public class CardActionSlyDeal extends CardAction
 				getActionOwner().resendActionState();
 				return;
 			}
-			getActionOwner().clearRevocableCards();
+			getActionOwner().clearUndoableActions();
 			replaceState(new ActionStateStealProperty(getActionOwner(), card));
 		}
 		
 		@Override
-		public void onCardUndo(Card card)
+		public void onUndo(UndoableAction action)
 		{
-			if (card == CardActionSlyDeal.this)
+			if (action.hasCard(CardActionSlyDeal.this))
 			{
 				removeState();
 			}

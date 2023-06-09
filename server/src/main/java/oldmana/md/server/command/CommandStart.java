@@ -24,6 +24,11 @@ public class CommandStart extends Command
 			sender.sendMessage(ChatColor.PREFIX_ALERT + "The game is already running! Use /reset to end the game first.");
 			return;
 		}
+		if (getServer().getPlayerCount() == 0)
+		{
+			sender.sendMessage("Cannot start the game with zero players!");
+			return;
+		}
 		sender.sendMessage("Starting game", true);
 		getServer().getGameState().startGame();
 	}

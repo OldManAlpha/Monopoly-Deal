@@ -3,6 +3,7 @@ package oldmana.md.server;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,14 +18,16 @@ import oldmana.md.net.packet.server.PacketHandshake;
 import oldmana.md.net.packet.server.PacketKick;
 import oldmana.md.net.packet.server.PacketPlaySound;
 import oldmana.md.net.packet.server.PacketPlayerInfo;
+import oldmana.md.net.packet.server.PacketSelectCardCombo;
+import oldmana.md.net.packet.server.PacketSetAwaitingResponse;
 import oldmana.md.net.packet.server.PacketUpdatePlayer;
 import oldmana.md.net.packet.server.PacketRefresh;
 import oldmana.md.net.packet.server.PacketStatus;
 import oldmana.md.net.packet.server.PacketUndoCardStatus;
 import oldmana.md.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
 import oldmana.md.net.packet.universal.PacketChat;
-import oldmana.md.server.card.CardBuilding;
-import oldmana.md.server.event.UndoCardEvent;
+import oldmana.md.server.history.UndoableAction;
+import oldmana.md.server.event.player.PlayerUndoActionEvent;
 import oldmana.md.server.playerui.ClientButton;
 import oldmana.md.server.playerui.PlayerButton;
 import oldmana.md.server.playerui.PlayerButton.ButtonTag;
@@ -32,19 +35,13 @@ import oldmana.md.server.ai.BasicAI;
 import oldmana.md.server.ai.PlayerAI;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardDescription;
-import oldmana.md.server.card.CardAction;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.collection.Bank;
 import oldmana.md.server.card.collection.CardCollection;
 import oldmana.md.server.card.collection.Hand;
 import oldmana.md.server.card.collection.PropertySet;
-import oldmana.md.server.event.CardDiscardEvent;
-import oldmana.md.server.event.DeckDrawEvent;
-import oldmana.md.server.event.PostActionCardPlayedEvent;
-import oldmana.md.server.event.PostCardBankedEvent;
-import oldmana.md.server.event.PreActionCardPlayedEvent;
-import oldmana.md.server.event.PreCardBankedEvent;
+import oldmana.md.server.event.player.PlayerDrawEvent;
 import oldmana.md.server.net.ConnectionThread;
 import oldmana.md.server.playerui.clientbutton.MultiButton;
 import oldmana.md.server.playerui.clientbutton.UndoButton;
@@ -71,7 +68,8 @@ public class Player extends Client implements CommandSender
 	private Bank bank;
 	private List<PropertySet> propertySets;
 	
-	private List<Card> revocableCards = new ArrayList<Card>();
+	// Declared as LinkedList so we have access to its methods
+	private LinkedList<UndoableAction> undoableActions = new LinkedList<UndoableAction>();
 	
 	private List<StatusEffect> statusEffects = new ArrayList<StatusEffect>();
 	
@@ -146,75 +144,67 @@ public class Player extends Client implements CommandSender
 		return name + " (ID: " + id + ")";
 	}
 	
-	public boolean canRevokeCard()
+	public boolean canUndoAction()
 	{
-		return !revocableCards.isEmpty();
+		return !undoableActions.isEmpty();
 	}
 	
-	public Card getLastRevocableCard()
+	public UndoableAction getLastUndoableAction()
 	{
-		return revocableCards.get(revocableCards.size() - 1);
+		return undoableActions.getLast();
 	}
 	
-	public void addRevocableCard(Card card)
+	public void addUndoableAction(UndoableAction action)
 	{
-		revocableCards.add(card);
-		sendPacket(new PacketUndoCardStatus(card.getID()));
+		undoableActions.add(action);
+		sendPacket(new PacketUndoCardStatus(action.getFace().getID()));
 	}
 	
-	public Card popRevocableCard()
+	public UndoableAction popUndoableAction()
 	{
-		if (!revocableCards.isEmpty())
+		if (!undoableActions.isEmpty())
 		{
-			Card card = getLastRevocableCard();
-			revocableCards.remove(card);
+			UndoableAction action = undoableActions.removeLast();
 			sendUndoStatus();
-			return card;
+			return action;
 		}
 		return null;
 	}
 	
 	public void sendUndoStatus()
 	{
-		if (canRevokeCard())
-		{
-			sendPacket(new PacketUndoCardStatus(getLastRevocableCard().getID()));
-		}
-		else
-		{
-			sendPacket(new PacketUndoCardStatus(-1));
-		}
+		sendPacket(new PacketUndoCardStatus(canUndoAction() ? getLastUndoableAction().getFace().getID() : -1));
 	}
 	
 	/**
-	 * Undo the last revocable card the player played. Does nothing if there are no revocable cards.
-	 * @return The card that was undone, or null if no card was undone
+	 * Undo the last undoable action the player played. Does nothing if there are no undoable actions.
+	 * @return The action that was undone, or null if no action was undone
 	 */
-	public Card undoCard()
+	public UndoableAction undoLastAction()
 	{
-		if (!canRevokeCard())
+		if (!canUndoAction())
 		{
 			sendUndoStatus();
 			return null;
 		}
-		Card card = getLastRevocableCard();
-		UndoCardEvent event = new UndoCardEvent(this, card);
+		UndoableAction action = getLastUndoableAction();
+		PlayerUndoActionEvent event = new PlayerUndoActionEvent(this, action);
 		server.getEventManager().callEvent(event);
 		if (event.isCancelled())
 		{
 			sendUndoStatus();
 			return null;
 		}
-		popRevocableCard();
-		server.getGameState().undoCard(card);
-		card.transfer(getHand());
-		System.out.println(getName() + " undos " + card.getName());
-		return card;
+		popUndoableAction();
+		server.getGameState().onUndo(action);
+		action.performUndo();
+		System.out.println(getName() + " undos " + action.getFace().getName());
+		return action;
 	}
 	
-	public void clearRevocableCards()
+	public void clearUndoableActions()
 	{
-		revocableCards.clear();
+		undoableActions.clear();
 		sendPacket(new PacketUndoCardStatus(-1));
 	}
 	
@@ -286,14 +276,12 @@ public class Player extends Client implements CommandSender
 		return new ArrayList<PropertySet>(getPropertySets());
 	}
 	
-	public PropertySet getPropertySetById(int id)
+	public PropertySet getPropertySet(int id)
 	{
-		for (PropertySet set : propertySets)
+		CardCollection collection = CardCollection.getByID(id);
+		if (collection instanceof PropertySet && collection.getOwner() == this)
 		{
-			if (set.getID() == id)
-			{
-				return set;
-			}
+			return (PropertySet) collection;
 		}
 		return null;
 	}
@@ -572,7 +560,7 @@ public class Player extends Client implements CommandSender
 			if (policy == DrawExtraCardsPolicy.IMMEDIATELY || (policy == DrawExtraCardsPolicy.IMMEDIATELY_AFTER_ACTION
 					&& getServer().getGameState().getActionState() instanceof ActionStatePlayerTurn))
 			{
-				clearRevocableCards();
+				clearUndoableActions();
 				server.getDeck().drawCards(this, getServer().getGameRules().getExtraCardsDrawn(), 0.8);
 				return true;
 			}
@@ -789,9 +777,21 @@ public class Player extends Client implements CommandSender
 		return all;
 	}
 	
-	public void resendCardButtons()
+	public void sendCardButtons()
 	{
-		getHand().resendCardButtons();
+		getHand().sendCardButtons();
+	}
+	
+	/**
+	 * Prompts the player to select a card in their hand to combo with other cards. The player has the option to cancel
+	 * and will <b>not</b> inform the server if they do so.
+	 * @param currentCombo Cards already selected in this combo
+	 * @param targets Cards that can be selected
+	 */
+	public void promptCardCombo(List<? extends Card> currentCombo, List<? extends Card> targets)
+	{
+		sendPacket(new PacketSelectCardCombo(currentCombo.stream().mapToInt(Card::getID).toArray(),
+				targets.stream().mapToInt(Card::getID).toArray()));
 	}
 	
 	/**
@@ -802,6 +802,21 @@ public class Player extends Client implements CommandSender
 	{
 		GameState gs = getServer().getGameState();
 		return gs.hasTurnState() && gs.getActionState() == gs.getTurnState() && gs.getTurnState().getActionOwner() == this;
+	}
+	
+	/**
+	 * Check if it is currently this player's turn, regardless of current state.
+	 * @return Whether it is this player's turn
+	 */
+	public boolean hasTurn()
+	{
+		GameState gs = getServer().getGameState();
+		return gs.hasTurnState() && gs.getTurnState().getActionOwner() == this;
+	}
+	
+	public int getMoves()
+	{
+		return hasTurn() ? getServer().getGameState().getMovesRemaining() : 0;
 	}
 	
 	/**
@@ -841,7 +856,7 @@ public class Player extends Client implements CommandSender
 		}
 		drawCards(cardsToDraw);
 		server.getGameState().setDrawn();
-		server.getEventManager().callEvent(new DeckDrawEvent(this));
+		server.getEventManager().callEvent(new PlayerDrawEvent(this));
 	}
 	
 	/**
@@ -851,143 +866,6 @@ public class Player extends Client implements CommandSender
 	public void drawCards(int amount)
 	{
 		server.getDeck().drawCards(this, amount);
-	}
-	
-	public void playCardBank(Card card)
-	{
-		PreCardBankedEvent preEvent = new PreCardBankedEvent(this, card);
-		server.getEventManager().callEvent(preEvent);
-		if (!preEvent.isCancelled())
-		{
-			getHand().transferCard(card, getBank());
-			if (server.getGameRules().isUndoAllowed())
-			{
-				addRevocableCard(card);
-			}
-			PostCardBankedEvent postEvent = new PostCardBankedEvent(this, card);
-			server.getEventManager().callEvent(postEvent);
-			System.out.println(getName() + " banks " + card.getName());
-			
-			server.getGameState().decrementMoves();
-			checkEmptyHand();
-		}
-		else
-		{
-			resendActionState();
-		}
-	}
-	
-	public void playCardProperty(CardProperty property, int setID)
-	{
-		if (setID > -1)
-		{
-			PropertySet set = getPropertySetById(setID);
-			getHand().transferCard(property, set);
-		}
-		else
-		{
-			if (property.isSingleColor() && hasSolidPropertySet(property.getColor()))
-			{
-				PropertySet set = getSolidPropertySet(property.getColor());
-				property.transfer(set);
-				set.checkLegality();
-			}
-			else
-			{
-				PropertySet set = createPropertySet();
-				getHand().transferCard(property, set);
-			}
-		}
-		if (server.getGameRules().isUndoAllowed())
-		{
-			addRevocableCard(property);
-		}
-		
-		server.getGameState().decrementMoves();
-		
-		System.out.println(getName() + " plays property " + property.getName());
-		if (server.getGameState().checkWin())
-		{
-			return;
-		}
-		checkEmptyHand();
-	}
-	
-	public void playCardProperty(CardProperty property, PropertySet set)
-	{
-		playCardProperty(property, set == null ? -1 : set.getID());
-	}
-	
-	public void playCardAction(CardAction card)
-	{
-		playCardAction(card, false);
-	}
-	
-	/**
-	 * A sneaky play will bypass turn checks and not consume a turn.
-	 */
-	public void playCardAction(CardAction card, boolean sneaky)
-	{
-		if (!sneaky && !canPlayCards())
-		{
-			System.out.println("Warning: " + getName() + " tried to play " + card.getName() +
-					" (ID: " + card.getID() + ") without being able to!");
-			resendActionState();
-			return;
-		}
-		
-		PreActionCardPlayedEvent event = new PreActionCardPlayedEvent(this, card);
-		server.getEventManager().callEvent(event);
-		if (event.isCancelled())
-		{
-			return;
-		}
-		card.transfer(server.getDiscardPile(), -1, card.getPlayAnimation());
-		if (!sneaky)
-		{
-			if (card.clearsRevocableCards())
-			{
-				clearRevocableCards();
-			}
-			if (card.isRevocable() && server.getGameRules().isUndoAllowed())
-			{
-				addRevocableCard(card);
-			}
-			server.getGameState().decrementMoves();
-		}
-		card.playCard(this);
-		
-		System.out.println(getName() + " plays action card " + card.getName());
-		
-		server.getEventManager().callEvent(new PostActionCardPlayedEvent(this, card));
-		
-		checkEmptyHand();
-	}
-	
-	public void playCardBuilding(CardBuilding building, PropertySet set)
-	{
-		building.transfer(set);
-		
-		if (server.getGameRules().isUndoAllowed())
-		{
-			addRevocableCard(building);
-		}
-		
-		server.getGameState().decrementMoves();
-		
-		checkEmptyHand();
-	}
-	
-	public boolean discard(Card card)
-	{
-		if (getHand().hasCard(card) && card.onDiscard(this))
-		{
-			card.transfer(server.getDiscardPile());
-			server.getGameState().updateTurnState();
-			server.getEventManager().callEvent(new CardDiscardEvent(this, card));
-			return true;
-		}
-		return false;
 	}
 	
 	public void endTurn()
@@ -1033,6 +911,14 @@ public class Player extends Client implements CommandSender
 	public void resendTurnState()
 	{
 		server.getGameState().resendTurnState(this);
+	}
+	
+	/**
+	 * Tells the client to stop awaiting a response from the server, despite not giving any new information.
+	 */
+	public void clearAwaitingResponse()
+	{
+		sendPacket(new PacketSetAwaitingResponse(false));
 	}
 	
 	public Packet[] getPropertySetPackets()
@@ -1189,7 +1075,7 @@ public class Player extends Client implements CommandSender
 		getServer().getGameState().getTurnOrder().sendOrder(this);
 		resendActionState();
 		resendTurnState();
-		resendCardButtons();
+		sendCardButtons();
 		sendButtonPackets();
 		sendUndoStatus();
 		server.getGameState().sendStatus(this);

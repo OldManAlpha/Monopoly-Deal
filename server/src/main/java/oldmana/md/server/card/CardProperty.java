@@ -5,13 +5,23 @@ import java.util.Arrays;
 import java.util.List;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.common.playerui.CardButtonType;
 import oldmana.md.net.packet.server.PacketCardPropertyData;
+import oldmana.md.server.Player;
+import oldmana.md.server.card.play.argument.PropertySetArgument;
+import oldmana.md.server.card.play.PlayArguments;
+import oldmana.md.server.card.collection.PropertySet;
 import oldmana.md.server.card.control.CardButton;
-import oldmana.md.server.card.control.CardButton.CardButtonType;
 import oldmana.md.server.card.control.CardControls;
+
+import static oldmana.md.server.card.CardAttributes.*;
 
 public class CardProperty extends Card
 {
+	public static final String COLORS = "colors";
+	public static final String BASE = "base";
+	public static final String STEALABLE = "stealable";
+	
 	public static CardTemplate RAINBOW_WILD;
 	
 	private List<PropertyColor> colors;
@@ -28,27 +38,45 @@ public class CardProperty extends Card
 	}
 	
 	@Override
-	public CardControls createControls()
+	protected CardControls createControls()
 	{
 		CardControls actions = super.createControls();
-		CardButton play = new CardButton("Play", CardButton.TOP, CardButtonType.PROPERTY);
-		play.setCondition((player, card) -> player.canPlayCards());
+		CardButton play = actions.getButtonByText("Play");
+		play.setType(CardButtonType.PROPERTY);
 		play.setListener((player, card, data) ->
-		{
-			if (!player.getHand().hasCard(card))
-			{
-				player.resendActionState();
-				return;
-			}
-			player.playCardProperty((CardProperty) card, data);
-		});
-		actions.addButton(play);
-		
-		CardButton bank = new CardButton("Bank", CardButton.BOTTOM);
-		bank.setCondition((player, card) -> getServer().getGameRules().canBankPropertyCards() && player.canPlayCards());
-		bank.setListener((player, card, data) -> player.playCardBank(card));
-		actions.addButton(bank);
+				card.play(PlayArguments.ofPropertySet(player.getPropertySet(data))));
 		return actions;
+	}
+	
+	@Override
+	public void doPlay(Player player, PlayArguments args)
+	{
+		PropertySet set = args.getArgument(PropertySetArgument.class).getTargetSet();
+		if (set == null)
+		{
+			if (isSingleColor() && player.hasSolidPropertySet(getColor()))
+			{
+				set = player.getSolidPropertySet(getColor());
+			}
+			else
+			{
+				set = player.createPropertySet();
+			}
+		}
+		transfer(set, getPlayAnimation());
+		set.checkLegality();
+	}
+	
+	@Override
+	protected void playStageMoveCard(Player player, PlayArguments args)
+	{
+		// Properties don't go in the discard pile
+	}
+	
+	@Override
+	public boolean canBank(Player player)
+	{
+		return getServer().getGameRules().canBankPropertyCards();
 	}
 	
 	public boolean isSingleColor()
@@ -173,29 +201,30 @@ public class CardProperty extends Card
 	private static CardType<CardProperty> createType()
 	{
 		CardType<CardProperty> type = new CardType<CardProperty>(CardProperty.class, CardProperty::new, "Property");
-		type.addExemptReduction("colors");
-		type.addExemptReduction("base");
-		type.addExemptReduction("value");
+		type.addExemptReduction(COLORS, false);
+		type.addExemptReduction(BASE, false);
+		type.addExemptReduction(VALUE, false);
 		CardTemplate dt = type.getDefaultTemplate();
-		dt.put("name", "Generic Property");
-		dt.putStrings("description", "Property cards can be placed down, allowing you to charge rent to other players " +
+		dt.put(NAME, "Generic Property");
+		dt.putStrings(DESCRIPTION, "Property cards can be placed down, allowing you to charge rent to other players " +
 				"using Rent cards. Properties that are placed down can also be used to pay rent with.");
-		dt.put("revocable", true);
-		dt.put("clearsRevocableCards", false);
-		dt.putColors("colors", PropertyColor.RAILROAD);
-		dt.put("base", true);
-		dt.put("stealable", true);
+		dt.put(UNDOABLE, true);
+		dt.put(CLEARS_UNDOABLE_ACTIONS, false);
+		dt.putColors(COLORS, PropertyColor.RAILROAD);
+		dt.put(BASE, true);
+		dt.put(STEALABLE, true);
+		dt.put(CONSUME_MOVES_STAGE, CardPlayStage.AFTER_PLAY);
 		type.setDefaultTemplate(dt);
 		
 		RAINBOW_WILD = new CardTemplate(dt);
-		RAINBOW_WILD.put("value", 0);
-		RAINBOW_WILD.put("name", "Property Wild Card");
-		RAINBOW_WILD.putStrings("description", "A property card that can be paired with any color. " +
+		RAINBOW_WILD.put(VALUE, 0);
+		RAINBOW_WILD.put(NAME, "Property Wild Card");
+		RAINBOW_WILD.putStrings(DESCRIPTION, "A property card that can be paired with any color. " +
 				"It cannot be used for rent if you don't have another property with the color. "
 				+ "This card cannot be stolen with Sly Deals, Forced Deals, or rent.");
 		RAINBOW_WILD.putColors("colors", PropertyColor.getVanillaColors());
-		RAINBOW_WILD.put("base", false);
-		RAINBOW_WILD.put("stealable", false);
+		RAINBOW_WILD.put(BASE, false);
+		RAINBOW_WILD.put(STEALABLE, false);
 		type.addTemplate(RAINBOW_WILD, "Rainbow Wild");
 		return type;
 	}

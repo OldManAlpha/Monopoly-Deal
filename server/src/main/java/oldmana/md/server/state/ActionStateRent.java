@@ -14,7 +14,7 @@ import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.collection.Bank;
-import oldmana.md.server.event.RentPaymentEvent;
+import oldmana.md.server.event.state.RentPaymentEvent;
 
 public class ActionStateRent extends ActionState
 {

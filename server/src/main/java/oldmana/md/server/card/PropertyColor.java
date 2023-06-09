@@ -66,6 +66,15 @@ public class PropertyColor
 	 */
 	public PropertyColor(String name, String label, Color color, boolean buildable, int... rent)
 	{
+		if (nameColorMap.containsKey(name))
+		{
+			throw new IllegalArgumentException("A color is already registered by the name '" + name + "'");
+		}
+		if (labelColorMap.containsKey(label))
+		{
+			throw new IllegalArgumentException("A color is already registered with the label '" + label + "'");
+		}
+		
 		this.id = nextID++;
 		
 		this.name = name;

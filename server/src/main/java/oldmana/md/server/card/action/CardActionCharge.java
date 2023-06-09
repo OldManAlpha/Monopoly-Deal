@@ -1,12 +1,15 @@
 package oldmana.md.server.card.action;
 
 import oldmana.md.server.Player;
-import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
+import oldmana.md.server.card.play.PlayArguments;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.CardType;
+import oldmana.md.server.history.UndoableAction;
 import oldmana.md.server.state.ActionStateRent;
 import oldmana.md.server.state.ActionStateTargetPlayer;
+
+import static oldmana.md.server.card.CardAttributes.*;
 
 /**
  * Charge cards are used a foundation for Birthday and Debt Collector cards. This card type can be used to easily create
@@ -14,6 +17,9 @@ import oldmana.md.server.state.ActionStateTargetPlayer;
  */
 public class CardActionCharge extends CardAction
 {
+	public static final String CHARGES_ALL = "chargesAll";
+	public static final String CHARGE = "charge";
+	
 	private boolean chargesAll;
 	private int charge;
 	
@@ -21,16 +27,16 @@ public class CardActionCharge extends CardAction
 	public void applyTemplate(CardTemplate template)
 	{
 		super.applyTemplate(template);
-		chargesAll = template.getBoolean("chargesAll");
-		charge = template.getInt("charge");
+		chargesAll = template.getBoolean(CHARGES_ALL);
+		charge = template.getInt(CHARGE);
 	}
 	
 	@Override
-	public void playCard(Player player)
+	public void doPlay(Player player, PlayArguments args)
 	{
 		if (chargesAll || getServer().getPlayerCount() <= 2)
 		{
-			player.clearRevocableCards();
+			player.clearUndoableActions();
 			getServer().getGameState().addActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player), charge));
 		}
 		else
@@ -59,15 +65,15 @@ public class CardActionCharge extends CardAction
 	{
 		CardType<CardActionCharge> type = new CardType<CardActionCharge>(CardActionCharge.class,
 				CardActionCharge::new, "Charge");
-		type.addExemptReduction("value", false);
-		type.addExemptReduction("chargesAll", false);
-		type.addExemptReduction("charge", false);
+		type.addExemptReduction(VALUE, false);
+		type.addExemptReduction(CHARGES_ALL, false);
+		type.addExemptReduction(CHARGE, false);
 		CardTemplate template = type.getDefaultTemplate();
-		template.put("value", 1);
-		template.put("revocable", true);
-		template.put("clearsRevocableCards", false);
-		template.put("chargesAll", false);
-		template.put("charge", 1);
+		template.put(VALUE, 1);
+		template.put(UNDOABLE, true);
+		template.put(CLEARS_UNDOABLE_ACTIONS, false);
+		template.put(CHARGES_ALL, false);
+		template.put(CHARGE, 1);
 		type.setDefaultTemplate(template);
 		return type;
 	}
@@ -96,14 +102,14 @@ public class CardActionCharge extends CardAction
 		@Override
 		public void playerSelected(Player player)
 		{
-			getActionOwner().clearRevocableCards();
+			getActionOwner().clearUndoableActions();
 			replaceState(new ActionStateRent(getActionOwner(), player, getCharge()));
 		}
 		
 		@Override
-		public void onCardUndo(Card card)
+		public void onUndo(UndoableAction action)
 		{
-			if (card == this.card)
+			if (action.hasCard(card))
 			{
 				removeState();
 			}

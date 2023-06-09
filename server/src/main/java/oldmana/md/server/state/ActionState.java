@@ -10,7 +10,7 @@ import oldmana.md.common.state.TargetState;
 import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateTarget;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
-import oldmana.md.server.card.Card;
+import oldmana.md.server.history.UndoableAction;
 
 public abstract class ActionState
 {
@@ -101,7 +101,7 @@ public abstract class ActionState
 		}
 	}
 	
-	public void onCardUndo(Card card) {}
+	public void onUndo(UndoableAction action) {}
 	
 	public Player getActionOwner()
 	{

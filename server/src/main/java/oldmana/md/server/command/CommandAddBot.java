@@ -4,7 +4,7 @@ import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.collection.deck.VanillaDeck;
-import oldmana.md.server.event.PlayerJoinedEvent;
+import oldmana.md.server.event.player.PlayerJoinedEvent;
 
 public class CommandAddBot extends Command
 {

@@ -3,40 +3,19 @@ package oldmana.md.server.card;
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.packet.server.PacketCardData;
 import oldmana.md.server.Player;
-import oldmana.md.server.card.control.CardControls;
-import oldmana.md.server.card.control.CardButton;
 
 public class CardAction extends Card
 {
-	public void playCard(Player player) {}
-	
-	public boolean canPlayCard(Player player)
-	{
-		return true;
-	}
-	
 	@Override
-	public CardControls createControls()
+	public boolean canBank(Player player)
 	{
-		CardControls actions = super.createControls();
-		
-		CardButton play = new CardButton("Play", CardButton.TOP);
-		play.setCondition((player, card) -> player.canPlayCards() && ((CardAction) card).canPlayCard(player));
-		play.setListener((player, card, data) -> player.playCardAction((CardAction) card));
-		actions.addButton(play);
-		
-		CardButton bank = new CardButton("Bank", CardButton.BOTTOM);
-		bank.setCondition((player, card) -> getServer().getGameRules().canBankActionCards() && player.canPlayCards());
-		bank.setListener((player, card, data) -> player.playCardBank(card));
-		actions.addButton(bank);
-		
-		return actions;
+		return getServer().getGameRules().canBankActionCards();
 	}
 	
 	@Override
 	public Packet getCardDataPacket()
 	{
-		return new PacketCardData(getID(), getName(), getValue(), 0, isRevocable(), clearsRevocableCards(),
+		return new PacketCardData(getID(), getName(), getValue(), 0, isUndoable(), shouldClearUndoableCards(),
 				getDisplayName(), (byte) getFontSize(), (byte) getDisplayOffsetY(), getDescription().getID());
 	}
 	

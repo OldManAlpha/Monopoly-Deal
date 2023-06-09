@@ -34,7 +34,7 @@ public class Client
 	
 	public void sendPacket(Packet packet)
 	{
-		if (net != null)
+		if (net != null && packet != null)
 		{
 			net.addOutPacket(packet);
 		}

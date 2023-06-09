@@ -94,25 +94,31 @@ public class ActionStatePlayerTurn extends ActionState
 	
 	public void incrementMoves()
 	{
-		moves++;
-		updateState();
+		incrementMoves(1);
 	}
 	
 	public void incrementMoves(int inc)
 	{
+		if (inc == 0)
+		{
+			return;
+		}
 		moves += inc;
 		updateState();
 	}
 	
 	public void decrementMoves()
 	{
-		moves--;
-		updateState();
+		decrementMoves(1);
 	}
 	
 	public void decrementMoves(int dec)
 	{
-		moves -= dec;
+		if (dec == 0)
+		{
+			return;
+		}
+		moves = Math.max(moves - dec, 0);
 		updateState();
 	}
 	

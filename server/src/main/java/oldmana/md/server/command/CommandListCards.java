@@ -23,7 +23,7 @@ public class CommandListCards extends Command
 			if (verifyInt(args[0]))
 			{
 				CardCollection collection = CardCollection.getByID(Integer.parseInt(args[0]));
-				sender.sendMessage(ChatColor.GREEN + "End of cards in collection");
+				sender.sendMessage(ChatColor.LIGHT_GREEN + "End of cards in collection");
 				for (int i = collection.getCardCount() - 1 ; i >= 0 ; i--)
 				{
 					Card card = collection.getCardAt(i);
@@ -33,7 +33,7 @@ public class CommandListCards extends Command
 							" (ID: " + card.getID() + ")");
 					sender.sendMessage(mb.getMessage());
 				}
-				sender.sendMessage(ChatColor.GREEN + "List of cards in collection ID " + collection.getID() + " (Count: " + collection.getCardCount() + ")");
+				sender.sendMessage(ChatColor.LIGHT_GREEN + "List of cards in collection ID " + collection.getID() + " (Count: " + collection.getCardCount() + ")");
 			}
 			else
 			{

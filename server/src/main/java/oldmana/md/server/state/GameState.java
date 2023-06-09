@@ -12,15 +12,16 @@ import oldmana.md.net.packet.server.actionstate.PacketActionStatePlayerTurn.Turn
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
+import oldmana.md.server.history.UndoableAction;
 import oldmana.md.server.card.collection.Deck;
 import oldmana.md.server.card.collection.PropertySet;
-import oldmana.md.server.event.ActionStateAddEvent;
-import oldmana.md.server.event.ActionStateChangedEvent;
-import oldmana.md.server.event.GameEndEvent;
-import oldmana.md.server.event.GameStartEvent;
-import oldmana.md.server.event.PlayersWonEvent;
-import oldmana.md.server.event.TurnEndEvent;
-import oldmana.md.server.event.TurnStartEvent;
+import oldmana.md.server.event.state.ActionStateAddEvent;
+import oldmana.md.server.event.state.ActionStateChangedEvent;
+import oldmana.md.server.event.state.GameEndEvent;
+import oldmana.md.server.event.state.GameStartEvent;
+import oldmana.md.server.event.state.PlayersWonEvent;
+import oldmana.md.server.event.state.TurnEndEvent;
+import oldmana.md.server.event.state.TurnStartEvent;
 import oldmana.md.server.state.primary.ActionStatePlayerTurn;
 
 public class GameState
@@ -62,13 +63,12 @@ public class GameState
 		return turnOrder.getActivePlayer();
 	}
 	
-	public void undoCard(Card card)
+	public void onUndo(UndoableAction action)
 	{
 		if (getActionState() != null)
 		{
-			getActionState().onCardUndo(card);
+			getActionState().onUndo(action);
 		}
-		getTurnState().incrementMoves();
 	}
 	
 	public boolean isGameRunning()
@@ -116,7 +116,7 @@ public class GameState
 		server.getEventManager().callEvent(new GameEndEvent());
 		if (getActivePlayer() != null)
 		{
-			getActivePlayer().clearRevocableCards();
+			getActivePlayer().clearUndoableActions();
 			//activePlayer = null;
 		}
 		for (Player player : server.getPlayers())
@@ -157,7 +157,7 @@ public class GameState
 		}
 		for (Card card : server.getDiscardPile().getCardsInReverse())
 		{
-			putCardAway(card);
+			putCardAway(card, 0.15);
 		}
 		
 		for (Card card : deck.getCards(true))
@@ -183,19 +183,41 @@ public class GameState
 	
 	private void putCardAway(Card card)
 	{
+		putCardAway(card, 0.25);
+	}
+	
+	private void putCardAway(Card card, double time)
+	{
 		Deck deck = server.getDeck();
 		if (deck.getDeckStack().hasCard(card))
 		{
-			card.transfer(deck, -1, 0.25);
+			card.transfer(deck, -1, time);
 		}
 		else
 		{
-			card.transfer(server.getVoidCollection(), -1, 0.25);
+			card.transfer(server.getVoidCollection(), -1, time);
 		}
 	}
 	
 	public void nextTurn()
 	{
+		nextTurn(false);
+	}
+	
+	public void nextTurn(boolean ignoreCancel)
+	{
+		Player player = getActivePlayer();
+		if (player != null)
+		{
+			player.clearUndoableActions();
+			TurnEndEvent event = new TurnEndEvent(player);
+			server.getEventManager().callEvent(event);
+			if (!ignoreCancel && event.isCancelled())
+			{
+				return;
+			}
+		}
+		
 		if (deferredWinPlayer != null && deferredWinPlayer == getActivePlayer())
 		{
 			deferredWinCycles--;
@@ -209,13 +231,6 @@ public class GameState
 				server.broadcastMessage("Winning is deferred for " + deferredWinCycles + " turn cycle" + (deferredWinCycles != 1 ? "s" : "")
 						+ ". (After " + deferredWinPlayer.getName() + "'s turn)", true);
 			}
-		}
-		
-		Player player = getActivePlayer();
-		if (player != null)
-		{
-			player.clearRevocableCards();
-			server.getEventManager().callEvent(new TurnEndEvent(player));
 		}
 		
 		if (checkWin())
@@ -257,6 +272,16 @@ public class GameState
 	public int getMovesRemaining()
 	{
 		return getTurnState().getMoves();
+	}
+	
+	public void incrementMoves()
+	{
+		getTurnState().incrementMoves();
+	}
+	
+	public void incrementMoves(int amount)
+	{
+		getTurnState().incrementMoves(amount);
 	}
 	
 	public void decrementMoves()

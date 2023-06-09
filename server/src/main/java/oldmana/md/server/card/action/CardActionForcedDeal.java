@@ -6,25 +6,28 @@ import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActi
 import oldmana.md.net.packet.server.actionstate.PacketActionStatePropertiesSelected;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.Player;
-import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
+import oldmana.md.server.card.play.PlayArguments;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.CardTemplate;
+import oldmana.md.server.history.UndoableAction;
 import oldmana.md.server.card.collection.PropertySet;
 import oldmana.md.server.card.CardType;
 import oldmana.md.server.state.ActionState;
 import oldmana.md.server.state.ActionStateTargetSelfPlayerProperty;
 
+import static oldmana.md.server.card.CardAttributes.*;
+
 public class CardActionForcedDeal extends CardAction
 {
 	@Override
-	public void playCard(Player player)
+	public void doPlay(Player player, PlayArguments args)
 	{
 		getServer().getGameState().addActionState(new ActionStateTargetForcedDeal(player));
 	}
 	
 	@Override
-	public boolean canPlayCard(Player player)
+	public boolean canPlay(Player player)
 	{
 		boolean ownerHasProp = false;
 		
@@ -59,15 +62,15 @@ public class CardActionForcedDeal extends CardAction
 		CardType<CardActionForcedDeal> type = new CardType<CardActionForcedDeal>(CardActionForcedDeal.class,
 				CardActionForcedDeal::new, "Forced Deal");
 		CardTemplate template = type.getDefaultTemplate();
-		template.put("value", 3);
-		template.put("name", "Forced Deal");
-		template.putStrings("displayName", "FORCED", "DEAL");
-		template.put("fontSize", 8);
-		template.put("displayOffsetY", 2);
-		template.putStrings("description", "Trade one of your properties for one of another player's properties that is " +
+		template.put(VALUE, 3);
+		template.put(NAME, "Forced Deal");
+		template.putStrings(DISPLAY_NAME, "FORCED", "DEAL");
+		template.put(FONT_SIZE, 8);
+		template.put(DISPLAY_OFFSET_Y, 2);
+		template.putStrings(DESCRIPTION, "Trade one of your properties for one of another player's properties that is " +
 				"not part of a full set. 10-Color property wild cards cannot be stolen with this card.");
-		template.put("revocable", true);
-		template.put("clearsRevocableCards", false);
+		template.put(UNDOABLE, true);
+		template.put(CLEARS_UNDOABLE_ACTIONS, false);
 		type.setDefaultTemplate(template);
 		return type;
 	}
@@ -89,14 +92,14 @@ public class CardActionForcedDeal extends CardAction
 				getActionOwner().resendActionState();
 				return;
 			}
-			getActionOwner().clearRevocableCards();
+			getActionOwner().clearUndoableActions();
 			replaceState(new ActionStateTradeProperties(self, other));
 		}
 		
 		@Override
-		public void onCardUndo(Card card)
+		public void onUndo(UndoableAction action)
 		{
-			if (card == CardActionForcedDeal.this)
+			if (action.hasCard(CardActionForcedDeal.this))
 			{
 				removeState();
 			}

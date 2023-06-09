@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import oldmana.general.mjnetworkingapi.packet.Packet;
 import oldmana.md.net.NetHandler;
@@ -14,6 +15,8 @@ import oldmana.md.net.packet.client.*;
 import oldmana.md.net.packet.client.action.*;
 import oldmana.md.net.packet.server.*;
 import oldmana.md.net.packet.universal.*;
+import oldmana.md.server.card.play.argument.CardArgument;
+import oldmana.md.server.card.play.PlayArguments;
 import oldmana.md.server.playerui.ChatLinkHandler.ChatLink;
 import oldmana.md.server.Client;
 import oldmana.md.server.MDServer;
@@ -28,8 +31,8 @@ import oldmana.md.server.card.collection.CardCollection;
 import oldmana.md.server.card.collection.Hand;
 import oldmana.md.server.card.collection.PropertySet;
 import oldmana.md.server.card.control.CardButton;
-import oldmana.md.server.event.PlayerJoinedEvent;
-import oldmana.md.server.event.PlayerReconnectedEvent;
+import oldmana.md.server.event.player.PlayerJoinedEvent;
+import oldmana.md.server.event.player.PlayerReconnectedEvent;
 import oldmana.md.server.state.ActionState;
 import oldmana.md.server.state.ActionStateRent;
 import oldmana.md.server.state.ActionStateTargetAnyProperty;
@@ -37,6 +40,7 @@ import oldmana.md.server.state.ActionStateTargetPlayer;
 import oldmana.md.server.state.ActionStateTargetPlayerMonopoly;
 import oldmana.md.server.state.ActionStateTargetPlayerProperty;
 import oldmana.md.server.state.ActionStateTargetSelfPlayerProperty;
+import oldmana.md.server.state.ActionStateTargetSelfProperty;
 
 public class NetServerHandler extends NetHandler
 {
@@ -276,8 +280,7 @@ public class NetServerHandler extends NetHandler
 		CardBuilding building = (CardBuilding) card;
 		if (checkIntegrity(player, card, true))
 		{
-			PropertySet set = player.getPropertySetById(packet.setID);
-			player.playCardBuilding(building, set);
+			building.play(PlayArguments.ofPropertySet(player.getPropertySet(packet.setID)));
 		}
 	}
 	
@@ -286,10 +289,7 @@ public class NetServerHandler extends NetHandler
 		Card card = Card.getCard(packet.card);
 		if (checkIntegrity(player, card, true))
 		{
-			if (!player.discard(card))
-			{
-				player.resendActionState();
-			}
+			card.play(PlayArguments.DISCARD);
 		}
 		else
 		{
@@ -345,7 +345,7 @@ public class NetServerHandler extends NetHandler
 		}
 		if (packet.setId > -1)
 		{
-			PropertySet set = player.getPropertySetById(packet.setId);
+			PropertySet set = player.getPropertySet(packet.setId);
 			card.transfer(set);
 		}
 		else
@@ -397,6 +397,10 @@ public class NetServerHandler extends NetHandler
 		{
 			((ActionStateTargetAnyProperty) state).onCardSelected((CardProperty) Card.getCard(packet.ids[0]));
 		}
+		else if (state instanceof ActionStateTargetSelfProperty)
+		{
+			((ActionStateTargetSelfProperty) state).onCardSelected((CardProperty) Card.getCard(packet.ids[0]));
+		}
 		else
 		{
 			player.resendActionState();
@@ -408,7 +412,7 @@ public class NetServerHandler extends NetHandler
 		ActionState state = server.getGameState().getActionState();
 		if (state instanceof ActionStateTargetPlayerMonopoly)
 		{
-			player.clearRevocableCards();
+			player.clearUndoableActions();
 			((ActionStateTargetPlayerMonopoly) state).onSetSelected((PropertySet) CardCollection.getByID(packet.id));
 		}
 		else
@@ -419,7 +423,7 @@ public class NetServerHandler extends NetHandler
 	
 	public void handleActionUndoCard(Player player, PacketActionUndoCard packet)
 	{
-		player.undoCard();
+		player.undoLastAction();
 	}
 	
 	public void handleActionAccept(Player player, PacketActionAccept packet)
@@ -459,16 +463,30 @@ public class NetServerHandler extends NetHandler
 	public void handleUseCardButton(Player player, PacketActionUseCardButton packet)
 	{
 		Card card = Card.getCard(packet.cardID);
-		CardButton button = card.getControls().getEnabledButton(packet.pos);
-		if (card.getOwner() == player && button != null)
+		CardButton button = card.getControls().getButton(packet.id);
+		if (card.getOwner() != player || button == null || !button.evaluate())
 		{
-			button.click(player, packet.data);
-		}
-		else
-		{
+			card.updateButtons();
 			player.resendActionState();
-			player.resendCardButtons();
+			player.sendCardButtons();
+			return;
 		}
+		button.click(player, packet.data);
+	}
+	
+	public void handleSelectCardCombo(Player player, PacketActionSelectCardCombo packet)
+	{
+		Card selected = Card.getCard(packet.selected);
+		List<Card> prevSelected = Card.getCards(packet.prevSelected);
+		if (selected.getOwner() != player && prevSelected.stream().anyMatch(card -> card.getOwner() != player))
+		{
+			System.out.println(player.getName() + " tried to play a combo without owning all the cards!");
+			player.resendActionState();
+			return;
+		}
+		selected.play(prevSelected.stream()
+				.map(CardArgument::new)
+				.collect(Collectors.toList()));
 	}
 	
 	public void handleRemoveBuilding(Player player, PacketActionRemoveBuilding packet)

@@ -6,22 +6,26 @@ import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
 import oldmana.md.common.card.CardAnimationType;
+import oldmana.md.server.card.play.PlayArguments;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.CardType;
+import oldmana.md.server.history.UndoableAction;
 import oldmana.md.server.card.collection.PropertySet;
 import oldmana.md.server.state.ActionStatePropertySetTargeted;
 import oldmana.md.server.state.ActionStateTargetPlayerMonopoly;
 
+import static oldmana.md.server.card.CardAttributes.*;
+
 public class CardActionDealBreaker extends CardAction
 {
 	@Override
-	public void playCard(Player player)
+	public void doPlay(Player player, PlayArguments args)
 	{
 		getServer().getGameState().addActionState(new ActionStateTargetDealBreaker(player));
 	}
 	
 	@Override
-	public boolean canPlayCard(Player player)
+	public boolean canPlay(Player player)
 	{
 		for (Player other : getServer().getPlayersExcluding(player))
 		{
@@ -33,25 +37,20 @@ public class CardActionDealBreaker extends CardAction
 		return false;
 	}
 	
-	@Override
-	public CardAnimationType getPlayAnimation()
-	{
-		return CardAnimationType.IMPORTANT;
-	}
-	
 	private static CardType<CardActionDealBreaker> createType()
 	{
 		CardType<CardActionDealBreaker> type = new CardType<CardActionDealBreaker>(CardActionDealBreaker.class,
 				CardActionDealBreaker::new, "Deal Breaker");
 		CardTemplate template = type.getDefaultTemplate();
-		template.put("value", 5);
-		template.put("name", "Deal Breaker");
-		template.putStrings("displayName", "DEAL", "BREAKER");
-		template.put("fontSize", 7);
-		template.put("displayOffsetY", 2);
-		template.putStrings("description", "Steal an entire full property set from another player. Cannot be used to steal partial sets.");
-		template.put("revocable", true);
-		template.put("clearsRevocableCards", false);
+		template.put(VALUE, 5);
+		template.put(NAME, "Deal Breaker");
+		template.putStrings(DISPLAY_NAME, "DEAL", "BREAKER");
+		template.put(FONT_SIZE, 7);
+		template.put(DISPLAY_OFFSET_Y, 2);
+		template.putStrings(DESCRIPTION, "Steal an entire full property set from another player. Cannot be used to steal partial sets.");
+		template.put(UNDOABLE, true);
+		template.put(CLEARS_UNDOABLE_ACTIONS, false);
+		template.put(PLAY_ANIMATION, CardAnimationType.IMPORTANT);
 		type.setDefaultTemplate(template);
 		return type;
 	}
@@ -67,14 +66,14 @@ public class CardActionDealBreaker extends CardAction
 		@Override
 		public void onSetSelected(PropertySet set)
 		{
-			getActionOwner().clearRevocableCards();
+			getActionOwner().clearUndoableActions();
 			replaceState(new ActionStateStealMonopoly(getActionOwner(), set));
 		}
 		
 		@Override
-		public void onCardUndo(Card card)
+		public void onUndo(UndoableAction action)
 		{
-			if (card == CardActionDealBreaker.this)
+			if (action.hasCard(CardActionDealBreaker.this))
 			{
 				removeState();
 			}

@@ -285,7 +285,7 @@ public class PropertySet extends CardCollection
 	 */
 	public void checkMaxProperties()
 	{
-		if (getPropertyCardCount() > effectiveColor.getMaxProperties())
+		if (effectiveColor != null && getPropertyCardCount() > effectiveColor.getMaxProperties())
 		{
 			List<CardProperty> properties = getPropertyCards();
 			
