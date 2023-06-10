@@ -38,21 +38,26 @@ public class ActionStateRent extends ActionState
 		Player thePlayer = getClient().getThePlayer();
 		if (thePlayer == player && isTarget(player))
 		{
+			MDButton button = getClient().getTableScreen().getMultiButton();
 			if (state == TargetState.REFUSED)
 			{
-				MDButton button = getClient().getTableScreen().getMultiButton();
 				button.setEnabled(false);
 			}
 			else if (state == TargetState.ACCEPTED)
 			{
-				cleanup();
+				removeButton();
 			}
 			else if (state == TargetState.TARGETED)
 			{
-				MDButton button = getClient().getTableScreen().getMultiButton();
 				button.setEnabled(true);
 			}
 		}
+	}
+	
+	@Override
+	protected void evaluateAcceptButton()
+	{
+	
 	}
 	
 	@Override

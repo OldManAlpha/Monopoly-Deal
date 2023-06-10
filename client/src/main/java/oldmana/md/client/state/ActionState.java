@@ -69,7 +69,7 @@ public class ActionState
 		return false;
 	}
 	
-	private void applyButtonAccept()
+	protected void applyButtonAccept()
 	{
 		MDButton button = getClient().getTableScreen().getMultiButton();
 		button.setColor(ButtonColorScheme.ALERT);
@@ -91,7 +91,7 @@ public class ActionState
 		button.repaint();
 	}
 	
-	private void removeButton()
+	protected void removeButton()
 	{
 		MDButton button = getClient().getTableScreen().getMultiButton();
 		button.setColor(ButtonColorScheme.NORMAL);
@@ -145,7 +145,7 @@ public class ActionState
 		evaluateAcceptButton();
 	}
 	
-	private void evaluateAcceptButton()
+	protected void evaluateAcceptButton()
 	{
 		if (getActionOwner() == getClient().getThePlayer() && !isUsingActionCounter())
 		{
@@ -157,6 +157,14 @@ public class ActionState
 			{
 				removeButton();
 			}
+		}
+		else if (isTargeted(getClient().getThePlayer()))
+		{
+			applyButtonAccept();
+		}
+		else if (isRefused(getClient().getThePlayer()))
+		{
+			disableButton();
 		}
 	}
 	
@@ -232,6 +240,11 @@ public class ActionState
 	public boolean isAccepted(Player player)
 	{
 		return targets.get(player) == TargetState.ACCEPTED;
+	}
+	
+	public boolean isTargeted(Player player)
+	{
+		return targets.get(player) == TargetState.TARGETED;
 	}
 	
 	public List<Player> getRefused()
