@@ -28,6 +28,8 @@ import oldmana.md.net.packet.server.actionstate.PacketActionStatePlayerTurn.Turn
 import oldmana.md.net.packet.universal.PacketChat;
 import oldmana.md.server.history.UndoableAction;
 import oldmana.md.server.event.player.PlayerUndoActionEvent;
+import oldmana.md.server.net.Client;
+import oldmana.md.server.net.NetClient.GracefulDisconnect;
 import oldmana.md.server.playerui.ClientButton;
 import oldmana.md.server.playerui.PlayerButton;
 import oldmana.md.server.playerui.PlayerButton.ButtonTag;
@@ -42,7 +44,6 @@ import oldmana.md.server.card.collection.CardCollection;
 import oldmana.md.server.card.collection.Hand;
 import oldmana.md.server.card.collection.PropertySet;
 import oldmana.md.server.event.player.PlayerDrawEvent;
-import oldmana.md.server.net.ConnectionThread;
 import oldmana.md.server.playerui.clientbutton.MultiButton;
 import oldmana.md.server.playerui.clientbutton.UndoButton;
 import oldmana.md.server.rules.DrawExtraCardsPolicy;
@@ -50,11 +51,11 @@ import oldmana.md.server.state.GameState;
 import oldmana.md.server.state.primary.ActionStatePlayerTurn;
 import oldmana.md.server.status.StatusEffect;
 
-public class Player extends Client implements CommandSender
+public class Player implements CommandSender
 {
 	private static int nextID;
 	
-	private MDServer server;
+	private Client client;
 	
 	private UUID uuid;
 	
@@ -83,21 +84,20 @@ public class Player extends Client implements CommandSender
 	private boolean bot;
 	private PlayerAI ai;
 	
-	public Player(MDServer server, UUID uuid, ConnectionThread net, String name, boolean op)
+	public Player(Client client, UUID uuid, String name, boolean op)
 	{
-		super(net);
-		this.server = server;
+		setClient(client);
 		this.uuid = uuid;
 		this.name = name;
 		this.op = op;
 		id = nextID++;
 		
-		server.broadcastPacket(new PacketPlayerInfo(getID(), getName(), true), this);
+		getServer().broadcastPacket(new PacketPlayerInfo(getID(), getName(), true), this);
 		hand = new Hand(this);
 		bank = new Bank(this);
 		propertySets = new ArrayList<PropertySet>();
 		
-		lastPing = server.getTickCount();
+		lastPing = getServer().getTickCount();
 		
 		clientButtons.add(new MultiButton());
 		clientButtons.add(new UndoButton());
@@ -108,9 +108,9 @@ public class Player extends Client implements CommandSender
 	/**
 	 * Bot constructor
 	 */
-	public Player(MDServer server, String name)
+	public Player(String name)
 	{
-		this(server, UUID.randomUUID(), null, name, false);
+		this(null, UUID.randomUUID(), name, false);
 		bot = true;
 	}
 	
@@ -189,14 +189,14 @@ public class Player extends Client implements CommandSender
 		}
 		UndoableAction action = getLastUndoableAction();
 		PlayerUndoActionEvent event = new PlayerUndoActionEvent(this, action);
-		server.getEventManager().callEvent(event);
+		getServer().getEventManager().callEvent(event);
 		if (event.isCancelled())
 		{
 			sendUndoStatus();
 			return null;
 		}
 		popUndoableAction();
-		server.getGameState().onUndo(action);
+		getGameState().onUndo(action);
 		action.performUndo();
 		System.out.println(getName() + " undos " + action.getFace().getName());
 		return action;
@@ -223,11 +223,7 @@ public class Player extends Client implements CommandSender
 		}
 		else
 		{
-			if (getNet() != null)
-			{
-				getNet().close();
-				setNet(null);
-			}
+			closeConnection();
 		}
 		updatePlayer();
 	}
@@ -369,7 +365,7 @@ public class Player extends Client implements CommandSender
 	{
 		propertySets.remove(set);
 		CardCollection.unregister(set);
-		server.broadcastPacket(new PacketDestroyCardCollection(set.getID()));
+		getServer().broadcastPacket(new PacketDestroyCardCollection(set.getID()));
 	}
 	
 	private void addPropertySet(PropertySet set)
@@ -561,7 +557,7 @@ public class Player extends Client implements CommandSender
 					&& getServer().getGameState().getActionState() instanceof ActionStatePlayerTurn))
 			{
 				clearUndoableActions();
-				server.getDeck().drawCards(this, getServer().getGameRules().getExtraCardsDrawn(), 0.8);
+				getServer().getDeck().drawCards(this, getServer().getGameRules().getExtraCardsDrawn(), 0.8);
 				return true;
 			}
 		}
@@ -583,7 +579,7 @@ public class Player extends Client implements CommandSender
 	 */
 	public void addStatusEffect(StatusEffect effect)
 	{
-		server.getEventManager().registerEvents(effect);
+		getServer().getEventManager().registerEvents(effect);
 		statusEffects.add(effect);
 	}
 	
@@ -593,7 +589,7 @@ public class Player extends Client implements CommandSender
 	 */
 	public void removeStatusEffect(StatusEffect effect)
 	{
-		server.getEventManager().unregisterEvents(effect);
+		getServer().getEventManager().unregisterEvents(effect);
 		statusEffects.remove(effect);
 	}
 	
@@ -609,7 +605,7 @@ public class Player extends Client implements CommandSender
 			StatusEffect effect = it.next();
 			if (effect.getClass() == clazz)
 			{
-				server.getEventManager().unregisterEvents(effect);
+				getServer().getEventManager().unregisterEvents(effect);
 				it.remove();
 			}
 		}
@@ -659,7 +655,7 @@ public class Player extends Client implements CommandSender
 		while (it.hasNext())
 		{
 			StatusEffect effect = it.next();
-			server.getEventManager().unregisterEvents(effect);
+			getServer().getEventManager().unregisterEvents(effect);
 			it.remove();
 		}
 	}
@@ -848,15 +844,15 @@ public class Player extends Client implements CommandSender
 			System.out.println(getName() + " tried to draw without being able to!");
 			return;
 		}
-		int cardsToDraw = server.getGameRules().getCardsDrawnPerTurn();
+		int cardsToDraw = getServer().getGameRules().getCardsDrawnPerTurn();
 		if (getServer().getGameRules().getDrawExtraCardsPolicy() == DrawExtraCardsPolicy.NEXT_DRAW &&
 				getHand().getCardCount() == 0)
 		{
-			cardsToDraw = server.getGameRules().getExtraCardsDrawn();
+			cardsToDraw = getServer().getGameRules().getExtraCardsDrawn();
 		}
 		List<Card> cards = drawCards(cardsToDraw);
-		server.getGameState().setDrawn();
-		server.getEventManager().callEvent(new PlayerDrawEvent(this, cards));
+		getGameState().setDrawn();
+		getServer().getEventManager().callEvent(new PlayerDrawEvent(this, cards));
 	}
 	
 	/**
@@ -866,7 +862,7 @@ public class Player extends Client implements CommandSender
 	 */
 	public List<Card> drawCards(int amount)
 	{
-		return server.getDeck().drawCards(this, amount);
+		return getServer().getDeck().drawCards(this, amount);
 	}
 	
 	public void endTurn()
@@ -891,27 +887,27 @@ public class Player extends Client implements CommandSender
 				return;
 			}
 		}
-		server.getGameState().nextTurn();
+		getGameState().nextTurn();
 	}
 	
 	public void executeCommand(String raw)
 	{
-		server.getCommandHandler().executeCommand(this, raw);
+		getServer().getCommandHandler().executeCommand(this, raw);
 	}
 	
 	public void chat(String msg)
 	{
-		server.broadcastMessage(getName() + ": " + msg, true);
+		getServer().broadcastMessage(getName() + ": " + msg, true);
 	}
 	
 	public void resendActionState()
 	{
-		server.getGameState().resendActionState(this);
+		getGameState().resendActionState(this);
 	}
 	
 	public void resendTurnState()
 	{
-		server.getGameState().resendTurnState(this);
+		getGameState().resendTurnState(this);
 	}
 	
 	/**
@@ -1037,7 +1033,7 @@ public class Player extends Client implements CommandSender
 		sendPacket(new PacketRefresh());
 		sendPacket(new PacketHandshake(getID(), getName()));
 		sendPacket(new PacketStatus("Loading.."));
-		for (Player other : server.getPlayersExcluding(this))
+		for (Player other : getServer().getPlayersExcluding(this))
 		{
 			sendPacket(other.getInfoPacket());
 		}
@@ -1079,11 +1075,70 @@ public class Player extends Client implements CommandSender
 		sendCardButtons();
 		sendButtonPackets();
 		sendUndoStatus();
-		server.getGameState().sendStatus(this);
+		getServer().getGameState().sendStatus(this);
 	}
 	
 	protected MDServer getServer()
 	{
-		return server;
+		return MDServer.getInstance();
+	}
+	
+	protected GameState getGameState()
+	{
+		return getServer().getGameState();
+	}
+	
+	public Client getClient()
+	{
+		return client;
+	}
+	
+	public void setClient(Client client)
+	{
+		this.client = client;
+		if (client != null)
+		{
+			client.setCloseHandler(e ->
+			{
+				getServer().getScheduler().scheduleTask(() ->
+				{
+					if (this.client == client)
+					{
+						if (!(e instanceof GracefulDisconnect))
+						{
+							System.out.println(getName() + " lost connection");
+						}
+						setOnline(false);
+					}
+				});
+			});
+		}
+	}
+	
+	public void closeConnection()
+	{
+		if (client != null)
+		{
+			client.closeConnection();
+			client = null;
+		}
+	}
+	
+	public String getHostAddress()
+	{
+		return client != null ? client.getHostAddress() : "No Address";
+	}
+	
+	public boolean isConnected()
+	{
+		return client != null && client.isConnected();
+	}
+	
+	public void sendPacket(Packet packet)
+	{
+		if (client != null)
+		{
+			client.addOutPacket(packet);
+		}
 	}
 }

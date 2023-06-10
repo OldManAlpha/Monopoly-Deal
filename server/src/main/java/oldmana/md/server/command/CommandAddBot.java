@@ -18,7 +18,7 @@ public class CommandAddBot extends Command
 	@Override
 	public void executeCommand(CommandSender sender, String[] args)
 	{
-		Player bot = new Player(getServer(), args.length > 0 ? getFullStringArgument(args, 0) : "Bot " + nextBotID++);
+		Player bot = new Player(args.length > 0 ? getFullStringArgument(args, 0) : "Bot " + nextBotID++);
 		getServer().addPlayer(bot);
 		getServer().getEventManager().callEvent(new PlayerJoinedEvent(bot));
 		sender.sendMessage("Created bot '" + bot.getName() + "' (ID: " + bot.getID() + ")");

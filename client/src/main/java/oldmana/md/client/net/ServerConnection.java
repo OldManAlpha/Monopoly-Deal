@@ -1,30 +1,46 @@
-package oldmana.md.server.net;
+package oldmana.md.client.net;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
+
 import oldmana.general.mjnetworkingapi.MJConnection;
 import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.client.MDClient;
+import oldmana.md.client.gui.screen.TableScreen;
+import oldmana.md.server.net.DirectClient;
 
-public class ConnectionThread extends Thread
+public class ServerConnection extends Thread
 {
 	private MJConnection connection;
+	private DirectClient direct;
 	
 	private final List<Packet> inPackets;
 	private final List<Packet> outPackets;
 	
-	private boolean close = false;
+	private volatile boolean sendingPackets;
 	
-	public ConnectionThread(MJConnection connection)
+	private volatile boolean closedGracefully;
+	
+	public ServerConnection(MJConnection connection)
 	{
 		this.connection = connection;
 		
 		inPackets = new ArrayList<Packet>();
 		outPackets = new ArrayList<Packet>();
 		
-		setDaemon(true);
 		start();
+	}
+	
+	public ServerConnection(DirectClient direct)
+	{
+		this.direct = direct;
+		
+		// Directly reference the packet lists from the server
+		inPackets = direct.getOutPacketsInstance();
+		outPackets = direct.getInPacketsInstance();
 	}
 	
 	public void addInPacket(Packet p)
@@ -67,23 +83,38 @@ public class ConnectionThread extends Thread
 	{
 		synchronized (outPackets)
 		{
-			return !outPackets.isEmpty();
+			return outPackets.size() > 0;
 		}
+	}
+	
+	public boolean isSendingPackets()
+	{
+		return sendingPackets;
 	}
 	
 	public void close()
 	{
-		close = true;
+		if (direct != null)
+		{
+			direct.closeConnection();
+		}
+		else
+		{
+			try
+			{
+				connection.close();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
 	}
 	
-	public boolean isClosed()
+	public void closeGracefully()
 	{
-		return connection.isClosed();
-	}
-	
-	public MJConnection getConnection()
-	{
-		return connection;
+		closedGracefully = true;
+		close();
 	}
 	
 	@Override
@@ -93,40 +124,39 @@ public class ConnectionThread extends Thread
 		{
 			try
 			{
+				sendingPackets = true;
 				for (Packet p : getOutPackets())
 				{
 					connection.sendPacket(p);
 				}
+				sendingPackets = false;
 				
 				while (connection.hasAvailableInput())
 				{
 					Packet p = connection.receivePackets(10000);
 					addInPacket(p);
 				}
-				
-				if (close)
-				{
-					connection.close();
-				}
 			}
 			catch (Exception e)
 			{
-				System.err.println(connection.getSocket().getInetAddress().getHostAddress() + " lost connection");
 				e.printStackTrace();
-				try
-				{
-					connection.close();
-				}
-				catch (IOException e1)
-				{
-					e1.printStackTrace();
-				}
+				close();
 			}
 			try
 			{
-				Thread.sleep(50);
+				Thread.sleep(10);
 			}
 			catch (InterruptedException e) {}
 		}
+		if (!closedGracefully)
+		{
+			SwingUtilities.invokeLater(() ->
+			{
+				TableScreen ts = MDClient.getInstance().getTableScreen();
+				ts.getTopbar().setText("Lost Connection");
+				ts.repaint();
+			});
+		}
+		closedGracefully = false;
 	}
 }

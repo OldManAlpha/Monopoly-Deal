@@ -100,7 +100,7 @@ public class NetClientHandler extends NetHandler
 		}
 	}
 	
-	public void processPackets(ConnectionThread connection)
+	public void processPackets(ServerConnection connection)
 	{
 		for (Packet packet : connection.getInPackets())
 		{
@@ -195,7 +195,7 @@ public class NetClientHandler extends NetHandler
 	
 	public void handleKick(PacketKick packet)
 	{
-		client.getConnectionThread().closeGracefully();
+		client.getServerConnection().closeGracefully();
 		client.getTableScreen().getTopbar().setText("Disconnected: " + packet.reason);
 		client.getTableScreen().getTopbar().repaint();
 	}

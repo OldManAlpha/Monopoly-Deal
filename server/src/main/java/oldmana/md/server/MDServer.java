@@ -57,6 +57,7 @@ import oldmana.md.server.event.EventManager;
 import oldmana.md.server.event.player.PlayerRemovedEvent;
 import oldmana.md.server.mod.ServerMod;
 import oldmana.md.server.mod.ModLoader;
+import oldmana.md.server.net.Client;
 import oldmana.md.server.net.IncomingConnectionsThread;
 import oldmana.md.server.net.NetServerHandler;
 import oldmana.md.server.playerui.ChatLinkHandler;
@@ -182,19 +183,22 @@ public class MDServer
 		discardPile = new DiscardPile();
 		config.loadConfig();
 		verbose = config.getBoolean("verbose");
-		int port = isIntegrated() ? 0 : config.getInt("port");
+		int port = config.getInt("port");
 		serverKey = config.getBigInteger("serverKey").toByteArray();
-		try
+		if (!isIntegrated())
 		{
-			threadIncConnect = new IncomingConnectionsThread(port);
+			try
+			{
+				threadIncConnect = new IncomingConnectionsThread(port);
+			}
+			catch (IOException e)
+			{
+				System.out.println("Failed to bind port " + port);
+				e.printStackTrace();
+				System.exit(0);
+			}
+			System.out.println("Using port " + port);
 		}
-		catch (IOException e)
-		{
-			System.out.println("Failed to bind port " + port);
-			e.printStackTrace();
-			System.exit(0);
-		}
-		System.out.println("Using port " + port);
 		cmdHandler.registerDefaultCommands();
 		try
 		{
@@ -222,12 +226,7 @@ public class MDServer
 					{
 						player.setOnline(false);
 						player.setSentPing(false);
-						if (player.getNet() != null)
-						{
-							player.getNet().close();
-							player.setNet(null);
-						}
-						System.out.println(player.getDescription() + " timed out");
+						System.out.println(player.getName() + " timed out");
 					}
 				}
 			}
@@ -315,7 +314,7 @@ public class MDServer
 						{
 							continue;
 						}
-						netHandler.processPackets(client);
+						netHandler.processPackets(client, null);
 					}
 				}
 			}
@@ -325,12 +324,12 @@ public class MDServer
 			{
 				if (player.isConnected())
 				{
-					if (player.getNet().isClosed())
+					if (!player.isConnected())
 					{
 						player.setOnline(false);
 						continue;
 					}
-					netHandler.processPackets(player);
+					netHandler.processPackets(player.getClient(), player);
 				}
 			}
 			
@@ -390,13 +389,16 @@ public class MDServer
 		}
 		
 		broadcastPacket(new PacketKick(error ? "Server crashed" : "Server shut down"));
-		threadIncConnect.interrupt();
+		if (threadIncConnect != null)
+		{
+			threadIncConnect.interrupt();
+		}
 		while (true)
 		{
 			boolean hasPackets = false;
 			for (Player player : getPlayers())
 			{
-				if (player.getNet() != null && player.getNet().hasOutPackets())
+				if (player.getClient() != null && player.getClient().hasOutPackets())
 				{
 					hasPackets = true;
 					break;
@@ -469,7 +471,7 @@ public class MDServer
 	
 	public int getPort()
 	{
-		return threadIncConnect.getSocket().getLocalPort();
+		return threadIncConnect != null ? threadIncConnect.getSocket().getLocalPort() : 0;
 	}
 	
 	public File getDataFolder()
@@ -663,13 +665,13 @@ public class MDServer
 	
 	public void disconnectClient(Client client)
 	{
-		client.getNet().close();
+		client.closeConnection();
 		removeClient(client);
 	}
 	
 	public void disconnectClient(Client client, String reason)
 	{
-		client.sendPacket(new PacketKick(reason));
+		client.addOutPacket(new PacketKick(reason));
 		disconnectClient(client);
 	}
 	
@@ -687,10 +689,9 @@ public class MDServer
 	public void kickPlayer(Player player, String reason)
 	{
 		player.sendPacket(new PacketKick(reason));
-		if (player.getNet() != null)
+		if (player.getClient() != null)
 		{
-			player.getNet().close();
-			player.setNet(null);
+			player.closeConnection();
 		}
 		for (Card card : player.getAllCards())
 		{

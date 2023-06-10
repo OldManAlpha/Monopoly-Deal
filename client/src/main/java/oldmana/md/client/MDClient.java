@@ -23,7 +23,7 @@ import oldmana.md.client.card.collection.VoidCollection;
 import oldmana.md.client.gui.MDFrame;
 import oldmana.md.client.gui.component.collection.MDHand;
 import oldmana.md.client.gui.screen.TableScreen;
-import oldmana.md.client.net.ConnectionThread;
+import oldmana.md.client.net.ServerConnection;
 import oldmana.md.client.net.NetClientHandler;
 import oldmana.md.client.rules.GameRules;
 import oldmana.md.client.state.ActionState;
@@ -67,7 +67,7 @@ public class MDClient
 	
 	private NetClientHandler netHandler;
 	
-	private ConnectionThread connection;
+	private ServerConnection connection;
 	
 	public EventQueue eventQueue;
 	
@@ -251,16 +251,21 @@ public class MDClient
 		return eventQueue;
 	}
 	
-	public ConnectionThread getConnectionThread()
+	public ServerConnection getServerConnection()
 	{
 		return connection;
+	}
+	
+	public void setServerConnection(ServerConnection connection)
+	{
+		this.connection = connection;
 	}
 	
 	public void connectToServer(String ip, int port) throws Exception
 	{
 		MJConnection connect = new MJConnection();
 		connect.connect(ip, port, 5000);
-		connection = new ConnectionThread(connect);
+		connection = new ServerConnection(connect);
 		getTableScreen().getTopbar().setText("Logging in..");
 	}
 	
@@ -564,8 +569,10 @@ public class MDClient
 	
 	public void resetGame()
 	{
-		getGameState().setActionState(null);
-		getGameState().setPlayerTurn(null);
+		getGameState().cleanup();
+		
+		System.out.println(getGameState().getActionState());
+		System.out.println(getGameState().getPlayerTurn());
 		
 		if (eventQueue.getCurrentTask() instanceof CardMove)
 		{
@@ -593,6 +600,7 @@ public class MDClient
 		thePlayer = null;
 		otherPlayers.clear();
 		turnOrder.clear();
+		othersOrdered.clear();
 		
 		Card.getRegisteredCards().clear();
 		CardCollection.getRegisteredCardCollections().clear();

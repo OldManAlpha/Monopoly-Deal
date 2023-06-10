@@ -137,4 +137,19 @@ public class GameState
 			MDClient.getInstance().getTableScreen().repaint();
 		});
 	}
+	
+	public void cleanup()
+	{
+		if (clientState != null)
+		{
+			clientState.cleanup();
+		}
+		if (state != null)
+		{
+			state.cleanup();
+		}
+		clientState = null;
+		state = null;
+		turn = null;
+	}
 }

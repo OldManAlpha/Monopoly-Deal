@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
@@ -21,9 +22,11 @@ import oldmana.md.client.gui.component.MDComponent;
 import oldmana.md.client.gui.component.MDText;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
+import oldmana.md.client.net.ServerConnection;
 import oldmana.md.net.NetHandler;
 import oldmana.md.net.packet.client.PacketInitiateLogin;
 import oldmana.md.server.MDServer;
+import oldmana.md.server.net.DirectClient;
 
 public class MainMenuScreen extends MDComponent
 {
@@ -118,19 +121,21 @@ public class MainMenuScreen extends MDComponent
 					"Huell", "Hector", "Walter", "Skyler", "Jesse", "Bill", "Hank");
 			Collections.shuffle(names);
 			
-			server.getScheduler().scheduleTask(20, () ->
-			{
-				server.getPlayerByName(playerName).setOp(true);
-				names.stream().filter(name -> !name.equalsIgnoreCase(playerName)).limit(botCount).forEach(name ->
-				{
-					server.getCommandHandler().executeCommand(server.getConsoleSender(), "addbot " + name);
-				});
-				server.getCommandHandler().executeCommand(server.getConsoleSender(), "start");
-			});
 			status.setText("");
 			try
 			{
-				client.connectToServer("localhost", server.getPort());
+				DirectClient direct = new DirectClient();
+				client.setServerConnection(new ServerConnection(direct));
+				CompletableFuture.runAsync(() -> server.addClient(direct), server.getSyncExecutor()).get();
+				server.getScheduler().scheduleTask(10, () ->
+				{
+					server.getPlayerByName(playerName).setOp(true);
+					names.stream().filter(name -> !name.equalsIgnoreCase(playerName)).limit(botCount).forEach(name ->
+					{
+						server.getCommandHandler().executeCommand(server.getConsoleSender(), "addbot " + name);
+					});
+					server.getCommandHandler().executeCommand(server.getConsoleSender(), "start");
+				});
 				client.sendPacket(new PacketInitiateLogin(NetHandler.PROTOCOL_VERSION));
 				client.getWindow().displayTable();
 			}

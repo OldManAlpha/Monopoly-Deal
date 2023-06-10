@@ -18,7 +18,6 @@ import oldmana.md.net.packet.universal.*;
 import oldmana.md.server.card.play.argument.CardArgument;
 import oldmana.md.server.card.play.PlayArguments;
 import oldmana.md.server.playerui.ChatLinkHandler.ChatLink;
-import oldmana.md.server.Client;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.PlayerRegistry;
@@ -72,18 +71,17 @@ public class NetServerHandler extends NetHandler
 		}
 	}
 	
-	public void processPackets(Client client)
+	public void processPackets(Client client, Player player)
 	{
-		for (Packet packet : client.getNet().getInPackets())
+		for (Packet packet : client.getInPackets())
 		{
 			String packetName = packet.getClass().getName();
 			if (packetName.startsWith("oldmana.md.net.packet"))
 			{
 				packetName = packetName.substring(22);
 			}
-			if (client instanceof Player)
+			if (player != null)
 			{
-				Player player = (Player) client;
 				if (server.isVerbose() && !(packet instanceof PacketKeepConnected))
 				{
 					System.out.println("Processing: " + packetName + " (" + player.getName() + ")");
@@ -128,7 +126,7 @@ public class NetServerHandler extends NetHandler
 			server.disconnectClient(client, "Invalid version! Server is on " + MDServer.VERSION);
 			return;
 		}
-		client.sendPacket(new PacketServerInfo(PROTOCOL_VERSION, server.getServerKey()));
+		client.addOutPacket(new PacketServerInfo(PROTOCOL_VERSION, server.getServerKey()));
 	}
 	
 	public void handleLogin(Client client, PacketLogin packet)
@@ -167,7 +165,7 @@ public class NetServerHandler extends NetHandler
 			{
 				player.setName(packet.name);
 			}
-			player.setNet(client.getNet());
+			player.setClient(client);
 			player.refresh();
 			System.out.println("Player " + player.getDescription() +
 					(!prevName.equals(player.getName()) ? " (Previously named " + prevName + ")" : "") +
@@ -182,7 +180,7 @@ public class NetServerHandler extends NetHandler
 			return;
 		}
 		RegisteredPlayer rp = registry.getRegisteredPlayerByUUID(uuid);
-		Player player = new Player(server, uuid, client.getNet(), rp.name, rp.op);
+		Player player = new Player(client, uuid, rp.name, rp.op);
 		server.addPlayer(player);
 		player.refresh();
 		player.setOnline(true);

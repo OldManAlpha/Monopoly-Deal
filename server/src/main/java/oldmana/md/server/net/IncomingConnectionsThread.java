@@ -5,7 +5,6 @@ import java.net.ServerSocket;
 
 import oldmana.general.mjnetworkingapi.server.MJServer;
 import oldmana.general.mjnetworkingapi.server.MJServer.MJConnectAttempt;
-import oldmana.md.server.Client;
 import oldmana.md.server.MDServer;
 
 public class IncomingConnectionsThread extends Thread
@@ -35,7 +34,7 @@ public class IncomingConnectionsThread extends Thread
 				System.out.println("Client attempting connection from " + attempt.getConnection().getSocket().getInetAddress().getHostAddress());
 				if (attempt.successful())
 				{
-					MDServer.getInstance().addClient(new Client(new ConnectionThread(attempt.getConnection())));
+					MDServer.getInstance().addClient(new NetClient(attempt.getConnection()));
 				}
 			}
 			catch (Exception e) {}

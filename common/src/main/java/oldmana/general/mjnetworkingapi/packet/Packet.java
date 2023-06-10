@@ -1,6 +1,7 @@
 package oldmana.general.mjnetworkingapi.packet;
 
 import java.io.DataInputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.net.Socket;
@@ -112,30 +113,39 @@ public abstract class Packet
 	public static Packet receivePackets(Socket s, int timeout) throws Exception
 	{
 		s.setSoTimeout(timeout);
-		DataInputStream in = new DataInputStream(s.getInputStream());
-		int id = in.readShort();
-		int len = in.readInt();
+		return receivePackets(s.getInputStream());
+	}
+	
+	public static Packet receivePackets(InputStream is) throws Exception
+	{
+		DataInputStream din = new DataInputStream(is);
+		int id = din.readShort();
+		int len = din.readInt();
 		byte[] data = new byte[len];
-		in.readFully(data);
+		din.readFully(data);
 		
 		return toPacket(id, data);
 	}
 	
 	public static void sendPacket(Socket s, Packet p) throws Exception
 	{
-		OutputStream out = s.getOutputStream();
-		MJPacketBuffer buffer = new MJPacketBuffer();
-		buffer.addShort((short) getID(p.getClass()));
-		MJPacketBuffer data = new MJPacketBuffer();
-		toBytes(p, data);
-		buffer.addInt(data.toByteArray().length);
-		buffer.append(data.toByteArray());
-		out.write(buffer.toByteArray());
+		sendPacket(s.getOutputStream(), p);
 	}
 	
 	public static void sendPacket(MJConnection connection, Packet p) throws Exception
 	{
 		sendPacket(connection.getSocket(), p);
+	}
+	
+	public static void sendPacket(OutputStream os, Packet packet) throws Exception
+	{
+		MJPacketBuffer buffer = new MJPacketBuffer();
+		buffer.addShort((short) getID(packet.getClass()));
+		MJPacketBuffer data = new MJPacketBuffer();
+		toBytes(packet, data);
+		buffer.addInt(data.toByteArray().length);
+		buffer.append(data.toByteArray());
+		os.write(buffer.toByteArray());
 	}
 	
 	public static int registerPacket(Class<? extends Packet> clazz)
