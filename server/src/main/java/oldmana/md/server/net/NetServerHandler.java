@@ -76,16 +76,11 @@ public class NetServerHandler extends NetHandler
 	{
 		for (Packet packet : client.getInPackets())
 		{
-			String packetName = packet.getClass().getName();
-			if (packetName.startsWith("oldmana.md.net.packet"))
-			{
-				packetName = packetName.substring(22);
-			}
 			if (player != null)
 			{
 				if (server.isVerbose() && !(packet instanceof PacketKeepConnected))
 				{
-					System.out.println("Processing: " + packetName + " (" + player.getName() + ")");
+					System.out.println("Processing: " + packet.getClass().getSimpleName() + " (" + player.getName() + ")");
 				}
 				try
 				{
@@ -100,7 +95,7 @@ public class NetServerHandler extends NetHandler
 			{
 				if (server.isVerbose())
 				{
-					System.out.println("Processing: " + packetName + " (" + client.getHostAddress() + ")");
+					System.out.println("Processing: " + packet.getClass().getSimpleName() + " (" + client.getHostAddress() + ")");
 				}
 				if (packet instanceof PacketInitiateLogin)
 				{

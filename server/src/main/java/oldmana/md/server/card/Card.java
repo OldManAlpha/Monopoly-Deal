@@ -469,63 +469,100 @@ public abstract class Card
 	 */
 	public void play(PlayArguments args)
 	{
-		if (args == null)
+		try
 		{
-			args = PlayArguments.EMPTY;
-		}
-		Player player = getOwner(); // Caching the owner since they might not be the owner by the end of this method call.
-		
-		if (player == null)
-		{
-			throw new IllegalStateException("Cards without an owner cannot be played");
-		}
-		
-		if (args.hasArgument(DiscardArgument.class))
-		{
-			playStageDiscard(player, args);
-			return; // Discarded cards do not continue to play logic
-		}
-		
-		// This card cannot be played and isn't attempted to be banked, so nothing happens
-		if (!args.hasArgument(IgnoreCanPlayArgument.class) && !args.hasArgument(BankArgument.class) && !canPlayNow())
-		{
-			return;
-		}
-		
-		if (playStageCallPrePlayEvent(player, args))
-		{
-			return; // Event was cancelled, so nothing happens
-		}
-		
-		if (playStageBank(player, args))
-		{
+			getServer().getGameState().pushCard(this);
+			
+			if (args == null)
+			{
+				args = PlayArguments.EMPTY;
+			}
+			Player player = getOwner(); // Caching the owner since they might not be the owner by the end of this method call.
+			
+			if (player == null)
+			{
+				throw new IllegalStateException("Cards without an owner cannot be played");
+			}
+			
+			if (args.hasArgument(DiscardArgument.class))
+			{
+				playStageDiscard(player, args);
+				return; // Discarded cards do not continue to play logic
+			}
+			
+			// This card cannot be played and isn't attempted to be banked, so nothing happens
+			if (!args.hasArgument(IgnoreCanPlayArgument.class) && !args.hasArgument(BankArgument.class) && !canPlayNow())
+			{
+				return;
+			}
+			
+			if (playStageCallPrePlayEvent(player, args))
+			{
+				return; // Event was cancelled, so nothing happens
+			}
+			
+			if (playStageBank(player, args))
+			{
+				playStageCallPostPlayEvent(player, args);
+				player.checkEmptyHand();
+				// Card was banked, so we're not proceeding to play the card
+				return;
+			}
+			
+			playStageAddUndo(player, args);
+			
+			CardPlayStage consumeMovesStage = getConsumeMovesStage();
+			CardPlayStage moveStage = getMoveStage();
+			
+			if (consumeMovesStage == CardPlayStage.BEFORE_PLAY)
+			{
+				playStageConsumeMoves(player, args);
+			}
+			if (moveStage == CardPlayStage.BEFORE_PLAY)
+			{
+				playStageMoveCard(player, args);
+			}
+			
+			if (consumeMovesStage == CardPlayStage.RIGHT_BEFORE_PLAY)
+			{
+				playStageConsumeMoves(player, args);
+			}
+			if (moveStage == CardPlayStage.RIGHT_BEFORE_PLAY)
+			{
+				playStageMoveCard(player, args);
+			}
+			
+			playStagePlayCard(player, args); // Here's where the card is gonna actually get played
+			
+			if (consumeMovesStage == CardPlayStage.RIGHT_AFTER_PLAY)
+			{
+				playStageConsumeMoves(player, args);
+			}
+			if (moveStage == CardPlayStage.RIGHT_AFTER_PLAY)
+			{
+				playStageMoveCard(player, args);
+			}
+			
+			if (consumeMovesStage == CardPlayStage.AFTER_PLAY)
+			{
+				playStageConsumeMoves(player, args);
+			}
+			if (moveStage == CardPlayStage.AFTER_PLAY)
+			{
+				playStageMoveCard(player, args);
+			}
+			
 			playStageCallPostPlayEvent(player, args);
 			player.checkEmptyHand();
-			// Card was banked, so we're not proceeding to play the card
-			return;
+			player.clearAwaitingResponse();
 		}
-		
-		playStageAddUndo(player, args);
-		
-		CardPlayStage consumeMovesStage = getConsumeMovesStage();
-		CardPlayStage moveStage = getMoveStage();
-		
-		if (consumeMovesStage == CardPlayStage.BEFORE_PLAY) { playStageConsumeMoves(player, args); }
-		if (moveStage == CardPlayStage.BEFORE_PLAY) { playStageMoveCard(player, args); }
-		
-		if (consumeMovesStage == CardPlayStage.RIGHT_BEFORE_PLAY) { playStageConsumeMoves(player, args); }
-		if (moveStage == CardPlayStage.RIGHT_BEFORE_PLAY) { playStageMoveCard(player, args); }
-		
-		playStagePlayCard(player, args); // Here's where the card is gonna actually get played
-		
-		if (consumeMovesStage == CardPlayStage.RIGHT_AFTER_PLAY) { playStageConsumeMoves(player, args); }
-		if (moveStage == CardPlayStage.RIGHT_AFTER_PLAY) { playStageMoveCard(player, args); }
-		
-		if (consumeMovesStage == CardPlayStage.AFTER_PLAY) { playStageConsumeMoves(player, args); }
-		if (moveStage == CardPlayStage.AFTER_PLAY) { playStageMoveCard(player, args); }
-		
-		playStageCallPostPlayEvent(player, args);
-		player.checkEmptyHand();
+		finally
+		{
+			if (getServer().getGameState().popCard() != this)
+			{
+				System.out.println("Popped card mismatch!");
+			}
+		}
 	}
 	
 	

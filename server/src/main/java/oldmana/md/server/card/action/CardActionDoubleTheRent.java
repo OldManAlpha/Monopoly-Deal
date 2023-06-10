@@ -117,7 +117,7 @@ public class CardActionDoubleTheRent extends CardAction implements RentModifierC
 		template.put(DISPLAY_OFFSET_Y, 2);
 		template.putStrings(DESCRIPTION, "Can be played with a Rent card to double the charge against players. Counts as a move.");
 		template.put(UNDOABLE, false);
-		template.put(CLEARS_UNDOABLE_ACTIONS, true);
+		template.put(CLEARS_UNDOABLE_ACTIONS, false);
 		template.put(PLAY_ANIMATION, CardAnimationType.IMPORTANT);
 		type.setDefaultTemplate(template);
 		return type;

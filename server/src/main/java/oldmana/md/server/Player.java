@@ -187,6 +187,10 @@ public class Player implements CommandSender
 			sendUndoStatus();
 			return null;
 		}
+		if (getGameState().isUndoing())
+		{
+			throw new IllegalStateException("Cannot undo concurrently");
+		}
 		UndoableAction action = getLastUndoableAction();
 		PlayerUndoActionEvent event = new PlayerUndoActionEvent(this, action);
 		getServer().getEventManager().callEvent(event);
@@ -197,8 +201,9 @@ public class Player implements CommandSender
 		}
 		popUndoableAction();
 		getGameState().onUndo(action);
-		action.performUndo();
 		System.out.println(getName() + " undos " + action.getFace().getName());
+		action.performUndo();
+		clearAwaitingResponse();
 		return action;
 	}
 	
@@ -554,7 +559,7 @@ public class Player implements CommandSender
 		{
 			DrawExtraCardsPolicy policy = getServer().getGameRules().getDrawExtraCardsPolicy();
 			if (policy == DrawExtraCardsPolicy.IMMEDIATELY || (policy == DrawExtraCardsPolicy.IMMEDIATELY_AFTER_ACTION
-					&& getServer().getGameState().getActionState() instanceof ActionStatePlayerTurn))
+					&& getGameState().getActionState() instanceof ActionStatePlayerTurn && !getGameState().isProcessingCards()))
 			{
 				clearUndoableActions();
 				getServer().getDeck().drawCards(this, getServer().getGameRules().getExtraCardsDrawn(), 0.8);
@@ -911,7 +916,7 @@ public class Player implements CommandSender
 	}
 	
 	/**
-	 * Tells the client to stop awaiting a response from the server, despite not giving any new information.
+	 * Tells the client to stop awaiting a response from the server, regardless of giving any new information.
 	 */
 	public void clearAwaitingResponse()
 	{

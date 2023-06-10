@@ -1,6 +1,8 @@
 package oldmana.md.server.state;
 
+import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,8 +31,11 @@ public class GameState
 	private MDServer server;
 	
 	private ActionStatePlayerTurn turnState;
-	private List<ActionState> states = new LinkedList<ActionState>();
+	private LinkedList<ActionState> states = new LinkedList<ActionState>();
 	private ActionState lastSentState;
+	
+	private Deque<Card> cardStack = new ArrayDeque<Card>();
+	private boolean undoing = false;
 	
 	private TurnOrder turnOrder;
 	
@@ -53,6 +58,42 @@ public class GameState
 		turnOrder = new TurnOrder();
 	}
 	
+	/**
+	 * Do not call unless you know what you're doing.
+	 * @param card The card to push
+	 */
+	public void pushCard(Card card)
+	{
+		cardStack.push(card);
+	}
+	
+	/**
+	 * Do not call unless you know what you're doing.
+	 * @return The card popped
+	 */
+	public Card popCard()
+	{
+		return cardStack.pop();
+	}
+	
+	/**
+	 * Check if cards are being played right now.
+	 * @return True if cards are being played
+	 */
+	public boolean isPlayingCard()
+	{
+		return !cardStack.isEmpty();
+	}
+	
+	/**
+	 * Check if cards are being played or being undone right now.
+	 * @return True if cards are being processed
+	 */
+	public boolean isProcessingCards()
+	{
+		return isPlayingCard() || isUndoing();
+	}
+	
 	public TurnOrder getTurnOrder()
 	{
 		return turnOrder;
@@ -65,10 +106,17 @@ public class GameState
 	
 	public void onUndo(UndoableAction action)
 	{
+		undoing = true;
 		if (getActionState() != null)
 		{
 			getActionState().onUndo(action);
 		}
+		undoing = false;
+	}
+	
+	public boolean isUndoing()
+	{
+		return undoing;
 	}
 	
 	public boolean isGameRunning()
@@ -308,7 +356,7 @@ public class GameState
 	 */
 	public ActionState getActionState()
 	{
-		return states.isEmpty() ? turnState : states.get(0);
+		return states.isEmpty() ? turnState : states.getFirst();
 	}
 	
 	public ActionStatePlayerTurn getTurnState()
@@ -349,7 +397,7 @@ public class GameState
 		if (!event.isCancelled())
 		{
 			states.removeIf(s -> !s.isImportant());
-			states.add(0, state);
+			states.addFirst(state);
 			checkCurrentState();
 		}
 	}

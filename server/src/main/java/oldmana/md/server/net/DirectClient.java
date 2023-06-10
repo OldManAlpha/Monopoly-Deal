@@ -17,6 +17,8 @@ public class DirectClient implements Client
 	
 	private volatile boolean close = false;
 	
+	private Consumer<Throwable> closeHandler;
+	
 	public DirectClient()
 	{
 		inPackets = new LinkedList<Packet>();
@@ -98,11 +100,15 @@ public class DirectClient implements Client
 	public void closeConnection()
 	{
 		close = true;
+		if (closeHandler != null)
+		{
+			closeHandler.accept(new RuntimeException("Singleplayer exit"));
+		}
 	}
 	
 	@Override
 	public void setCloseHandler(Consumer<Throwable> handler)
 	{
-	
+		this.closeHandler = handler;
 	}
 }
