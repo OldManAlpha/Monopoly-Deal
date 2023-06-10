@@ -217,6 +217,10 @@ public class EventQueue
 				{
 					SoundSystem.playSound("CardPlace");
 				}
+				if (to.isUnknown() && card != null) // Must set owning collection after the card has moved
+				{
+					card.setOwningCollection(to);
+				}
 			}
 			else
 			{

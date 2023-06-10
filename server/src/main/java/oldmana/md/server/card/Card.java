@@ -7,6 +7,7 @@ import java.util.Map;
 
 import oldmana.md.common.net.api.packet.Packet;
 import oldmana.md.common.card.CardAnimationType;
+import oldmana.md.common.net.packet.server.PacketDestroyCard;
 import oldmana.md.common.playerui.ButtonColorScheme;
 import oldmana.md.common.playerui.CardButtonBounds;
 import oldmana.md.server.MDServer;
@@ -731,7 +732,12 @@ public abstract class Card
 	
 	public static void unregister(Card card)
 	{
+		if (card.getOwningCollection() != MDServer.getInstance().getVoidCollection())
+		{
+			throw new IllegalStateException("Cannot unregister cards that aren't in the void!");
+		}
 		getCardsMap().remove(card.getID());
+		MDServer.getInstance().broadcastPacket(new PacketDestroyCard(card.getID()));
 	}
 	
 	public static List<Card> getCards(int[] ids)

@@ -43,6 +43,7 @@ public class NetHandler
 		PacketCardPropertyData.class,
 		PacketCardBuildingData.class,
 		PacketDestroyCardCollection.class,
+		PacketDestroyCard.class,
 		PacketPropertySetColor.class,
 		PacketStatus.class,
 		PacketMoveCard.class,

@@ -492,6 +492,18 @@ public class NetClientHandler extends NetHandler
 	}
 	
 	@Queued
+	public void handleDestroyCard(PacketDestroyCard packet)
+	{
+		Card card = Card.getCard(packet.cardID);
+		if (!(card.getOwningCollection() instanceof VoidCollection))
+		{
+			System.out.println("Server tried to delete card that's still in play! " + packet.cardID);
+			return;
+		}
+		Card.getRegisteredCards().remove(packet.cardID);
+	}
+	
+	@Queued
 	public void handlePropertySetColor(PacketPropertySetColor packet)
 	{
 		PropertySet set = (PropertySet) CardCollection.getCardCollection(packet.id);
