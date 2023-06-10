@@ -14,8 +14,8 @@ import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.state.client.ActionStateClientCounterPlayer;
 import oldmana.md.common.playerui.ButtonColorScheme;
 import oldmana.md.common.state.TargetState;
-import oldmana.md.net.packet.client.action.PacketActionAccept;
-import oldmana.md.net.packet.client.action.PacketActionUseCardButton;
+import oldmana.md.common.net.packet.client.action.PacketActionAccept;
+import oldmana.md.common.net.packet.client.action.PacketActionUseCardButton;
 
 public class ActionState
 {

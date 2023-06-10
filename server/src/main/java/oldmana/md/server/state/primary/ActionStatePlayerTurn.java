@@ -1,8 +1,8 @@
 package oldmana.md.server.state.primary;
 
-import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.actionstate.PacketActionStatePlayerTurn;
-import oldmana.md.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
+import oldmana.md.common.net.api.packet.Packet;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStatePlayerTurn;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
 import oldmana.md.server.Player;
 import oldmana.md.server.state.ActionState;
 

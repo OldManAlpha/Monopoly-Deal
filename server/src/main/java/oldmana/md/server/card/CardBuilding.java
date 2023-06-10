@@ -1,8 +1,8 @@
 package oldmana.md.server.card;
 
-import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.common.net.api.packet.Packet;
 import oldmana.md.common.playerui.CardButtonType;
-import oldmana.md.net.packet.server.PacketCardBuildingData;
+import oldmana.md.common.net.packet.server.PacketCardBuildingData;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.play.argument.PropertySetArgument;
 import oldmana.md.server.card.play.PlayArguments;

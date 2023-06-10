@@ -1,7 +1,7 @@
 package oldmana.md.client.gui.component;
 
 import oldmana.md.client.Player;
-import oldmana.md.net.packet.client.action.PacketActionButtonClick;
+import oldmana.md.common.net.packet.client.action.PacketActionButtonClick;
 
 public class MDClientButton extends MDButton
 {

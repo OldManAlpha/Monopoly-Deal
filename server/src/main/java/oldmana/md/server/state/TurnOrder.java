@@ -1,6 +1,6 @@
 package oldmana.md.server.state;
 
-import oldmana.md.net.packet.server.PacketTurnOrder;
+import oldmana.md.common.net.packet.server.PacketTurnOrder;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.state.primary.ActionStatePlayerTurn;

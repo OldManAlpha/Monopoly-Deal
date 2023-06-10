@@ -1,6 +1,6 @@
 package oldmana.md.server.card;
 
-import oldmana.md.net.packet.server.PacketCardDescription;
+import oldmana.md.common.net.packet.server.PacketCardDescription;
 import oldmana.md.server.MDServer;
 
 import java.util.Arrays;

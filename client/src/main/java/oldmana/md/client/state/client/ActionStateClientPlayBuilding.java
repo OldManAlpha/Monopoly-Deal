@@ -6,7 +6,7 @@ import java.util.List;
 import oldmana.md.client.card.CardBuilding;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.component.collection.MDPropertySet;
-import oldmana.md.net.packet.client.action.PacketActionPlayCardBuilding;
+import oldmana.md.common.net.packet.client.action.PacketActionPlayCardBuilding;
 
 public class ActionStateClientPlayBuilding extends ActionStateClient
 {

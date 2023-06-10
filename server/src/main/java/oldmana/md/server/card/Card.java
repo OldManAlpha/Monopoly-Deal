@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.common.net.api.packet.Packet;
 import oldmana.md.common.card.CardAnimationType;
 import oldmana.md.common.playerui.ButtonColorScheme;
 import oldmana.md.common.playerui.CardButtonBounds;

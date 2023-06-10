@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.common.net.api.packet.Packet;
 import oldmana.md.common.state.TargetState;
-import oldmana.md.net.packet.server.actionstate.PacketUpdateActionStateTarget;
+import oldmana.md.common.net.packet.server.actionstate.PacketUpdateActionStateTarget;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.history.UndoableAction;

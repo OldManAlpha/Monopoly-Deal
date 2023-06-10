@@ -2,7 +2,7 @@ package oldmana.md.server.playerui;
 
 import oldmana.md.common.playerui.Button;
 import oldmana.md.common.playerui.ButtonColorScheme;
-import oldmana.md.net.packet.server.PacketPlayerButton;
+import oldmana.md.common.net.packet.server.PacketPlayerButton;
 import oldmana.md.server.Player;
 
 import java.util.function.Consumer;

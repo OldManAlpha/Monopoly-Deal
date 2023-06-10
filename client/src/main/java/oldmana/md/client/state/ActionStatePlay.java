@@ -2,7 +2,7 @@ package oldmana.md.client.state;
 
 import oldmana.md.client.Player;
 import oldmana.md.client.gui.component.MDButton;
-import oldmana.md.net.packet.client.action.PacketActionEndTurn;
+import oldmana.md.common.net.packet.client.action.PacketActionEndTurn;
 
 public class ActionStatePlay extends ActionState
 {

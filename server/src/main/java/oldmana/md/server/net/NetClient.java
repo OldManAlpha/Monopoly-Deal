@@ -1,7 +1,7 @@
 package oldmana.md.server.net;
 
-import oldmana.general.mjnetworkingapi.MJConnection;
-import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.common.net.api.MJConnection;
+import oldmana.md.common.net.api.packet.Packet;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -1,9 +1,9 @@
 package oldmana.md.server.card.action;
 
-import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
-import oldmana.md.net.packet.server.actionstate.PacketActionStatePropertiesSelected;
+import oldmana.md.common.net.api.packet.Packet;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStateBasic;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStatePropertiesSelected;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardAction;

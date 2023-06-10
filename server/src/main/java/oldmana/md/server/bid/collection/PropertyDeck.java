@@ -1,6 +1,6 @@
 package oldmana.md.server.bid.collection;
 
-import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.common.net.api.packet.Packet;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.collection.CardCollection;
 

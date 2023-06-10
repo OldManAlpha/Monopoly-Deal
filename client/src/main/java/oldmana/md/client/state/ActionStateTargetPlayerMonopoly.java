@@ -7,7 +7,7 @@ import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.component.collection.MDPropertySet;
-import oldmana.md.net.packet.client.action.PacketActionSelectPlayerMonopoly;
+import oldmana.md.common.net.packet.client.action.PacketActionSelectPlayerMonopoly;
 
 public class ActionStateTargetPlayerMonopoly extends ActionState
 {

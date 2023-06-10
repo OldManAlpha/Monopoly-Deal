@@ -1,7 +1,7 @@
 package oldmana.md.server.card.action;
 
-import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStateBasic;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;

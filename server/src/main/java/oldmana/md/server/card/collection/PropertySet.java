@@ -3,10 +3,10 @@ package oldmana.md.server.card.collection;
 import java.util.ArrayList;
 import java.util.List;
 
-import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.PacketMovePropertySet;
-import oldmana.md.net.packet.server.PacketPropertySetColor;
-import oldmana.md.net.packet.server.PacketPropertySetData;
+import oldmana.md.common.net.api.packet.Packet;
+import oldmana.md.common.net.packet.server.PacketMovePropertySet;
+import oldmana.md.common.net.packet.server.PacketPropertySetColor;
+import oldmana.md.common.net.packet.server.PacketPropertySetData;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.common.card.CardAnimationType;

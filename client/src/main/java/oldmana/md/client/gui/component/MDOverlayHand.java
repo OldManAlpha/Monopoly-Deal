@@ -19,7 +19,7 @@ import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.client.ActionStateClientPlayBuilding;
 import oldmana.md.client.state.client.ActionStateClientPlayProperty;
-import oldmana.md.net.packet.client.action.PacketActionUseCardButton;
+import oldmana.md.common.net.packet.client.action.PacketActionUseCardButton;
 
 import javax.swing.SwingUtilities;
 

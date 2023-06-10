@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.common.net.api.packet.Packet;
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.EventQueue.EventTask;
@@ -30,6 +30,8 @@ import oldmana.md.client.card.CardActionRent;
 import oldmana.md.client.card.CardBuilding;
 import oldmana.md.client.card.CardButton;
 import oldmana.md.client.state.client.ActionStateClientSelectCardCombo;
+import oldmana.md.common.net.packet.server.*;
+import oldmana.md.common.net.packet.server.actionstate.*;
 import oldmana.md.common.playerui.CardButtonBounds;
 import oldmana.md.common.playerui.CardButtonType;
 import oldmana.md.client.card.CardMoney;
@@ -59,16 +61,12 @@ import oldmana.md.client.state.primary.ActionStatePlayerTurn;
 import oldmana.md.common.card.CardAnimationType;
 import oldmana.md.common.playerui.ButtonColorScheme;
 import oldmana.md.common.util.DataUtil;
-import oldmana.md.net.NetHandler;
-import oldmana.md.net.packet.client.PacketLogin;
-import oldmana.md.net.packet.client.PacketSoundCache;
-import oldmana.md.net.packet.server.*;
-import oldmana.md.net.packet.server.PacketCardCollectionData.CardCollectionType;
-import oldmana.md.net.packet.server.actionstate.*;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
-import oldmana.md.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
-import oldmana.md.net.packet.universal.PacketChat;
-import oldmana.md.net.packet.universal.PacketKeepConnected;
+import oldmana.md.common.net.NetHandler;
+import oldmana.md.common.net.packet.client.*;
+import oldmana.md.common.net.packet.server.PacketCardCollectionData.CardCollectionType;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
+import oldmana.md.common.net.packet.universal.*;
 
 public class NetClientHandler extends NetHandler
 {

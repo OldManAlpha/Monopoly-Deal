@@ -7,7 +7,7 @@ import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.component.large.MDPlayer;
 import oldmana.md.client.state.ActionState;
-import oldmana.md.net.packet.client.action.PacketActionUseCardButton;
+import oldmana.md.common.net.packet.client.action.PacketActionUseCardButton;
 
 import java.awt.Color;
 import java.awt.event.ComponentAdapter;

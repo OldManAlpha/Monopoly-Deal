@@ -1,9 +1,9 @@
 package oldmana.md.server.state;
 
-import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.common.net.api.packet.Packet;
 import oldmana.md.common.util.DataUtil;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStateBasic;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.CardProperty;
 

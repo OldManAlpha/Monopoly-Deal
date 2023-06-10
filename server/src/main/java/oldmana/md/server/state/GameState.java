@@ -4,11 +4,11 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import oldmana.md.net.packet.server.PacketStatus;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic;
-import oldmana.md.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
-import oldmana.md.net.packet.server.actionstate.PacketActionStatePlayerTurn;
-import oldmana.md.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
+import oldmana.md.common.net.packet.server.PacketStatus;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStateBasic;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStatePlayerTurn;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;

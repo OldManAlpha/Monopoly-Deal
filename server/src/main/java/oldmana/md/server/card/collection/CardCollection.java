@@ -6,10 +6,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.PacketMoveCard;
-import oldmana.md.net.packet.server.PacketMoveRevealCard;
-import oldmana.md.net.packet.server.PacketMoveUnknownCard;
+import oldmana.md.common.net.api.packet.Packet;
+import oldmana.md.common.net.packet.server.PacketMoveCard;
+import oldmana.md.common.net.packet.server.PacketMoveRevealCard;
+import oldmana.md.common.net.packet.server.PacketMoveUnknownCard;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;

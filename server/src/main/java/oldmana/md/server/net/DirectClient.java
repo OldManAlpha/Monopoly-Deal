@@ -1,6 +1,6 @@
 package oldmana.md.server.net;
 
-import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.common.net.api.packet.Packet;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

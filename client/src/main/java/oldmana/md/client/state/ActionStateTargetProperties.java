@@ -20,7 +20,7 @@ import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.component.collection.MDPropertySet;
-import oldmana.md.net.packet.client.action.PacketActionSelectProperties;
+import oldmana.md.common.net.packet.client.action.PacketActionSelectProperties;
 
 public class ActionStateTargetProperties extends ActionState
 {

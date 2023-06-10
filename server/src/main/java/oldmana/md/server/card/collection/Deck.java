@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.PacketUnknownCardCollectionData;
-import oldmana.md.net.packet.server.PacketCardCollectionData.CardCollectionType;
+import oldmana.md.common.net.api.packet.Packet;
+import oldmana.md.common.net.packet.server.PacketUnknownCardCollectionData;
+import oldmana.md.common.net.packet.server.PacketCardCollectionData.CardCollectionType;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.collection.deck.DeckStack;

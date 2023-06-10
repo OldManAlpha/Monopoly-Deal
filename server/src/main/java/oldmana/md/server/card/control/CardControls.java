@@ -1,7 +1,7 @@
 package oldmana.md.server.card.control;
 
 import oldmana.md.common.playerui.CardButtonBounds;
-import oldmana.md.net.packet.server.PacketCardButtons;
+import oldmana.md.common.net.packet.server.PacketCardButtons;
 import oldmana.md.server.card.Card;
 
 import java.util.ArrayList;

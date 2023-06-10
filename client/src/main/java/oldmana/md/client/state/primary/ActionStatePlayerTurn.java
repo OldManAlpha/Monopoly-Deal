@@ -6,7 +6,7 @@ import oldmana.md.client.state.ActionStateDiscard;
 import oldmana.md.client.state.ActionStateDraw;
 import oldmana.md.client.state.ActionStateFinishTurn;
 import oldmana.md.client.state.ActionStatePlay;
-import oldmana.md.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
 
 public class ActionStatePlayerTurn extends ActionState
 {

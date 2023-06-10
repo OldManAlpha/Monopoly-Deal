@@ -12,7 +12,7 @@ import oldmana.md.client.gui.action.ActionScreenRent;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.common.playerui.ButtonColorScheme;
 import oldmana.md.common.state.TargetState;
-import oldmana.md.net.packet.client.action.PacketActionPay;
+import oldmana.md.common.net.packet.client.action.PacketActionPay;
 
 public class ActionStateRent extends ActionState
 {

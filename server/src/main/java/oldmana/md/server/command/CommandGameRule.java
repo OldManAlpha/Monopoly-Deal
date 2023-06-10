@@ -1,7 +1,7 @@
 package oldmana.md.server.command;
 
-import oldmana.md.net.packet.server.PacketSetChatOpen;
-import oldmana.md.net.packet.server.PacketRemoveMessageCategory;
+import oldmana.md.common.net.packet.server.PacketSetChatOpen;
+import oldmana.md.common.net.packet.server.PacketRemoveMessageCategory;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.MessageBuilder;

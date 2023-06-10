@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import oldmana.md.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
+import oldmana.md.common.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
 import oldmana.md.server.Scheduler.MDTask;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;

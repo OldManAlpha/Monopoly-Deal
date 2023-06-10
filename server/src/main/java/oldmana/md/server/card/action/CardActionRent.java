@@ -1,7 +1,7 @@
 package oldmana.md.server.card.action;
 
-import oldmana.general.mjnetworkingapi.packet.Packet;
-import oldmana.md.net.packet.server.PacketCardActionRentData;
+import oldmana.md.common.net.api.packet.Packet;
+import oldmana.md.common.net.packet.server.PacketCardActionRentData;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;

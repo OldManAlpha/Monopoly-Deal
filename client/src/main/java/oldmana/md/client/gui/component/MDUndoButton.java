@@ -4,7 +4,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import oldmana.md.client.card.Card;
-import oldmana.md.net.packet.client.action.PacketActionUndoCard;
+import oldmana.md.common.net.packet.client.action.PacketActionUndoCard;
 
 public class MDUndoButton extends MDButton
 {

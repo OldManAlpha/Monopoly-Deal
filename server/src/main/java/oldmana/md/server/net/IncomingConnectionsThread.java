@@ -3,8 +3,8 @@ package oldmana.md.server.net;
 import java.io.IOException;
 import java.net.ServerSocket;
 
-import oldmana.general.mjnetworkingapi.server.MJServer;
-import oldmana.general.mjnetworkingapi.server.MJServer.MJConnectAttempt;
+import oldmana.md.common.net.api.server.MJServer;
+import oldmana.md.common.net.api.server.MJServer.MJConnectAttempt;
 import oldmana.md.server.MDServer;
 
 public class IncomingConnectionsThread extends Thread

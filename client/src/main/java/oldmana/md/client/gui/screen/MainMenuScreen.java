@@ -23,8 +23,8 @@ import oldmana.md.client.gui.component.MDText;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
 import oldmana.md.client.net.ServerConnection;
-import oldmana.md.net.NetHandler;
-import oldmana.md.net.packet.client.PacketInitiateLogin;
+import oldmana.md.common.net.NetHandler;
+import oldmana.md.common.net.packet.client.PacketInitiateLogin;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.net.DirectClient;
 

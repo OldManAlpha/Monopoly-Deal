@@ -11,8 +11,8 @@ import javax.swing.JComponent;
 import javax.swing.Timer;
 
 import javafx.embed.swing.JFXPanel;
-import oldmana.general.mjnetworkingapi.MJConnection;
-import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.common.net.api.MJConnection;
+import oldmana.md.common.net.api.packet.Packet;
 import oldmana.md.client.EventQueue.CardMove;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardProperty.PropertyColor;
@@ -32,8 +32,8 @@ import oldmana.md.client.state.ActionStateDraw;
 import oldmana.md.client.state.ActionStateFinishTurn;
 import oldmana.md.client.state.ActionStatePlay;
 import oldmana.md.client.state.GameState;
-import oldmana.md.net.packet.client.PacketQuit;
-import oldmana.md.net.packet.client.action.PacketActionDraw;
+import oldmana.md.common.net.packet.client.PacketQuit;
+import oldmana.md.common.net.packet.client.action.PacketActionDraw;
 import oldmana.md.server.MDServer;
 
 public class MDClient

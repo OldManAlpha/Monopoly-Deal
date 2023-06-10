@@ -6,8 +6,8 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
-import oldmana.general.mjnetworkingapi.MJConnection;
-import oldmana.general.mjnetworkingapi.packet.Packet;
+import oldmana.md.common.net.api.MJConnection;
+import oldmana.md.common.net.api.packet.Packet;
 import oldmana.md.client.MDClient;
 import oldmana.md.client.gui.screen.TableScreen;
 import oldmana.md.server.net.DirectClient;

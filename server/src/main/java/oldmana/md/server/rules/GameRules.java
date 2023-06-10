@@ -1,6 +1,6 @@
 package oldmana.md.server.rules;
 
-import oldmana.md.net.packet.server.PacketGameRules;
+import oldmana.md.common.net.packet.server.PacketGameRules;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.event.rule.GameRulesApplyEvent;

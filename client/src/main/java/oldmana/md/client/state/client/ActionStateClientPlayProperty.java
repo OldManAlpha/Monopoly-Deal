@@ -10,7 +10,7 @@ import oldmana.md.client.gui.component.MDCreateSet;
 import oldmana.md.client.gui.component.MDPlayerPropertySets;
 import oldmana.md.client.gui.component.collection.MDPropertySet;
 import oldmana.md.client.gui.util.GraphicsUtils;
-import oldmana.md.net.packet.client.action.PacketActionUseCardButton;
+import oldmana.md.common.net.packet.client.action.PacketActionUseCardButton;
 
 public class ActionStateClientPlayProperty extends ActionStateClient
 {

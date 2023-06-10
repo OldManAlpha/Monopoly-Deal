@@ -10,10 +10,9 @@ import java.util.Map;
 
 import oldmana.md.client.Player;
 import oldmana.md.client.gui.component.MDButton;
-import oldmana.md.client.gui.component.MDChat;
 import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.component.large.MDPlayer;
-import oldmana.md.net.packet.client.action.PacketActionSelectPlayer;
+import oldmana.md.common.net.packet.client.action.PacketActionSelectPlayer;
 
 public class ActionStateTargetPlayer extends ActionState
 {

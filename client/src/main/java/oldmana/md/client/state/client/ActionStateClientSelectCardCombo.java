@@ -1,7 +1,7 @@
 package oldmana.md.client.state.client;
 
 import oldmana.md.client.card.Card;
-import oldmana.md.net.packet.client.action.PacketActionSelectCardCombo;
+import oldmana.md.common.net.packet.client.action.PacketActionSelectCardCombo;
 
 import java.util.ArrayList;
 import java.util.List;

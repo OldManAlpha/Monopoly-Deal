@@ -28,8 +28,8 @@ import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
 import oldmana.md.common.Message;
 import oldmana.md.common.util.ColorUtil;
-import oldmana.md.net.packet.client.action.PacketActionClickLink;
-import oldmana.md.net.packet.universal.PacketChat;
+import oldmana.md.common.net.packet.client.action.PacketActionClickLink;
+import oldmana.md.common.net.packet.universal.PacketChat;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

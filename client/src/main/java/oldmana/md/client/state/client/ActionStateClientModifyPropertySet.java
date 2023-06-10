@@ -17,9 +17,9 @@ import oldmana.md.client.gui.component.MDPlayerPropertySets;
 import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.component.collection.MDPropertySet;
 import oldmana.md.client.gui.util.GraphicsUtils;
-import oldmana.md.net.packet.client.action.PacketActionChangeSetColor;
-import oldmana.md.net.packet.client.action.PacketActionMoveProperty;
-import oldmana.md.net.packet.client.action.PacketActionRemoveBuilding;
+import oldmana.md.common.net.packet.client.action.PacketActionChangeSetColor;
+import oldmana.md.common.net.packet.client.action.PacketActionMoveProperty;
+import oldmana.md.common.net.packet.client.action.PacketActionRemoveBuilding;
 
 public class ActionStateClientModifyPropertySet extends ActionStateClient
 {
