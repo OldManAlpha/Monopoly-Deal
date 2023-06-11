@@ -14,7 +14,7 @@ import java.util.List;
 
 import static oldmana.md.server.card.CardAttributes.*;
 
-public class CardBuilding extends Card
+public class CardActionBuilding extends CardAction
 {
 	public static final String TIER = "tier";
 	public static final String RENT_ADDITION = "rentAddition";
@@ -65,12 +65,6 @@ public class CardBuilding extends Card
 		return false;
 	}
 	
-	@Override
-	public boolean canBank(Player player)
-	{
-		return getServer().getGameRules().canBankActionCards();
-	}
-	
 	public int getTier()
 	{
 		return tier;
@@ -89,10 +83,10 @@ public class CardBuilding extends Card
 				getOuterColor().getRGB(), getInnerColor().getRGB());
 	}
 	
-	private static CardType<CardBuilding> createType()
+	private static CardType<CardActionBuilding> createType()
 	{
-		CardType<CardBuilding> type = new CardType<CardBuilding>(CardBuilding.class,
-				CardBuilding::new, "Generic Building");
+		CardType<CardActionBuilding> type = new CardType<CardActionBuilding>(CardActionBuilding.class,
+				CardActionBuilding::new, "Generic Building");
 		type.addExemptReduction(TIER, false);
 		type.addExemptReduction(RENT_ADDITION, false);
 		CardTemplate template = type.getDefaultTemplate();

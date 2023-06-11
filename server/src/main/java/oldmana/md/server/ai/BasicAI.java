@@ -20,7 +20,7 @@ import oldmana.md.server.Scheduler.MDTask;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
-import oldmana.md.server.card.CardBuilding;
+import oldmana.md.server.card.CardActionBuilding;
 import oldmana.md.server.card.CardMoney;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.play.PlayArguments;
@@ -668,7 +668,7 @@ public class BasicAI extends PlayerAI
 		bankDesire = card ->
 		{
 			double security = getBankSecurity();
-			if (card instanceof CardMoney || card instanceof CardBuilding) // Bots think of buildings only as money, for now
+			if (card instanceof CardMoney || card instanceof CardActionBuilding) // Bots think of buildings only as money, for now
 			{
 				return Math.max(90 - (security * 6), 30);
 			}

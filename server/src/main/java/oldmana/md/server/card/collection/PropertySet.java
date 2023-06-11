@@ -10,7 +10,7 @@ import oldmana.md.common.net.packet.server.PacketPropertySetData;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.common.card.CardAnimationType;
-import oldmana.md.server.card.CardBuilding;
+import oldmana.md.server.card.CardActionBuilding;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.PropertyColor;
 
@@ -42,9 +42,9 @@ public class PropertySet extends CardCollection
 		{
 			addCard((CardProperty) card);
 		}
-		else if (card instanceof CardBuilding)
+		else if (card instanceof CardActionBuilding)
 		{
-			addCard((CardBuilding) card);
+			addCard((CardActionBuilding) card);
 		}
 	}
 	
@@ -55,9 +55,9 @@ public class PropertySet extends CardCollection
 		{
 			addCard((CardProperty) card);
 		}
-		else if (card instanceof CardBuilding)
+		else if (card instanceof CardActionBuilding)
 		{
-			addCard((CardBuilding) card);
+			addCard((CardActionBuilding) card);
 		}
 	}
 	
@@ -143,7 +143,7 @@ public class PropertySet extends CardCollection
 		return hasCard((Card) card);
 	}
 	
-	public void addCard(CardBuilding building)
+	public void addCard(CardActionBuilding building)
 	{
 		super.addCard(building);
 	}
@@ -157,7 +157,7 @@ public class PropertySet extends CardCollection
 	{
 		for (Card card : getCards())
 		{
-			if (card instanceof CardBuilding)
+			if (card instanceof CardActionBuilding)
 			{
 				return true;
 			}
@@ -168,7 +168,7 @@ public class PropertySet extends CardCollection
 	public int getHighestBuildingTier()
 	{
 		int highestTier = 0;
-		for (CardBuilding card : getBuildingCards())
+		for (CardActionBuilding card : getBuildingCards())
 		{
 			highestTier = Math.max(highestTier, card.getTier());
 		}
@@ -178,7 +178,7 @@ public class PropertySet extends CardCollection
 	public int getBuildingRentAddition()
 	{
 		int rentAddition = 0;
-		for (CardBuilding building : getBuildingCards())
+		for (CardActionBuilding building : getBuildingCards())
 		{
 			rentAddition += building.getRentAddition();
 		}
@@ -307,10 +307,10 @@ public class PropertySet extends CardCollection
 	{
 		if (hasBuildings())
 		{
-			List<CardBuilding> buildings = getBuildingCards();
+			List<CardActionBuilding> buildings = getBuildingCards();
 			if (!isMonopoly())
 			{
-				for (CardBuilding building : getBuildingCards())
+				for (CardActionBuilding building : getBuildingCards())
 				{
 					building.transfer(getOwner().getBank());
 				}
@@ -319,7 +319,7 @@ public class PropertySet extends CardCollection
 			
 			for (int i = 0 ; i < buildings.size() ; i++)
 			{
-				CardBuilding building = buildings.get(i);
+				CardActionBuilding building = buildings.get(i);
 				if (building.getTier() != i + 1)
 				{
 					building.transfer(getOwner().getBank());
@@ -384,14 +384,14 @@ public class PropertySet extends CardCollection
 		return cardCount;
 	}
 	
-	public List<CardBuilding> getBuildingCards()
+	public List<CardActionBuilding> getBuildingCards()
 	{
-		List<CardBuilding> buildings = new ArrayList<CardBuilding>();
+		List<CardActionBuilding> buildings = new ArrayList<CardActionBuilding>();
 		for (Card card : getCards())
 		{
-			if (card instanceof CardBuilding)
+			if (card instanceof CardActionBuilding)
 			{
-				buildings.add((CardBuilding) card);
+				buildings.add((CardActionBuilding) card);
 			}
 		}
 		return buildings;
@@ -402,7 +402,7 @@ public class PropertySet extends CardCollection
 		int cardCount = 0;
 		for (Card card : getCards())
 		{
-			if (card instanceof CardBuilding)
+			if (card instanceof CardActionBuilding)
 			{
 				cardCount++;
 			}
@@ -440,7 +440,7 @@ public class PropertySet extends CardCollection
 					player.safelyGrantProperty(prop, 0.8);
 				}
 			}
-			for (CardBuilding building : getBuildingCards())
+			for (CardActionBuilding building : getBuildingCards())
 			{
 				building.transfer(targetSet, -1, 0.8);
 			}

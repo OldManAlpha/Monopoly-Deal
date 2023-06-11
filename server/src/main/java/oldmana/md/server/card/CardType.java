@@ -38,22 +38,23 @@ public class CardType<T extends Card>
 	public static CardType<CardMoney> MONEY;
 	public static CardType<CardAction> ACTION;
 	public static CardType<CardProperty> PROPERTY;
-	public static CardType<CardBuilding> BUILDING;
-	// Preliminary Action Cards
+	// Intermediate Action Cards
 	public static CardType<CardActionCharge> CHARGE;
+	public static CardType<CardActionBuilding> BUILDING;
+	// Charge Cards
+	public static CardType<CardActionDebtCollector> DEBT_COLLECTOR;
+	public static CardType<CardActionItsMyBirthday> ITS_MY_BIRTHDAY;
+	// Building Cards
+	public static CardType<CardActionHouse> HOUSE;
+	public static CardType<CardActionHotel> HOTEL;
 	// Action Cards
 	public static CardType<CardActionDealBreaker> DEAL_BREAKER;
-	public static CardType<CardActionDebtCollector> DEBT_COLLECTOR;
 	public static CardType<CardActionDoubleTheRent> DOUBLE_THE_RENT;
 	public static CardType<CardActionForcedDeal> FORCED_DEAL;
-	public static CardType<CardActionItsMyBirthday> ITS_MY_BIRTHDAY;
 	public static CardType<CardActionJustSayNo> JUST_SAY_NO;
 	public static CardType<CardActionPassGo> PASS_GO;
 	public static CardType<CardActionRent> RENT;
 	public static CardType<CardActionSlyDeal> SLY_DEAL;
-	// Building Cards
-	public static CardType<CardActionHouse> HOUSE;
-	public static CardType<CardActionHotel> HOTEL;
 	
 	
 	private Class<T> cardClass;
@@ -482,5 +483,37 @@ public class CardType<T extends Card>
 	public static <T extends Card> CardType<T> getByClass(Class<T> clazz)
 	{
 		return CardRegistry.getTypeByClass(clazz);
+	}
+	
+	public static CardType<?> getByName(String name)
+	{
+		return CardRegistry.getTypeByName(name);
+	}
+	
+	public static void register(ServerMod mod, CardType<?> type)
+	{
+		CardRegistry.registerCardType(mod, type);
+	}
+	
+	/**
+	 * Registers a CardType based on the class. The class MUST contain a static method named "createType" that returns
+	 * a CardType. This method can have any access modifier.
+	 * @param mod The mod that is registering this card type
+	 * @param cardClass The class to register
+	 * @return The recently registered type
+	 */
+	public static <T extends Card> CardType<T> register(ServerMod mod, Class<T> cardClass)
+	{
+		return CardRegistry.registerCardType(mod, cardClass);
+	}
+	
+	public static <T extends Card> T createCard(Class<T> cardClass)
+	{
+		return getByClass(cardClass).createCard();
+	}
+	
+	public static <T extends Card> T createCard(Class<T> cardClass, CardTemplate template)
+	{
+		return getByClass(cardClass).createCard(template);
 	}
 }

@@ -3,7 +3,7 @@ package oldmana.md.server.command;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
-import oldmana.md.server.card.CardBuilding;
+import oldmana.md.server.card.CardActionBuilding;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.collection.CardCollection;
 import oldmana.md.server.card.collection.PropertySet;
@@ -43,7 +43,7 @@ public class CommandTransferCard extends Command
 			if (setId > -1)
 			{
 				CardCollection collection = CardCollection.getByID(setId);
-				if (!(collection instanceof PropertySet) || card instanceof CardProperty || card instanceof CardBuilding)
+				if (!(collection instanceof PropertySet) || card instanceof CardProperty || card instanceof CardActionBuilding)
 				{
 					int index = -1;
 					if (args.length >= 3)

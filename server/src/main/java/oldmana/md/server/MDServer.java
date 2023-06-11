@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import oldmana.md.common.util.StreamUtil;
 import oldmana.md.server.ai.AIManager;
 import oldmana.md.server.card.CardAction;
-import oldmana.md.server.card.CardBuilding;
+import oldmana.md.server.card.CardActionBuilding;
 import oldmana.md.server.card.CardMoney;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.CardRegistry;
@@ -568,26 +568,26 @@ public class MDServer
 	
 	private void registerDefaultCards()
 	{
-		CardType.CARD = CardRegistry.registerCardType(null, Card.class);
-		CardType.ACTION = CardRegistry.registerCardType(null, CardAction.class);
-		CardType.MONEY = CardRegistry.registerCardType(null, CardMoney.class);
-		CardType.PROPERTY = CardRegistry.registerCardType(null, CardProperty.class);
-		CardType.BUILDING = CardRegistry.registerCardType(null, CardBuilding.class);
+		CardType.CARD = CardType.register(null, Card.class);
+		CardType.ACTION = CardType.register(null, CardAction.class);
+		CardType.MONEY = CardType.register(null, CardMoney.class);
+		CardType.PROPERTY = CardType.register(null, CardProperty.class);
 		
-		CardType.CHARGE = CardRegistry.registerCardType(null, CardActionCharge.class);
+		CardType.CHARGE = CardType.register(null, CardActionCharge.class);
+		CardType.DEBT_COLLECTOR = CardType.register(null, CardActionDebtCollector.class);
+		CardType.ITS_MY_BIRTHDAY = CardType.register(null, CardActionItsMyBirthday.class);
 		
-		CardType.DEAL_BREAKER = CardRegistry.registerCardType(null, CardActionDealBreaker.class);
-		CardType.DEBT_COLLECTOR = CardRegistry.registerCardType(null, CardActionDebtCollector.class);
-		CardType.DOUBLE_THE_RENT = CardRegistry.registerCardType(null, CardActionDoubleTheRent.class);
-		CardType.FORCED_DEAL = CardRegistry.registerCardType(null, CardActionForcedDeal.class);
-		CardType.ITS_MY_BIRTHDAY = CardRegistry.registerCardType(null, CardActionItsMyBirthday.class);
-		CardType.JUST_SAY_NO = CardRegistry.registerCardType(null, CardActionJustSayNo.class);
-		CardType.PASS_GO = CardRegistry.registerCardType(null, CardActionPassGo.class);
-		CardType.RENT = CardRegistry.registerCardType(null, CardActionRent.class);
-		CardType.SLY_DEAL = CardRegistry.registerCardType(null, CardActionSlyDeal.class);
+		CardType.BUILDING = CardType.register(null, CardActionBuilding.class);
+		CardType.HOUSE = CardType.register(null, CardActionHouse.class);
+		CardType.HOTEL = CardType.register(null, CardActionHotel.class);
 		
-		CardType.HOUSE = CardRegistry.registerCardType(null, CardActionHouse.class);
-		CardType.HOTEL = CardRegistry.registerCardType(null, CardActionHotel.class);
+		CardType.DEAL_BREAKER = CardType.register(null, CardActionDealBreaker.class);
+		CardType.DOUBLE_THE_RENT = CardType.register(null, CardActionDoubleTheRent.class);
+		CardType.FORCED_DEAL = CardType.register(null, CardActionForcedDeal.class);
+		CardType.JUST_SAY_NO = CardType.register(null, CardActionJustSayNo.class);
+		CardType.PASS_GO = CardType.register(null, CardActionPassGo.class);
+		CardType.RENT = CardType.register(null, CardActionRent.class);
+		CardType.SLY_DEAL = CardType.register(null, CardActionSlyDeal.class);
 	}
 	
 	public CommandHandler getCommandHandler()

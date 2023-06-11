@@ -1,7 +1,6 @@
 package oldmana.md.server.command;
 
 import oldmana.md.server.ChatColor;
-import oldmana.md.server.card.CardBuilding;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.MessageBuilder;
 import oldmana.md.server.Player;
@@ -49,7 +48,7 @@ public class CommandCreateCard extends Command
 					if (type.getPrimitive() != null)
 					{
 						Class<?> primitive = type.getPrimitive().getCardClass();
-						if ((primitive == CardAction.class || primitive == CardBuilding.class) && type.isReferringToThis(args[1]))
+						if ((primitive == CardAction.class) && type.isReferringToThis(args[1]))
 						{
 							card = type.createCard();
 						}

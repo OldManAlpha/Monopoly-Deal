@@ -1,12 +1,12 @@
 package oldmana.md.server.card.action;
 
-import oldmana.md.server.card.CardBuilding;
+import oldmana.md.server.card.CardActionBuilding;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.CardType;
 
 import static oldmana.md.server.card.CardAttributes.*;
 
-public class CardActionHouse extends CardBuilding
+public class CardActionHouse extends CardActionBuilding
 {
 	private static CardType<CardActionHouse> createType()
 	{
@@ -21,8 +21,8 @@ public class CardActionHouse extends CardBuilding
 		template.putStrings(DESCRIPTION, "Place onto a full property set to add 3M in rent value. Only one House may " +
 				"be placed per property set. Cannot be placed on railroads and utilities. Properties under buildings " +
 				"are immobile. This card may be moved into your bank during your turn.");
-		template.put(CardBuilding.TIER, 1);
-		template.put(CardBuilding.RENT_ADDITION, 3);
+		template.put(CardActionBuilding.TIER, 1);
+		template.put(CardActionBuilding.RENT_ADDITION, 3);
 		type.setDefaultTemplate(template);
 		return type;
 	}

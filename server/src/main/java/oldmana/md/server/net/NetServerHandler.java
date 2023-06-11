@@ -24,7 +24,7 @@ import oldmana.md.server.Player;
 import oldmana.md.server.PlayerRegistry;
 import oldmana.md.server.PlayerRegistry.RegisteredPlayer;
 import oldmana.md.server.card.Card;
-import oldmana.md.server.card.CardBuilding;
+import oldmana.md.server.card.CardActionBuilding;
 import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.collection.CardCollection;
@@ -271,7 +271,7 @@ public class NetServerHandler extends NetHandler
 	public void handlePlayCardBuilding(Player player, PacketActionPlayCardBuilding packet)
 	{
 		Card card = Card.getCard(packet.id);
-		CardBuilding building = (CardBuilding) card;
+		CardActionBuilding building = (CardActionBuilding) card;
 		if (checkIntegrity(player, card, true))
 		{
 			building.play(PlayArguments.ofPropertySet(player.getPropertySet(packet.setID)));
@@ -486,7 +486,7 @@ public class NetServerHandler extends NetHandler
 	public void handleRemoveBuilding(Player player, PacketActionRemoveBuilding packet)
 	{
 		Card card = Card.getCard(packet.card);
-		if (card instanceof CardBuilding && card.getOwner() == player && card.getOwningCollection() instanceof PropertySet)
+		if (card instanceof CardActionBuilding && card.getOwner() == player && card.getOwningCollection() instanceof PropertySet)
 		{
 			card.transfer(player.getBank());
 		}
