@@ -26,6 +26,7 @@ import oldmana.md.common.net.packet.server.PacketStatus;
 import oldmana.md.common.net.packet.server.PacketUndoCardStatus;
 import oldmana.md.common.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
 import oldmana.md.common.net.packet.universal.PacketChat;
+import oldmana.md.server.event.player.PlayerPreDrawEvent;
 import oldmana.md.server.history.UndoableAction;
 import oldmana.md.server.event.player.PlayerUndoActionEvent;
 import oldmana.md.server.net.Client;
@@ -524,7 +525,7 @@ public class Player implements CommandSender
 	 * This should be called after an action state is plausibly changed.
 	 * @return True if extra cards were drawn
 	 */
-	public boolean checkEmptyHand()
+	public void checkEmptyHand()
 	{
 		if (getHand().getCardCount() == 0)
 		{
@@ -532,12 +533,23 @@ public class Player implements CommandSender
 			if (policy == DrawExtraCardsPolicy.IMMEDIATELY || (policy == DrawExtraCardsPolicy.IMMEDIATELY_AFTER_ACTION
 					&& getGameState().getActionState() instanceof ActionStatePlayerTurn && !getGameState().isProcessingCards()))
 			{
-				clearUndoableActions();
-				getServer().getDeck().drawCards(this, getServer().getGameRules().getExtraCardsDrawn(), 0.8);
-				return true;
+				drawExtraCards();
 			}
 		}
-		return false;
+	}
+	
+	public void drawExtraCards()
+	{
+		int cardsToDraw = getServer().getGameRules().getExtraCardsDrawn();
+		PlayerPreDrawEvent event = new PlayerPreDrawEvent(this, cardsToDraw, true);
+		getServer().getEventManager().callEvent(event);
+		if (event.isCancelled())
+		{
+			return;
+		}
+		clearUndoableActions();
+		List<Card> cards = getServer().getDeck().drawCards(this, cardsToDraw, 0.8);
+		getServer().getEventManager().callEvent(new PlayerDrawEvent(this, cards, true));
 	}
 	
 	/**Get all status effects currently applied to the player
@@ -820,15 +832,19 @@ public class Player implements CommandSender
 			System.out.println(getName() + " tried to draw without being able to!");
 			return;
 		}
-		int cardsToDraw = getServer().getGameRules().getCardsDrawnPerTurn();
-		if (getServer().getGameRules().getDrawExtraCardsPolicy() == DrawExtraCardsPolicy.NEXT_DRAW &&
-				getHand().getCardCount() == 0)
+		boolean extra = getServer().getGameRules().getDrawExtraCardsPolicy() == DrawExtraCardsPolicy.NEXT_DRAW &&
+				getHand().getCardCount() == 0;
+		int cardsToDraw = extra ? getServer().getGameRules().getExtraCardsDrawn() :
+				getServer().getGameRules().getCardsDrawnPerTurn();
+		PlayerPreDrawEvent event = new PlayerPreDrawEvent(this, cardsToDraw, extra);
+		getServer().getEventManager().callEvent(event);
+		if (event.isCancelled())
 		{
-			cardsToDraw = getServer().getGameRules().getExtraCardsDrawn();
+			return;
 		}
 		List<Card> cards = drawCards(cardsToDraw);
 		getGameState().setDrawn();
-		getServer().getEventManager().callEvent(new PlayerDrawEvent(this, cards));
+		getServer().getEventManager().callEvent(new PlayerDrawEvent(this, cards, extra));
 	}
 	
 	/**
