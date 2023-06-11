@@ -101,7 +101,7 @@ public class CommandGameRule extends Command
 					{
 						mb.addString(" ");
 						mb.startHoverText("Change currently selected option");
-						mb.addCommandString(ChatColor.UTILITY + "[Choose Option]", "gamerule list " + rs.getPath());
+						mb.addCommandString(ChatColor.UTILITY + "[Choose Option]", "rules list " + rs.getPath());
 						mb.endHoverText();
 					}
 				}
@@ -182,7 +182,7 @@ public class CommandGameRule extends Command
 		mb.setCategory("gamerule");
 		mb.addString("                                  ");
 		mb.startHoverText("Apply the changed rules");
-		mb.addCommandString(ChatColor.LINK + "[Apply Rules]", "gamerule reload");
+		mb.addCommandString(ChatColor.LINK + "[Apply Rules]", "rules reload");
 		sender.sendMessage(mb.getMessage());
 	}
 	
@@ -192,7 +192,7 @@ public class CommandGameRule extends Command
 		mb.setCategory("gamerule");
 		mb.addString("                                  ");
 		mb.startHoverText("Go back to the previous page");
-		mb.addCommandString(ChatColor.LINK + "[Go Back]", "gamerule list " + to.getPath());
+		mb.addCommandString(ChatColor.LINK + "[Go Back]", "rules list " + to.getPath());
 		sender.sendMessage(mb.getMessage());
 	}
 	
@@ -203,8 +203,8 @@ public class CommandGameRule extends Command
 			return;
 		}
 		mb.startHoverText("Fill in command to edit value");
-		mb.startCommand("gamerule type " + rs.getPath());
-		mb.startFillCommand("gamerule set " + rs.getPath() + " ");
+		mb.startCommand("rules type " + rs.getPath());
+		mb.startFillCommand("rules set " + rs.getPath() + " ");
 		mb.addString(ChatColor.LINK + "[Edit]" + ChatColor.WHITE);
 		mb.endSpecial();
 	}
@@ -212,7 +212,7 @@ public class CommandGameRule extends Command
 	private void addListButton(MessageBuilder mb, RuleStruct rs)
 	{
 		mb.startHoverText("View subrules");
-		mb.startCommand("gamerule list " + rs.getPath());
+		mb.startCommand("rules list " + rs.getPath());
 		mb.addString(ChatColor.LIGHT_GREEN + "[List]" + ChatColor.WHITE);
 		mb.endSpecial();
 	}

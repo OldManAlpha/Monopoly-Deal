@@ -198,6 +198,8 @@ public class GameRule
 		if (value instanceof Map)
 		{
 			return ((Map<String, GameRule>) value).entrySet().stream()
+					.filter(r -> !(r.getValue().getRuleStruct() instanceof RuleStructObject)
+							|| !r.getValue().getValueAsMap().isEmpty())
 					.sorted(Map.Entry.comparingByKey())
 					.sorted((e1, e2) ->
 			{
