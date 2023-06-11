@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import oldmana.md.server.mod.ModNotFoundException;
 import oldmana.md.server.mod.ServerMod;
 import oldmana.md.server.rules.GameRule;
 import org.json.JSONArray;
@@ -62,6 +63,10 @@ public class CustomDeck extends DeckStack
 		{
 			readDeck(is);
 		}
+		catch (ModNotFoundException | DeckLoadFailureException e)
+		{
+			throw e;
+		}
 		catch (Exception e)
 		{
 			throw new DeckLoadFailureException("Failed to load deck", e);
@@ -95,7 +100,7 @@ public class CustomDeck extends DeckStack
 			{
 				if (!getServer().isModLoaded(mod))
 				{
-					throw new DeckLoadFailureException("Missing mod required to load deck: " + mod, null);
+					throw new ModNotFoundException(mod);
 				}
 			}
 		}
