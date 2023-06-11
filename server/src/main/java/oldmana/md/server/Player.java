@@ -330,35 +330,6 @@ public class Player implements CommandSender
 		}
 	}
 	
-	public boolean transferPropertyCard(CardProperty card, PropertySet set)
-	{
-		List<PropertyColor> compatible = set.getPossibleColors();
-		compatible.retainAll(card.getColors());
-		if (!compatible.isEmpty())
-		{
-			PropertySet prevSet = (PropertySet) card.getOwningCollection();
-			prevSet.transferCard(card, set);
-			if (prevSet.getCardCount() == 0)
-			{
-				destroyPropertySet(prevSet);
-			}
-			return true;
-		}
-		return false;
-	}
-	
-	public PropertySet transferPropertyCardNewSet(CardProperty card)
-	{
-		PropertySet prevSet = (PropertySet) card.getOwningCollection();
-		PropertySet set = createPropertySet();
-		prevSet.transferCard(card, set);
-		if (prevSet.getCardCount() == 0)
-		{
-			destroyPropertySet(prevSet);
-		}
-		return set;
-	}
-	
 	public PropertySet createPropertySet()
 	{
 		PropertySet set = new PropertySet(this);

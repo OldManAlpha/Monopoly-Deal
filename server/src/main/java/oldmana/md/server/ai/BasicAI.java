@@ -954,6 +954,20 @@ public class BasicAI extends PlayerAI
 			System.out.println("Basic AI only supports Monopoly win conditions! Cannot perform any action!");
 			return;
 		}
+		// Check sets and remove buildings since AI does not support them yet
+		for (PropertySet set : getPlayer().getPropertySets(true))
+		{
+			if (set.hasBuildings())
+			{
+				for (Card card : set.getBuildingCards())
+				{
+					if (card.getOwningCollection() == set)
+					{
+						card.transfer(getPlayer().getBank());
+					}
+				}
+			}
+		}
 		handler.doAction(state);
 	}
 	
