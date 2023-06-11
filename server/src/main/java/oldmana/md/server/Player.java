@@ -1128,7 +1128,7 @@ public class Player implements CommandSender
 	
 	public void sendPacket(Packet packet)
 	{
-		if (client != null)
+		if (client != null && packet != null)
 		{
 			client.addOutPacket(packet);
 		}
