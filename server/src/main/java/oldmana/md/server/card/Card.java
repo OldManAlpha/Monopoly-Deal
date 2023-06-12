@@ -111,50 +111,7 @@ public abstract class Card
 		discard.setCondition((player, card) ->  card.canDiscard(player) && player.isDiscarding());
 		discard.setListener((player, card, data) -> card.play(PlayArguments.DISCARD));
 		
-		// Card Movement Buttons
-		CardButton moveStart = new CardButton("<<", CardButtonBounds.MOVE_START);
-		moveStart.setColor(ButtonColorScheme.GRAY);
-		moveStart.setCondition((player, card) -> card.getOwningCollection().getIndexOf(card) > 0);
-		moveStart.setListener((player, card, data) ->
-		{
-			card.transfer(getOwningCollection(), 0, 0.4);
-			player.clearAwaitingResponse();
-			card.getControls().updateButtons();
-		});
-		
-		CardButton moveLeft = new CardButton("<", CardButtonBounds.MOVE_LEFT);
-		moveLeft.setColor(ButtonColorScheme.GRAY);
-		moveLeft.setCondition((player, card) -> card.getOwningCollection().getIndexOf(card) > 0);
-		moveLeft.setListener((player, card, data) ->
-		{
-			card.transfer(getOwningCollection(), getOwningCollection().getIndexOf(card) - 1, 0.3);
-			player.clearAwaitingResponse();
-			card.getControls().updateButtons();
-		});
-		
-		CardButton moveRight = new CardButton(">", CardButtonBounds.MOVE_RIGHT);
-		moveRight.setColor(ButtonColorScheme.GRAY);
-		moveRight.setCondition((player, card) -> card.getOwningCollection().getIndexOf(card) <
-				card.getOwningCollection().getCardCount() - 1);
-		moveRight.setListener((player, card, data) ->
-		{
-			card.transfer(getOwningCollection(), getOwningCollection().getIndexOf(card) + 1, 0.3);
-			player.clearAwaitingResponse();
-			card.getControls().updateButtons();
-		});
-		
-		CardButton moveEnd = new CardButton(">>", CardButtonBounds.MOVE_END);
-		moveEnd.setColor(ButtonColorScheme.GRAY);
-		moveEnd.setCondition((player, card) -> card.getOwningCollection().getIndexOf(card) <
-				card.getOwningCollection().getCardCount() - 1);
-		moveEnd.setListener((player, card, data) ->
-		{
-			card.transfer(getOwningCollection(), getOwningCollection().getCardCount() - 1, 0.4);
-			player.clearAwaitingResponse();
-			card.getControls().updateButtons();
-		});
-		
-		return new CardControls(this, play, bank, discard, moveStart, moveLeft, moveRight, moveEnd);
+		return new CardControls(this, play, bank, discard);
 	}
 	
 	public CardControls getControls()
@@ -715,7 +672,8 @@ public abstract class Card
 			return false;
 		}
 		Player player = getOwner();
-		return canPlay(player) && player.isFocused() && getServer().getGameState().getMovesRemaining() >= getMoveCost();
+		return canPlay(player) && player.isFocused() && !getServer().getGameState().getTurnState().isDrawing() &&
+				getServer().getGameState().getMovesRemaining() >= getMoveCost();
 	}
 	
 	public boolean canBank(Player player)

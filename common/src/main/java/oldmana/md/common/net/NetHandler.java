@@ -87,6 +87,7 @@ public class NetHandler
 		PacketActionUseCardButton.class,
 		PacketActionRemoveBuilding.class,
 		PacketActionSelectCardCombo.class,
+		PacketActionMoveHandCard.class,
 		
 		PacketSoundCache.class,
 		

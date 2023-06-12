@@ -10,6 +10,7 @@ import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.Map.Entry;
 
 import javax.swing.SwingUtilities;
 
@@ -18,12 +19,16 @@ import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.card.collection.Hand;
 import oldmana.md.client.gui.component.MDOverlayHand;
 import oldmana.md.client.gui.util.GraphicsUtils;
+import oldmana.md.common.net.packet.client.action.PacketActionMoveHandCard;
 
 public class MDHand extends MDCardCollection
 {
 	private Card hovered;
 	private MDOverlayHand overlay;
 	private MDHandListener listener;
+	
+	private Card dragged;
+	private int dragX;
 	
 	public MDHand(Hand hand)
 	{
@@ -130,6 +135,7 @@ public class MDHand extends MDCardCollection
 	{
 		super.setModification(mod);
 		removeOverlay();
+		dragged = null;
 	}
 	
 	@Override
@@ -164,12 +170,87 @@ public class MDHand extends MDCardCollection
 		}
 	}
 	
+	@Override
+	public void paintCards(Graphics2D g)
+	{
+		for (Entry<Card, Point> entry : getCurrentCardPositions().entrySet())
+		{
+			Card card = entry.getKey();
+			if (card == dragged)
+			{
+				continue;
+			}
+			Point p = entry.getValue();
+			g.drawImage(card.getGraphics(getScale() * getCardScale()), p.x, p.y, GraphicsUtils.getCardWidth(getCardScale()),
+					GraphicsUtils.getCardHeight(getCardScale()), null);
+		}
+		if (dragged != null)
+		{
+			g.drawImage(dragged.getGraphics(getScale() * getCardScale()),
+					dragX - GraphicsUtils.getCardWidth(getCardScale() / 2), 0,
+					GraphicsUtils.getCardWidth(getCardScale()), GraphicsUtils.getCardHeight(getCardScale()), null);
+		}
+	}
+	
+	private int getClosestIndex(int x)
+	{
+		int cardCount = getCardCount();
+		for (int i = 0 ; i < cardCount ; i++)
+		{
+			int cardX = getLocationOf(i, cardCount).x + GraphicsUtils.getCardWidth(getCardScale() / 2);
+			if (cardX > x)
+			{
+				return i;
+			}
+		}
+		return getCardCount();
+	}
+	
 	public class MDHandListener implements MouseListener, MouseMotionListener
 	{
 		@Override
 		public void mouseDragged(MouseEvent event)
 		{
-			
+			if (dragged == null && !isBeingModified())
+			{
+				Card curHover = getCardAt(event.getX(), 0);
+				if (curHover != null)
+				{
+					dragged = curHover;
+					dragX = Math.max(GraphicsUtils.getCardWidth(getCardScale() / 2),
+							Math.min(event.getX(), getWidth() - GraphicsUtils.getCardWidth(getCardScale() / 2)));
+					removeOverlay();
+				}
+			}
+			if (dragged != null)
+			{
+				dragX = Math.max(GraphicsUtils.getCardWidth(getCardScale() / 2),
+						Math.min(event.getX(), getWidth() - GraphicsUtils.getCardWidth(getCardScale() / 2)));
+				repaint();
+			}
+		}
+		
+		@Override
+		public void mousePressed(MouseEvent event)
+		{
+		
+		}
+		
+		@Override
+		public void mouseReleased(MouseEvent event)
+		{
+			if (dragged == null)
+			{
+				return;
+			}
+			int index = getClosestIndex(dragX);
+			int cardIndex = getCollection().getIndexOf(dragged);
+			if (index != cardIndex && index != cardIndex + 1) // These two indices would put the card in the same place
+			{
+				getClient().sendPacket(new PacketActionMoveHandCard(dragged.getID(), index));
+			}
+			dragged = null;
+			repaint();
 		}
 
 		@Override
@@ -177,6 +258,10 @@ public class MDHand extends MDCardCollection
 		{
 			if (getCollection() != null)
 			{
+				if (dragged != null)
+				{
+					return;
+				}
 				Card curHover = getCardAt(event.getX(), 0);
 				if (!isBeingModified())
 				{
@@ -210,23 +295,7 @@ public class MDHand extends MDCardCollection
 		@Override
 		public void mouseEntered(MouseEvent event)
 		{
-			/*
-			System.out.println("Mouse Entered");
-			MDCard card = (MDCard) event.getComponent();
-			if (overlay != null && overlay.getCard() != card)
-			{
-				MDCard last = overlay.getCard();
-				last.remove(overlay);
-				last.repaint();
-				overlay = null;
-			}
-			if (overlay == null)
-			{
-				overlay = new MDOverlayHand(card);
-				card.add(overlay);
-				card.repaint();
-			}
-			*/
+		
 		}
 
 		@Override
@@ -244,18 +313,6 @@ public class MDHand extends MDCardCollection
 				}
 				repaint();
 			}
-		}
-
-		@Override
-		public void mousePressed(MouseEvent event)
-		{
-			
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent event)
-		{
-			
 		}
 	}
 }

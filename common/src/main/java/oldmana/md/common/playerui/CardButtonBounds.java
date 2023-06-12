@@ -4,13 +4,9 @@ import oldmana.md.common.util.DataUtil;
 
 public class CardButtonBounds
 {
-	public static final CardButtonBounds TOP = new CardButtonBounds(0.1, 0.2, 0.8, 0.3);
-	public static final CardButtonBounds CENTER = new CardButtonBounds(0.1, 0.55, 0.8, 0.3);
-	public static final CardButtonBounds BOTTOM = new CardButtonBounds(0.1, 0.9, 0.8, 0.3);
-	public static final CardButtonBounds MOVE_START = new CardButtonBounds(0.02, 1.3, 0.24, 0.16);
-	public static final CardButtonBounds MOVE_END = new CardButtonBounds(0.74, 1.3, 0.24, 0.16);
-	public static final CardButtonBounds MOVE_LEFT = new CardButtonBounds(0.28, 1.3, 0.20, 0.16);
-	public static final CardButtonBounds MOVE_RIGHT = new CardButtonBounds(0.52, 1.3, 0.20, 0.16);
+	public static final CardButtonBounds TOP = new CardButtonBounds(0.1, 0.25, 0.8, 0.3);
+	public static final CardButtonBounds CENTER = new CardButtonBounds(0.1, 0.6, 0.8, 0.3);
+	public static final CardButtonBounds BOTTOM = new CardButtonBounds(0.1, 0.95, 0.8, 0.3);
 	
 	
 	private double x;

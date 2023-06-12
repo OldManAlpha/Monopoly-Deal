@@ -492,6 +492,26 @@ public class NetServerHandler extends NetHandler
 		}
 	}
 	
+	public void handleMoveHandCard(Player player, PacketActionMoveHandCard packet)
+	{
+		Card card = Card.getCard(packet.cardID);
+		Hand hand = player.getHand();
+		if (card == null || card.getOwningCollection() != hand)
+		{
+			return;
+		}
+		int toIndex = packet.index;
+		if (hand.getIndexOf(card) < toIndex)
+		{
+			toIndex--;
+		}
+		if (toIndex > hand.getCardCount())
+		{
+			return;
+		}
+		card.transfer(hand, toIndex, 0.3);
+	}
+	
 	public void handleChat(Player player, PacketChat packet)
 	{
 		String msg = packet.getMessage().getUnformattedMessage();
