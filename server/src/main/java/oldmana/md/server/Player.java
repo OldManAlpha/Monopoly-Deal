@@ -2,7 +2,6 @@ package oldmana.md.server;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -523,7 +522,6 @@ public class Player implements CommandSender
 	/**
 	 * Draws extra cards if the hand is empty and if the draw policy permits extra cards to be drawn.
 	 * This should be called after an action state is plausibly changed.
-	 * @return True if extra cards were drawn
 	 */
 	public void checkEmptyHand()
 	{
@@ -579,6 +577,7 @@ public class Player implements CommandSender
 	{
 		getServer().getEventManager().unregisterEvents(effect);
 		statusEffects.remove(effect);
+		effect.onRemove();
 	}
 	
 	/**Removes all instances of a status effect type from the player
@@ -587,14 +586,11 @@ public class Player implements CommandSender
 	 */
 	public void removeStatusEffect(Class<? extends StatusEffect> clazz)
 	{
-		Iterator<StatusEffect> it = statusEffects.iterator();
-		while (it.hasNext())
+		for (StatusEffect effect : new ArrayList<StatusEffect>(statusEffects))
 		{
-			StatusEffect effect = it.next();
 			if (effect.getClass() == clazz)
 			{
-				getServer().getEventManager().unregisterEvents(effect);
-				it.remove();
+				removeStatusEffect(effect);
 			}
 		}
 	}
@@ -639,12 +635,9 @@ public class Player implements CommandSender
 	
 	public void clearStatusEffects()
 	{
-		Iterator<StatusEffect> it = statusEffects.iterator();
-		while (it.hasNext())
+		for (StatusEffect effect : new ArrayList<StatusEffect>(statusEffects))
 		{
-			StatusEffect effect = it.next();
-			getServer().getEventManager().unregisterEvents(effect);
-			it.remove();
+			removeStatusEffect(effect);
 		}
 	}
 	

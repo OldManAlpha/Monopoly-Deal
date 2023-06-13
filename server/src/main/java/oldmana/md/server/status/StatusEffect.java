@@ -22,6 +22,13 @@ public class StatusEffect implements EventListener
 		return player;
 	}
 	
+	public void removeEffect()
+	{
+		player.removeStatusEffect(this);
+	}
+	
+	public void onRemove() {}
+	
 	protected MDServer getServer()
 	{
 		return MDServer.getInstance();
