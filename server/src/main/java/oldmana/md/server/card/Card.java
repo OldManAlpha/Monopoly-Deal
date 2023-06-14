@@ -426,6 +426,13 @@ public abstract class Card
 	 */
 	public void play(PlayArguments args)
 	{
+		Player player = getOwner(); // Caching the owner since they might not be the owner by the end of this method call.
+		
+		if (player == null)
+		{
+			throw new IllegalStateException("Cards without an owner cannot be played");
+		}
+		
 		try
 		{
 			getServer().getGameState().pushCard(this);
@@ -433,12 +440,6 @@ public abstract class Card
 			if (args == null)
 			{
 				args = PlayArguments.EMPTY;
-			}
-			Player player = getOwner(); // Caching the owner since they might not be the owner by the end of this method call.
-			
-			if (player == null)
-			{
-				throw new IllegalStateException("Cards without an owner cannot be played");
 			}
 			
 			if (args.hasArgument(DiscardArgument.class))
@@ -461,7 +462,6 @@ public abstract class Card
 			if (playStageBank(player, args))
 			{
 				playStageCallPostPlayEvent(player, args);
-				player.checkEmptyHand();
 				// Card was banked, so we're not proceeding to play the card
 				return;
 			}
@@ -510,7 +510,6 @@ public abstract class Card
 			}
 			
 			playStageCallPostPlayEvent(player, args);
-			player.checkEmptyHand();
 			player.clearAwaitingResponse();
 		}
 		finally
@@ -519,6 +518,7 @@ public abstract class Card
 			{
 				System.out.println("Popped card mismatch!");
 			}
+			player.checkEmptyHand();
 		}
 	}
 	

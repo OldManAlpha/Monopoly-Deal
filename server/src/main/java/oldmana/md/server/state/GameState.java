@@ -499,9 +499,12 @@ public class GameState
 			setStateChanged();
 			server.getEventManager().callEvent(new ActionStateChangedEvent(lastState != null ? lastState : getTurnState(),
 					state != null ? state : getTurnState()));
-			for (Player player : server.getPlayers())
+			if (!isProcessingCards())
 			{
-				player.checkEmptyHand();
+				for (Player player : server.getPlayers())
+				{
+					player.checkEmptyHand();
+				}
 			}
 		}
 		return true;
