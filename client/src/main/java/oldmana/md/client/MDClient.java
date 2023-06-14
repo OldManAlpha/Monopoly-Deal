@@ -547,7 +547,10 @@ public class MDClient
 				}
 				catch (InterruptedException e) {}
 			}
-			connection.close();
+			if (!hasIntegratedServer())
+			{
+				connection.close();
+			}
 		}
 		if (hasIntegratedServer())
 		{
