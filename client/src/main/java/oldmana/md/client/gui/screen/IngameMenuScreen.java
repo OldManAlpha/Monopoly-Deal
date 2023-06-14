@@ -8,6 +8,11 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import oldmana.md.client.Scheduler;
 import oldmana.md.client.card.Card;
@@ -36,6 +41,21 @@ public class IngameMenuScreen extends MDComponent
 	private MDText fps;
 	private MDButton increaseFPS;
 	private MDButton decreaseFPS;
+	
+	private List<String> tips = new ArrayList<String>(Arrays.asList(
+			"The chat can be opened by pressing the 'T' key",
+			"This menu can also be opened by pressing the Escape key",
+			"Cards in your hand can be rearranged by dragging them around",
+			"See the rules for the deck you're playing by using the '/rules' command",
+			"You can scroll through the discard pile to see what cards have been played",
+			"Make sure to play Double The Rent before the Rent card!",
+			"You can hover over the cards in your opponent's bank to see what's in it"));
+	{
+		Collections.shuffle(tips);
+	}
+	private int lastTip = ThreadLocalRandom.current().nextInt(tips.size());
+	
+	private MDText tip;
 	
 	private MDButton debug;
 	
@@ -206,8 +226,13 @@ public class IngameMenuScreen extends MDComponent
 		add(fps);
 		
 		
-		
-		
+		tip = new MDText("");
+		tip.setFontSize(24);
+		tip.setHorizontalAlignment(Alignment.CENTER);
+		tip.setColor(whiteish);
+		tip.setBold(true);
+		tip.setOutlineThickness(4);
+		add(tip);
 		
 		
 		debug = new MDButton("Debug");
@@ -229,6 +254,17 @@ public class IngameMenuScreen extends MDComponent
 		add(debug);
 		
 		setLayout(new IngameMenuLayout());
+	}
+	
+	@Override
+	public void setVisible(boolean visible)
+	{
+		super.setVisible(visible);
+		if (visible)
+		{
+			lastTip = (lastTip + 1) % tips.size();
+			tip.setText("Tip: " + tips.get(lastTip));
+		}
 	}
 	
 	@Override
@@ -277,6 +313,9 @@ public class IngameMenuScreen extends MDComponent
 			resume.setLocation((getWidth() / 2) - scale(160), Math.max((getHeight() / 2) - scale(30), fps.getMaxY() + scale(10)));
 			quit.setSize(scale(320), scale(60));
 			quit.setLocation(resume.getX(), resume.getMaxY() + scale(20));
+			
+			tip.setSize(getWidth(), scale(40));
+			tip.setLocation(0, getHeight() - scale(40));
 		}
 		
 		@Override
