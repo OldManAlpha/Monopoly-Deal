@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.LinearGradientPaint;
 
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
@@ -315,11 +317,37 @@ public class TableScreen extends JLayeredPane
 		return comp.getY() + comp.getHeight();
 	}
 	
-	@Override
-	public void paintComponent(Graphics g)
+	private int getPadding()
 	{
+		return scale(5);
+	}
+	
+	private int getPadding(int multiplier)
+	{
+		return getPadding() * multiplier;
+	}
+	
+	private int getSidebarSize()
+	{
+		return scale(200);
+	}
+	
+	private final Color[] sideColors = new Color[] {new Color(227, 230, 232), new Color(232, 235, 237),
+			new Color(227, 230, 232), new Color(160, 180, 200)};
+	private final float[] sideColorsPositions = new float[] {0, 0.5F, 0.985F, 1};
+	
+	@Override
+	public void paintComponent(Graphics gr)
+	{
+		Graphics2D g = (Graphics2D) gr;
+		
 		g.setColor(new Color(240, 240, 240));
 		g.fillRect(0, 0, getWidth(), getHeight());
+		
+		int x = deck.getMaxX() + getPadding(2);
+		LinearGradientPaint paint = new LinearGradientPaint(0, 0, x, 0, sideColorsPositions, sideColors);
+		g.setPaint(paint);
+		g.fillRect(0, 0, x, getHeight());
 		super.paintComponent(g);
 	}
 	
@@ -329,6 +357,8 @@ public class TableScreen extends JLayeredPane
 		public void layoutContainer(Container container)
 		{
 			topbar.setSize(getWidth(), scale(35));
+			
+			int sidebarSize = getSidebarSize();
 			
 			if (debug != null)
 			{
@@ -356,7 +386,7 @@ public class TableScreen extends JLayeredPane
 			chat.setLocation(scale(50), getHeight() - scale(650));
 			
 			version.setLocation(scale(5), getHeight() - scale(20));
-			version.setSize(scale(200), scale(15));
+			version.setSize(sidebarSize, scale(15));
 			
 			if (deck != null && discard != null)
 			{
@@ -369,29 +399,29 @@ public class TableScreen extends JLayeredPane
 				voidCollection.setLocation(scale(40), discard.getMaxY());
 				voidCollection.setSize(scale(60 + 40), scale(90 + 40));
 				
-				moveCount.setLocation(scale(10), getMaxY(discard) + scale(10));
-				moveCount.setSize(scale(180), scale(30));
+				moveCount.setSize(sidebarSize - getPadding(4), scale(30));
+				moveCount.setLocationCenterX(sidebarSize / 2, getMaxY(discard) + getPadding(2));
 				
-				multiButton.setLocation(scale(10), getMaxY(moveCount) + scale(10));
-				multiButton.setSize(scale(180), scale(50));
+				multiButton.setSize(sidebarSize - getPadding(4), scale(50));
+				multiButton.setLocationCenterX(sidebarSize / 2, getMaxY(moveCount) + getPadding(2));
 				multiButton.setFontSize(24);
 				
-				undoButton.setLocation(scale(10), getMaxY(multiButton) + scale(20));
-				undoButton.setSize(scale(180), scale(50));
+				undoButton.setSize(sidebarSize - getPadding(4), scale(50));
+				undoButton.setLocationCenterX(sidebarSize / 2, getMaxY(multiButton) + getPadding(2));
 				undoButton.setFontSize(24);
 				
-				hand.setLocation(getMaxX(undoButton) + scale(10), getHeight() - scale(185));
-				hand.setSize(getWidth() - multiButton.getWidth() - scale(25), scale(180));
+				hand.setLocation(sidebarSize + getPadding(2), getHeight() - scale(185));
+				hand.setSize(getWidth() - sidebarSize - getPadding(3), scale(180));
 				
 				if (self != null)
 				{
-					self.setSize(opponents.getWidth(), MDPlayer.getPlayerSize());
-					self.setLocation(deck.getMaxX() + scale(10), hand.getY() - scale(5) - self.getHeight());
+					self.setSize(getWidth() - sidebarSize - getPadding(3), MDPlayer.getPlayerSize());
+					self.setLocation(sidebarSize + getPadding(2), hand.getY() - getPadding() - self.getHeight());
 				}
 				int selfHeight = self != null ? self.getHeight() : 0;
-				opponents.setLocation(deck.getMaxX() + scale(10), topbar.getMaxY() + scale(5));
-				opponents.setSize(getWidth() - deck.getMaxX() - scale(15), getHeight() - (getHeight() - hand.getY()) -
-						topbar.getHeight() - selfHeight - scale(15));
+				opponents.setLocation(sidebarSize + getPadding(2), topbar.getMaxY() + getPadding());
+				opponents.setSize(getWidth() - sidebarSize - getPadding(3), getHeight() - (getHeight() - hand.getY()) -
+						topbar.getHeight() - selfHeight - getPadding(3));
 			}
 			
 			if (actionScreen != null)
