@@ -631,7 +631,8 @@ public abstract class Card
 	}
 	
 	/**
-	 * By default, moves this card into the discard pile, if applicable.
+	 * By default, moves this card into the discard pile, if applicable. Can be overridden to change where this card
+	 * should go when played.
 	 */
 	protected void playStageMoveCard(Player player, PlayArguments args)
 	{

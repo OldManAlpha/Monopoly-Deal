@@ -53,10 +53,15 @@ public class CardProperty extends Card
 		return actions;
 	}
 	
+	/**
+	 * Because the act of playing a property card may entail more complicated operations other than simply moving a card,
+	 * this is in the playing logic rather than the moving logic.
+	 */
 	@Override
 	public void doPlay(Player player, PlayArguments args)
 	{
-		PropertySet set = args.getArgument(PropertySetArgument.class).getTargetSet();
+		PropertySet set = args.hasArgument(PropertySetArgument.class) ?
+				args.getArgument(PropertySetArgument.class).getTargetSet() : null;
 		if (set == null)
 		{
 			if (isSingleColor() && player.hasSolidPropertySet(getColor()))
@@ -70,12 +75,6 @@ public class CardProperty extends Card
 		}
 		transfer(set, getPlayAnimation());
 		set.checkLegality();
-	}
-	
-	@Override
-	protected void playStageMoveCard(Player player, PlayArguments args)
-	{
-		// Properties don't go in the discard pile
 	}
 	
 	@Override
@@ -103,6 +102,10 @@ public class CardProperty extends Card
 		return base;
 	}
 	
+	/**If a property is stealable, it may be targeted by Sly Deals and Forced Deals.
+	 *
+	 * @return True if the card can be stolen
+	 */
 	public boolean isStealable()
 	{
 		return stealable;
@@ -206,7 +209,7 @@ public class CardProperty extends Card
 	
 	private static CardType<CardProperty> createType()
 	{
-		CardType<CardProperty> type = new CardType<CardProperty>(CardProperty.class, CardProperty::new, "Property");
+		CardType<CardProperty> type = new CardType<CardProperty>(CardProperty.class, CardProperty::new, false, "Property");
 		type.addExemptReduction(COLORS, false);
 		type.addExemptReduction(BASE, false);
 		type.addExemptReduction(VALUE, false);
@@ -220,6 +223,7 @@ public class CardProperty extends Card
 		dt.put(BASE, true);
 		dt.put(STEALABLE, true);
 		dt.put(CONSUME_MOVES_STAGE, CardPlayStage.AFTER_PLAY);
+		dt.put(MOVE_STAGE, CardPlayStage.MANUAL);
 		type.setDefaultTemplate(dt);
 		
 		RAINBOW_WILD = new CardTemplate(dt);

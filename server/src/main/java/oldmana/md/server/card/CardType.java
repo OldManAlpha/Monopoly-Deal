@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * A CardType associates general information and utilities with every card. Every class that extends Card somewhere down
@@ -67,10 +68,11 @@ public class CardType<T extends Card>
 	private CardType<? super T> primitive;
 	
 	private Supplier<T> factory;
+	private boolean visible;
 	
 	private CardTemplate defaultTemplate;
 	
-	private Map<CardTemplateInfo, CardTemplate> templates = new LinkedHashMap<CardTemplateInfo, CardTemplate>();
+	private List<RegisteredCardTemplate> templates = new ArrayList<RegisteredCardTemplate>();
 	private Map<String, CardTemplate> nameTemplateMap = new HashMap<String, CardTemplate>(); // For faster lookups
 	
 	private Map<String, Boolean> exemptReductions = new HashMap<String, Boolean>(); // Key: Json Name / Value: Carry to children?
@@ -82,22 +84,28 @@ public class CardType<T extends Card>
 	 */
 	public CardType(Class<T> cardClass, String friendlyName, String... aliases)
 	{
-		this(cardClass, toInternalName(friendlyName), friendlyName, null, aliases);
+		this(cardClass, toInternalName(friendlyName), friendlyName, null, false, aliases);
 	}
 	
 	public CardType(Class<T> cardClass, Supplier<T> factory, String friendlyName, String... aliases)
 	{
-		this(cardClass, toInternalName(friendlyName), friendlyName, factory, aliases);
+		this(cardClass, toInternalName(friendlyName), friendlyName, factory, true, aliases);
+	}
+	
+	public CardType(Class<T> cardClass, Supplier<T> factory, boolean visible, String friendlyName, String... aliases)
+	{
+		this(cardClass, toInternalName(friendlyName), friendlyName, factory, visible, aliases);
 	}
 	
 	// Order is like this because of dumb varargs ambiguity
-	public CardType(Class<T> cardClass, String internalName, String friendlyName, Supplier<T> factory, String... aliases)
+	public CardType(Class<T> cardClass, String internalName, String friendlyName, Supplier<T> factory, boolean visible, String... aliases)
 	{
 		this.cardClass = cardClass;
 		this.internalName = internalName;
 		this.friendlyName = friendlyName;
 		this.aliases = new ArrayList<String>(Arrays.asList(aliases));
 		this.factory = factory;
+		this.visible = visible;
 		if (Card.class.isAssignableFrom(cardClass.getSuperclass()))
 		{
 			parent = (CardType<? super T>) CardRegistry.getTypeByClass((Class<? extends Card>) cardClass.getSuperclass());
@@ -265,6 +273,11 @@ public class CardType<T extends Card>
 		this.factory = factory;
 	}
 	
+	public boolean isVisible()
+	{
+		return visible;
+	}
+	
 	public void setDefaultTemplate(CardTemplate template)
 	{
 		defaultTemplate = template;
@@ -280,8 +293,8 @@ public class CardType<T extends Card>
 	{
 		template.setAssociatedType(this);
 		template.put("template", name);
-		CardTemplateInfo info = new CardTemplateInfo(name, aliases);
-		templates.put(info, template);
+		RegisteredCardTemplate registeredTemplate = new RegisteredCardTemplate(template, name, aliases);
+		templates.add(registeredTemplate);
 		nameTemplateMap.put(name, template);
 		for (String alias : aliases)
 		{
@@ -294,14 +307,15 @@ public class CardType<T extends Card>
 		return nameTemplateMap.get(name);
 	}
 	
-	public Map<CardTemplateInfo, CardTemplate> getTemplates()
+	public List<RegisteredCardTemplate> getTemplates()
 	{
 		return templates;
 	}
 	
 	public List<CardTemplate> getTemplateList()
 	{
-		return new ArrayList<CardTemplate>(templates.values());
+		return templates.stream().map(RegisteredCardTemplate::getTemplate)
+				.collect(Collectors.toCollection(ArrayList::new));
 	}
 	
 	public void addExemptReduction(String exempt)
@@ -458,15 +472,22 @@ public class CardType<T extends Card>
 		return internalName;
 	}
 	
-	public static class CardTemplateInfo
+	public static class RegisteredCardTemplate
 	{
+		private CardTemplate template;
 		private String name;
 		private List<String> aliases;
 		
-		public CardTemplateInfo(String name, String... aliases)
+		public RegisteredCardTemplate(CardTemplate template, String name, String... aliases)
 		{
+			this.template = template;
 			this.name = name;
 			this.aliases = new ArrayList<String>(Arrays.asList(aliases));
+		}
+		
+		public CardTemplate getTemplate()
+		{
+			return template;
 		}
 		
 		public String getName()

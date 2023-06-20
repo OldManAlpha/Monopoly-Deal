@@ -30,15 +30,15 @@ public class CardActionBuilding extends CardAction
 		rentAddition = template.getInt(RENT_ADDITION);
 	}
 	
+	/**
+	 * Building cards are not played, they are only moved.
+	 */
 	@Override
-	public void doPlay(Player player, PlayArguments args)
+	protected void playStageMoveCard(Player player, PlayArguments args)
 	{
 		PropertySet set = args.getArgument(PropertySetArgument.class).getTargetSet();
 		transfer(set, getPlayAnimation());
 	}
-	
-	@Override
-	protected void playStageMoveCard(Player player, PlayArguments args) {}
 	
 	@Override
 	public CardControls createControls()
@@ -86,7 +86,7 @@ public class CardActionBuilding extends CardAction
 	private static CardType<CardActionBuilding> createType()
 	{
 		CardType<CardActionBuilding> type = new CardType<CardActionBuilding>(CardActionBuilding.class,
-				CardActionBuilding::new, "Generic Building");
+				CardActionBuilding::new, false, "Building");
 		type.addExemptReduction(TIER, false);
 		type.addExemptReduction(RENT_ADDITION, false);
 		CardTemplate template = type.getDefaultTemplate();
@@ -98,6 +98,7 @@ public class CardActionBuilding extends CardAction
 		template.put(UNDOABLE, true);
 		template.put(CLEARS_UNDOABLE_ACTIONS, false);
 		template.put(CONSUME_MOVES_STAGE, CardPlayStage.AFTER_PLAY);
+		template.put(MOVE_STAGE, CardPlayStage.RIGHT_AFTER_PLAY);
 		template.put(TIER, 1);
 		template.put(RENT_ADDITION, 1);
 		type.setDefaultTemplate(template);

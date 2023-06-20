@@ -55,7 +55,7 @@ public class CardMoney extends Card
 	
 	private static CardType<CardMoney> createType()
 	{
-		CardType<CardMoney> type = new CardType<CardMoney>(CardMoney.class, CardMoney::new, "Money");
+		CardType<CardMoney> type = new CardType<CardMoney>(CardMoney.class, CardMoney::new, false, "Money");
 		type.addExemptReduction("value");
 		CardTemplate dt = type.getDefaultTemplate();
 		dt.put(VALUE, 1);

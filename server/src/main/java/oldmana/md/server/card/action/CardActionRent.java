@@ -177,7 +177,7 @@ public class CardActionRent extends CardAction
 	
 	private static CardType<CardActionRent> createType()
 	{
-		CardType<CardActionRent> type = new CardType<CardActionRent>(CardActionRent.class, CardActionRent::new, "Rent");
+		CardType<CardActionRent> type = new CardType<CardActionRent>(CardActionRent.class, CardActionRent::new, false, "Rent");
 		type.addExemptReduction(COLORS, false);
 		type.addExemptReduction(VALUE, false);
 		CardTemplate dt = type.getDefaultTemplate();

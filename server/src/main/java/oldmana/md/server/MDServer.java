@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -85,6 +86,7 @@ public class MDServer
 	private final List<Client> newClients = new ArrayList<Client>();
 	
 	private List<Player> players = new ArrayList<Player>();
+	private Set<Player> cachedPlayers = new HashSet<Player>();
 	
 	private GameState gameState;
 	
@@ -321,17 +323,22 @@ public class MDServer
 			}
 			
 			// Process packets
-			for (Player player : getPlayers())
+			if (!cachedPlayers.containsAll(players) || cachedPlayers.size() != players.size())
 			{
-				if (player.isConnected())
+				cachedPlayers.clear();
+				cachedPlayers.addAll(players);
+			}
+			for (Player player : cachedPlayers)
+			{
+				if (!player.isConnected())
 				{
-					if (!player.isConnected())
+					if (player.isOnline() && !player.isBot())
 					{
 						player.setOnline(false);
-						continue;
 					}
-					netHandler.processPackets(player.getClient(), player);
+					continue;
 				}
+				netHandler.processPackets(player.getClient(), player);
 			}
 			
 			// Process commands

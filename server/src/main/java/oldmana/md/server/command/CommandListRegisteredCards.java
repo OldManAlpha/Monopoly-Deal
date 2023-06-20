@@ -6,15 +6,13 @@ import oldmana.md.server.CommandSender;
 import oldmana.md.server.MessageBuilder;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
-import oldmana.md.server.card.CardProperty;
 import oldmana.md.server.card.CardRegistry;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.collection.Hand;
 import oldmana.md.server.card.CardType;
-import oldmana.md.server.card.CardType.CardTemplateInfo;
+import oldmana.md.server.card.CardType.RegisteredCardTemplate;
 
 import java.util.List;
-import java.util.Map.Entry;
 
 public class CommandListRegisteredCards extends Command
 {
@@ -30,12 +28,12 @@ public class CommandListRegisteredCards extends Command
 		List<CardType<?>> cards = CardRegistry.getRegisteredCards();
 		for (CardType<?> type : cards)
 		{
-			if (type.getCardClass() != CardProperty.class && type.isInstantiable())
+			if (type.isInstantiable())
 			{
 				sender.sendMessage(getMessage(type, sender));
-				for (Entry<CardTemplateInfo, CardTemplate> entry : type.getTemplates().entrySet())
+				for (RegisteredCardTemplate registeredTemplate : type.getTemplates())
 				{
-					sender.sendMessage(getMessage(entry, sender));
+					sender.sendMessage(getMessage(registeredTemplate, sender));
 				}
 			}
 		}
@@ -58,17 +56,19 @@ public class CommandListRegisteredCards extends Command
 			}
 			mb.addString(")");
 		}
-		addCreateCardLink(mb, type.getDefaultTemplate(), sender);
+		if (type.isVisible())
+		{
+			addCreateCardLink(mb, type.getDefaultTemplate(), sender);
+		}
 		return mb.getMessage();
 	}
 	
-	public Message getMessage(Entry<CardTemplateInfo, CardTemplate> entry, CommandSender sender)
+	public Message getMessage(RegisteredCardTemplate rct, CommandSender sender)
 	{
-		CardTemplateInfo info = entry.getKey();
-		CardTemplate template = entry.getValue();
+		CardTemplate template = rct.getTemplate();
 		MessageBuilder mb = new MessageBuilder();
-		mb.addString(ChatColor.of(230, 230, 230) + "  - " + info.getName());
-		List<String> aliases = info.getAliases();
+		mb.addString(ChatColor.of(230, 230, 230) + "  - " + rct.getName());
+		List<String> aliases = rct.getAliases();
 		if (aliases.size() > 0)
 		{
 			mb.addString(" (" + aliases.get(0));

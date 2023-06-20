@@ -64,7 +64,7 @@ public class CardActionCharge extends CardAction
 	private static CardType<CardActionCharge> createType()
 	{
 		CardType<CardActionCharge> type = new CardType<CardActionCharge>(CardActionCharge.class,
-				CardActionCharge::new, "Charge");
+				CardActionCharge::new, false, "Charge");
 		type.addExemptReduction(VALUE, false);
 		type.addExemptReduction(CHARGES_ALL, false);
 		type.addExemptReduction(CHARGE, false);
