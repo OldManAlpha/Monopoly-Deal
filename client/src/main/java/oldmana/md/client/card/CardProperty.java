@@ -30,11 +30,6 @@ public class CardProperty extends Card
 		return colors.size() == 2;
 	}
 	
-	public boolean isPropertyWildCard()
-	{
-		return colors.size() == 10;
-	}
-	
 	public boolean isBase()
 	{
 		return base;
@@ -135,6 +130,20 @@ public class CardProperty extends Card
 		public Color getColor()
 		{
 			return color;
+		}
+		
+		public double getLuminance()
+		{
+			int red = color.getRed();
+			int green = color.getGreen();
+			int blue = color.getBlue();
+			
+			return ((red * 0.2126) + (green * 0.7152) + (blue * 0.0722)) / 255;
+		}
+		
+		public boolean isDark()
+		{
+			return getLuminance() < 0.25;
 		}
 		
 		public byte getID()

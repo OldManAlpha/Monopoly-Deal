@@ -19,6 +19,7 @@ import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
+import oldmana.md.client.gui.util.TextPainter.Outline;
 
 public class CardPainter
 {
@@ -136,17 +137,27 @@ public class CardPainter
 			{
 				CardProperty prop = (CardProperty) card;
 				List<PropertyColor> colors = prop.getColors();
-				double interval = (double) (getWidth() - scale(12)) / (double) (colors.size());
+				int colorHeight = colors.size() > 2 ? scale(18) : scale(16);
+				int padding = scale(0.5);
+				int doublePadding = padding * 2;
+				double interval = (double) (getWidth() - scale(12) - scale(1)) / (double) (colors.size());
+				
+				g.setColor(Color.BLACK);
+				g.fillRect(scale(6), scale(6), getWidth() - scale(12), colorHeight + doublePadding);
+				
 				for (int i = 0 ; i < colors.size() ; i++)
 				{
 					g.setColor(colors.get(i).getColor());
-					g.fillRect(scale(6) + (int) Math.ceil((interval * i)), scale(6), (int) Math.ceil(interval), scale(17));
+					int width = (int) (Math.round(interval * (i + 1)) - Math.round(interval * i));
+					g.fillRect(scale(6) + padding + (int) Math.round(interval * i), scale(6) + padding, width, colorHeight);
 				}
+				/*
 				g.setColor(Color.BLACK);
 				for (int i = 0 ; i < scale(0.5) ; i++)
 				{
 					g.drawRect(scale(6) + i, scale(6) + i, getWidth() - scale(12) - (i * 2) - 1, scale(17) - (i * 2) - 1);
 				}
+				 */
 				//g.setColor(prop.getColor().getColor());
 				//g.fillRect(scale(6), scale(6), getWidth() - scale(12), scale(17));
 				// Old rounded corners color design
@@ -266,34 +277,71 @@ public class CardPainter
 			else
 			{
 				// Special name drawing for 10-Color Property Wild Cards, disabled for now
-				/*
-				if (property && ((CardProperty) card).isPropertyWildCard())
+				
+				if (property && ((CardProperty) card).getColors().size() > 2)
 				{
 					g.setColor(Color.WHITE);
-					g.fillRect(scale(6), scale(6 + 5), getWidth() - scale(12), scale(17 - 10));
+					g.fillRect(scale(6), scale(6 + 5), getWidth() - scale(12), scale(17 - 10 + 2));
 					g.setColor(Color.BLACK);
 					g.fillRect(scale(6), scale(6 + 5), getWidth() - scale(12), scale(0.5));
-					g.fillRect(scale(6), scale(17.5), getWidth() - scale(12), scale(0.5));
-					g.fillRect(scale(6), scale(12), getWidth() - scale(12), scale(5));
+					g.fillRect(scale(6), scale(19.5), getWidth() - scale(12), scale(0.5));
+					g.fillRect(scale(6), scale(12), getWidth() - scale(12), scale(7));
 					g.setColor(Color.WHITE);
-					g.fillRect(scale(6.5), scale(12.5), getWidth() - scale(13), scale(4));
+					g.fillRect(scale(6.5), scale(12.5), getWidth() - scale(13), scale(6));
 					g.setColor(Color.BLACK);
 					Font font = new Font(getFont().getFontName(), Font.BOLD, scale(4.6));
 					g.setFont(font);
-					TextPainter tp = new TextPainter(card.getName().toUpperCase(), font, new Rectangle(scale(6.5), scale(12.5), getWidth() - scale(13), scale(4)));
+					TextPainter tp = new TextPainter(card.getName().toUpperCase(), font, new Rectangle(scale(6.5), scale(13.5), getWidth() - scale(13), scale(4)));
 					tp.setHorizontalAlignment(Alignment.CENTER);
 					tp.setVerticalAlignment(Alignment.TOP);
 					tp.paint(g);
 				}
 				else
-				*/
+				
 				{
 					Font font = new Font(getFont().getFontName(), Font.BOLD, scale(property ? 4.6 : 5));
 					g.setFont(font);
 					TextPainter tp = new TextPainter(property ? card.getName().toUpperCase() : "ACTION CARD", font, new Rectangle(scale(6), scale(property ? 24 : 16), getWidth() - scale(12), scale(20)));
 					tp.setHorizontalAlignment(Alignment.CENTER);
 					tp.setVerticalAlignment(Alignment.TOP);
-					tp.paint(g);
+					if (!property)
+					{
+						tp.paint(g);
+					}
+					
+					if (property)
+					{
+						tp = new TextPainter(card.getName().toUpperCase(), font, new Rectangle(scale(14), scale(9), getWidth() - scale(22), scale(13)));
+						tp.setVerticalAlignment(Alignment.CENTER);
+						tp.setHorizontalAlignment(Alignment.CENTER);
+						CardProperty prop = (CardProperty) card;
+						List<PropertyColor> colors = prop.getColors();
+						if (colors.size() > 1)
+						{
+							if (colors.stream().anyMatch(color -> color.isDark()))
+							{
+								tp.setOutline(Outline.of(Color.WHITE, scale(1.25)));
+							}
+						}
+						else
+						{
+							if (colors.get(0).isDark())
+							{
+								g.setColor(Color.WHITE);
+							}
+						}
+						tp.paint(g);
+						g.setColor(Color.BLACK);
+					}
+					
+					/*
+					double interval = (double) (getWidth() - scale(12)) / (double) (colors.size());
+				for (int i = 0 ; i < colors.size() ; i++)
+				{
+					g.setColor(colors.get(i).getColor());
+					g.fillRect(scale(6) + (int) Math.ceil((interval * i)), scale(6), (int) Math.ceil(interval), scale(17));
+				}
+					 */
 				}
 				
 				if (!property)
@@ -312,7 +360,7 @@ public class CardPainter
 							g.fillArc(scale(12.5), scale(27.5), scale(35), scale(35), (int) -Math.ceil((angleInc * i) + (multi ? -90 : 180)), 
 									(int) -Math.ceil(angleInc));
 						}
-						g.setColor(Color.WHITE);
+						g.setColor(outerColor);
 						g.fillOval(scale(18), scale(33), scale(24), scale(24));
 						g.setColor(new Color(30, 30, 30));
 						Font font = GraphicsUtils.getBoldMDFont(scale(9));
@@ -327,11 +375,9 @@ public class CardPainter
 						g.setColor(Color.WHITE);
 						g.fillOval(scale(12.5), scale(27.5), scale(35), scale(35));
 						g.setColor(new Color(30, 30, 30));
-						//font = new Font(getFont().getFontName(), Font.BOLD, scale(8));
 						Font font = new Font(getFont().getFontName(), Font.BOLD, scale(card.getFontSize()));
 						g.setFont(font);
-						//tp = new TextPainter(Arrays.asList(new String[] {"JUST", "SAY NO!"}), font, new Rectangle(scale(14), scale(28), scale(32), scale(30)), false, true);
-						TextPainter tp = null;
+						TextPainter tp;
 						if (card.getDisplayName() != null)
 						{
 							tp = new TextPainter(Arrays.asList(card.getDisplayName()), font, new Rectangle(scale(12) - 1, scale(28) - 1 + scale(card.getDisplayOffsetY()), scale(36) + 1, scale(30) + 1), false, false);
@@ -350,6 +396,18 @@ public class CardPainter
 					CardProperty prop = (CardProperty) card;
 					if (prop.isSingleColor())
 					{
+						{
+							TextPainter tp = new TextPainter("RENT", GraphicsUtils.getThinMDFont(Font.BOLD, scale(6)),
+									new Rectangle(scale(37), scale(31), scale(15), scale(7)), false, false);
+							tp.paint(g);
+							tp = new TextPainter(Arrays.asList("(No. of properties", "owned in set)"), GraphicsUtils.getThinMDFont(Font.BOLD, scale(3)),
+									new Rectangle(scale(10), scale(31), scale(15), scale(7)), false, false);
+							tp.setHorizontalAlignment(Alignment.CENTER);
+							tp.paint(g);
+							tp = new TextPainter("................", GraphicsUtils.getThinMDFont(Font.BOLD, scale(4)),
+									new Rectangle(scale(21), scale(42.5), scale(20), scale(4)), false, false);
+							tp.paint(g);
+						}
 						Graphics2D trans = (Graphics2D) g.create();
 						trans.translate(scale(14), scale(40));
 						drawMiniProps(trans, prop.getColor());
@@ -367,6 +425,14 @@ public class CardPainter
 					}
 					else if (prop.isBiColor())
 					{
+						{
+							TextPainter tp = new TextPainter("RENT", GraphicsUtils.getThinMDFont(Font.BOLD, scale(6)),
+									new Rectangle(scale(36), scale(31), scale(15), scale(7)), false, false);
+							tp.paint(g);
+							tp = new TextPainter("RENT", GraphicsUtils.getThinMDFont(Font.BOLD, scale(6)),
+									new Rectangle(scale(12), scale(31), scale(15), scale(7)), false, false);
+							tp.paint(g);
+						}
 						Graphics2D trans = (Graphics2D) g.create();
 						trans.translate(scale(10), scale(40));
 						drawMiniProps(trans, prop.getColors().get(0));
@@ -446,7 +512,7 @@ public class CardPainter
 				g2.rotate(Math.toRadians(e * -15), scale(1), scale(8));
 				g2.setColor(Color.BLACK);
 				g2.fillRoundRect(0, 0, scale(6), scale(9), scale(3), scale(3));
-				g2.setColor(Color.WHITE);
+				g2.setColor(card.getInnerColor());
 				g2.fillRoundRect(scale(0.5), scale(0.5), scale(5), scale(8), scale(2), scale(2));
 				g2.setColor(color.getColor());
 				g2.fillRoundRect(scale(0.5), scale(0.5), scale(5), scale(2), scale(2), scale(2));
@@ -465,6 +531,18 @@ public class CardPainter
 	}
 	
 	public void drawRentText(Graphics2D g, PropertyColor color)
+	{
+		for (int i = 0 ; i < Math.min(color.getMaxProperties(), 4) ; i++)
+		{
+			TextPainter tp = new TextPainter(color.getRent(i + 1) + "M", GraphicsUtils.getBoldMDFont(scale(7)), new Rectangle(0, 0, scale(14), scale(9)));
+			tp.setHorizontalAlignment(Alignment.CENTER);
+			tp.setVerticalAlignment(Alignment.CENTER);
+			tp.paint(g);
+			g.translate(0, scale(11));
+		}
+	}
+	
+	public void drawDots(Graphics2D g, PropertyColor color)
 	{
 		for (int i = 0 ; i < Math.min(color.getMaxProperties(), 4) ; i++)
 		{

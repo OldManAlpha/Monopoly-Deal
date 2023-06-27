@@ -58,13 +58,6 @@ public class PropertySet extends CardCollection
 	public void addCard(CardProperty card)
 	{
 		super.addCard(card);
-		if (getCardCount() == 1)
-		{
-			if (!card.isPropertyWildCard() && (effectiveColor == null || !card.hasColor(effectiveColor)))
-			{
-				effectiveColor = card.getColor();
-			}
-		}
 	}
 	
 	public void removeCard(CardProperty card)
