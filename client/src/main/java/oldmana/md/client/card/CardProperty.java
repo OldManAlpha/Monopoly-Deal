@@ -143,7 +143,7 @@ public class CardProperty extends Card
 		
 		public boolean isDark()
 		{
-			return getLuminance() < 0.25;
+			return getLuminance() < 0.2;
 		}
 		
 		public byte getID()
