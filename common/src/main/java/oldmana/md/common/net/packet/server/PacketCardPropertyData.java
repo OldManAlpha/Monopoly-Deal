@@ -6,9 +6,9 @@ public class PacketCardPropertyData extends Packet
 {
 	public int id;
 	public String name;
-	public byte value;
+	public int value;
 	public byte[] colors;
-	public boolean base; // Whether or not the card can be rented with on its own
+	public boolean base;
 	public boolean stealable;
 	
 	public short description;
@@ -23,7 +23,7 @@ public class PacketCardPropertyData extends Packet
 	{
 		this.id = id;
 		this.name = name;
-		this.value = (byte) value;
+		this.value = value;
 		this.colors = colors;
 		this.base = base;
 		this.stealable = stealable;

@@ -2,7 +2,9 @@ package oldmana.md.server;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import oldmana.md.server.command.*;
 import oldmana.md.server.event.command.CommandExecutedEvent;
@@ -11,6 +13,7 @@ import oldmana.md.server.event.command.PreCommandExecuteEvent;
 public class CommandHandler
 {
 	private List<Command> commands = new ArrayList<Command>();
+	private Map<String, Command> commandMap = new HashMap<String, Command>();
 	
 	public void registerDefaultCommands()
 	{
@@ -34,6 +37,7 @@ public class CommandHandler
 		registerCommand(new CommandNextTurn());
 		registerCommand(new CommandGameRule());
 		registerCommand(new CommandKickPlayer());
+		registerCommand(new CommandKickPlayerID());
 		registerCommand(new CommandPlaySound());
 		registerCommand(new CommandLoadSound());
 		registerCommand(new CommandListEffects());
@@ -47,6 +51,7 @@ public class CommandHandler
 		registerCommand(new CommandAddBot());
 		registerCommand(new CommandToggleBot());
 		registerCommand(new CommandShufflePlayers());
+		registerCommand(new CommandDeckBuilder());
 		
 		
 		// Registering test/debug commands through reflection, as they're only used in a development environment.
@@ -68,6 +73,11 @@ public class CommandHandler
 	public void registerCommand(Command cmd)
 	{
 		commands.add(cmd);
+		commandMap.put(cmd.getName().toLowerCase(), cmd);
+		for (String alias : cmd.getAliases())
+		{
+			commandMap.put(alias.toLowerCase(), cmd);
+		}
 	}
 	
 	public void executeCommand(CommandSender sender, String fullCmd)
@@ -113,14 +123,7 @@ public class CommandHandler
 	
 	public Command findCommand(String name)
 	{
-		for (Command cmd : commands)
-		{
-			if (cmd.isThisCommand(name))
-			{
-				return cmd;
-			}
-		}
-		return null;
+		return commandMap.get(name.toLowerCase());
 	}
 	
 	public List<Command> getCommands()

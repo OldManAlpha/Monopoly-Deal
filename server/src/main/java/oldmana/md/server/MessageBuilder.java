@@ -312,6 +312,11 @@ public class MessageBuilder
 		}
 	}
 	
+	public static Message ofHover(String message, String... hover)
+	{
+		return new MessageBuilder().addHoverString(message, hover).getMessage();
+	}
+	
 	private static JSONObject toJSONObject(String text, Color color)
 	{
 		JSONObject obj = new JSONObject();

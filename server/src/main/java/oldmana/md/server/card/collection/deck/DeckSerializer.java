@@ -1,5 +1,6 @@
 package oldmana.md.server.card.collection.deck;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -23,13 +24,9 @@ public class DeckSerializer
 	
 	public static JSONArray serialize(DeckStack deck)
 	{
-		Map<CardTemplate, Integer> cardAmounts = new HashMap<CardTemplate, Integer>();
-		for (Card card : deck.getCards())
-		{
-			cardAmounts.merge(card.getTemplate(), 1, Integer::sum);
-		}
+		Map<CardTemplate, Integer> templates = toTemplateMap(deck.getCards());
 		JSONArray arr = new JSONArray();
-		for (Entry<CardTemplate, Integer> entry : cardAmounts.entrySet())
+		for (Entry<CardTemplate, Integer> entry : templates.entrySet())
 		{
 			JSONObject obj = entry.getKey().getReducedJson();
 			if (entry.getValue() > 1)
@@ -65,6 +62,16 @@ public class DeckSerializer
 			}
 			CardTemplate template = new CardTemplate(baseTemplate, obj);
 			templates.merge(template, amount, Integer::sum);
+		}
+		return templates;
+	}
+	
+	public static Map<CardTemplate, Integer> toTemplateMap(Collection<Card> cards)
+	{
+		Map<CardTemplate, Integer> templates = new HashMap<CardTemplate, Integer>();
+		for (Card card : cards)
+		{
+			templates.merge(card.getTemplate(), 1, Integer::sum);
 		}
 		return templates;
 	}

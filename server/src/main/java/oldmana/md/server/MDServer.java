@@ -705,9 +705,16 @@ public class MDServer
 		{
 			player.closeConnection();
 		}
+		Deck deck = getDeck();
 		for (Card card : player.getAllCards())
 		{
-			card.transfer(getDiscardPile(), -1, 0.5);
+			card.transfer(deck, -1, 0.25);
+		}
+		deck.shuffle();
+		GameState gs = getGameState();
+		if (gs.getActivePlayer() == player)
+		{
+			gs.nextTurn(true);
 		}
 		players.remove(player);
 		gameState.getTurnOrder().removePlayer(player);
@@ -719,6 +726,7 @@ public class MDServer
 		CardCollection.unregister(player.getHand());
 		CardCollection.unregister(player.getBank());
 		broadcastPacket(new PacketDestroyPlayer(player.getID()));
+		System.out.println("Kicked " + player.getDescription() + " for '" + reason + "'");
 	}
 	
 	public List<Player> getPlayers()

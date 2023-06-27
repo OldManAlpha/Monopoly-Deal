@@ -33,7 +33,6 @@ public class CardTemplate implements Cloneable
 		DEFAULT_TEMPLATE.put(MOVE_COST, 1);
 		DEFAULT_TEMPLATE.put(CONSUME_MOVES_STAGE, CardPlayStage.RIGHT_BEFORE_PLAY);
 		DEFAULT_TEMPLATE.put(MOVE_STAGE, CardPlayStage.BEFORE_PLAY);
-		
 	}
 	
 	private static final Map<String, Integer> sortOrder = new HashMap<String, Integer>();

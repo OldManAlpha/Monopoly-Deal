@@ -45,6 +45,7 @@ public abstract class Card
 	private String[] displayName;
 	private int fontSize;
 	private int displayOffsetY;
+	
 	private CardDescription description;
 	
 	private Color outerColor;

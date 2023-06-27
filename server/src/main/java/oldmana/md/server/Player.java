@@ -17,6 +17,7 @@ import oldmana.md.common.net.packet.server.PacketHandshake;
 import oldmana.md.common.net.packet.server.PacketKick;
 import oldmana.md.common.net.packet.server.PacketPlaySound;
 import oldmana.md.common.net.packet.server.PacketPlayerInfo;
+import oldmana.md.common.net.packet.server.PacketRemoveMessageCategory;
 import oldmana.md.common.net.packet.server.PacketSelectCardCombo;
 import oldmana.md.common.net.packet.server.PacketSetAwaitingResponse;
 import oldmana.md.common.net.packet.server.PacketUpdatePlayer;
@@ -936,6 +937,11 @@ public class Player implements CommandSender
 	public void sendMessage(Message message)
 	{
 		sendPacket(new PacketChat(message));
+	}
+	
+	public void clearMessages(String category)
+	{
+		sendPacket(new PacketRemoveMessageCategory(category));
 	}
 	
 	@Override
