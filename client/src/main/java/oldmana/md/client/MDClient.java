@@ -155,7 +155,7 @@ public class MDClient
 		window = new MDFrame(folder == null);
 		
 		
-		Timer timer = new Timer(50, event -> tickClient());
+		Timer timer = new Timer(20, event -> tickClient());
 		timer.setRepeats(true);
 		timer.start();
 	}
