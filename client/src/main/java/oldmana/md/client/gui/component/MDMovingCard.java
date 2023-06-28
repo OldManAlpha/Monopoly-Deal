@@ -4,6 +4,8 @@ import java.awt.AlphaComposite;
 import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
 import java.awt.LinearGradientPaint;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -104,17 +106,17 @@ public class MDMovingCard extends MDComponent
 		
 		startCache = GraphicsUtils.createImage(largestWidth, largestHeight);
 		Graphics2D cardGr = startCache.createGraphics();
-		cardGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		cardGr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		//cardGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		//cardGr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		cardGr.drawImage(start != null ? start.getGraphics(largestScale * getScale()) :
-				Card.getBackGraphics(largestScale * getScale()), 0, 0, largestWidth, largestHeight, null);
+				Card.getBackGraphics(largestScale * getScale()), 0, 0/*, largestWidth, largestHeight*/, null);
 		
 		endCache = GraphicsUtils.createImage(largestWidth, largestHeight);
 		cardGr = endCache.createGraphics();
-		cardGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		cardGr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		//cardGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		//cardGr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		cardGr.drawImage(end != null ? end.getGraphics(largestScale * getScale()) :
-				Card.getBackGraphics(largestScale * getScale()), 0, 0, largestWidth, largestHeight, null);
+				Card.getBackGraphics(largestScale * getScale()), 0, 0/*, largestWidth, largestHeight*/, null);
 		
 		if (flash != null)
 		{
@@ -319,6 +321,20 @@ public class MDMovingCard extends MDComponent
 		//return image;
 	}
 	
+	public BufferedImage getFaceNoCopy(double rotation)
+	{
+		boolean face = rotation > 180; // True = Start Card, False = End Card
+		if (flash != null && !face) // We're flashing and it's the "end" card
+		{
+			return flashCache;
+		}
+		else if (isMystery() && !face) // The card is a mystery and it's the "end" card
+		{
+			return Card.getMysteryGraphics(getLargestScale() * 2);
+		}
+		return start == end && !face ? Card.getBackGraphics(getLargestScale()) : face ? startCache : endCache;
+	}
+	
 	public void shine(Graphics2D g, int width, int height, double pos)
 	{
 		width *= 1.3333;
@@ -346,18 +362,19 @@ public class MDMovingCard extends MDComponent
 			double degrees = rotation - 90;
 			degrees = (degrees + 360) % 360;
 			double angle = Math.toRadians(degrees - (start != null ? 180 : 0));
-			BufferedImage image = getFace(degrees);
+			BufferedImage image = downsize(getFaceNoCopy(degrees), (int) sizeLocMap[frame].getWidth(), (int) sizeLocMap[frame].getHeight());
 			int width = image.getWidth();
 			int height = image.getHeight();
-			Graphics2D g = image.createGraphics();
 			if (shineProg > 0)
 			{
+				Graphics2D g = image.createGraphics();
 				shine(g, width, height, shineProg);
+				g.dispose();
 			}
 			
 			if (rotation == 0)
 			{
-				return downsize(image, (int) sizeLocMap[frame].getWidth(), (int) sizeLocMap[frame].getHeight());
+				return image;// downsize(image, (int) sizeLocMap[frame].getWidth(), (int) sizeLocMap[frame].getHeight());
 			}
 			
 			//Canvas canvas = new Canvas(width, height);
@@ -400,12 +417,12 @@ public class MDMovingCard extends MDComponent
 			
 			BufferedImage from = SwingFXUtils.fromFXImage(newImage, image);
 			BufferedImage rendered = GraphicsUtils.createImage(width, height);
-			Graphics2D gg = rendered.createGraphics();
-			gg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			gg.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-			gg.drawImage(from, (width / 2) - (drawWidth / 2), -1, drawWidth, height + 1, null);
+			Graphics2D g = rendered.createGraphics();
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+			g.drawImage(from, (width / 2) - (drawWidth / 2), -1, drawWidth, height + 1, null);
 			//System.out.println("Almost done with " + frame + " on " + Thread.currentThread().getName());
-			return downsize(rendered, (int) sizeLocMap[frame].getWidth(), (int) sizeLocMap[frame].getHeight());
+			return rendered;// downsize(rendered, (int) sizeLocMap[frame].getWidth(), (int) sizeLocMap[frame].getHeight());
 		}, renderingExecutor);
 	}
 	
