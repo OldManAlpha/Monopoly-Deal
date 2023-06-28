@@ -13,6 +13,7 @@ import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.VolatileImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,8 +40,9 @@ public class GraphicsUtils
 	
 	private static Canvas canvas = new Canvas();
 	
-	/**Required to set scale through this method to avoid precision issues
-	 * 
+	/**
+	 * Required to set scale through this method to avoid precision issues
+	 *
 	 * @param scale
 	 */
 	public static void setScale(double scale)
@@ -68,6 +70,18 @@ public class GraphicsUtils
 	{
 		return GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration()
 				.createCompatibleImage(width, height, Transparency.TRANSLUCENT);
+	}
+	
+	public static BufferedImage createCopy(BufferedImage image)
+	{
+		return new BufferedImage(image.getColorModel(),
+				image.copyData(image.getRaster().createCompatibleWritableRaster()), image.isAlphaPremultiplied(), null);
+	}
+	
+	public static VolatileImage createVolatileImage(int width, int height)
+	{
+		return GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration()
+				.createCompatibleVolatileImage(width, height, Transparency.TRANSLUCENT);
 	}
 	
 	public static FontMetrics getFontMetrics(Font font)

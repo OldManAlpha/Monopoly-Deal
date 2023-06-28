@@ -301,20 +301,22 @@ public class MDMovingCard extends MDComponent
 	
 	public BufferedImage getFace(double rotation)
 	{
-		BufferedImage image = GraphicsUtils.createImage(getLargestWidth(), getLargestHeight());
-		Graphics2D g = image.createGraphics();
+		//BufferedImage image = GraphicsUtils.createImage(getLargestWidth(), getLargestHeight());
+		//Graphics2D g = image.createGraphics();
 		boolean face = rotation > 180; // True = Start Card, False = End Card
 		if (flash != null && !face) // We're flashing and it's the "end" card
 		{
-			g.drawImage(flashCache, 0, 0, null);
-			return image;
+			return GraphicsUtils.createCopy(flashCache);
+			//g.drawImage(flashCache, 0, 0, null);
+			//return image;
 		}
 		else if (isMystery() && !face) // The card is a mystery and it's the "end" card
 		{
 			return Card.getMysteryGraphics(getLargestScale() * 2);
 		}
-		g.drawImage(start == end && !face ? Card.getBackGraphics(getLargestScale()) : face ? startCache : endCache, 0, 0, null);
-		return image;
+		return GraphicsUtils.createCopy(start == end && !face ? Card.getBackGraphics(getLargestScale()) : face ? startCache : endCache);
+		//g.drawImage(start == end && !face ? Card.getBackGraphics(getLargestScale()) : face ? startCache : endCache, 0, 0, null);
+		//return image;
 	}
 	
 	public void shine(Graphics2D g, int width, int height, double pos)
@@ -358,8 +360,8 @@ public class MDMovingCard extends MDComponent
 				return downsize(image, (int) sizeLocMap[frame].getWidth(), (int) sizeLocMap[frame].getHeight());
 			}
 			
-			Canvas canvas = new Canvas(width, height);
-			GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
+			//Canvas canvas = new Canvas(width, height);
+			//GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
 			ImageView imageView = new ImageView(SwingFXUtils.toFXImage(image, null));
 			
 			PerspectiveTransform trans = new PerspectiveTransform();
@@ -383,7 +385,7 @@ public class MDMovingCard extends MDComponent
 			SnapshotParameters params = new SnapshotParameters();
 			params.setFill(Color.TRANSPARENT);
 			
-			Image newImage = null;
+			Image newImage;
 			try
 			{
 				newImage = CompletableFuture.supplyAsync(() -> imageView.snapshot(params, null), fxExecutor).get();
@@ -394,7 +396,7 @@ public class MDMovingCard extends MDComponent
 				e.printStackTrace();
 				return null;
 			}
-			graphicsContext.drawImage(newImage, 0, 0);
+			//graphicsContext.drawImage(newImage, 0, 0);
 			
 			BufferedImage from = SwingFXUtils.fromFXImage(newImage, image);
 			BufferedImage rendered = GraphicsUtils.createImage(width, height);
