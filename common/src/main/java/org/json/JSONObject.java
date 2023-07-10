@@ -2629,6 +2629,12 @@ public class JSONObject {
     {
         map.forEach(func);
     }
+    
+    @Override
+    public int hashCode()
+    {
+        return map.hashCode();
+    }
 
     /**
      * Create a new JSONException in a common format for incorrect conversions.

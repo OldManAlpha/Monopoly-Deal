@@ -298,13 +298,16 @@ public class CardTemplate implements Cloneable
 		{
 			return false;
 		}
+		if (other == this)
+		{
+			return true;
+		}
 		return associatedType == ((CardTemplate) other).getAssociatedType() && json.similar(((CardTemplate) other).getJson());
 	}
 	
 	@Override
 	public int hashCode()
 	{
-		// TODO: Optimize hash code
-		return json.toMap().hashCode();
+		return json.hashCode();
 	}
 }

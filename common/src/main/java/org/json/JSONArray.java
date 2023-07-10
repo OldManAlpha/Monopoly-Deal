@@ -1705,6 +1705,12 @@ public class JSONArray implements Iterable<Object> {
         }
     }
     
+    @Override
+    public int hashCode()
+    {
+        return myArrayList.hashCode();
+    }
+    
     /**
      * Create a new JSONException in a common format for incorrect conversions.
      * @param idx index of the item
