@@ -48,6 +48,7 @@ public class MDCard extends MDComponent
 	public void setBanner(String text)
 	{
 		banner = text;
+		updateGraphics();
 	}
 	
 	public void updateSize()
@@ -56,11 +57,11 @@ public class MDCard extends MDComponent
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
-		super.paintComponent(gr);
+		super.doPaint(gr);
 		Graphics2D g = (Graphics2D) gr;
-		g.drawImage(card.getGraphics(GraphicsUtils.SCALE * size), 0, 0, getWidth(), getHeight(), null);
+		g.drawImage(card.getGraphics(GraphicsUtils.SCALE * size), 0, 0, null);
 		if (banner != null)
 		{
 			g = (Graphics2D) g.create();

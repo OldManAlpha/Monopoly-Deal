@@ -19,9 +19,9 @@ public class ActionScreen extends MDComponent
 	public void initialize() {}
 	
 	@Override
-	public void paintComponent(Graphics g)
+	public void doPaint(Graphics g)
 	{
-		super.paintComponent(g);
+		super.doPaint(g);
 		g.setColor(new Color(0, 0, 0, 100));
 		g.fillRect(0, 0, getWidth(), getHeight());
 	}

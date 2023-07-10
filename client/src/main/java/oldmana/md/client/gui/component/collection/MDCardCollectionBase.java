@@ -2,12 +2,9 @@ package oldmana.md.client.gui.component.collection;
 
 import java.awt.Component;
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.SwingUtilities;
 
-import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.gui.component.MDComponent;
 
@@ -34,6 +31,7 @@ public abstract class MDCardCollectionBase extends MDComponent
 	public void setCollection(CardCollection collection)
 	{
 		this.collection = collection;
+		updateGraphics();
 	}
 	
 	public void reset()
@@ -128,6 +126,11 @@ public abstract class MDCardCollectionBase extends MDComponent
 	public void setModification(CollectionMod mod)
 	{
 		this.mod = mod;
+	}
+	
+	public boolean shouldAnimateModification()
+	{
+		return true;
 	}
 	
 	public Point getLocationOf(int cardIndex)

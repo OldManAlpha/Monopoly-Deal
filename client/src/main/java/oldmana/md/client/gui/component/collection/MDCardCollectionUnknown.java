@@ -7,7 +7,6 @@ import java.util.List;
 
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.CardCollection;
-import oldmana.md.client.gui.util.GraphicsUtils;
 
 public abstract class MDCardCollectionUnknown extends MDCardCollectionBase
 {
@@ -67,8 +66,7 @@ public abstract class MDCardCollectionUnknown extends MDCardCollectionBase
 	{
 		for (Point p : getCurrentCardPositions())
 		{
-			g.drawImage(Card.getBackGraphics(getScale() * getCardScale()), p.x, p.y, GraphicsUtils.getCardWidth(getCardScale()), 
-					GraphicsUtils.getCardHeight(getCardScale()), null);
+			g.drawImage(Card.getBackGraphics(getScale() * getCardScale()), p.x, p.y, null);
 		}
 	}
 }

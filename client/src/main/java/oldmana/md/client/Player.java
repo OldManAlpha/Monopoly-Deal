@@ -57,12 +57,13 @@ public class Player
 	public void setName(String name)
 	{
 		this.name = name;
-		getUI().repaint();
+		getUI().updateGraphics();
 	}
 	
 	public void setConnected(boolean connected)
 	{
 		this.connected = connected;
+		getUI().updateGraphics();
 	}
 	
 	public boolean isConnected()

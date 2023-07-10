@@ -44,7 +44,7 @@ public class MDMoves extends MDComponent
 				{
 					visibleMoves = moves;
 				}
-				repaint();
+				updateGraphics();
 			}
 			else if (visibleMoves < moves)
 			{
@@ -53,7 +53,7 @@ public class MDMoves extends MDComponent
 				{
 					visibleMoves = moves;
 				}
-				repaint();
+				updateGraphics();
 			}
 			else
 			{
@@ -62,12 +62,12 @@ public class MDMoves extends MDComponent
 			if (visibleMoves > visibleMaxMoves)
 			{
 				visibleMaxMoves++;
-				repaint();
+				updateGraphics();
 			}
 			if (visibleMaxMoves > maxMoves && visibleMoves <= maxMoves)
 			{
 				visibleMaxMoves--;
-				repaint();
+				updateGraphics();
 			}
 		});
 	}
@@ -94,7 +94,7 @@ public class MDMoves extends MDComponent
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
 		LinearGradientPaint grayPaint = new LinearGradientPaint(0, 0, 0, getHeight() * 0.5F,
 				new float[] {0, 1}, new Color[] {Color.GRAY, new Color(145, 145, 145)});

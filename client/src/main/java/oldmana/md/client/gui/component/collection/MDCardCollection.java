@@ -12,9 +12,6 @@ import javax.swing.SwingUtilities;
 
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.CardCollection;
-import oldmana.md.client.gui.component.MDCard;
-import oldmana.md.client.gui.component.MDSelection;
-import oldmana.md.client.gui.util.GraphicsUtils;
 
 public abstract class MDCardCollection extends MDCardCollectionBase
 {
@@ -163,8 +160,7 @@ public abstract class MDCardCollection extends MDCardCollectionBase
 		{
 			Card card = entry.getKey();
 			Point p = entry.getValue();
-			g.drawImage(card.getGraphics(getScale() * getCardScale()), p.x, p.y, GraphicsUtils.getCardWidth(getCardScale()), 
-					GraphicsUtils.getCardHeight(getCardScale()), null);
+			g.drawImage(card.getGraphics(getScale() * getCardScale()), p.x, p.y, null);
 		}
 	}
 }

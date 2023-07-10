@@ -44,12 +44,12 @@ public class MDVoidCollection extends MDCardCollectionUnknown
 			if (isCardIncoming() || isCardMovingFrom() || getClient().isDebugEnabled() || intoVoidTime > 0)
 			{
 				stage = Math.min(500, stage + Scheduler.getFrameDelay());
-				repaint();
+				updateGraphics();
 			}
 			else if (stage > 0)
 			{
 				stage = Math.max(0, stage - Scheduler.getFrameDelay());
-				repaint();
+				updateGraphics();
 			}
 			
 			intoVoidTime = Math.max(intoVoidTime - Scheduler.getFrameDelay(), 0);
@@ -76,7 +76,13 @@ public class MDVoidCollection extends MDCardCollectionUnknown
 	@Override
 	public void update()
 	{
-		repaint();
+		updateGraphics();
+	}
+	
+	@Override
+	public boolean shouldAnimateModification()
+	{
+		return false;
 	}
 
 	@Override
@@ -86,7 +92,7 @@ public class MDVoidCollection extends MDCardCollectionUnknown
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
 		Graphics2D g = (Graphics2D) gr;
 		Graphics2D gv = (Graphics2D) g.create();

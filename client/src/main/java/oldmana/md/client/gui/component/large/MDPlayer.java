@@ -9,7 +9,6 @@ import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.LinearGradientPaint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -181,17 +180,14 @@ public class MDPlayer extends MDComponent
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
-		super.paintComponent(gr);
+		super.doPaint(gr);
 		Graphics2D g = (Graphics2D) gr;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		Color border = getBorderColor();
 		Color nameplate = getNameplateColor();
 		Color inner = getInnerColor();
-		//Color innerDarker = GraphicsUtils.getDarkerColor(inner, 0.3);
-		//LinearGradientPaint background = new LinearGradientPaint(0, 0, getWidth(), getHeight(), new float[] {0, 1}, new Color[] {inner, innerDarker});
-		//g.setPaint(background);
 		g.setColor(inner);
 		g.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, scale(10), scale(10));
 		g.setColor(border);
@@ -212,8 +208,6 @@ public class MDPlayer extends MDComponent
 		tp.paint(g);
 		g.setColor(border);
 		g.drawRoundRect(0, 0, nameWidth + scale(8), nameHeight + scale(2), scale(10), scale(10));
-		
-		
 	}
 	
 	public class PlayerLayout extends LayoutAdapter

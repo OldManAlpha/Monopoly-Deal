@@ -36,45 +36,53 @@ public class MDText extends MDComponent
 	public void setText(String text)
 	{
 		this.text = text;
+		updateGraphics();
 	}
 	
 	public void setFontSize(int size)
 	{
 		fontSize = size;
+		updateGraphics();
 	}
 	
 	public void setBold(boolean bold)
 	{
 		this.bold = bold;
+		updateGraphics();
 	}
 	
 	public void setColor(Color color)
 	{
 		this.color = color;
+		updateGraphics();
 	}
 	
 	public void setOutlineColor(Color color)
 	{
 		this.outlineColor = color;
+		updateGraphics();
 	}
 	
 	public void setOutlineThickness(double outline)
 	{
 		this.outline = outline;
+		updateGraphics();
 	}
 	
 	public void setVerticalAlignment(Alignment alignment)
 	{
 		verticalAlign = alignment;
+		updateGraphics();
 	}
 	
 	public void setHorizontalAlignment(Alignment alignment)
 	{
 		horizontalAlign = alignment;
+		updateGraphics();
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
 		Graphics2D g = (Graphics2D) gr;
 		g.setColor(color);

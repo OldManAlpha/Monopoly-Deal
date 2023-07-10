@@ -15,6 +15,8 @@ public class Main
 			System.setProperty("sun.java2d.transaccel", "true");
 			System.setProperty("sun.java2d.d3d", "false");
 			System.setProperty("sun.java2d.ddforcevram", "true");
+			System.setProperty("sun.java2d.opengl", "true");
+			//System.setProperty("sun.java2d.accthreshold", "0");
 		}
 		SwingUtilities.invokeLater(() ->
 		{

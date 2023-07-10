@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -60,7 +59,7 @@ public class MDHand extends MDCardCollection
 	@Override
 	public void update()
 	{
-		repaint();
+		updateGraphics();
 	}
 	
 	public void removeOverlay()
@@ -71,7 +70,7 @@ public class MDHand extends MDCardCollection
 			remove(overlay);
 			hovered = null;
 			overlay = null;
-			repaint();
+			updateGraphics();
 		}
 	}
 	
@@ -139,18 +138,18 @@ public class MDHand extends MDCardCollection
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
-		super.paintComponent(gr);
+		super.doPaint(gr);
 		Graphics2D g = (Graphics2D) gr;
 		
 		CardCollection hand = getCollection();
 		
 		if (hand != null)
 		{
-			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+			//g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			//g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+			//g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 			
 			paintCards(g);
 			
@@ -181,14 +180,12 @@ public class MDHand extends MDCardCollection
 				continue;
 			}
 			Point p = entry.getValue();
-			g.drawImage(card.getGraphics(getScale() * getCardScale()), p.x, p.y, GraphicsUtils.getCardWidth(getCardScale()),
-					GraphicsUtils.getCardHeight(getCardScale()), null);
+			g.drawImage(card.getGraphics(getScale() * getCardScale()), p.x, p.y, null);
 		}
 		if (dragged != null)
 		{
 			g.drawImage(dragged.getGraphics(getScale() * getCardScale()),
-					dragX - GraphicsUtils.getCardWidth(getCardScale() / 2), 0,
-					GraphicsUtils.getCardWidth(getCardScale()), GraphicsUtils.getCardHeight(getCardScale()), null);
+					dragX - GraphicsUtils.getCardWidth(getCardScale() / 2), 0, null);
 		}
 	}
 	
@@ -226,7 +223,7 @@ public class MDHand extends MDCardCollection
 			{
 				dragX = Math.max(GraphicsUtils.getCardWidth(getCardScale() / 2),
 						Math.min(event.getX(), getWidth() - GraphicsUtils.getCardWidth(getCardScale() / 2)));
-				repaint();
+				updateGraphics();
 			}
 		}
 		
@@ -250,7 +247,7 @@ public class MDHand extends MDCardCollection
 				getClient().sendPacket(new PacketActionMoveHandCard(dragged.getID(), index));
 			}
 			dragged = null;
-			repaint();
+			updateGraphics();
 		}
 
 		@Override
@@ -276,7 +273,7 @@ public class MDHand extends MDCardCollection
 						overlay.setLocation(getCardStartX(event.getX()), 0);
 						add(overlay);
 						overlay.addCardInfo();
-						repaint();
+						updateGraphics();
 					}
 				}
 				else
@@ -311,7 +308,7 @@ public class MDHand extends MDCardCollection
 						removeOverlay();
 					}
 				}
-				repaint();
+				updateGraphics();
 			}
 		}
 	}

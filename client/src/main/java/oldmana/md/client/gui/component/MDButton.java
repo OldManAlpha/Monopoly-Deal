@@ -8,7 +8,6 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.HoverHelper;
@@ -39,6 +38,7 @@ public class MDButton extends MDComponent implements Button
 	public void setFontSize(int size)
 	{
 		this.fontSize = size;
+		updateGraphics();
 	}
 	
 	@Override
@@ -51,6 +51,14 @@ public class MDButton extends MDComponent implements Button
 	public void setText(String text)
 	{
 		this.text = text;
+		updateGraphics();
+	}
+	
+	@Override
+	public void setEnabled(boolean enabled)
+	{
+		super.setEnabled(enabled);
+		updateGraphics();
 	}
 	
 	@Override
@@ -63,8 +71,10 @@ public class MDButton extends MDComponent implements Button
 	public void setColor(ButtonColorScheme colors)
 	{
 		this.colors = colors;
+		updateGraphics();
 	}
 	
+	@Deprecated
 	public void setListener(MouseAdapter listener)
 	{
 		removeListener();
@@ -77,14 +87,7 @@ public class MDButton extends MDComponent implements Button
 	
 	public void setListener(Runnable task)
 	{
-		setListener(new MouseAdapter()
-		{
-			@Override
-			public void mouseReleased(MouseEvent event)
-			{
-				task.run();
-			}
-		});
+		listener = addClickListener(task);
 	}
 	
 	public void removeListener()
@@ -97,7 +100,7 @@ public class MDButton extends MDComponent implements Button
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
 		Graphics2D g = (Graphics2D) gr;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

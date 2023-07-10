@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -185,32 +186,37 @@ public class SoundSystem
 		saveSound(name);
 	}
 	
-	public static void playSound(String name)
+	public static void playSound(String soundName)
 	{
-		try
+		String name = soundName.toLowerCase();
+		byte[] data = defaultSounds.containsKey(name) ?
+				defaultSounds.get(name).get(ThreadLocalRandom.current().nextInt(defaultSounds.get(name).size())).getData() :
+				sounds.get(name).getData();
+		// Turns out, starting a line holds up the caller thread for a significant time. Running on ForkJoinPool instead of EDT.
+		CompletableFuture.runAsync(() ->
 		{
-			name = name.toLowerCase();
-			byte[] data = defaultSounds.containsKey(name) ?
-					defaultSounds.get(name).get(ThreadLocalRandom.current().nextInt(defaultSounds.get(name).size())).getData() :
-					sounds.get(name).getData();
-			AudioInputStream input = AudioSystem.getAudioInputStream(new ByteArrayInputStream(data));
-			AudioFormat format = input.getFormat();
-			DataLine.Info info = new DataLine.Info(Clip.class, format);
-			Clip clip = (Clip) AudioSystem.getLine(info);
-			clip.open(input);
-			clip.start();
-			clip.addLineListener(event ->
+			try
 			{
-				if (event.getType() == Type.STOP)
+				AudioInputStream input = AudioSystem.getAudioInputStream(new ByteArrayInputStream(data));
+				AudioFormat format = input.getFormat();
+				DataLine.Info info = new DataLine.Info(Clip.class, format);
+				Clip clip = (Clip) AudioSystem.getLine(info);
+				clip.open(input);
+				clip.start();
+				clip.addLineListener(event ->
 				{
-					event.getLine().close();
-				}
-			});
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
+					// Failure to close a line when it stops leaks entire threads
+					if (event.getType() == Type.STOP)
+					{
+						event.getLine().close();
+					}
+				});
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		});
 	}
 	
 	public static Map<String, Sound> getSounds()

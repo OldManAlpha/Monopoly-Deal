@@ -4,11 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
-import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.RenderingHints;
-
-import javax.swing.SwingUtilities;
 
 import oldmana.md.client.Player;
 import oldmana.md.client.gui.util.HoverHelper;
@@ -19,7 +16,7 @@ public class MDCreateSet extends MDComponent
 	
 	public MDCreateSet(Player player)
 	{
-		super();
+		setOpaque(true);
 		setToolTipText("Create New Set");
 		hover = new HoverHelper(this, 250);
 	}
@@ -30,7 +27,7 @@ public class MDCreateSet extends MDComponent
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
 		Graphics2D g = (Graphics2D) gr;
 		int paintHighlight = getHighlight(20);

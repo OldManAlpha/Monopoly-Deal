@@ -61,20 +61,20 @@ public class MDBank extends MDCardCollection
 		if (hovered != card)
 		{
 			hovered = card;
-			repaint();
+			updateGraphics();
 		}
 	}
 	
 	@Override
 	public void update()
 	{
-		repaint();
+		updateGraphics();
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
-		super.paintComponent(gr);
+		super.doPaint(gr);
 		Graphics2D g = (Graphics2D) gr;
 		Graphics2D debug = (Graphics2D) g.create();
 		g.setColor(Color.DARK_GRAY);
@@ -137,8 +137,7 @@ public class MDBank extends MDCardCollection
 				continue;
 			}
 			Point p = entry.getValue();
-			g.drawImage(card.getGraphics(getScale() * getCardScale()), p.x, p.y, GraphicsUtils.getCardWidth(getCardScale()),
-					GraphicsUtils.getCardHeight(getCardScale()), null);
+			g.drawImage(card.getGraphics(getScale() * getCardScale()), p.x, p.y, null);
 		}
 		if (hovered != null && !isBeingModified())
 		{

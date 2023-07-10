@@ -116,7 +116,6 @@ public class ActionStateClientCounterPlayer extends ActionStateClient
 				button.setEnabled(false);
 				button.removeListener();
 			}
-			button.repaint();
 		}
 	}
 	

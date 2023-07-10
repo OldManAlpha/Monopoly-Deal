@@ -171,7 +171,6 @@ public class MainMenuScreen extends MDComponent
 			if (nameField.getText().isEmpty())
 			{
 				status.setText("Name required");
-				status.repaint();
 				return;
 			}
 			
@@ -190,7 +189,6 @@ public class MainMenuScreen extends MDComponent
 			catch (Exception e)
 			{
 				status.setText("Connection failed");
-				status.repaint();
 				e.printStackTrace();
 				return;
 			}
@@ -235,9 +233,9 @@ public class MainMenuScreen extends MDComponent
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
-		super.paintComponent(gr);
+		super.doPaint(gr);
 		Graphics2D g = (Graphics2D) gr;
 		g.setColor(Color.GRAY);
 		int y = getHeight() - scale(180);

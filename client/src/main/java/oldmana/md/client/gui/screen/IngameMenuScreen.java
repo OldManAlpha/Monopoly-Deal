@@ -14,8 +14,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import oldmana.md.client.Player;
 import oldmana.md.client.Scheduler;
 import oldmana.md.client.card.Card;
+import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.LayoutAdapter;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDComponent;
@@ -248,7 +250,18 @@ public class IngameMenuScreen extends MDComponent
 				{
 					card.clearGraphicsCache();
 				}
-				repaint();
+				getClient().getDeck().getUI().updateGraphics();
+				getClient().getDiscardPile().getUI().updateGraphics();
+				for (Player player : getClient().getAllPlayers())
+				{
+					player.getHand().getUI().updateGraphics();
+					player.getBank().getUI().updateGraphics();
+					player.getUI().getPropertySets().updateGraphics();
+					for (PropertySet set : player.getPropertySets())
+					{
+						set.getUI().updateGraphics();
+					}
+				}
 			}
 		});
 		add(debug);
@@ -268,9 +281,9 @@ public class IngameMenuScreen extends MDComponent
 	}
 	
 	@Override
-	public void paintComponent(Graphics g)
+	public void doPaint(Graphics g)
 	{
-		super.paintComponent(g);
+		super.doPaint(g);
 		g.setColor(new Color(0, 0, 0, 150));
 		g.fillRect(0, 0, getWidth(), getHeight());
 	}

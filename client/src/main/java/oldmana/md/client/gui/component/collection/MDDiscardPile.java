@@ -65,7 +65,7 @@ public class MDDiscardPile extends MDCardCollection
 			if (animDuration > 0)
 			{
 				animDuration -= Scheduler.getFrameDelay();
-				repaint();
+				updateGraphics();
 				if (scrollPos == 0 || scrollPos == 1)
 				{
 					getParent().invalidate();
@@ -102,7 +102,7 @@ public class MDDiscardPile extends MDCardCollection
 			animDir = false;
 			animDuration = 250;
 			startInfoTask();
-			repaint();
+			updateGraphics();
 		}
 	}
 	
@@ -118,7 +118,7 @@ public class MDDiscardPile extends MDCardCollection
 			animDir = true;
 			animDuration = 250;
 			startInfoTask();
-			repaint();
+			updateGraphics();
 		}
 	}
 	
@@ -128,6 +128,7 @@ public class MDDiscardPile extends MDCardCollection
 		{
 			scrollPos++;
 		}
+		updateGraphics();
 	}
 	
 	public void cardRemoved()
@@ -138,6 +139,7 @@ public class MDDiscardPile extends MDCardCollection
 			if (scrollPos == 0)
 			{
 				getParent().invalidate();
+				updateGraphics();
 				collapsing = false;
 				animDuration = 0;
 			}
@@ -147,13 +149,19 @@ public class MDDiscardPile extends MDCardCollection
 	@Override
 	public void update()
 	{
-		repaint();
+		updateGraphics();
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public boolean shouldAnimateModification()
 	{
-		super.paintComponent(gr);
+		return false;
+	}
+	
+	@Override
+	public void doPaint(Graphics gr)
+	{
+		super.doPaint(gr);
 		Graphics2D g = (Graphics2D) gr;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -163,23 +171,21 @@ public class MDDiscardPile extends MDCardCollection
 			{
 				g.setColor(Color.DARK_GRAY);
 				g.fillRoundRect(scale(60), 0, scale(60) + (int) Math.floor(getMainPileCardCount() * (0.3 * GraphicsUtils.SCALE)), scale(180), scale(20), scale(20));
-				g.drawImage(getMainPileFace()
-						.getGraphics(getScale() * 2), 0, 0, GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2), null);
+				g.drawImage(getMainPileFace().getGraphics(getScale() * getCardScale()), 0, 0, null);
 				if (scrollPos > 0)
 				{
 					if (getCurrentCardCount() > getCurrentCardCount() - scrollPos + (animDuration > 0 && animDir ? 1 : 0))
 					{
 						g.fillRoundRect(scale(60), scale(186), scale(60) + (int) Math.floor(getOtherPileCardCount() * (0.3 * GraphicsUtils.SCALE)), 
 								scale(180), scale(20), scale(20));
-						g.drawImage(getOtherPileFace().getGraphics(getScale() * 2), 0, scale(186), GraphicsUtils.getCardWidth(2), GraphicsUtils.getCardHeight(2), 
-								null);
+						g.drawImage(getOtherPileFace().getGraphics(getScale() * getCardScale()), 0, scale(186), null);
 					}
 				}
 				if (animDuration > 0)
 				{
 					double prog = animDuration / 250;
-					g.drawImage(getMovingCard().getGraphics(getScale() * 2), 0, scale(!animDir ? prog * 186 : 186 - (prog * 186)), GraphicsUtils.getCardWidth(2), 
-							GraphicsUtils.getCardHeight(2), null);
+					g.drawImage(getMovingCard().getGraphics(getScale() * getCardScale()), 0,
+							scale(!animDir ? prog * 186 : 186 - (prog * 186)), null);
 				}
 			}
 			else
@@ -219,7 +225,7 @@ public class MDDiscardPile extends MDCardCollection
 				cardInfo.setLocation(infoPos.x, infoPos.y);
 				cardInfo.setCardPos((int) getScreenLocationOf(card).getX() - cardInfo.getX() + GraphicsUtils.getCardWidth());
 				getClient().addTableComponent(cardInfo, 110);
-				repaint();
+				updateGraphics();
 			}
 		}, 250, false);
 	}
@@ -316,7 +322,7 @@ public class MDDiscardPile extends MDCardCollection
 					collapsing = true;
 					animDir = false;
 				}
-				repaint();
+				updateGraphics();
 			}
 		}
 	}

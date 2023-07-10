@@ -13,7 +13,8 @@ import javax.swing.SwingUtilities;
 public class Scheduler
 {
 	public static int FRAMERATE;
-	public static long FRAME_INTERVAL;
+	public static long FRAME_INTERVAL_NANOS;
+	public static double FRAME_INTERVAL_MILLIS;
 	
 	private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 	private ScheduledFuture<?> scheduledTask;
@@ -58,6 +59,8 @@ public class Scheduler
 	
 	public void runTick()
 	{
+		// TODO: Optimize by holding additions/removals in other lists so that this garbage doesn't have to generated
+		//  every tick
 		for (MDTask task : new ArrayList<MDTask>(tasks))
 		{
 			if (task.tick())
@@ -70,14 +73,15 @@ public class Scheduler
 	public void setFPS(int fps)
 	{
 		FRAMERATE = fps;
-		FRAME_INTERVAL = (1000 * 1000 * 1000) / fps;
-		System.out.println("New Framerate: " + FRAMERATE);
+		FRAME_INTERVAL_NANOS = (1000 * 1000 * 1000) / fps;
+		FRAME_INTERVAL_MILLIS = 1000.0 / fps;
+		System.out.println("New Framerate: " + FRAMERATE + " | " + FRAME_INTERVAL_MILLIS + " MS/Frame");
 		if (scheduledTask != null)
 		{
 			scheduledTask.cancel(false);
 		}
 		scheduledTask = executor.scheduleAtFixedRate(() -> SwingUtilities.invokeLater(() -> runTick()),
-				FRAME_INTERVAL, FRAME_INTERVAL, TimeUnit.NANOSECONDS);
+				FRAME_INTERVAL_NANOS, FRAME_INTERVAL_NANOS, TimeUnit.NANOSECONDS);
 	}
 	
 	public void setFPS(int fps, boolean save)
@@ -101,7 +105,7 @@ public class Scheduler
 	 */
 	public static double getFrameDelay()
 	{
-		return 1000.0 / FRAMERATE;
+		return FRAME_INTERVAL_MILLIS;
 	}
 	
 	
@@ -120,7 +124,7 @@ public class Scheduler
 		public MDTask()
 		{
 			frameBound = true;
-			next = FRAME_INTERVAL;
+			next = FRAME_INTERVAL_NANOS;
 			repeats = true;
 		}
 		
@@ -153,13 +157,13 @@ public class Scheduler
 			{
 				return true;
 			}
-			next -= FRAME_INTERVAL;
+			next -= FRAME_INTERVAL_NANOS;
 			if (next <= 0)
 			{
 				run();
 				if (repeats)
 				{
-					next = (frameBound ? FRAME_INTERVAL : interval) + next;
+					next = (frameBound ? FRAME_INTERVAL_NANOS : interval) + next;
 				}
 				else
 				{

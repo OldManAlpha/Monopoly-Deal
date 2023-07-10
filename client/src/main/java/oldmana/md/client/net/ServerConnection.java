@@ -94,20 +94,20 @@ public class ServerConnection extends Thread
 	
 	public void close()
 	{
-		if (direct != null)
+		try
 		{
-			direct.closeConnection();
-		}
-		else
-		{
-			try
+			if (direct != null)
+			{
+				direct.closeConnection();
+			}
+			else
 			{
 				connection.close();
 			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
 		}
 	}
 	
@@ -154,7 +154,6 @@ public class ServerConnection extends Thread
 			{
 				TableScreen ts = MDClient.getInstance().getTableScreen();
 				ts.getTopbar().setText("Lost Connection");
-				ts.repaint();
 			});
 		}
 		closedGracefully = false;

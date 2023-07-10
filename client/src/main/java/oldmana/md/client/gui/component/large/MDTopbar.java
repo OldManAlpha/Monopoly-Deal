@@ -29,7 +29,7 @@ public class MDTopbar extends MDComponent
 			if (alertTicks > 0)
 			{
 				alertTicks--;
-				repaint();
+				updateGraphics();
 			}
 		}, 200, true);
 	}
@@ -39,6 +39,7 @@ public class MDTopbar extends MDComponent
 		if (!text.equals(this.text))
 		{
 			this.text = text;
+			updateGraphics();
 		}
 	}
 	
@@ -46,11 +47,11 @@ public class MDTopbar extends MDComponent
 	{
 		alertTicks = 6;
 		SoundSystem.playSound("Alert");
-		repaint();
+		updateGraphics();
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
 		Graphics2D g = (Graphics2D) gr;
 		if (getClient().getThePlayer() != null)

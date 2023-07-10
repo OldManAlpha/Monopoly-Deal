@@ -49,6 +49,8 @@ public class MDChat extends MDComponent
 	private String startedMsg = "";
 	private int historyPos = -1;
 	
+	private boolean tickMessages = false;
+	
 	private boolean chatOpen = false;
 	private boolean blink = false;
 	private boolean ignoreNextBlink = false;
@@ -65,21 +67,27 @@ public class MDChat extends MDComponent
 	{
 		getClient().getScheduler().scheduleFrameboundTask(task ->
 		{
-			boolean update = false;
-			for (int i = 0 ; i < getMaxChatHistoryLines() ; i++)
+			if (!tickMessages)
 			{
-				if (messages.size() > i)
+				return;
+			}
+			boolean update = false;
+			int lines = Math.min(getMaxChatHistoryLines(), messages.size());
+			for (int i = 0 ; i < lines ; i++)
+			{
+				ChatMessage m = messages.get(i);
+				if (m.tick())
 				{
-					ChatMessage m = messages.get(i);
-					if (m.tick())
-					{
-						update = true;
-					}
+					update = true;
 				}
 			}
 			if (update)
 			{
-				repaint();
+				updateGraphics();
+			}
+			else
+			{
+				tickMessages = false;
 			}
 		});
 		getClient().getScheduler().scheduleTask(task ->
@@ -92,7 +100,7 @@ public class MDChat extends MDComponent
 			blink = !blink;
 			if (chatOpen)
 			{
-				repaint();
+				updateGraphics();
 			}
 		}, 500, true);
 		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(event ->
@@ -105,7 +113,7 @@ public class MDChat extends MDComponent
 					{
 						setChatOpen(true);
 						requestFocus();
-						repaint();
+						updateGraphics();
 						return true;
 					}
 					else if (event.getKeyCode() == KeyEvent.VK_SLASH)
@@ -113,7 +121,7 @@ public class MDChat extends MDComponent
 						setChatOpen(true);
 						typed.append("/");
 						requestFocus();
-						repaint();
+						updateGraphics();
 						return true;
 					}
 				}
@@ -194,7 +202,7 @@ public class MDChat extends MDComponent
 				{
 					typed.insert(typed.length() - typeOffset, event.getKeyChar());
 				}
-				repaint();
+				updateGraphics();
 			}
 		});
 		
@@ -209,7 +217,7 @@ public class MDChat extends MDComponent
 			{
 				scroll = Math.max(0, scroll - 1);
 			}
-			repaint();
+			updateGraphics();
 		};
 		
 		mouseListener = new MouseAdapter()
@@ -233,7 +241,7 @@ public class MDChat extends MDComponent
 						typed = new StringBuilder("/" + seg.fillCmd);
 						typeOffset = 0;
 						historyPos = -1;
-						repaint();
+						updateGraphics();
 					}
 				}
 			}
@@ -299,7 +307,8 @@ public class MDChat extends MDComponent
 		ChatMessage m = new ChatMessage(message);
 		messages.add(0, m);
 		lineCount += m.getLineCount();
-		repaint();
+		updateGraphics();
+		tickMessages = true;
 	}
 	
 	public void addMessage(String text)
@@ -311,7 +320,8 @@ public class MDChat extends MDComponent
 		ChatMessage m = new ChatMessage(new Message(array));
 		messages.add(0, m);
 		lineCount += m.getLineCount();
-		repaint();
+		updateGraphics();
+		tickMessages = true;
 	}
 	
 	public void setHovering(boolean hovering)
@@ -452,7 +462,7 @@ public class MDChat extends MDComponent
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
 		Graphics2D g = (Graphics2D) gr;
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -575,7 +585,7 @@ public class MDChat extends MDComponent
 			}
 			pos += message.getLineCount();
 		}
-		repaint();
+		updateGraphics();
 	}
 	
 	/**Used for debug purposes only

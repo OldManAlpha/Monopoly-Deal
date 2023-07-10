@@ -127,7 +127,7 @@ public class MDOverlayHand extends MDComponent
 	}
 	
 	@Override
-	public void paintComponent(Graphics g)
+	public void doPaint(Graphics g)
 	{
 		g.drawImage(card.getGraphics(getScale() * 2), 0, 0, null);
 		if (hasButtons)

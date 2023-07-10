@@ -60,6 +60,12 @@ public class GameState
 	
 	public void setActionState(ActionState state)
 	{
+		MDClient client = MDClient.getInstance();
+		for (Player p : client.getAllPlayers())
+		{
+			p.getUI().updateGraphics();
+		}
+		MDClient.getInstance().getTableScreen().getMoves().updateGraphics();
 		ActionState prevState = this.state;
 		if (this.state != null)
 		{
@@ -80,7 +86,6 @@ public class GameState
 			System.out.println(state.getClass().getName());
 			this.state = state;
 		}
-		MDClient client = MDClient.getInstance();
 		if (state.isTarget(client.getThePlayer()) || state.getActionOwner() == client.getThePlayer())
 		{
 			if (state.isTarget(client.getThePlayer()))

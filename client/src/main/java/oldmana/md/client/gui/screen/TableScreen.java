@@ -9,6 +9,7 @@ import java.awt.LinearGradientPaint;
 
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
+import javax.swing.RepaintManager;
 
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
@@ -23,6 +24,7 @@ import oldmana.md.client.gui.action.ActionScreen;
 import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDChat;
 import oldmana.md.client.gui.component.MDLayeredButton;
+import oldmana.md.client.gui.component.MDLeftGradient;
 import oldmana.md.client.gui.component.MDText;
 import oldmana.md.client.gui.component.MDMoves;
 import oldmana.md.client.gui.component.MDUndoButton;
@@ -44,6 +46,8 @@ public class TableScreen extends JLayeredPane
 	private MDHand hand;
 	
 	private MDVoidCollection voidCollection;
+	
+	private MDLeftGradient leftGradient;
 	
 	private MDPlayer self;
 	private MDOpponents opponents;
@@ -70,6 +74,9 @@ public class TableScreen extends JLayeredPane
 	public TableScreen()
 	{
 		super();
+		setOpaque(true);
+		setBackground(new Color(240, 240, 240));
+		System.out.println("Opaque: " + isOpaque());
 		setLayout(new TableLayout());
 		setSize(new Dimension(1600, 900));
 		
@@ -84,6 +91,9 @@ public class TableScreen extends JLayeredPane
 		
 		voidCollection = new MDVoidCollection(null);
 		add(voidCollection, new Integer(1));
+		
+		leftGradient = new MDLeftGradient();
+		add(leftGradient, new Integer(-1));
 		
 		opponents = new MDOpponents();
 		add(opponents);
@@ -172,6 +182,10 @@ public class TableScreen extends JLayeredPane
 		
 		ingameMenu = new IngameMenuScreen();
 		add(ingameMenu, new Integer(10000));
+		System.out.println("Global double buffered: " +
+		RepaintManager.currentManager(this).isDoubleBufferingEnabled());
+		setDoubleBuffered(true);
+		System.out.println("Double buffered: " + isDoubleBuffered());
 	}
 	
 	public void addPlayer(Player player)
@@ -201,7 +215,7 @@ public class TableScreen extends JLayeredPane
 		}
 		opponents.remove(player.getUI());
 		opponents.invalidate();
-		opponents.repaint();
+		opponents.updateGraphics();
 	}
 	
 	public MDOpponents getOpponents()
@@ -317,12 +331,12 @@ public class TableScreen extends JLayeredPane
 		return comp.getY() + comp.getHeight();
 	}
 	
-	private int getPadding()
+	public int getPadding()
 	{
 		return scale(5);
 	}
 	
-	private int getPadding(int multiplier)
+	public int getPadding(int multiplier)
 	{
 		return getPadding() * multiplier;
 	}
@@ -330,25 +344,6 @@ public class TableScreen extends JLayeredPane
 	private int getSidebarSize()
 	{
 		return scale(200);
-	}
-	
-	private final Color[] sideColors = new Color[] {new Color(227, 230, 232), new Color(232, 235, 237),
-			new Color(227, 230, 232), new Color(160, 180, 200)};
-	private final float[] sideColorsPositions = new float[] {0, 0.5F, 0.985F, 1};
-	
-	@Override
-	public void paintComponent(Graphics gr)
-	{
-		Graphics2D g = (Graphics2D) gr;
-		
-		g.setColor(new Color(240, 240, 240));
-		g.fillRect(0, 0, getWidth(), getHeight());
-		
-		int x = deck.getMaxX() + getPadding(2);
-		LinearGradientPaint paint = new LinearGradientPaint(0, 0, x, 0, sideColorsPositions, sideColors);
-		g.setPaint(paint);
-		g.fillRect(0, 0, x, getHeight());
-		super.paintComponent(g);
 	}
 	
 	public class TableLayout extends LayoutAdapter
@@ -422,6 +417,8 @@ public class TableScreen extends JLayeredPane
 				opponents.setLocation(sidebarSize + getPadding(2), topbar.getMaxY() + getPadding());
 				opponents.setSize(getWidth() - sidebarSize - getPadding(3), getHeight() - (getHeight() - hand.getY()) -
 						topbar.getHeight() - selfHeight - getPadding(3));
+				
+				leftGradient.setSize(deck.getMaxX() + getPadding(2), getHeight());
 			}
 			
 			if (actionScreen != null)

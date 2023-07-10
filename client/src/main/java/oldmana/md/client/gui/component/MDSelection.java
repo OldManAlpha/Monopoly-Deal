@@ -36,7 +36,7 @@ public class MDSelection extends MDComponent
 			else
 			{
 				pos = (pos + (Scheduler.getFrameDelay() / 16.0)) % lineSize;
-				repaint();
+				updateGraphics();
 			}
 		});
 	}
@@ -47,9 +47,9 @@ public class MDSelection extends MDComponent
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
-		super.paintComponent(gr);
+		super.doPaint(gr);
 		Graphics2D g = (Graphics2D) gr;
 		g.setColor(color);
 		int lineSize = scale(this.lineSize);

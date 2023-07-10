@@ -2,7 +2,6 @@ package oldmana.md.client.gui.component.large;
 
 import oldmana.md.client.Player;
 import oldmana.md.client.gui.LayoutAdapter;
-import oldmana.md.client.gui.component.MDChat;
 import oldmana.md.client.gui.component.MDComponent;
 
 import java.awt.Color;
@@ -15,8 +14,6 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +42,7 @@ public class MDOpponents extends MDComponent
 				int amt = event.getUnitsToScroll() * scale(5);
 				scrollPos = Math.max(0, Math.min(scrollMax, scrollPos + amt));
 				invalidate();
-				repaint();
+				updateGraphics();
 			}
 		});
 		
@@ -59,7 +56,7 @@ public class MDOpponents extends MDComponent
 				{
 					holdingScrollbar = true;
 					heldY = e.getY() - bar.y;
-					repaint();
+					updateGraphics();
 				}
 			}
 			
@@ -67,7 +64,7 @@ public class MDOpponents extends MDComponent
 			public void mouseReleased(MouseEvent e)
 			{
 				holdingScrollbar = false;
-				repaint();
+				updateGraphics();
 			}
 		});
 		
@@ -82,7 +79,7 @@ public class MDOpponents extends MDComponent
 					double pos = e.getY() / (double) getHeight();
 					scrollPos = (int) Math.max(0, Math.min(scrollMax, (pos - held) * getRequiredSpace()));
 					revalidate();
-					repaint();
+					updateGraphics();
 				}
 			}
 		});
@@ -142,7 +139,7 @@ public class MDOpponents extends MDComponent
 	{
 		this.scrollPos = scrollPos;
 		invalidate();
-		repaint();
+		updateGraphics();
 	}
 	
 	public int getScrollNeededToView(Player player)
@@ -155,20 +152,17 @@ public class MDOpponents extends MDComponent
 	private Color[] heldScrollBarGradient = new Color[] {new Color(180, 180, 180), new Color(150, 150, 150)};
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
-		super.paintComponent(gr);
-		Graphics2D g = (Graphics2D) gr;
-		//g.setColor(Color.BLUE);
-		//g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+		super.doPaint(gr);
 		
 		if (scrollEnabled)
 		{
+			Graphics2D g = (Graphics2D) gr;
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			Rectangle bar = getScrollBarBounds();
 			LinearGradientPaint paint = new LinearGradientPaint(bar.x, 0, bar.x + bar.width, 0,
 					new float[] {0, 1}, holdingScrollbar ? heldScrollBarGradient : scrollBarGradient);
-			//g.setColor(new Color(200, 200, 200));
 			g.setPaint(paint);
 			g.fillRoundRect(bar.x, bar.y, bar.width, bar.height, scale(8), scale(8));
 			g.setColor(Color.DARK_GRAY);
@@ -176,8 +170,8 @@ public class MDOpponents extends MDComponent
 		}
 	}
 	
-	private Color[] topGradient = new Color[] {new Color(240, 240, 240), new Color(240, 240, 240, 0)};
-	private Color[] bottomGradient = new Color[] {new Color(240, 240, 240, 0), new Color(240, 240, 240)};
+	private final Color[] topGradient = new Color[] {new Color(240, 240, 240), new Color(240, 240, 240, 0)};
+	private final Color[] bottomGradient = new Color[] {new Color(240, 240, 240, 0), new Color(240, 240, 240)};
 	
 	@Override
 	public void paintChildren(Graphics gr)
@@ -298,6 +292,7 @@ public class MDOpponents extends MDComponent
 					player.setLocation(pos.x, pos.y - scrollPos);
 				});
 			}
+			updateGraphics();
 		}
 		
 		@Override

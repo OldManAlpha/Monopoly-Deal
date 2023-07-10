@@ -56,9 +56,9 @@ public class MDChatHover extends MDComponent
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
-		super.paintComponent(gr);
+		super.doPaint(gr);
 		Graphics2D g = (Graphics2D) gr;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -73,7 +73,7 @@ public class MDChatHover extends MDComponent
 		g.fillRoundRect(visualBorder, visualBorder, getWidth() - (visualBorder * 2), getHeight() - (visualBorder * 2), scale(10) - visualBorder, scale(10) - visualBorder);
 		g.setColor(Color.DARK_GRAY);
 		int border = getBorderSize();
-		TextPainter tp = new TextPainter(splitText, g.getFont(), new Rectangle(border, border, getWidth() - (border * 2),
+		TextPainter tp = new TextPainter(splitText, getFont(), new Rectangle(border, border, getWidth() - (border * 2),
 				getHeight() - (border * 2)), false, false);
 		tp.paint(g);
 	}

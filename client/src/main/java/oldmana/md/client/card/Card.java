@@ -1,9 +1,9 @@
 package oldmana.md.client.card;
 
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +41,7 @@ public class Card
 	private List<CardButton> buttons = new ArrayList<CardButton>();
 	
 	private BufferedImage graphics;
-	private Map<Double, Image> graphicsCache = new HashMap<Double, Image>();
+	private Map<Double, BufferedImage> graphicsCache = new HashMap<Double, BufferedImage>();
 	
 	private static Map<Double, BufferedImage> backGraphicsCache = new HashMap<Double, BufferedImage>();
 	
@@ -173,38 +173,39 @@ public class Card
 		((MDHand) getClient().getThePlayer().getHand().getUI()).removeOverlay();
 	}
 	
-	public Image getGraphics(double scale)
+	public BufferedImage getGraphics(double scale)
 	{
+		if (graphicsCache.containsKey(scale))
+		{
+			return graphicsCache.get(scale);
+		}
 		int width = (int) (60 * scale);//(int) Math.round(MDCard.CARD_SIZE.width * scale);
 		int height = (int) (90 * scale);//(int) Math.round(MDCard.CARD_SIZE.height * scale);
 		if (graphics == null)
 		{
 			graphics = GraphicsUtils.createImage(60 * 8, 90 * 8);
 			CardPainter cp = new CardPainter(this, 8);
-			cp.paint(graphics.createGraphics());
-		}
-		if (graphicsCache.containsKey(scale))
-		{
-			return graphicsCache.get(scale);
+			Graphics g = graphics.createGraphics();
+			cp.paint(g);
+			g.dispose();
 		}
 		Image img = graphics.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-		/*
-		 * Image img = GraphicsUtils.createImage(width, height);
-		Graphics2D g = (Graphics2D) img.getGraphics();
-		g.drawImage(scaled, 0, 0, null);
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		g.setColor(Color.BLACK);
-		g.drawRoundRect(0, 0, width - 1, height - 1, width / 6, width / 6);
-		 */
-		graphicsCache.put(scale, img);
+		BufferedImage buffer = GraphicsUtils.createImage(width, height);
+		Graphics g = buffer.createGraphics();
+		g.drawImage(img, 0, 0, null);
+		g.dispose();
+		graphicsCache.put(scale, buffer);
 		return getGraphics(scale);
 	}
 	
 	public void clearGraphicsCache()
 	{
-		graphics = null;
+		if (graphics != null)
+		{
+			graphics.flush();
+			graphics = null;
+		}
+		graphicsCache.values().forEach(Image::flush);
 		graphicsCache.clear();
 	}
 	
@@ -214,17 +215,13 @@ public class Card
 		int height = (int) Math.round(MDCard.CARD_SIZE.height * scale);
 		if (backGraphicsCache.containsKey(scale))
 		{
-			BufferedImage img = GraphicsUtils.createImage(width, height);
-			Graphics2D g = img.createGraphics();
-			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-			g.drawImage(backGraphicsCache.get(scale), 0, 0, null);
-			return img;
+			return backGraphicsCache.get(scale);
 		}
 		BufferedImage img = GraphicsUtils.createImage(width, height);
 		CardPainter cp = new CardPainter(null, scale);
-		cp.paint(img.createGraphics());
+		Graphics2D g = img.createGraphics();
+		cp.paint(g);
+		g.dispose();
 		backGraphicsCache.put(scale, img);
 		return getBackGraphics(scale);
 	}

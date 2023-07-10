@@ -159,7 +159,6 @@ public class NetClientHandler extends NetHandler
 		}
 		client.sendPacket(new PacketLogin(PROTOCOL_VERSION, MDClient.VERSION, digest.digest(), client.getSettings().getString("lastName")));
 		client.getTableScreen().getTopbar().setText("Authenticating..");
-		client.getTableScreen().getTopbar().repaint();
 	}
 	
 	public void handleHandshake(PacketHandshake packet)
@@ -195,7 +194,6 @@ public class NetClientHandler extends NetHandler
 	{
 		client.getServerConnection().closeGracefully();
 		client.getTableScreen().getTopbar().setText("Disconnected: " + packet.reason);
-		client.getTableScreen().getTopbar().repaint();
 	}
 	
 	public void handleCardDescription(PacketCardDescription packet)
@@ -298,7 +296,7 @@ public class NetClientHandler extends NetHandler
 		Player player = client.getPlayerByID(packet.player);
 		player.setName(packet.name);
 		player.setConnected(packet.connected);
-		player.getUI().repaint();
+		player.getUI().updateGraphics();
 	}
 	
 	@Queued
@@ -368,7 +366,6 @@ public class NetClientHandler extends NetHandler
 	public void handleStatus(PacketStatus packet)
 	{
 		client.getTableScreen().getTopbar().setText(packet.text);
-		client.getTableScreen().getTopbar().repaint();
 	}
 	
 	public void handleMoveCard(PacketMoveCard packet)
@@ -405,7 +402,6 @@ public class NetClientHandler extends NetHandler
 					packet.getTurnState(), packet.moves));
 		}
 		client.setAwaitingResponse(false);
-		client.getTableScreen().repaint();
 	}
 	
 	@Queued
@@ -460,7 +456,6 @@ public class NetClientHandler extends NetHandler
 			client.getGameState().setActionState(new ActionStatePlayerTargeted(player, client.getPlayerByID(packet.data)));
 		}
 		client.setAwaitingResponse(false);
-		client.getTableScreen().repaint();
 	}
 	
 	@Queued
@@ -474,7 +469,6 @@ public class NetClientHandler extends NetHandler
 			charges.put(players.get(i), packet.amounts[i]);
 		}
 		client.getGameState().setActionState(new ActionStateRent(client.getPlayerByID(packet.renter), charges));
-		client.getTableScreen().repaint();
 	}
 	
 	public void handleDestroyCardCollection(PacketDestroyCardCollection packet)
@@ -508,7 +502,7 @@ public class NetClientHandler extends NetHandler
 	{
 		PropertySet set = (PropertySet) CardCollection.getCardCollection(packet.id);
 		set.setEffectiveColor(packet.color > -1 ? PropertyColor.fromID(packet.color) : null);
-		set.getUI().repaint();
+		set.getUI().updateGraphics();
 	}
 	
 	@Queued
@@ -596,7 +590,7 @@ public class NetClientHandler extends NetHandler
 		b.setText(packet.name);
 		b.setPriority(packet.priority);
 		b.setMaxSize(packet.maxSize);
-		b.repaint();
+		b.updateGraphics();
 		player.getUI().validate();
 	}
 	

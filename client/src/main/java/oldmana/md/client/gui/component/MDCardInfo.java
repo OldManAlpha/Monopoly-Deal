@@ -59,7 +59,7 @@ public class MDCardInfo extends MDComponent
 				return;
 			}
 			existTime = (int) Math.min(existTime + Scheduler.getFrameDelay(), 200);
-			repaint();
+			updateGraphics();
 		});
 	}
 	
@@ -181,7 +181,7 @@ public class MDCardInfo extends MDComponent
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
 		if (cache == null)
 		{

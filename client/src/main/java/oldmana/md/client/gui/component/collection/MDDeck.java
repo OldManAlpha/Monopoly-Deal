@@ -59,13 +59,13 @@ public class MDDeck extends MDCardCollectionUnknown
 					if (animProgress == 0)
 					{
 						notifySelect.setVisible(true);
-						notifySelect.repaint();
+						notifySelect.updateGraphics();
 					}
 				}
 			}
 			if (lastStage != animProgress)
 			{
-				repaint();
+				updateGraphics();
 			}
 		});
 		addComponentListener(new ComponentAdapter()
@@ -96,13 +96,19 @@ public class MDDeck extends MDCardCollectionUnknown
 		}
 		add(select);
 		notifySelect = select;
-		repaint();
+		updateGraphics();
 	}
 	
 	@Override
 	public void update()
 	{
-		repaint();
+		updateGraphics();
+	}
+	
+	@Override
+	public boolean shouldAnimateModification()
+	{
+		return false;
 	}
 	
 	@Override
@@ -112,10 +118,10 @@ public class MDDeck extends MDCardCollectionUnknown
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
-		super.paintComponent(gr);
-		Graphics2D g = (Graphics2D) gr.create();
+		super.doPaint(gr);
+		Graphics2D g = (Graphics2D) gr;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		if (getCollection() != null)
 		{
@@ -207,14 +213,14 @@ public class MDDeck extends MDCardCollectionUnknown
 		public void mouseEntered(MouseEvent event)
 		{
 			hovered = true;
-			repaint();
+			updateGraphics();
 		}
 
 		@Override
 		public void mouseExited(MouseEvent event)
 		{
 			hovered = false;
-			repaint();
+			updateGraphics();
 		}
 
 		@Override
@@ -226,6 +232,7 @@ public class MDDeck extends MDCardCollectionUnknown
 			if (getClient().canDraw() && !getClient().isInputBlocked())
 			{
 				getClient().draw();
+				updateGraphics();
 			}
 		}
 	}

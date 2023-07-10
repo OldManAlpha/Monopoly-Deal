@@ -96,7 +96,6 @@ public class ActionScreenRent extends ActionScreen
 	{
 		int selectedValue = getAmountSelected();
 		selectedLabel.setText("Selected: " + selectedValue + "M");
-		selectedLabel.repaint();
 		pay.setEnabled(isRequiredAmountSelected());
 	}
 	

@@ -112,7 +112,6 @@ public class MDClient
 				if (++timeSincePing > 50)
 				{
 					getTableScreen().getTopbar().setText("Disconnected: Timed out");
-					getTableScreen().getTopbar().repaint();
 					connection.closeGracefully();
 				}
 			}
@@ -337,7 +336,7 @@ public class MDClient
 			othersOrdered.add(turnOrder.get((selfIndex + i) % turnOrder.size()));
 		}
 		getTableScreen().getOpponents().invalidate();
-		getTableScreen().getOpponents().repaint();
+		getTableScreen().getOpponents().updateGraphics();
 	}
 	
 	public Player getPlayerByID(int id)

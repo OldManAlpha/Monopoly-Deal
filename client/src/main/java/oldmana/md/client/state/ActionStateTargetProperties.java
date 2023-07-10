@@ -1,8 +1,6 @@
 package oldmana.md.client.state;
 
 import java.awt.Color;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -130,17 +128,13 @@ public class ActionStateTargetProperties extends ActionState
 			if (targetMap.keySet().containsAll(mode.getRequiredTargets()))
 			{
 				button.setEnabled(true);
-				button.setListener(new MouseAdapter()
+				button.setListener(() ->
 				{
-					@Override
-					public void mouseReleased(MouseEvent event)
-					{
-						getClient().sendPacket(mode.getPacket(targetMap));
-						cleanup();
-						getClient().setAwaitingResponse(true);
-						button.setEnabled(false);
-						button.removeListener();
-					}
+					getClient().sendPacket(mode.getPacket(targetMap));
+					cleanup();
+					getClient().setAwaitingResponse(true);
+					button.setEnabled(false);
+					button.removeListener();
 				});
 			}
 			else

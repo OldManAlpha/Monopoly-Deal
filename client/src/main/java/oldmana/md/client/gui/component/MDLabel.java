@@ -11,7 +11,6 @@ import java.awt.RenderingHints;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
-import oldmana.md.client.gui.util.TextPainter.Outline;
 
 public class MDLabel extends MDComponent
 {
@@ -41,6 +40,7 @@ public class MDLabel extends MDComponent
 		if (size > 0)
 		{
 			setSize(getAppropriateWidth(size), size);
+			updateGraphics();
 		}
 	}
 	
@@ -57,7 +57,7 @@ public class MDLabel extends MDComponent
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
 		Graphics2D g = (Graphics2D) gr;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

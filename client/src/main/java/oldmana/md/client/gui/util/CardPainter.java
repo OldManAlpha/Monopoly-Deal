@@ -119,12 +119,12 @@ public class CardPainter
 				g.drawRoundRect(0 + i, 0 + i, getWidth() - 1 - (i * 2), getHeight() - 1 - (i * 2), getWidth() / 6, getWidth() / 6);
 			}
 			*/
-			g.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, getWidth() / 6, getWidth() / 6);
+			g.fillRoundRect(0, 0, getWidth(), getHeight(), getWidth() / 6, getWidth() / 6);
 			// Draw White
 			g.setColor(outerColor);
 			//int outlineSize = 1 + (scale(1) / 4);
 			int outlineSize = Math.max(1, scale(0.5));
-			g.fillRoundRect(outlineSize - 1, outlineSize - 1, getWidth() - (outlineSize * 2) + 1, getHeight() - (outlineSize * 2) + 1, (getWidth() / 6) - (outlineSize * 2), (getWidth() / 6) - (outlineSize * 2));
+			g.fillRoundRect(outlineSize, outlineSize, getWidth() - (outlineSize * 2), getHeight() - (outlineSize * 2), (getWidth() / 6) - (outlineSize * 2), (getWidth() / 6) - (outlineSize * 2));
 			// Draw Value Color
 			//if (!property)
 			{
@@ -311,7 +311,9 @@ public class CardPainter
 					
 					if (property)
 					{
-						tp = new TextPainter(card.getName().toUpperCase(), font, new Rectangle(scale(14), scale(9), getWidth() - scale(22), scale(13)));
+						String[] ss = card.getName().toUpperCase().split(" ");
+						List<String> list = Arrays.asList(ss);
+						tp = new TextPainter(card.getName().toUpperCase(), font, new Rectangle(scale(15.5), scale(9), getWidth() - scale(24), scale(13)));
 						tp.setVerticalAlignment(Alignment.CENTER);
 						tp.setHorizontalAlignment(Alignment.CENTER);
 						CardProperty prop = (CardProperty) card;

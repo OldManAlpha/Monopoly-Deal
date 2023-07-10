@@ -35,7 +35,7 @@ public class MDCardSelection extends MDCard
 						}
 					}
 					selected = !selected;
-					repaint();
+					updateGraphics();
 					if (listener != null)
 					{
 						listener.postSelectToggle();
@@ -64,12 +64,13 @@ public class MDCardSelection extends MDCard
 	public void setDisabled(boolean disabled)
 	{
 		this.disabled = disabled;
+		updateGraphics();
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
-		super.paintComponent(gr);
+		super.doPaint(gr);
 		Graphics2D g = (Graphics2D) gr;
 		//g.drawImage(card.getGraphics(4), 0, 0, getWidth(), getHeight(), null);
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

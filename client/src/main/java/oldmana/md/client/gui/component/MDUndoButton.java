@@ -64,13 +64,11 @@ public class MDUndoButton extends MDButton
 	{
 		this.card = card;
 		setEnabled(true);
-		repaint();
 	}
 	
 	public void removeUndoCard()
 	{
 		this.card = null;
 		setEnabled(false);
-		repaint();
 	}
 }

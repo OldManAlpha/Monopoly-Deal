@@ -54,9 +54,9 @@ public class MDPlayerPropertySets extends MDComponent
 	}
 	
 	@Override
-	public void paintComponent(Graphics g)
+	public void doPaint(Graphics g)
 	{
-		super.paintComponent(g);
+		super.doPaint(g);
 		if (MDClient.getInstance().isDebugEnabled())
 		{
 			g.setColor(Color.MAGENTA);

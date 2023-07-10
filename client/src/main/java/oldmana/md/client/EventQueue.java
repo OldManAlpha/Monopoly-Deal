@@ -108,14 +108,6 @@ public class EventQueue
 			this.anim = anim;
 		}
 		
-		public CardMove(Card card, CardCollection to, int toPos, double time)
-		{
-			this.card = card;
-			this.to = to;
-			this.toPos = toPos;
-			this.time = time;
-		}
-		
 		public void start()
 		{
 			Point p1;
@@ -134,9 +126,12 @@ public class EventQueue
 			
 			if (SwingUtilities.isDescendingFrom(to.getUI(), opponents))
 			{
-				needsAutoScroll = true;
 				opponentScrollStart = opponents.getScrollPos();
 				opponentScrollEnd = opponents.getScrollNeededToView(to.getOwner());
+				if (opponentScrollStart != opponentScrollEnd)
+				{
+					needsAutoScroll = true;
+				}
 			}
 			
 			if (from.isUnknown())
@@ -226,8 +221,14 @@ public class EventQueue
 			{
 				from.getUI().setCardMoveProgress(moving.animMap[moving.pos]);
 				to.getUI().setCardMoveProgress(moving.animMap[moving.pos]);
-				from.getUI().repaint();
-				to.getUI().repaint();
+				if (from.getUI().shouldAnimateModification())
+				{
+					from.getUI().updateGraphics();
+				}
+				if (to.getUI().shouldAnimateModification())
+				{
+					to.getUI().updateGraphics();
+				}
 			}
 			return finished;
 		}

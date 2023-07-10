@@ -4,7 +4,6 @@ import oldmana.md.client.card.Card;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.common.playerui.ButtonColorScheme;
 
-import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.List;
 

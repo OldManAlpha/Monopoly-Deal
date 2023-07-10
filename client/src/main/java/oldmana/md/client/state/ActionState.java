@@ -88,7 +88,6 @@ public class ActionState
 				getClient().setAwaitingResponse(true);
 			}
 		});
-		button.repaint();
 	}
 	
 	protected void removeButton()
@@ -98,7 +97,6 @@ public class ActionState
 		button.setText("");
 		button.setEnabled(false);
 		button.removeListener();
-		button.repaint();
 	}
 	
 	public void updateUI() {}
@@ -215,11 +213,15 @@ public class ActionState
 		targets.put(player, state);
 		evaluateAcceptButton();
 		getClient().getWindow().setAlert(true);
-		if (player == getClient().getThePlayer() && state == TargetState.TARGETED)
+		if (player == getClient().getThePlayer())
 		{
-			getClient().getTableScreen().getTopbar().triggerAlert();
+			if (state == TargetState.TARGETED)
+			{
+				getClient().getTableScreen().getTopbar().triggerAlert();
+			}
+			getClient().getTableScreen().getTopbar().updateGraphics();
 		}
-		getClient().getTableScreen().repaint();
+		player.getUI().updateGraphics();
 	}
 	
 	public Player getTarget()

@@ -13,6 +13,7 @@ public class MDColorSelection extends MDComponent
 	
 	public MDColorSelection(PropertyColor color, boolean selected)
 	{
+		setOpaque(true);
 		this.color = color;
 		this.selected = selected;
 		setSize(scale(80), scale(80));
@@ -24,7 +25,7 @@ public class MDColorSelection extends MDComponent
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
 		Graphics2D g = (Graphics2D) gr;
 		g.setColor(color.getColor());

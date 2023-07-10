@@ -2,13 +2,12 @@ package oldmana.md.client.gui.component;
 
 import java.awt.AlphaComposite;
 import java.awt.Composite;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
+import java.awt.Image;
 import java.awt.LinearGradientPaint;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.CompletableFuture;
@@ -20,10 +19,7 @@ import java.util.function.Supplier;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.effect.PerspectiveTransform;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import oldmana.md.client.Scheduler;
@@ -56,14 +52,17 @@ public class MDMovingCard extends MDComponent
 	private double time;
 	
 	public int frames;
-	public int pos;
+	public volatile int pos;
 	public double[] animMap;
 	public double[] posMap;
-	public Rectangle[] sizeLocMap;
-	private BufferedImage[] frameCache;
+	public Dimension[] sizeMap;
+	public Point[] locMap;
+	private Image[] frameCache;
 	private int latestCached;
-	private BufferedImage latestCache;
+	private Image latestCache;
 	private int nextCache;
+	private int lastDrawn = -1;
+	private int lastCleared = -1;
 	
 	private int borderWidth;
 	
@@ -104,19 +103,11 @@ public class MDMovingCard extends MDComponent
 		int largestWidth = getLargestWidth();
 		int largestHeight = getLargestHeight();
 		
-		startCache = GraphicsUtils.createImage(largestWidth, largestHeight);
-		Graphics2D cardGr = startCache.createGraphics();
-		//cardGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		//cardGr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		cardGr.drawImage(start != null ? start.getGraphics(largestScale * getScale()) :
-				Card.getBackGraphics(largestScale * getScale()), 0, 0/*, largestWidth, largestHeight*/, null);
+		startCache = start != null ? start.getGraphics(largestScale * getScale()) :
+				Card.getBackGraphics(largestScale * getScale());
 		
-		endCache = GraphicsUtils.createImage(largestWidth, largestHeight);
-		cardGr = endCache.createGraphics();
-		//cardGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		//cardGr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		cardGr.drawImage(end != null ? end.getGraphics(largestScale * getScale()) :
-				Card.getBackGraphics(largestScale * getScale()), 0, 0/*, largestWidth, largestHeight*/, null);
+		endCache = end != null ? end.getGraphics(largestScale * getScale()) :
+				Card.getBackGraphics(largestScale * getScale());
 		
 		if (flash != null)
 		{
@@ -125,17 +116,19 @@ public class MDMovingCard extends MDComponent
 		
 		frames = (int) Math.max(Math.round(Scheduler.getFPS() * time), 1);
 		
-		frameCache = new BufferedImage[frames];
+		frameCache = new Image[frames];
 		posMap = new double[frames];
 		animMap = new double[frames];
-		sizeLocMap = new Rectangle[frames];
+		sizeMap = new Dimension[frames];
+		locMap = new Point[frames];
 		//int largestMovement = 1;
 		for (int i = 0 ; i < frames ; i++)
 		{
 			double pos = i / (double) frames;
 			posMap[i] = (1.6 * pos) + (-0.7 * Math.pow(pos, 2)) + (0.1 * Math.pow(pos, 3));
 			animMap[i] = Math.min(posMap[i] * 1.2, 1);
-			sizeLocMap[i] = getSizeLoc(posMap[i]);
+			sizeMap[i] = getSize(posMap[i]);
+			//sizeLocMap[i] = getSizeLoc(posMap[i]);
 			//if (i != 0)
 			//{
 			//	int xDiff = Math.max(sizeLocMap[i].x, sizeLocMap[i - 1].x) - Math.min(sizeLocMap[i].x, sizeLocMap[i - 1].x);
@@ -144,7 +137,7 @@ public class MDMovingCard extends MDComponent
 			//}
 		}
 		//borderWidth = largestMovement;
-		borderWidth = scale(15);
+		borderWidth = scale(2);
 		
 		pos = -1;
 		tickMove();
@@ -158,28 +151,56 @@ public class MDMovingCard extends MDComponent
 	public void setFlash(Card card)
 	{
 		flash = card;
-		flashCache = GraphicsUtils.createImage(getLargestWidth(), getLargestHeight());
-		Graphics2D cardGr = flashCache.createGraphics();
-		cardGr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		cardGr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		cardGr.drawImage(flash.getGraphics(getLargestScale() * getScale()), 0, 0, getLargestWidth(), getLargestHeight(), null);
+		flashCache = flash.getGraphics(getLargestScale() * getScale());
 	}
 	
-	private Rectangle getSizeLoc(double posProg)
+	private Dimension getSize(double posProg)
 	{
 		int cardWidth = GraphicsUtils.getCardWidth();
 		int cardHeight = GraphicsUtils.getCardHeight();
 		
-		Rectangle rec = new Rectangle();
+		Dimension dim = new Dimension();
+		
+		if (animType == CardAnimationType.NORMAL)
+		{
+			double scale = (startScale * 1) + ((endScale - startScale) * posProg);
+			dim.setSize((int) Math.round(scale * cardWidth), (int) Math.round(scale * cardHeight));
+		}
+		else if (animType == CardAnimationType.IMPORTANT)
+		{
+			// 0 - 0.25: Moving To Front
+			// 0.25 - 0.75: Front
+			// 0.8 - 1: Moving To Destination
+			if (posProg < 0.25)
+			{
+				double scale = (startScale * 1) + ((4 - startScale) * getProgressBetween(0, 0.25, posProg));
+				dim.setSize((int) Math.round(scale * cardWidth), (int) Math.round(scale * cardHeight));
+			}
+			else if (posProg > 0.8)
+			{
+				double progBetween = getProgressBetween(0.8, 1, posProg);
+				double scale = (4) + ((endScale - 4) * progBetween);
+				dim.setSize((int) Math.round(scale * cardWidth), (int) Math.round(scale * cardHeight));
+			}
+			else
+			{
+				dim.setSize(Math.round(4 * cardWidth), Math.round(4 * cardHeight));
+			}
+		}
+		
+		return dim;
+	}
+	
+	private Point getLoc(double posProg)
+	{
+		Point point = new Point();
 		
 		Point endPos = endPosSupplier.get();
 		endPos.setLocation(endPos.getX() + (GraphicsUtils.getCardWidth(endScale) / 2),
 				endPos.getY() + (GraphicsUtils.getCardHeight(endScale) / 2));
 		if (animType == CardAnimationType.NORMAL)
 		{
-			double scale = (startScale * 1) + ((endScale - startScale) * posProg);
-			rec.setSize((int) Math.round(scale * cardWidth), (int) Math.round(scale * cardHeight));
-			rec.setLocation((int) Math.round(startPos.x + ((endPos.x - startPos.x) * posProg)),
+			point.setLocation((int) Math.round(startPos.x + ((endPos.x - startPos.x) * posProg)),
 					(int) Math.round(startPos.y + ((endPos.y - startPos.y) * posProg)));
 		}
 		else if (animType == CardAnimationType.IMPORTANT)
@@ -190,34 +211,29 @@ public class MDMovingCard extends MDComponent
 			// 0.8 - 1: Moving To Destination
 			if (posProg < 0.25)
 			{
-				double scale = (startScale * 1) + ((4 - startScale) * getProgressBetween(0, 0.25, posProg));
-				rec.setSize((int) Math.round(scale * cardWidth), (int) Math.round(scale * cardHeight));
 				int xPos = (screen.getWidth() / 2) + scale(25);
 				int yPos = ((screen.getHeight() - getClient().getThePlayer().getHand().getUI().getHeight()) / 2);
-				rec.setLocation((int) Math.round(startPos.x + ((xPos - startPos.x) * getProgressBetween(0, 0.25, posProg))),
+				point.setLocation((int) Math.round(startPos.x + ((xPos - startPos.x) * getProgressBetween(0, 0.25, posProg))),
 						(int) Math.round(startPos.y + ((yPos - startPos.y) * getProgressBetween(0, 0.25, posProg))));
 			}
 			else if (posProg > 0.8)
 			{
 				double progBetween = getProgressBetween(0.8, 1, posProg);
-				double scale = (4) + ((endScale - 4) * progBetween);
-				rec.setSize((int) Math.round(scale * cardWidth), (int) Math.round(scale * cardHeight));
 				int xPos = (screen.getWidth() / 2) - scale(25);
 				int yPos = ((screen.getHeight() - getClient().getThePlayer().getHand().getUI().getHeight()) / 2);
 				progBetween = (0.7 * progBetween) + (-0.2 * Math.pow(progBetween, 2)) + (0.5 * Math.pow(progBetween, 3));
-				rec.setLocation((int) Math.round(xPos + ((endPos.x - xPos) * progBetween)),
+				point.setLocation((int) Math.round(xPos + ((endPos.x - xPos) * progBetween)),
 						(int) Math.round(yPos + ((endPos.y - yPos) * progBetween)));
 			}
 			else
 			{
 				int xPos = (screen.getWidth() / 2) + scale(25) - (int) (getProgressBetween(0.25, 0.8, posProg) * (scale(25) * 2));
 				int yPos = ((screen.getHeight() - getClient().getThePlayer().getHand().getUI().getHeight()) / 2);
-				rec.setSize(Math.round(4 * cardWidth), Math.round(4 * cardHeight));
-				rec.setLocation(Math.round(xPos), Math.round(yPos));
+				point.setLocation(Math.round(xPos), Math.round(yPos));
 			}
 		}
 		
-		return rec;
+		return point;
 	}
 	
 	public boolean tickMove()
@@ -227,10 +243,6 @@ public class MDMovingCard extends MDComponent
 			latestCache = frameCache[pos];
 			latestCached = pos;
 		}
-		if (pos > 0 && frames > pos - 1)
-		{
-			frameCache[pos] = null;
-		}
 		pos++;
 		
 		if (pos == frames)
@@ -238,11 +250,11 @@ public class MDMovingCard extends MDComponent
 			return true;
 		}
 		
-		Rectangle loc = sizeLocMap[pos];
-		setSize(loc.getWidth() + (getBorderWidth() * 2), loc.getHeight() + (getBorderWidth() * 2));
-		//setLocationCentered(loc.getX(), loc.getY());
-		Rectangle rec = getSizeLoc(posMap[pos]);
-		setLocationCentered(rec.getX(), rec.getY());
+		locMap[pos] = getLoc(posMap[pos]);
+		Point loc = locMap[pos];
+		Dimension size = sizeMap[pos];
+		setSize(size.getWidth() + (getBorderWidth() * 2), size.getHeight() + (getBorderWidth() * 2));
+		setLocationCentered(loc.getX(), loc.getY());
 		
 		if (nextCache < Math.min(pos + 10, frames))
 		{
@@ -349,7 +361,7 @@ public class MDMovingCard extends MDComponent
 		g.fillRect(-(width / 4), -(height / 4), width, height);
 	}
 	
-	public CompletableFuture<BufferedImage> renderFrame(double rotation, double shineProg, int frame)
+	public CompletableFuture<Image> renderFrame(double rotation, double shineProg, int frame)
 	{
 		return CompletableFuture.supplyAsync(() ->
 		{
@@ -361,8 +373,7 @@ public class MDMovingCard extends MDComponent
 			
 			double degrees = rotation - 90;
 			degrees = (degrees + 360) % 360;
-			double angle = Math.toRadians(degrees - (start != null ? 180 : 0));
-			BufferedImage image = downsize(getFaceNoCopy(degrees), (int) sizeLocMap[frame].getWidth(), (int) sizeLocMap[frame].getHeight());
+			BufferedImage image = downsize(getFaceNoCopy(degrees), (int) sizeMap[frame].getWidth(), (int) sizeMap[frame].getHeight());
 			int width = image.getWidth();
 			int height = image.getHeight();
 			if (shineProg > 0)
@@ -386,6 +397,8 @@ public class MDMovingCard extends MDComponent
 			final double radius = width / 2D;
 			final double back = height / 20D;
 			
+			double angle = Math.toRadians(degrees - (start != null ? 180 : 0));
+			
 			trans.setUlx(radius - Math.sin(angle) * radius);
 			trans.setUly(0 - Math.cos(angle) * back);
 			trans.setUrx(radius + Math.sin(angle) * radius);
@@ -398,11 +411,10 @@ public class MDMovingCard extends MDComponent
 			int drawWidth = (int) Math.abs((radius + Math.sin(angle) * radius) - (radius - Math.sin(angle) * radius));
 			
 			imageView.setEffect(trans);
-			
 			SnapshotParameters params = new SnapshotParameters();
 			params.setFill(Color.TRANSPARENT);
 			
-			Image newImage;
+			javafx.scene.image.Image newImage;
 			try
 			{
 				newImage = CompletableFuture.supplyAsync(() -> imageView.snapshot(params, null), fxExecutor).get();
@@ -416,11 +428,15 @@ public class MDMovingCard extends MDComponent
 			//graphicsContext.drawImage(newImage, 0, 0);
 			
 			BufferedImage from = SwingFXUtils.fromFXImage(newImage, image);
-			BufferedImage rendered = GraphicsUtils.createImage(width, height);
-			Graphics2D g = rendered.createGraphics();
+			Image rendered = GraphicsUtils.createImage(width, height);
+			Graphics2D g = (Graphics2D) rendered.getGraphics();
+			//g.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR, 0.0F));
+			//g.fillRect(0, 0, getWidth(), getHeight());
+			//g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 			g.drawImage(from, (width / 2) - (drawWidth / 2), -1, drawWidth, height + 1, null);
+			g.dispose();
 			//System.out.println("Almost done with " + frame + " on " + Thread.currentThread().getName());
 			return rendered;// downsize(rendered, (int) sizeLocMap[frame].getWidth(), (int) sizeLocMap[frame].getHeight());
 		}, renderingExecutor);
@@ -433,6 +449,7 @@ public class MDMovingCard extends MDComponent
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		g.drawImage(img, 0, 0, width, height, null);
+		g.dispose();
 		return render;
 	}
 	
@@ -493,13 +510,16 @@ public class MDMovingCard extends MDComponent
 		//System.out.println("Painting: " + pos);
 		
 		// Get the most recently rendered image
-		BufferedImage result = getPaintableFrame(pos);
+		Image result = getPaintableFrame(pos);
 		//for (int i = 4 ; i >= 0 ; i--)
 		//{
 		//	paintPhantom(g, pos, i, 5);
 		//}
 		g.drawImage(result, getBorderWidth(), getBorderWidth(), null);
 	}
+	
+	@Override
+	public void createBuffer() {}
 	
 	private void paintPhantom(Graphics2D g, int pos, int frame, int frames)
 	{
@@ -510,17 +530,36 @@ public class MDMovingCard extends MDComponent
 		double framePos = frame / (double) frames;
 		Composite c = g.getComposite();
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1 - (float) framePos));
-		g.drawImage(getPaintableFrame(pos - 1), getBorderWidth() - (int) ((sizeLocMap[pos].x - sizeLocMap[pos - 1].x) * framePos),
-				getBorderWidth() - (int) ((sizeLocMap[pos].y - sizeLocMap[pos - 1].y) * framePos), null);
+		//g.drawImage(getPaintableFrame(pos - 1), getBorderWidth() - (int) ((sizeLocMap[pos].x - sizeLocMap[pos - 1].x) * framePos),
+		//		getBorderWidth() - (int) ((sizeLocMap[pos].y - sizeLocMap[pos - 1].y) * framePos), null);
 		g.setComposite(c);
 	}
 	
-	private BufferedImage getPaintableFrame(int pos)
+	private Image getPaintableFrame(int pos)
 	{
-		BufferedImage result = frameCache[pos] != null ? frameCache[pos] : latestCache;
+		Image result = frameCache[pos] != null ? frameCache[pos] : latestCache;
 		if (result == null) // Fallback to static image
 		{
-			result = downsize(startCache, (int) sizeLocMap[pos].getWidth(), (int) sizeLocMap[pos].getHeight());
+			result = downsize(startCache, (int) sizeMap[pos].getWidth(), (int) sizeMap[pos].getHeight());
+		}
+		else
+		{
+			if (lastDrawn > -1)
+			{
+				for (int i = lastCleared + 1 ; i < lastDrawn ; i++)
+				{
+					if (frameCache[i] != null)
+					{
+						if (frameCache[i] != latestCache) // Prevent the latest cache being flushed if we're behind
+						{
+							frameCache[i].flush();
+						}
+						frameCache[i] = null;
+					}
+				}
+				lastCleared = lastDrawn - 1;
+			}
+			lastDrawn = pos;
 		}
 		return result;
 	}

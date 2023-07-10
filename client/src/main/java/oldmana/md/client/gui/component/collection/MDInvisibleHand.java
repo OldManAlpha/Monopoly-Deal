@@ -22,13 +22,13 @@ public class MDInvisibleHand extends MDCardCollectionUnknown
 	@Override
 	public void update()
 	{
-		repaint();
+		updateGraphics();
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
-		super.paintComponent(gr);
+		super.doPaint(gr);
 		Graphics2D g = (Graphics2D) gr;
 		
 		Color textColor = new Color(80, 80, 80);

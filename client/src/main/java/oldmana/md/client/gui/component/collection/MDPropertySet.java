@@ -1,7 +1,6 @@
 package oldmana.md.client.gui.component.collection;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -12,7 +11,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.SwingUtilities;
 
@@ -20,7 +18,6 @@ import oldmana.md.client.ThePlayer;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.PropertySet;
-import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.component.MDCardView;
 import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.util.GraphicsUtils;
@@ -58,7 +55,7 @@ public class MDPropertySet extends MDCardCollection
 		int outlineWidth = getOutlineWidth() * 2;
 		setSize(GraphicsUtils.getCardWidth() + outlineWidth, GraphicsUtils.getCardHeight() +
 				(getInterval() * (getCollection().getCardCount() - 1 + (isCardBeingRemoved() ? 1 : 0))) + outlineWidth);
-		repaint();
+		updateGraphics();
 	}
 	
 	@Override
@@ -196,9 +193,9 @@ public class MDPropertySet extends MDCardCollection
 	}
 	
 	@Override
-	public void paintComponent(Graphics gr)
+	public void doPaint(Graphics gr)
 	{
-		super.paintComponent(gr);
+		super.doPaint(gr);
 		Graphics2D g = (Graphics2D) gr;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);

@@ -1,7 +1,5 @@
 package oldmana.md.client.state;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -87,16 +85,11 @@ public class ActionStateRent extends ActionState
 			button.setEnabled(true);
 			button.setText("View Charge");
 			button.setColor(ButtonColorScheme.ALERT);
-			button.repaint();
-			button.setListener(new MouseAdapter()
+			button.setListener(() ->
 			{
-				@Override
-				public void mouseReleased(MouseEvent event)
+				if (button.isEnabled())
 				{
-					if (button.isEnabled())
-					{
-						rentScreen.setVisible(true);
-					}
+					rentScreen.setVisible(true);
 				}
 			});
 		}
