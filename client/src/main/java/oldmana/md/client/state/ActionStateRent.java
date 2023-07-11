@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import oldmana.md.client.Player;
+import oldmana.md.client.ThePlayer;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.gui.action.ActionScreenRent;
 import oldmana.md.client.gui.component.MDButton;
@@ -55,7 +56,10 @@ public class ActionStateRent extends ActionState
 	@Override
 	protected void evaluateAcceptButton()
 	{
-	
+		if (getActionOwner() instanceof ThePlayer)
+		{
+			super.evaluateAcceptButton();
+		}
 	}
 	
 	@Override
