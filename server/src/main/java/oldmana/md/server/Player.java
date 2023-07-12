@@ -27,6 +27,7 @@ import oldmana.md.common.net.packet.server.PacketStatus;
 import oldmana.md.common.net.packet.server.PacketUndoCardStatus;
 import oldmana.md.common.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
 import oldmana.md.common.net.packet.universal.PacketChat;
+import oldmana.md.server.event.EventListener;
 import oldmana.md.server.event.player.PlayerPreDrawEvent;
 import oldmana.md.server.history.UndoableAction;
 import oldmana.md.server.event.player.PlayerUndoActionEvent;
@@ -51,7 +52,6 @@ import oldmana.md.server.playerui.clientbutton.UndoButton;
 import oldmana.md.server.rules.DrawExtraCardsPolicy;
 import oldmana.md.server.state.GameState;
 import oldmana.md.server.state.primary.ActionStatePlayerTurn;
-import oldmana.md.server.status.StatusEffect;
 
 public class Player implements CommandSender
 {
@@ -363,6 +363,11 @@ public class Player implements CommandSender
 		return getSolidPropertySet(color) != null;
 	}
 	
+	/**
+	 * Get the solid property set the player has for the given property color.
+	 * @param color The property color
+	 * @return The solid set associated with the color, or null if there isn't one
+	 */
 	public PropertySet getSolidPropertySet(PropertyColor color)
 	{
 		for (PropertySet set : getPropertySets(true))
@@ -375,17 +380,32 @@ public class Player implements CommandSender
 		return null;
 	}
 	
+	/**
+	 * Check if the player can rent on the given property color.
+	 * @param color The color to check
+	 * @return True if the player can rent on the property color
+	 */
 	public boolean hasRentableProperties(PropertyColor color)
 	{
 		for (PropertySet set : propertySets)
 		{
-			for (CardProperty card : set.getPropertyCards())
+			if (set.hasBuildings())
 			{
-				for (PropertyColor cardColor : card.getColors())
+				if (set.getEffectiveColor() == color)
 				{
-					if (cardColor == color && card.isBase())
+					return true;
+				}
+			}
+			else
+			{
+				for (CardProperty card : set.getPropertyCards())
+				{
+					for (PropertyColor cardColor : card.getColors())
 					{
-						return true;
+						if (cardColor == color && card.isBase())
+						{
+							return true;
+						}
 					}
 				}
 			}
@@ -393,6 +413,11 @@ public class Player implements CommandSender
 		return false;
 	}
 	
+	/**
+	 * Check if the player can rent on any of the given property colors.
+	 * @param colors The colors to check
+	 * @return True if the player can rent on at least one of the property colors
+	 */
 	public boolean hasRentableProperties(List<PropertyColor> colors)
 	{
 		for (PropertyColor color : colors)
@@ -405,6 +430,11 @@ public class Player implements CommandSender
 		return false;
 	}
 	
+	/**
+	 * Get the highest rent value the player can charge from the provided property colors.
+	 * @param colors The colors to check
+	 * @return The highest value rent
+	 */
 	public int getHighestValueRent(List<PropertyColor> colors)
 	{
 		Map<PropertyColor, Integer> colorCounts = new HashMap<PropertyColor, Integer>();
@@ -452,6 +482,10 @@ public class Player implements CommandSender
 		return highestValue;
 	}
 	
+	/**
+	 * Check if the player has anything on their table that has value. The hand is not part of their table.
+	 * @return True if the player has anything of value
+	 */
 	public boolean hasAnyMonetaryAssets()
 	{
 		if (!getBank().isEmpty())
@@ -471,6 +505,10 @@ public class Player implements CommandSender
 		return false;
 	}
 	
+	/**
+	 * Get the total value of everything on the player's table. The hand is not part of their table.
+	 * @return The total value
+	 */
 	public int getTotalMonetaryAssets()
 	{
 		int wealth = 0;
@@ -485,6 +523,10 @@ public class Player implements CommandSender
 		return wealth;
 	}
 	
+	/**
+	 * Get the total value of the properties on the player's table.
+	 * @return The total value
+	 */
 	public int getTotalPropertyValue()
 	{
 		int propValue = 0;
@@ -495,6 +537,10 @@ public class Player implements CommandSender
 		return propValue;
 	}
 	
+	/**
+	 * Get the number of completed property sets the player has.
+	 * @return The number of non-unique-colored property sets
+	 */
 	public int getMonopolyCount()
 	{
 		int monopolyCount = 0;
@@ -508,6 +554,10 @@ public class Player implements CommandSender
 		return monopolyCount;
 	}
 	
+	/**
+	 * Get the number of unique completed property sets the player has.
+	 * @return The number of unique-colored property sets
+	 */
 	public int getUniqueMonopolyCount()
 	{
 		List<PropertyColor> monopolyColors = new ArrayList<PropertyColor>();
@@ -538,7 +588,7 @@ public class Player implements CommandSender
 		}
 	}
 	
-	public void drawExtraCards()
+	private void drawExtraCards()
 	{
 		int cardsToDraw = getServer().getGameRules().getExtraCardsDrawn();
 		PlayerPreDrawEvent event = new PlayerPreDrawEvent(this, cardsToDraw, true);
@@ -567,8 +617,10 @@ public class Player implements CommandSender
 	 */
 	public void addStatusEffect(StatusEffect effect)
 	{
+		effect.setPlayer(this);
 		getServer().getEventManager().registerEvents(effect);
 		statusEffects.add(effect);
+		effect.onApply();
 	}
 	
 	/**Removes the status effect instance from the player
@@ -799,19 +851,27 @@ public class Player implements CommandSender
 	}
 	
 	/**
-	 * This returns true when it's the player's turn and the current state allows playing cards.
-	 * @return Whether the player can play cards
+	 * Check if it's the player's turn and the current state allows playing cards.
+	 * @return True if the player can play cards right now
 	 */
 	public boolean canPlayCards()
 	{
 		return isFocused() && getServer().getGameState().getTurnState().canPlayCards();
 	}
 	
+	/**
+	 * Check if the player can draw from the deck right now.
+	 * @return True if the player can draw
+	 */
 	public boolean canDraw()
 	{
 		return isFocused() && getServer().getGameState().getTurnState().isDrawing();
 	}
 	
+	/**
+	 * Check if the player can discard cards from their hand right now.
+	 * @return True if the player is discarding
+	 */
 	public boolean isDiscarding()
 	{
 		return isFocused() && getServer().getGameState().getTurnState().getTurnState() == TurnState.DISCARD;
@@ -852,11 +912,18 @@ public class Player implements CommandSender
 		return getServer().getDeck().drawCards(this, amount);
 	}
 	
+	/**
+	 * End the player's turn. This fails silently if the player does not meet the conditions to end their turn.
+	 */
 	public void endTurn()
 	{
 		endTurn(false);
 	}
 	
+	/**
+	 * End the player's turn.
+	 * @param ignoreConditions If true, the player will end their turn now even if they shouldn't be able to
+	 */
 	public void endTurn(boolean ignoreConditions)
 	{
 		if (!ignoreConditions)
@@ -877,16 +944,28 @@ public class Player implements CommandSender
 		getGameState().nextTurn();
 	}
 	
+	/**
+	 * Make the player run a command from a raw string.
+	 * @param raw The command to run; it should not include a slash
+	 */
 	public void executeCommand(String raw)
 	{
 		getServer().getCommandHandler().executeCommand(this, raw);
 	}
 	
+	/**
+	 * Make the player send a message in chat.
+	 * @param msg The message the player should send
+	 */
 	public void chat(String msg)
 	{
 		getServer().broadcastMessage(getName() + ": " + msg, true);
 	}
 	
+	/**
+	 * Forces the player's chat window to be opened or closed.
+	 * @param chatOpen Whether the chat should be opened or closed
+	 */
 	public void setChatOpen(boolean chatOpen)
 	{
 		sendPacket(new PacketSetChatOpen(chatOpen));
@@ -910,7 +989,7 @@ public class Player implements CommandSender
 		sendPacket(new PacketSetAwaitingResponse(false));
 	}
 	
-	public Packet[] getPropertySetPackets()
+	private Packet[] getPropertySetPackets()
 	{
 		Packet[] packets = new Packet[propertySets.size()];
 		for (int i = 0 ; i < packets.length ; i++)
@@ -920,7 +999,7 @@ public class Player implements CommandSender
 		return packets;
 	}
 	
-	public Packet getInfoPacket()
+	private Packet getInfoPacket()
 	{
 		return new PacketPlayerInfo(getID(), getName(), isConnected() || isBot());
 	}
@@ -1136,6 +1215,59 @@ public class Player implements CommandSender
 		if (client != null && packet != null)
 		{
 			client.addOutPacket(packet);
+		}
+	}
+	
+	/**
+	 * Status effects can be applied to players to perform special effects on the player over time. StatusEffect instances
+	 * are automatically registered for events when applied to a player and automatically unregistered when removed. Status
+	 * effects are also cleared from all players when a game ends.
+	 */
+	public static class StatusEffect implements EventListener
+	{
+		private Player player;
+		
+		public Player getPlayer()
+		{
+			return player;
+		}
+		
+		private void setPlayer(Player player)
+		{
+			this.player = player;
+		}
+		
+		/**
+		 * Shortcut to add this effect to the player.
+		 * @param player The player to apply this effect to.
+		 */
+		public void applyEffect(Player player)
+		{
+			player.addStatusEffect(this);
+		}
+		
+		/**
+		 * Removes this effect from the player.
+		 */
+		public void removeEffect()
+		{
+			player.removeStatusEffect(this);
+		}
+		
+		/**
+		 * Called when this effect is applied to a player.
+		 */
+		public void onApply() {}
+		
+		/**
+		 * Called when this effect is removed. Can be overridden to ensure that everything is properly cleaned up when an
+		 * effect is removed.
+		 */
+		public void onRemove() {}
+		
+		protected MDServer getServer()
+		{
+			return MDServer.getInstance();
 		}
 	}
 }

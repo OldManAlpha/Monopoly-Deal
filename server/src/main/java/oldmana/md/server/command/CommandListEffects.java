@@ -2,7 +2,7 @@ package oldmana.md.server.command;
 
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.Player;
-import oldmana.md.server.status.StatusEffect;
+import oldmana.md.server.Player.StatusEffect;
 
 public class CommandListEffects extends Command
 {
