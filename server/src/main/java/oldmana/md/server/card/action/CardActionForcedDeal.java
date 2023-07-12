@@ -68,7 +68,7 @@ public class CardActionForcedDeal extends CardAction
 		template.put(FONT_SIZE, 8);
 		template.put(DISPLAY_OFFSET_Y, 2);
 		template.putStrings(DESCRIPTION, "Trade one of your properties for one of another player's properties that is " +
-				"not part of a full set. 10-Color property wild cards cannot be stolen with this card.");
+				"not part of a full set. This card might not be able to steal some properties.");
 		template.put(UNDOABLE, true);
 		template.put(CLEARS_UNDOABLE_ACTIONS, false);
 		type.setDefaultTemplate(template);

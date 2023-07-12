@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import oldmana.md.server.MDServer;
 import oldmana.md.server.mod.ModNotFoundException;
 import oldmana.md.server.mod.ServerMod;
 import oldmana.md.server.rules.GameRule;
@@ -148,7 +149,9 @@ public class CustomDeck extends DeckStack
 		}
 		obj.put("rules", getDeckRules().toJSON());
 		obj.put("cards", array);
-		FileWriter w = new FileWriter(f == null ? new File("decks" + File.separator + name + ".json") : f);
+		
+		FileWriter w = new FileWriter(f == null ? new File(MDServer.getInstance().getDataFolder(), "decks" +
+				File.separator + name + ".json") : f);
 		obj.write(w, 2, 0);
 		w.close();
 	}

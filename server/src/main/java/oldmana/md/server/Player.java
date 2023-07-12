@@ -20,6 +20,7 @@ import oldmana.md.common.net.packet.server.PacketPlayerInfo;
 import oldmana.md.common.net.packet.server.PacketRemoveMessageCategory;
 import oldmana.md.common.net.packet.server.PacketSelectCardCombo;
 import oldmana.md.common.net.packet.server.PacketSetAwaitingResponse;
+import oldmana.md.common.net.packet.server.PacketSetChatOpen;
 import oldmana.md.common.net.packet.server.PacketUpdatePlayer;
 import oldmana.md.common.net.packet.server.PacketRefresh;
 import oldmana.md.common.net.packet.server.PacketStatus;
@@ -884,6 +885,11 @@ public class Player implements CommandSender
 	public void chat(String msg)
 	{
 		getServer().broadcastMessage(getName() + ": " + msg, true);
+	}
+	
+	public void setChatOpen(boolean chatOpen)
+	{
+		sendPacket(new PacketSetChatOpen(chatOpen));
 	}
 	
 	public void resendActionState()

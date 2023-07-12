@@ -105,7 +105,7 @@ public class GameRules
 						.jsonName("doubleRule")
 						.name("Rent Doubling Rule")
 						.description("In what way to increase rent. This rule has no effect when multiple aren't allowed.")
-						.addChoice("Add", "Add", "Rent will be added by itself for each Double The Rent card played.", " ",
+						.addChoice("Add", "Add", "Rent will be added by the base charge for each Double The Rent card played.", " ",
 								"Example: 8M charge with 2 Double Rent = 8+8+8 = 24M")
 						.addChoice("Multiply", "Multiply", "Rent will be multiplied by 2x repeatedly for the number of " +
 										"Double The Rent cards played.", " ",

@@ -53,7 +53,7 @@ public class CardActionSlyDeal extends CardAction
 		template.put(FONT_SIZE, 9);
 		template.put(DISPLAY_OFFSET_Y, 2);
 		template.putStrings(DESCRIPTION, "Steal a property from another player that is not part of a full set. " +
-				"10-Color property wild cards cannot be stolen with this card.");
+				"This card might not be able to steal some properties.");
 		template.put(UNDOABLE, true);
 		template.put(CLEARS_UNDOABLE_ACTIONS, false);
 		type.setDefaultTemplate(template);

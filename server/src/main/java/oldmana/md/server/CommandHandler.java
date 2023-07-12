@@ -51,7 +51,7 @@ public class CommandHandler
 		registerCommand(new CommandAddBot());
 		registerCommand(new CommandToggleBot());
 		registerCommand(new CommandShufflePlayers());
-		registerCommand(new CommandDeckBuilder());
+		//registerCommand(new CommandDeckBuilder());
 		
 		
 		// Registering test/debug commands through reflection, as they're only used in a development environment.
