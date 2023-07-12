@@ -76,6 +76,7 @@ public class MDBank extends MDCardCollection
 	{
 		super.doPaint(gr);
 		Graphics2D g = (Graphics2D) gr;
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		Graphics2D debug = (Graphics2D) g.create();
 		g.setColor(Color.DARK_GRAY);
 		Color gray = new Color(150, 150, 150);
@@ -105,6 +106,7 @@ public class MDBank extends MDCardCollection
 			g.fillRoundRect(scale(0), scale(20), getWidth(), getHeight() - scale(20), scale(15), scale(15));
 		}
 		g.setColor(textColor);
+		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		TextPainter tp = new TextPainter("BANK", GraphicsUtils.getBoldMDFont(scale(18)), new Rectangle(0, scale(1), getWidth() - scale(5), scale(20)));
 		tp.setHorizontalAlignment(Alignment.RIGHT);
 		tp.setVerticalAlignment(Alignment.CENTER);
@@ -113,9 +115,9 @@ public class MDBank extends MDCardCollection
 		
 		if (!bank.isEmpty())
 		{
-			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+			//g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			//g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+			//g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 			
 			paintCards(g);
 		}

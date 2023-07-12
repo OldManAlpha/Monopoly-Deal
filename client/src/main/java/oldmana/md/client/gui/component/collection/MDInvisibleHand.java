@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 
 import oldmana.md.client.card.collection.Hand;
 import oldmana.md.client.gui.util.GraphicsUtils;
@@ -30,7 +31,6 @@ public class MDInvisibleHand extends MDCardCollectionUnknown
 	{
 		super.doPaint(gr);
 		Graphics2D g = (Graphics2D) gr;
-		
 		Color textColor = new Color(80, 80, 80);
 		Color outlineColor = new Color(220, 220, 220);
 		if (getModification() == CollectionMod.ADDITION && getCardCount() == 1)
@@ -47,6 +47,8 @@ public class MDInvisibleHand extends MDCardCollectionUnknown
 		}
 		if ((getCardCount() == 1 && getModification() == CollectionMod.ADDITION) || getCardCount() == 0)
 		{
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			g.setColor(outlineColor);
 			g.fillRoundRect(scale(0), scale(0), getWidth(), getHeight(), scale(15), scale(15));
 			

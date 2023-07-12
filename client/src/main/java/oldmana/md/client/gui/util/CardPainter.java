@@ -273,14 +273,14 @@ public class CardPainter
 				tp.setVerticalAlignment(Alignment.TOP);
 				tp.paint(g);
 				
-				double angleInc = Math.min(20, 150.0 / colors.size());
+				double angleInc = Math.min(10, 80.0 / colors.size());
 				double angle = (-(colors.size() * angleInc) / 2) + (angleInc / 2);
 				
 				g.translate((getWidth() / 2) - scale(3), (getHeight() * 0.45) - scale(4.5));
 				for (PropertyColor color : colors)
 				{
 					Graphics2D g2 = (Graphics2D) g.create();
-					g2.rotate(Math.toRadians(angle), scale(3), scale(20));
+					g2.rotate(Math.toRadians(angle), scale(3), scale(30));
 					drawMiniProp(g2, color);
 					
 					angle += angleInc;
