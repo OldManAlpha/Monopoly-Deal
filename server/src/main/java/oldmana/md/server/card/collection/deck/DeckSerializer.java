@@ -18,8 +18,8 @@ public class DeckSerializer
 	private static final Map<String, Integer> cardSortOrder = new HashMap<String, Integer>();
 	static
 	{
-		cardSortOrder.put(CardType.MONEY.getInternalName(), -1);
-		cardSortOrder.put(CardType.PROPERTY.getInternalName(), 100);
+		cardSortOrder.put(CardType.MONEY.getInternalName(), -1); // Money is first
+		cardSortOrder.put(CardType.PROPERTY.getInternalName(), 100); // Properties are last
 	}
 	
 	public static JSONArray serialize(DeckStack deck)
@@ -55,10 +55,10 @@ public class DeckSerializer
 			int amount = obj.has("amount") ? obj.getInt("amount") : 1;
 			obj.remove("amount");
 			CardType<?> type = CardRegistry.getTypeByName(obj.getString("type"));
-			CardTemplate baseTemplate = type.getDefaultTemplate();
+			CardTemplate baseTemplate = type.getDefaultTemplateNoCopy();
 			if (obj.has("template"))
 			{
-				baseTemplate = type.getTemplate(obj.getString("template"));
+				baseTemplate = type.getTemplateNoCopy(obj.getString("template"));
 			}
 			CardTemplate template = new CardTemplate(baseTemplate, obj);
 			templates.merge(template, amount, Integer::sum);

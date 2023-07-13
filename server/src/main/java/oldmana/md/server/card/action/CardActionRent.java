@@ -169,7 +169,7 @@ public class CardActionRent extends CardAction
 	
 	public static CardTemplate createTemplate(int value, PropertyColor... colors)
 	{
-		CardTemplate template = CardType.RENT.getDefaultTemplate().clone();
+		CardTemplate template = CardType.RENT.getDefaultTemplate();
 		template.put(VALUE, value);
 		template.putColors(COLORS, colors);
 		return template;

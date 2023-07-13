@@ -2,6 +2,7 @@ package oldmana.md.server.command;
 
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.MDServer;
+import oldmana.md.server.MessageBuilder;
 
 public abstract class Command
 {
@@ -66,7 +67,9 @@ public abstract class Command
 	{
 		for (String str : usage)
 		{
-			sender.sendMessage(str);
+			sender.sendMessage(new MessageBuilder()
+					.startHoverText("Click to fill command")
+					.addFillCommand(str, getName()).build());
 		}
 	}
 	

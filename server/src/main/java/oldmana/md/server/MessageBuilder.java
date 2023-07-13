@@ -67,7 +67,11 @@ public class MessageBuilder
 		}
 	}
 	
-	public Message getMessage()
+	/**
+	 * Build this MessageBuilder into a {@link Message} that can be sent to players.
+	 * @return The message
+	 */
+	public Message build()
 	{
 		finalizeSegment();
 		return new Message(message, category);
@@ -79,7 +83,7 @@ public class MessageBuilder
 		return new Message(message).getUnformattedMessage();
 	}
 	
-	public MessageBuilder addString(String str)
+	public MessageBuilder add(String str)
 	{
 		appendSimple(this, str);
 		return this;
@@ -112,19 +116,19 @@ public class MessageBuilder
 		return this;
 	}
 	
-	public ChatLink addLinkedString(String str)
+	public ChatLink addLinked(String str)
 	{
-		return addLinkedString(str, -1);
+		return addLinked(str, -1);
 	}
 	
-	public ChatLink addLinkedString(String str, ChatLinkListener listener)
+	public ChatLink addLinked(String str, ChatLinkListener listener)
 	{
-		ChatLink link = addLinkedString(str, -1);
+		ChatLink link = addLinked(str, -1);
 		link.setListener(listener);
 		return link;
 	}
 	
-	public ChatLink addLinkedString(String str, int deleteTimer)
+	public ChatLink addLinked(String str, int deleteTimer)
 	{
 		finalizeSegment();
 		ChatLink link = MDServer.getInstance().getChatLinkHandler().createChatLink();
@@ -135,7 +139,7 @@ public class MessageBuilder
 		return link;
 	}
 	
-	public MessageBuilder addCommandString(String str, String command)
+	public MessageBuilder addCommand(String str, String command)
 	{
 		finalizeSegment();
 		cmd = command;
@@ -145,7 +149,7 @@ public class MessageBuilder
 		return this;
 	}
 	
-	public MessageBuilder addFillCommandString(String str, String fillCommand)
+	public MessageBuilder addFillCommand(String str, String fillCommand)
 	{
 		finalizeSegment();
 		fillCmd = fillCommand;
@@ -155,7 +159,7 @@ public class MessageBuilder
 		return this;
 	}
 	
-	public MessageBuilder addHoverString(String str, List<String> text)
+	public MessageBuilder addHover(String str, List<String> text)
 	{
 		finalizeSegment();
 		currentHoverText = text;
@@ -165,9 +169,9 @@ public class MessageBuilder
 		return this;
 	}
 	
-	public MessageBuilder addHoverString(String str, String... text)
+	public MessageBuilder addHover(String str, String... text)
 	{
-		addHoverString(str, Arrays.asList(text));
+		addHover(str, Arrays.asList(text));
 		return this;
 	}
 	
@@ -314,7 +318,7 @@ public class MessageBuilder
 	
 	public static Message ofHover(String message, String... hover)
 	{
-		return new MessageBuilder().addHoverString(message, hover).getMessage();
+		return new MessageBuilder().addHover(message, hover).build();
 	}
 	
 	private static JSONObject toJSONObject(String text, Color color)

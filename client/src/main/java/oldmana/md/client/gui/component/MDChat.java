@@ -307,6 +307,10 @@ public class MDChat extends MDComponent
 		ChatMessage m = new ChatMessage(message);
 		messages.add(0, m);
 		lineCount += m.getLineCount();
+		if (scroll > 0)
+		{
+			scroll += m.getLineCount();
+		}
 		updateGraphics();
 		tickMessages = true;
 	}
@@ -317,11 +321,8 @@ public class MDChat extends MDComponent
 		JSONObject obj = new JSONObject();
 		obj.put("txt", text);
 		array.put(obj);
-		ChatMessage m = new ChatMessage(new Message(array));
-		messages.add(0, m);
-		lineCount += m.getLineCount();
-		updateGraphics();
-		tickMessages = true;
+		
+		addMessage(new Message(array));
 	}
 	
 	public void setHovering(boolean hovering)

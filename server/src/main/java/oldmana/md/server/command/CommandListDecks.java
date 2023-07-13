@@ -30,14 +30,14 @@ public class CommandListDecks extends Command
 			MessageBuilder message = new MessageBuilder();
 			if (inUse)
 			{
-				message.addString(ChatColor.LIGHT_YELLOW + txt + " (In Use)");
+				message.add(ChatColor.LIGHT_YELLOW + txt + " (In Use)");
 			}
 			else
 			{
 				message.startHoverText("Switch to " + deckName + " deck");
-				message.addCommandString(ChatColor.LINK + txt, "setdeck " + deckName);
+				message.addCommand(ChatColor.LINK + txt, "setdeck " + deckName);
 			}
-			sender.sendMessage(message.getMessage());
+			sender.sendMessage(message.build());
 		}
 	}
 }

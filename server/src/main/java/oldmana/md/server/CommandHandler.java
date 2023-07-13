@@ -45,13 +45,15 @@ public class CommandHandler
 		registerCommand(new CommandOp());
 		registerCommand(new CommandDeop());
 		registerCommand(new CommandStop());
-		registerCommand(new CommandListRegisteredCards());
-		registerCommand(new CommandCreateDeck());
+		registerCommand(new CommandSaveDeck());
+		registerCommand(new CommandDeleteDeck());
 		registerCommand(new CommandBroadcast());
 		registerCommand(new CommandAddBot());
 		registerCommand(new CommandToggleBot());
 		registerCommand(new CommandShufflePlayers());
-		//registerCommand(new CommandDeckBuilder());
+		registerCommand(new CommandBuildProperty());
+		registerCommand(new CommandEditDeck());
+		registerCommand(new CommandEditTools());
 		
 		
 		// Registering test/debug commands through reflection, as they're only used in a development environment.

@@ -102,7 +102,7 @@ public class CardMoney extends Card
 			case 4: return FOUR_MIL.createCard();
 			case 5: return FIVE_MIL.createCard();
 			case 10: return TEN_MIL.createCard();
-			default: return new CardTemplate(CardType.MONEY.getDefaultTemplate()).put("value", value).createCard();
+			default: return CardType.MONEY.getDefaultTemplate().put("value", value).createCard();
 		}
 	}
 }

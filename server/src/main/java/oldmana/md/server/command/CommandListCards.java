@@ -10,6 +10,8 @@ import oldmana.md.server.card.collection.CardCollection;
 
 public class CommandListCards extends Command
 {
+	private static final String altColor = ChatColor.toChatColor(new Color(230, 230, 255));
+	
 	public CommandListCards()
 	{
 		super("listcards", null, new String[] {"/listcards [Collection ID]"}, true);
@@ -29,9 +31,9 @@ public class CommandListCards extends Command
 					Card card = collection.getCardAt(i);
 					MessageBuilder mb = new MessageBuilder();
 					mb.startHoverText(card.toString());
-					mb.addString((i % 2 == 0 ? ChatColor.toChatColor(new Color(230, 230, 255)) : ChatColor.WHITE) + "#" + (i + 1) + ": " + card.getName() +
+					mb.add((i % 2 == 0 ? altColor : ChatColor.WHITE) + "#" + (i + 1) + ": " + card.getName() +
 							" (ID: " + card.getID() + ")");
-					sender.sendMessage(mb.getMessage());
+					sender.sendMessage(mb.build());
 				}
 				sender.sendMessage(ChatColor.LIGHT_GREEN + "List of cards in collection ID " + collection.getID() + " (Count: " + collection.getCardCount() + ")");
 			}

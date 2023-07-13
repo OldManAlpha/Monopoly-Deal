@@ -15,6 +15,12 @@ import java.util.stream.Collectors;
 
 import static oldmana.md.server.card.CardAttributes.*;
 
+/**
+ * Card templates store the information about a card, allowing for retrieval of information without a Card instance and
+ * permitting easy instantiation of cards. There is a {@link CardType} associated with every CardTemplate, and CardTypes
+ * contain at least one CardTemplate(the default template). Attributes can be modified to create cards that have
+ * different from normal attributes, while retaining the base mechanics of the card.
+ */
 public class CardTemplate implements Cloneable
 {
 	private static final CardTemplate DEFAULT_TEMPLATE = new CardTemplate(true);
@@ -48,8 +54,8 @@ public class CardTemplate implements Cloneable
 		sortOrder.put("amount", 100);
 	}
 	
-	private JSONObject json;
 	private CardType<?> associatedType;
+	private JSONObject json;
 	
 	/**
 	 * Create a CardTemplate with default values. This template does not have a CardType.
@@ -123,7 +129,7 @@ public class CardTemplate implements Cloneable
 	
 	public CardTemplate put(String key, Color color)
 	{
-		json.put(key, ColorUtil.toRGBHex(color));
+		json.put(key, "#" + ColorUtil.toRGBHex(color));
 		return this;
 	}
 	
@@ -189,7 +195,31 @@ public class CardTemplate implements Cloneable
 	
 	public Color getColor(String key)
 	{
-		return ColorUtil.fromRGBHex(json.getString(key));
+		String value = json.getString(key);
+		try
+		{
+			char prefix = value.charAt(0);
+			if (prefix == '#') // # will parse RGB hex
+			{
+				return ColorUtil.fromRGBHex(value.substring(1));
+			}
+			else if (prefix == '$') // $ will use internal value color
+			{
+				int v = Integer.parseInt(value.substring(1));
+				return CardValueColor.getByValue(v).getColor();
+			}
+			else if (prefix == '~') // ~ will use property color from provided label
+			{
+				return PropertyColor.fromLabel(value.substring(1)).getColor();
+			}
+			return ColorUtil.fromRGBHex(value); // Defaults to hex parsing if there's no prefix
+		}
+		catch (Exception e)
+		{
+			System.err.println("Failed to parse color: " + value);
+			e.printStackTrace();
+		}
+		return Color.LIGHT_GRAY;
 	}
 	
 	public PropertyColor getPropertyColor(String key)
@@ -243,6 +273,10 @@ public class CardTemplate implements Cloneable
 		json.put("type", associatedType.getInternalName());
 	}
 	
+	/**
+	 * Creates a Card from the associated type using this template.
+	 * @return A newly created Card
+	 */
 	public <T extends Card> T createCard()
 	{
 		return (T) associatedType.createCard(this);
@@ -261,8 +295,8 @@ public class CardTemplate implements Cloneable
 	{
 		JSONObject reduced = new JSONObject();
 		boolean usingTemplate = has("template");
-		JSONObject ref = usingTemplate ? getAssociatedType().getTemplate(getString("template")).getJson() :
-				getAssociatedType().getDefaultTemplate().getJson();
+		JSONObject ref = usingTemplate ? getAssociatedType().getTemplateNoCopy(getString("template")).getJson() :
+				getAssociatedType().getDefaultTemplateNoCopy().getJson();
 		List<String> keys = new ArrayList<String>(json.keySet());
 		keys.sort((s1, s2) ->
 		{

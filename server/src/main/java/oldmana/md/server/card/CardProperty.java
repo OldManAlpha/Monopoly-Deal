@@ -181,6 +181,14 @@ public class CardProperty extends Card
 		return CardType.PROPERTY.createCard(createTemplate(value, name, base, colors));
 	}
 	
+	/**
+	 * Shortcut utility for creating properties easily.
+	 */
+	public static CardProperty create(int value, String name, boolean base, boolean stealable, PropertyColor... colors)
+	{
+		return CardType.PROPERTY.createCard(createTemplate(value, name, base, colors));
+	}
+	
 	public static CardTemplate createTemplate(int value, String name, PropertyColor... colors)
 	{
 		return createTemplate(value, name, true, colors);
@@ -188,11 +196,17 @@ public class CardProperty extends Card
 	
 	public static CardTemplate createTemplate(int value, String name, boolean base, PropertyColor... colors)
 	{
-		CardTemplate template = CardType.PROPERTY.getDefaultTemplate().clone();
-		template.put("value", value);
-		template.put("name", name);
-		template.putColors("colors", colors);
-		template.put("base", base);
+		return createTemplate(value, name, base, true, colors);
+	}
+	
+	public static CardTemplate createTemplate(int value, String name, boolean base, boolean stealable, PropertyColor... colors)
+	{
+		CardTemplate template = CardType.PROPERTY.getDefaultTemplate();
+		template.put(VALUE, value);
+		template.put(NAME, name);
+		template.putColors(COLORS, colors);
+		template.put(BASE, base);
+		template.put(STEALABLE, stealable);
 		return template;
 	}
 	

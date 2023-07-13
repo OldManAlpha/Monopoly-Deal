@@ -156,6 +156,20 @@ public class CustomDeck extends DeckStack
 		w.close();
 	}
 	
+	public void deleteDeck() throws IOException
+	{
+		File file = new File(MDServer.getInstance().getDataFolder(), "decks" +
+				File.separator + name + ".json");
+		if (!file.exists())
+		{
+			throw new IOException("Could not find deck file!");
+		}
+		if (!file.delete())
+		{
+			throw new IOException("Failed to delete deck file!");
+		}
+	}
+	
 	@Override
 	public void createDeck()
 	{

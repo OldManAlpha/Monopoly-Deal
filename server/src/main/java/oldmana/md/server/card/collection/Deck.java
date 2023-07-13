@@ -67,7 +67,7 @@ public class Deck extends CardCollection
 	{
 		if (this.stack != null)
 		{
-			for (Card card : this.stack.getCards())
+			for (Card card : getCards(true))
 			{
 				card.transfer(getServer().getVoidCollection(), -1, 0.05);
 			}

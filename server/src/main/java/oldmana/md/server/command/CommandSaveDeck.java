@@ -7,11 +7,11 @@ import oldmana.md.server.CommandSender;
 import oldmana.md.server.card.collection.Deck;
 import oldmana.md.server.card.collection.deck.CustomDeck;
 
-public class CommandCreateDeck extends Command
+public class CommandSaveDeck extends Command
 {
-	public CommandCreateDeck()
+	public CommandSaveDeck()
 	{
-		super("createdeck", new String[] {"savedeck"}, new String[] {"/createdeck"}, true);
+		super("savedeck", new String[] {"createdeck"}, new String[] {"/savdeck"}, true);
 	}
 	
 	@Override
@@ -19,14 +19,14 @@ public class CommandCreateDeck extends Command
 	{
 		if (args.length == 0)
 		{
-			sender.sendMessage("You must specify a name for the deck.");
+			sender.sendMessage(ChatColor.LIGHT_RED + "You must specify a name for the deck.");
 			return;
 		}
 		String name = args[0];
 		Deck deck = getServer().getDeck();
 		if (deck.isDeckStackRegistered(name) && !(deck.getDeckStack(name) instanceof CustomDeck))
 		{
-			sender.sendMessage(ChatColor.PREFIX_ALERT + "That deck name is reserved.");
+			sender.sendMessage(ChatColor.LIGHT_RED + "That deck name is reserved.");
 			return;
 		}
 		CustomDeck stack = new CustomDeck(name, getServer().getDeck().getCards(), getServer().getGameRules().getRootRule());
@@ -37,16 +37,17 @@ public class CommandCreateDeck extends Command
 		catch (IOException e)
 		{
 			e.printStackTrace();
-			sender.sendMessage(ChatColor.PREFIX_ALERT + "Error saving deck: " + e.getMessage());
+			sender.sendMessage(ChatColor.PREFIX_ALERT + ChatColor.LIGHT_RED + "Error saving deck: " + e.getMessage());
 			return;
 		}
 		deck.registerDeckStack(name, stack);
 		getServer().getDeck().setDeckStack(stack);
-		sender.sendMessage("Saved deck as '" + name + "'");
+		sender.sendMessage(ChatColor.LIGHT_GREEN + "Saved deck as '" + name + "'");
 		
 		if (!getServer().getDiscardPile().isEmpty() || getServer().getPlayers().stream().anyMatch(p -> !p.getAllCards().isEmpty()))
 		{
-			sender.sendMessage(ChatColor.PREFIX_ALERT + ChatColor.LIGHT_RED + "Warning: Cards that are not currently in the deck are not saved!");
+			sender.sendMessage(ChatColor.PREFIX_ALERT + ChatColor.LIGHT_RED +
+					"Warning: Cards that are not currently in the deck are not saved!");
 		}
 	}
 }

@@ -220,7 +220,7 @@ public class GameState
 		{
 			if (!deck.hasCard(card))
 			{
-				putCardAway(card);
+				putCardAway(card, 0.15);
 			}
 		}
 		

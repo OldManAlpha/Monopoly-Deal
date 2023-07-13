@@ -5,6 +5,7 @@ import oldmana.md.common.net.packet.server.PacketPropertyColors;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,9 @@ public class PropertyColor
 	public static final PropertyColor[] TIER_4 = new PropertyColor[] {GREEN, DARK_BLUE};
 	public static final PropertyColor[] TIER_OTHER = new PropertyColor[] {RAILROAD, UTILITY};
 	public static final PropertyColor[][] TIERS = new PropertyColor[][] {TIER_1, TIER_2, TIER_3, TIER_4, TIER_OTHER};
+	
+	/** Sorts colors by their ID. */
+	public static final Comparator<PropertyColor> ID_SORTER = Comparator.comparingInt(PropertyColor::getID);
 	
 	private static final List<PropertyColor> vanillaColors = new ArrayList<PropertyColor>(colors);
 	

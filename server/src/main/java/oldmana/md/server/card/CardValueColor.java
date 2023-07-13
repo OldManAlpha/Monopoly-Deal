@@ -1,5 +1,7 @@
 package oldmana.md.server.card;
 
+import oldmana.md.common.util.ColorUtil;
+
 import java.awt.Color;
 
 public enum CardValueColor
@@ -24,6 +26,11 @@ public enum CardValueColor
 	public Color getColor()
 	{
 		return color;
+	}
+	
+	public String getColorHex()
+	{
+		return ColorUtil.toRGBHex(color);
 	}
 	
 	public static CardValueColor getByValue(int value)

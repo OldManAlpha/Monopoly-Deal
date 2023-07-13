@@ -114,7 +114,7 @@ public class CardType<T extends Card>
 				throw new IllegalStateException("Could not create " + cardClass.getName() + " because " +
 						cardClass.getSuperclass().getName() + " is not registered!");
 			}
-			defaultTemplate = parent.getDefaultTemplate().clone();
+			defaultTemplate = parent.getDefaultTemplate();
 			defaultTemplate.setAssociatedType(this);
 			parent.getExemptReductionsMap().forEach((exempt, carries) ->
 			{
@@ -254,11 +254,21 @@ public class CardType<T extends Card>
 		return cardClass == Card.class;
 	}
 	
+	/**
+	 * Check if this type can be instantiated. Types that cannot be instantiated are usually abstract and are impossible
+	 * to construct without help from a descendant.
+	 * @return True if the card can be instantiated
+	 */
 	public boolean isInstantiable()
 	{
 		return factory != null;
 	}
 	
+	/**
+	 * Get the factory that creates this type of card. Creating cards from this factory is equivalent to calling
+	 * {@link #createCardRaw()}.
+	 * @return The factory of this card type
+	 */
 	public Supplier<T> getFactory()
 	{
 		return factory;
@@ -273,6 +283,11 @@ public class CardType<T extends Card>
 		this.factory = factory;
 	}
 	
+	/**
+	 * Check if this type is intended to be constructed on its own. Invisible card types might have a factory, but aren't intended
+	 * to be constructed without a template.
+	 * @return True if the card is visible
+	 */
 	public boolean isVisible()
 	{
 		return visible;
@@ -284,7 +299,22 @@ public class CardType<T extends Card>
 		//addTemplate(template, friendlyName, aliases.toArray(new String[0]));
 	}
 	
+	/**
+	 * Get a copy of the default template.
+	 * @return A copy of the default template
+	 */
 	public CardTemplate getDefaultTemplate()
+	{
+		return defaultTemplate.clone();
+	}
+	
+	/**
+	 * <b>Warning:</b> This returns the master copy of the default template. Any changes done to this template will
+	 * affect all newly created cards. It is recommended to use {@link CardType#getDefaultTemplate()} instead for normal
+	 * use cases.
+	 * @return The master copy of the default template
+	 */
+	public CardTemplate getDefaultTemplateNoCopy()
 	{
 		return defaultTemplate;
 	}
@@ -302,27 +332,64 @@ public class CardType<T extends Card>
 		}
 	}
 	
+	/**
+	 * Get a copy of the template with the given name.
+	 * @param name The name of the template
+	 * @return A copy of the template
+	 */
 	public CardTemplate getTemplate(String name)
+	{
+		return nameTemplateMap.get(name).clone();
+	}
+	
+	/**
+	 * <b>Warning:</b> This returns the master copy of the template. Any changes done to this template will affect all
+	 * newly created cards that use this template. It is recommended to use {@link CardType#getTemplate(String)}
+	 * instead for normal use cases.
+	 * @param name The name of the template
+	 * @return The master copy of the template
+	 */
+	public CardTemplate getTemplateNoCopy(String name)
 	{
 		return nameTemplateMap.get(name);
 	}
 	
+	/**
+	 * Get the List of registered card templates. <b>Warning: This method returns the backing List!</b>
+	 * @return The list of registered card templates
+	 */
 	public List<RegisteredCardTemplate> getTemplates()
 	{
 		return templates;
 	}
 	
+	/**
+	 * Get a copy of the List of card templates this card type has to offer. Many card types do not have any alternative
+	 * templates.
+	 * @return A list of card templates
+	 */
 	public List<CardTemplate> getTemplateList()
 	{
 		return templates.stream().map(RegisteredCardTemplate::getTemplate)
 				.collect(Collectors.toCollection(ArrayList::new));
 	}
 	
+	/**
+	 * Adds the attribute to the exempt reduction list, which also carries to children of this type. Exempt reductions
+	 * are not reduced when saving decks even if the attribute matches the default template.
+	 * @param exempt The attribute to exempt from reduction
+	 */
 	public void addExemptReduction(String exempt)
 	{
 		addExemptReduction(exempt, true);
 	}
 	
+	/**
+	 * Adds the attribute to the exempt reduction list, optionally carrying to children of this type. Exempt reductions
+	 * are not reduced when saving decks even if the attribute matches the default template.
+	 * @param exempt The attribute to exempt from reduction
+	 * @param carryToChildren If true, this exempt reduction will carry to children
+	 */
 	public void addExemptReduction(String exempt, boolean carryToChildren)
 	{
 		exemptReductions.put(exempt, carryToChildren);
@@ -333,6 +400,10 @@ public class CardType<T extends Card>
 		exemptReductions.remove(exempt);
 	}
 	
+	/**
+	 * Get a copy of exempt reductions.
+	 * @return A list of exempt reductions
+	 */
 	public List<String> getExemptReductions()
 	{
 		return new ArrayList<String>(exemptReductions.keySet());
@@ -343,11 +414,20 @@ public class CardType<T extends Card>
 		return exemptReductions;
 	}
 	
+	/**
+	 * Checks if the key is an exempt reduction for this card type. Exempt reductions are not reduced when saving decks
+	 * even if the attribute matches the default template.
+	 * @return True if the key is an exempt reduction
+	 */
 	public boolean isExemptReduction(String key)
 	{
 		return exemptReductions.containsKey(key);
 	}
 	
+	/**
+	 * Get the mod that added this card type.
+	 * @return The associated mod, or null if this card is vanilla
+	 */
 	public ServerMod getAssociatedMod()
 	{
 		return associatedMod;
