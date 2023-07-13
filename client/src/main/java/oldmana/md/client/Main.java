@@ -10,7 +10,8 @@ public class Main
 	public static void main(String[] args)
 	{
 		List<String> argsList = Arrays.asList(args);
-		if (!argsList.contains("noj2dprops"))
+		if (!argsList.contains("noj2dprops") &&
+				System.getProperty("os.name").toLowerCase().contains("win")) // Only use these flags on Windows
 		{
 			System.setProperty("sun.java2d.transaccel", "true");
 			System.setProperty("sun.java2d.d3d", "false");
