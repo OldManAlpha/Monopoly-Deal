@@ -26,7 +26,7 @@ public class CommandBuildProperty extends Command
 	
 	public CommandBuildProperty()
 	{
-		super("buildproperty", new String[] {"buildprop"}, new String[] {"/buildproperty"}, true);
+		super("buildproperty", new String[] {"buildprop", "propbuilder", "propertybuilder"}, new String[] {"/buildproperty"}, true);
 	}
 	
 	@Override

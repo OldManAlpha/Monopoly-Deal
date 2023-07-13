@@ -512,7 +512,7 @@ public class GameState
 	
 	public boolean checkWin()
 	{
-		if (checkingWin)
+		if (checkingWin || !isGameRunning())
 		{
 			return false;
 		}

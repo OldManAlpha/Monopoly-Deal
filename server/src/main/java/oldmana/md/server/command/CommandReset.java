@@ -12,7 +12,10 @@ public class CommandReset extends Command
 	@Override
 	public void executeCommand(CommandSender sender, String[] args)
 	{
-		getServer().getGameState().endGame();
+		if (getServer().getGameState().isGameRunning())
+		{
+			getServer().getGameState().endGame();
+		}
 		getServer().getGameState().cleanup();
 		sender.sendMessage("The game has been reset", true);
 	}
