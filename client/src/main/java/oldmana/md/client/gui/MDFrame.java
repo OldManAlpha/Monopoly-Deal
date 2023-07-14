@@ -200,7 +200,7 @@ public class MDFrame extends JFrame
 	
 	public void displayMenu()
 	{
-		getContentPane().setPreferredSize(new Dimension(GraphicsUtils.scale(600), GraphicsUtils.scale(400)));
+		getContentPane().setPreferredSize(new Dimension(GraphicsUtils.scale(800), GraphicsUtils.scale(500)));
 		pack();
 		centerWindow();
 		setScreen(menuScreen);
@@ -208,7 +208,7 @@ public class MDFrame extends JFrame
 	
 	public void displayFirstRunScreen()
 	{
-		getContentPane().setPreferredSize(new Dimension(GraphicsUtils.scale(600), GraphicsUtils.scale(400)));
+		getContentPane().setPreferredSize(new Dimension(GraphicsUtils.scale(800), GraphicsUtils.scale(500)));
 		pack();
 		centerWindow();
 		setScreen(firstRunScreen);
@@ -233,6 +233,6 @@ public class MDFrame extends JFrame
 	@Override
 	public Dimension getMinimumSize()
 	{
-		return new Dimension(GraphicsUtils.scale(800), GraphicsUtils.scale(500));
+		return new Dimension(600, 400);
 	}
 }
