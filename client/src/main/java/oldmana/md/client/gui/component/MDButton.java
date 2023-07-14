@@ -87,7 +87,13 @@ public class MDButton extends MDComponent implements Button
 	
 	public void setListener(Runnable task)
 	{
-		listener = addClickListener(task);
+		removeListener();
+		MouseAdapter newListener = null;
+		if (task != null)
+		{
+			newListener = addClickListener(task);
+		}
+		listener = newListener;
 	}
 	
 	public void removeListener()

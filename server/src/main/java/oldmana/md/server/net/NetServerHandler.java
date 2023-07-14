@@ -306,6 +306,13 @@ public class NetServerHandler extends NetHandler
 					player.resendActionState();
 					return;
 				}
+				if (card.getOwningCollection() instanceof Hand)
+				{
+					System.out.println("Player " + player.getDescription() +
+							" attempted to pay rent with a card in their hand! (ID: " + card.getID() + ")");
+					player.resendActionState();
+					return;
+				}
 			}
 			rent.playerPaid(player, cards);
 		}
@@ -426,6 +433,11 @@ public class NetServerHandler extends NetHandler
 		Player target = server.getPlayerByID(packet.playerId);
 		if (state.isTarget(player))
 		{
+			if (state instanceof ActionStateRent) // Players getting rented cannot simply accept without paying
+			{
+				player.resendActionState();
+				return;
+			}
 			state.setAccepted(player, true);
 		}
 		else if (state.getActionOwner() == player && state.isRefused(target))

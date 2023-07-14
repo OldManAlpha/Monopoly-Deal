@@ -206,7 +206,7 @@ public class ActionState
 				onPreTargetRemoved(player);
 				targets.remove(player);
 				onTargetRemoved(player);
-				getClient().getTableScreen().repaint();
+				player.getUI().updateGraphics();
 			}
 			return;
 		}

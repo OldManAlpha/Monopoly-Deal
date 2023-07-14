@@ -56,7 +56,7 @@ public class ActionStateRent extends ActionState
 	@Override
 	protected void evaluateAcceptButton()
 	{
-		if (getActionOwner() instanceof ThePlayer)
+		if (getActionOwner() == getClient().getThePlayer())
 		{
 			super.evaluateAcceptButton();
 		}
@@ -76,6 +76,27 @@ public class ActionStateRent extends ActionState
 	}
 	
 	@Override
+	public void applyButtonAccept()
+	{
+		if (getActionOwner() == getClient().getThePlayer())
+		{
+			super.applyButtonAccept();
+			return;
+		}
+		MDButton button = getClient().getTableScreen().getMultiButton();
+		button.setEnabled(true);
+		button.setText("View Charge");
+		button.setColor(ButtonColorScheme.ALERT);
+		button.setListener(() ->
+		{
+			if (button.isEnabled())
+			{
+				rentScreen.setVisible(true);
+			}
+		});
+	}
+	
+	@Override
 	public void setup()
 	{
 		Player player = getClient().getThePlayer();
@@ -85,17 +106,7 @@ public class ActionStateRent extends ActionState
 			rentScreen.setVisible(false);
 			getClient().getTableScreen().setActionScreen(rentScreen);
 			
-			MDButton button = getClient().getTableScreen().getMultiButton();
-			button.setEnabled(true);
-			button.setText("View Charge");
-			button.setColor(ButtonColorScheme.ALERT);
-			button.setListener(() ->
-			{
-				if (button.isEnabled())
-				{
-					rentScreen.setVisible(true);
-				}
-			});
+			applyButtonAccept();
 		}
 	}
 	
