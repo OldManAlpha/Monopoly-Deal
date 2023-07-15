@@ -60,6 +60,7 @@ You can play Singleplayer straight away, or connect to a server. To connect to a
 - `addbot <Name>`: Add a bot into your game.
 - `kick [Player Name]`: Remove a player or bot from the game and return all of their cards back to the deck.
 - `stop`: Closes the server.
+- `edittools`: Displays and describes tools that can help you in creating your own custom deck.
 
 <details>
 <summary><b>Advanced commands</b></summary>
@@ -97,9 +98,11 @@ Additional undocumented commands may be seen by using the `help` command.
 
 ## Modding Support
 
-If you're a developer, you can create mods for the server. You can find the guide [here](https://github.com/OldManAlpha/Monopoly-Deal/wiki/Modding-Guide).
+The server supports modding. If you're a developer and are interested in creating mods, you can find the guide [here](https://github.com/OldManAlpha/Monopoly-Deal/wiki/Modding-Guide).
 
-There's a ton of custom cards I made that I'll probably release as a mod at some point.
+### Available Mods
+
+- **[Millionaire Edition Mod](https://github.com/OldManAlpha/Millionaire-Mod)**(made by me): Implements the functionality from the Monopoly Deal Millionaire Edition game.
 
 ## To-do
 
