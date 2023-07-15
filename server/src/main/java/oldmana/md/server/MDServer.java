@@ -71,7 +71,7 @@ public class MDServer
 {
 	private static MDServer instance;
 	
-	public static final String VERSION = "0.7 Dev";
+	public static final String VERSION = "0.7";
 	
 	private ScheduledExecutorService serverThread;
 	private Executor syncExecutor = task -> getScheduler().scheduleTask(task);

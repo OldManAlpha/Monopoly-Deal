@@ -40,7 +40,7 @@ public class MDClient
 {
 	private static MDClient instance;
 	
-	public static final String VERSION = "0.7 Dev";
+	public static final String VERSION = "0.7";
 	
 	private MDFrame window;
 	
