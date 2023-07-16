@@ -22,6 +22,18 @@ I originally started making this project with the intention of it being somethin
 
 ### Option 1: Installer (Windows only)
 
+<details>
+  <summary>
+    <b>Video Tutorial For Installer</b>
+  </summary>
+  
+  [![](https://markdown-videos.vercel.app/youtube/WY_H5m0eTQ4)](https://www.youtube.com/watch?v=WY_H5m0eTQ4)
+
+
+[Alternate tutorial for older version](https://www.youtube.com/watch?v=32Fa6YfK39M) explaining how to get the basic functionality setup for the client/server([Mac-specific tutorial here](https://www.youtube.com/watch?v=A9Jo7iiuOZY)). Credit to [Zyga](https://www.youtube.com/channel/UCYMOaG7Eqq1jr1-i8m48fMw) for kindly creating the videos.
+
+</details>
+
 [Download the latest installer](https://github.com/OldManAlpha/Monopoly-Deal/releases/download/v0.7/Monopoly-Deal-Setup-0.7.exe) and install the game.
 
 #### Running the Game
@@ -61,6 +73,8 @@ You can play Singleplayer straight away, or connect to a server. To connect to a
 - `kick [Player Name]`: Remove a player or bot from the game and return all of their cards back to the deck.
 - `stop`: Closes the server.
 - `edittools`: Displays and describes tools that can help you in creating your own custom deck.
+- `editdeck`: A hub for editing the deck.
+- `createcard`: Shows a list of cards that can be created instantly.
 
 <details>
 <summary><b>Advanced commands</b></summary>
@@ -89,13 +103,6 @@ Some of these commands rely on Card IDs and Collection IDs. These are visible wh
 Additional undocumented commands may be seen by using the `help` command.
 </details>
 
-### Video Tutorial
-
-[![](https://markdown-videos.vercel.app/youtube/WY_H5m0eTQ4)](https://www.youtube.com/watch?v=WY_H5m0eTQ4)
-
-
-[Alternate tutorial for older version](https://www.youtube.com/watch?v=32Fa6YfK39M) explaining how to get the basic functionality setup for the client/server([Mac-specific tutorial here](https://www.youtube.com/watch?v=A9Jo7iiuOZY)). Credit to [Zyga](https://www.youtube.com/channel/UCYMOaG7Eqq1jr1-i8m48fMw) for kindly creating the videos.
-
 ## Modding Support
 
 The server supports modding. If you're a developer and are interested in creating mods, you can find the guide [here](https://github.com/OldManAlpha/Monopoly-Deal/wiki/Modding-Guide).
@@ -110,10 +117,9 @@ The server supports modding. If you're a developer and are interested in creatin
 - [X] Implement basic bots
 - [X] Implement Houses/Hotels [Implemented in v0.7]
 - [X] Allow for the customization of game rules [Implemented in v0.7]
-- [ ] Implement action cards from other editions
+- [ ] Create more robust and easier-to-use deck editor
 - [ ] Better document server commands
-- [ ] Server UI?
-- [ ] Implement Monopoly Bid mode
+- [ ] Implement needed infrastructure to be able to play Monopoly Bid
 
 ## <img src="https://discord.com/assets/2c21aeda16de354ba5334551a883b481.png" width="80" height="80"> Discord
 
