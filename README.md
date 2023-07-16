@@ -1,5 +1,9 @@
 # Monopoly Deal
 
+This is a recreation of the physical card game, Monopoly Deal, playable on PC platforms. Monopoly Deal contrasts from its board game counterpart in that it is quite fast-paced and can be played within 15 minutes or so. The objective is to be the first to reach 3 complete sets of properties.
+
+I originally started making this project with the intention of it being something that I just play with my friends and myself. We had been wanting to be able to play Monopoly Deal remotely for the better part of a decade now, so I made it since there wasn't any solution that appeased us. While it is still in development and may have issues here and there, it has come a long way since its first inception. The amount of available customization and modding support can make the game exactly how you like it.
+
 ## Screenshots
 
 <details>
@@ -14,11 +18,7 @@
   <img src="https://i.imgur.com/7hRVsxS.gif">
 </details>
 
-## Introduction
-
-I originally started making this project with the intention of it being something that I just play with my friends and myself. We had been wanting to be able to play Monopoly Deal remotely for the better part of a decade now, so I made it since there wasn't any solution that appeased us. There seems to be a niche community that would also like to see this, so here it is. It's still very much in development and you very well could encounter bugs.
-
-## How To Use
+## How To Play
 
 ### Option 1: Installer (Windows only)
 
