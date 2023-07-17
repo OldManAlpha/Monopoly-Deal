@@ -52,14 +52,14 @@ public class EventManager
 				{
 					for (Method m : eventMap.get(event.getClass()))
 					{
-						if (((EventHandler) m.getAnnotation(EventHandler.class)).priority() == priority)
+						if (m.getAnnotation(EventHandler.class).priority() == priority)
 						{
 							try
 							{
 								m.setAccessible(true);
 								m.invoke(listener.getKey(), event);
 							}
-							catch (Exception e)
+							catch (Exception | Error e)
 							{
 								e.printStackTrace();
 							}

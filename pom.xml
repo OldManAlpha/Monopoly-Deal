@@ -7,7 +7,7 @@
     <groupId>oldmana</groupId>
     <artifactId>monopolydeal</artifactId>
     <packaging>pom</packaging>
-    <version>0.7</version>
+    <version>0.7.1-SNAPSHOT</version>
     <modules>
         <module>client</module>
         <module>server</module>
