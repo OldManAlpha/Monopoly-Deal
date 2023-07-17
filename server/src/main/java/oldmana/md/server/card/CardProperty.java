@@ -225,7 +225,6 @@ public class CardProperty extends Card
 	{
 		CardType<CardProperty> type = new CardType<CardProperty>(CardProperty.class, CardProperty::new, false, "Property");
 		type.addExemptReduction(COLORS, false);
-		type.addExemptReduction(BASE, false);
 		type.addExemptReduction(VALUE, false);
 		CardTemplate dt = type.getDefaultTemplate();
 		dt.put(NAME, "Generic Property");
