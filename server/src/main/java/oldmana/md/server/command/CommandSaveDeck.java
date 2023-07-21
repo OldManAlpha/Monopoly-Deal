@@ -11,7 +11,11 @@ public class CommandSaveDeck extends Command
 {
 	public CommandSaveDeck()
 	{
-		super("savedeck", new String[] {"createdeck"}, new String[] {"/savdeck"}, true);
+		super("savedeck", true);
+		setAliases("createdeck");
+		setUsage("/savedeck [Name]",
+				"Name: The name to save the deck as");
+		setDescription("Saves the game rules and cards in the deck to the disk.");
 	}
 	
 	@Override

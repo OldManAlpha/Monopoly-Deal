@@ -8,24 +8,25 @@ public class CommandListIDs extends Command
 {
 	public CommandListIDs()
 	{
-		super("listids", null, new String[] {"/listids [Collection ID]"}, true);
+		super("listids", true);
+		setUsage("/listids [Collection ID]",
+				"Collection ID: The ID of the collection to list the cards IDs of");
+		setDescription("Lists all of the IDs of cards in the provided collection.");
 	}
 	
 	@Override
 	public void executeCommand(CommandSender sender, String[] args)
 	{
-		if (args.length >= 1)
-		{
-			CardCollection collection = CardCollection.getByID(Integer.parseInt(args[0]));
-			sender.sendMessage("List of card IDs in collection ID " + collection.getID() + "(Count: " + collection.getCardCount() + ")");
-			for (Card card : collection.getCards())
-			{
-				sender.sendMessage("- " + card.getID());
-			}
-		}
-		else
+		if (args.length < 1)
 		{
 			sender.sendMessage("Collection ID required.");
+			return;
+		}
+		CardCollection collection = CardCollection.getByID(Integer.parseInt(args[0]));
+		sender.sendMessage("List of card IDs in collection ID " + collection.getID() + "(Count: " + collection.getCardCount() + ")");
+		for (Card card : collection.getCards())
+		{
+			sender.sendMessage("- " + card.getID());
 		}
 	}
 }

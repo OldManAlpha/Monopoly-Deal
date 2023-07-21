@@ -6,7 +6,11 @@ public class CommandSetMoves extends Command
 {
 	public CommandSetMoves()
 	{
-		super("setmoves", new String[] {"setturns"}, new String[] {"/setmoves [Number of Moves]"}, true);
+		super("setmoves", true);
+		setAliases("setturns");
+		setUsage("/setmoves [Moves]",
+				"Moves: The number of moves the current player should have");
+		setDescription("Sets the number of moves the current player has.");
 	}
 	
 	@Override

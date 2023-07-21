@@ -13,7 +13,10 @@ public class CommandPlaySound extends Command
 	
 	public CommandPlaySound()
 	{
-		super("playsound", null, new String[] {"/playsound [Sound Name]"}, true);
+		super("playsound", true);
+		setUsage("/playsound [Sound Name]",
+				"Sound Name: The name of the sound to play");
+		setDescription("Plays a sound to all players.");
 	}
 	
 	@Override

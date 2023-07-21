@@ -6,7 +6,8 @@ public class CommandShuffle extends Command
 {
 	public CommandShuffle()
 	{
-		super("shuffle", null, new String[] {"/shuffle"}, true);
+		super("shuffle", true);
+		setDescription("Shuffles the deck.");
 	}
 	
 	@Override

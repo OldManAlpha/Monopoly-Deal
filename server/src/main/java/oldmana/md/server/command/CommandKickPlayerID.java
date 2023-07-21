@@ -7,7 +7,11 @@ public class CommandKickPlayerID extends Command
 {
 	public CommandKickPlayerID()
 	{
-		super("kickid", null, new String[] {"/kickid [Player ID] <Reason>"}, true);
+		super("kickid", true);
+		setUsage("/kickid [Player ID] <Reason>",
+				"Player ID: The numerical ID of the player to kick",
+				"Reason (Optional): The reason to kick the player");
+		setDescription("Removes a player with the provided ID from the game, optionally specifying a reason.");
 	}
 	
 	@Override

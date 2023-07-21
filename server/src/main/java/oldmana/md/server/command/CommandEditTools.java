@@ -8,7 +8,8 @@ public class CommandEditTools extends Command
 {
 	public CommandEditTools()
 	{
-		super("edittools", new String[] {"tools"}, new String[] {"/edittools"}, true);
+		super("edittools", true);
+		setDescription("Shows a list of useful tools related to deck editing.");
 	}
 	
 	@Override

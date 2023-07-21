@@ -8,7 +8,11 @@ public class CommandRemoveEffect extends Command
 {
 	public CommandRemoveEffect()
 	{
-		super("removeeffect", null, new String[] {"/removeeffect [Player ID] [Effect Index]"}, true);
+		super("removeeffect", true);
+		setUsage("/removeeffect [Player ID] [Effect Index]",
+				"Player ID: The ID of the player to remove an effect from",
+				"Effect Index: The index of the effect to remove");
+		setDescription("(Advanced) Removes an effect from a player.");
 	}
 	
 	@Override

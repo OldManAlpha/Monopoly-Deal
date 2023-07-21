@@ -8,7 +8,11 @@ public class CommandKickPlayer extends Command
 {
 	public CommandKickPlayer()
 	{
-		super("kick", new String[] {"kickplayer"}, new String[] {"/kick [Player Name]"}, true);
+		super("kick", true);
+		setAliases("kickplayer");
+		setUsage("/kick [Player Name]",
+				"Player Name: The name of the player to kick from the game");
+		setDescription("Removes a player from the game.");
 	}
 	
 	@Override

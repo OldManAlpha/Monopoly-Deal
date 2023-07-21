@@ -7,7 +7,9 @@ public class CommandStart extends Command
 {
 	public CommandStart()
 	{
-		super("start", new String[] {"startgame", "deal"}, new String[] {"/start"}, true);
+		super("start", true);
+		setAliases("startgame", "deal");
+		setDescription("Starts the game.");
 	}
 	
 	@Override

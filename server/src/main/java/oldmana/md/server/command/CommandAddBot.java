@@ -12,7 +12,10 @@ public class CommandAddBot extends Command
 	
 	public CommandAddBot()
 	{
-		super("addbot", null, new String[] {"/addbot <Name>"}, true);
+		super("addbot", true);
+		setUsage("/addbot <Name>",
+				"Name (Optional): The name of the bot");
+		setDescription("Add a bot into the game, optionally specifying a name.");
 	}
 	
 	@Override

@@ -9,7 +9,10 @@ public class CommandOp extends Command
 {
 	public CommandOp()
 	{
-		super("op", null, new String[] {"/op [Player Name]"}, true);
+		super("op", true);
+		setUsage("/op [Player Name]",
+				"Player Name: The name of the player to op");
+		setDescription("Grants operator permissions to the provided player.");
 	}
 	
 	@Override

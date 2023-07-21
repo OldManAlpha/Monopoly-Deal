@@ -14,7 +14,10 @@ public class CommandListCards extends Command
 	
 	public CommandListCards()
 	{
-		super("listcards", null, new String[] {"/listcards [Collection ID]"}, true);
+		super("listcards", true);
+		setUsage("/listcards [Collection ID]",
+				"Collection ID: The ID of the collection to list the cards of");
+		setDescription("Lists all of the cards inside the provided collection.");
 	}
 	
 	@Override

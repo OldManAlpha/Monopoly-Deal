@@ -6,7 +6,9 @@ public class CommandReset extends Command
 {
 	public CommandReset()
 	{
-		super("reset", new String[] {"resetgame"}, new String[] {"/reset"}, true);
+		super("reset", true);
+		setAliases("resetgame");
+		setDescription("Puts all cards back in the deck and resets the game.");
 	}
 	
 	@Override

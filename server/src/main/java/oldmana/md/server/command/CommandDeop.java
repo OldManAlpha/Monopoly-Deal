@@ -8,7 +8,10 @@ public class CommandDeop extends Command
 {
 	public CommandDeop()
 	{
-		super("deop", null, new String[] {"/deop [Player Name]"}, true);
+		super("deop", true);
+		setUsage("/deop [Player Name]",
+				"Player Name: The name of the player to deop");
+		setDescription("Removes operator permissions from the provided player.");
 	}
 	
 	@Override

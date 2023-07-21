@@ -7,7 +7,8 @@ public class CommandListPlayers extends Command
 {
 	public CommandListPlayers()
 	{
-		super("listplayers", null, new String[] {"/listplayers"}, true);
+		super("listplayers", true);
+		setDescription("Lists all players currently in the game and information about them.");
 	}
 	
 	@Override

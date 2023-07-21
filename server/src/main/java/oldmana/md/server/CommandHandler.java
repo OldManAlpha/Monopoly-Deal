@@ -19,6 +19,10 @@ public class CommandHandler
 	{
 		registerCommand(new CommandStart());
 		registerCommand(new CommandReset());
+		registerCommand(new CommandOp());
+		registerCommand(new CommandAddBot());
+		registerCommand(new CommandHelp());
+		registerCommand(new CommandEditTools());
 		registerCommand(new CommandShuffle());
 		registerCommand(new CommandSetDeck());
 		registerCommand(new CommandListCards());
@@ -30,7 +34,6 @@ public class CommandHandler
 		registerCommand(new CommandTransferIndex());
 		registerCommand(new CommandListPlayers());
 		registerCommand(new CommandListDecks());
-		registerCommand(new CommandHelp());
 		registerCommand(new CommandListRegisteredPlayers());
 		registerCommand(new CommandSetTurn());
 		registerCommand(new CommandSetMoves());
@@ -42,18 +45,15 @@ public class CommandHandler
 		registerCommand(new CommandLoadSound());
 		registerCommand(new CommandListEffects());
 		registerCommand(new CommandRemoveEffect());
-		registerCommand(new CommandOp());
 		registerCommand(new CommandDeop());
 		registerCommand(new CommandStop());
 		registerCommand(new CommandSaveDeck());
 		registerCommand(new CommandDeleteDeck());
 		registerCommand(new CommandBroadcast());
-		registerCommand(new CommandAddBot());
 		registerCommand(new CommandToggleBot());
 		registerCommand(new CommandShufflePlayers());
 		registerCommand(new CommandBuildProperty());
 		registerCommand(new CommandEditDeck());
-		registerCommand(new CommandEditTools());
 		
 		
 		// Registering test/debug commands through reflection, as they're only used in a development environment.
@@ -104,23 +104,26 @@ public class CommandHandler
 		String[] args = Arrays.copyOfRange(split, 1, split.length);
 		PreCommandExecuteEvent event = new PreCommandExecuteEvent(cmd, sender, fullCmd, args);
 		MDServer.getInstance().getEventManager().callEvent(event);
-		if (!event.isCancelled())
+		
+		if (event.isCancelled())
 		{
-			try
-			{
-				cmd.executeCommand(sender, args);
-			}
-			catch (Exception | Error e)
-			{
-				System.out.println("Error while executing command: " + fullCmd);
-				e.printStackTrace();
-				if (sender instanceof Player)
-				{
-					sender.sendMessage(ChatColor.PREFIX_ALERT + "Error: " + e.getMessage());
-				}
-			}
-			MDServer.getInstance().getEventManager().callEvent(new CommandExecutedEvent(cmd, sender, fullCmd, args));
+			return;
 		}
+		
+		try
+		{
+			cmd.executeCommand(sender, args);
+		}
+		catch (Exception | Error e)
+		{
+			System.out.println("Error while executing command: " + fullCmd);
+			e.printStackTrace();
+			if (sender instanceof Player)
+			{
+				sender.sendMessage(ChatColor.PREFIX_ALERT + "Error: " + e.getMessage());
+			}
+		}
+		MDServer.getInstance().getEventManager().callEvent(new CommandExecutedEvent(cmd, sender, fullCmd, args));
 	}
 	
 	public Command findCommand(String name)

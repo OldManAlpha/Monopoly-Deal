@@ -3,12 +3,17 @@ package oldmana.md.server.command;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.Player;
+import oldmana.md.server.rules.ValueType;
 
 public class CommandSetTurn extends Command
 {
 	public CommandSetTurn()
 	{
-		super("setturn", null, new String[] {"/setturn [Player ID] [Draw(true/false)]"}, true);
+		super("setturn", true);
+		setUsage("/setturn [Player ID] <Draw?>",
+				"Player ID: The ID of the player to give the turn to",
+				"Draw (Optional): Whether the player should be able to draw");
+		setDescription("Sets whose turn it is right now, optionally specifying whether they should draw.");
 	}
 	
 	@Override
@@ -19,12 +24,7 @@ public class CommandSetTurn extends Command
 			boolean draw = true;
 			if (args.length >= 2)
 			{
-				if (!verifyBoolean(args[1]))
-				{
-					sendUsage(sender);
-					return;
-				}
-				draw = Boolean.parseBoolean(args[1]);
+				draw = ValueType.BOOLEAN.parse(args[1]);
 			}
 			Player player = getServer().getPlayerByID(Integer.parseInt(args[0]));
 			if (player == null)

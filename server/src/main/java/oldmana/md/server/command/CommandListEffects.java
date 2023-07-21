@@ -8,7 +8,10 @@ public class CommandListEffects extends Command
 {
 	public CommandListEffects()
 	{
-		super("listeffects", null, new String[] {"/listeffects [Player ID]"}, true);
+		super("listeffects", true);
+		setUsage("/listeffects [Player ID]",
+				"Player ID: The ID of the player to see active effects on");
+		setDescription("(Advanced) Displays all active status effects on the provided player.");
 	}
 	
 	@Override

@@ -12,8 +12,11 @@ public class CommandTransferCard extends Command
 {
 	public CommandTransferCard()
 	{
-		super("transfercard", new String[] {"transfer", "movecard"}, new String[] {"/transfercard [Card ID] [Set ID] <Index> <Time>",
-				"/transfercard [Card ID] [-1] [Player ID] <Time>"}, true);
+		super("transfercard", true);
+		setAliases("transfer", "movecard");
+		setUsage("/transfercard [Card ID] [Collection ID] <Time>",
+				"/transfercard [Card ID] [-1] [Player ID] <Time>");
+		setDescription("(Advanced) Transfers a card to a destination.");
 	}
 	
 	@Override

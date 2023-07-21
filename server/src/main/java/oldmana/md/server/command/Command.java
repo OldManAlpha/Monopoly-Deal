@@ -1,23 +1,27 @@
 package oldmana.md.server.command;
 
+import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.MessageBuilder;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 public abstract class Command
 {
 	private String name;
-	private String[] aliases;
-	private String[] usage;
+	private List<String> aliases = Collections.emptyList();
+	private List<String> usage;
+	private String description = "Missing description.";
 	
 	private boolean requiresOp;
 	
-	public Command(String name, String[] aliases, String[] usage, boolean requiresOp)
+	public Command(String name, boolean requiresOp)
 	{
 		this.name = name;
-		this.aliases = aliases != null ? aliases : new String[] {};
-		this.usage = usage != null ? usage : new String[] {"No usage info."};
-		
+		usage = Collections.singletonList("/" + name);
 		this.requiresOp = requiresOp;
 	}
 	
@@ -26,9 +30,29 @@ public abstract class Command
 		return name;
 	}
 	
-	public String[] getAliases()
+	public List<String> getAliases()
 	{
 		return aliases;
+	}
+	
+	protected void setAliases(String... aliases)
+	{
+		this.aliases = Arrays.asList(aliases);
+	}
+	
+	protected void setUsage(String... usage)
+	{
+		this.usage = Arrays.asList(usage);
+	}
+	
+	public String getDescription()
+	{
+		return description;
+	}
+	
+	protected void setDescription(String description)
+	{
+		this.description = description;
 	}
 	
 	public boolean isAlias(String name)
@@ -65,12 +89,27 @@ public abstract class Command
 	
 	public void sendUsage(CommandSender sender)
 	{
+		sender.sendMessage(ChatColor.LIGHT_GREEN + "---- Usage of " + ChatColor.LIGHT_YELLOW + getName() + ChatColor.LIGHT_GREEN + " ----");
 		for (String str : usage)
 		{
 			sender.sendMessage(new MessageBuilder()
 					.startHoverText("Click to fill command")
-					.addFillCommand(str, getName()).build());
+					.addFillCommand(ChatColor.LIGHT_YELLOW + str, getName()).build());
 		}
+		sender.sendMessage(ChatColor.UTILITY + "Description: " + getDescription());
+		if (!aliases.isEmpty())
+		{
+			sender.sendMessage(ChatColor.LIGHT_BLUE + "Aliases: " + aliases.stream()
+					.reduce("", (s1, s2) -> s1 + (!s1.equals("") ? " | " : "") + s2, (s1, s2) -> s1 + " | " + s2));
+		}
+	}
+	
+	public void sendInfo(CommandSender sender)
+	{
+		sender.sendMessage(new MessageBuilder().setCategory("help")
+				.startHoverText("Click for more info")
+				.addCommand(ChatColor.LIGHT_YELLOW + "/" + getName() + ChatColor.WHITE + ": " +
+						ChatColor.UTILITY + getDescription(), "help " + getName()).build());
 	}
 	
 	protected boolean verifyInt(String str)

@@ -12,7 +12,8 @@ public class CommandListDecks extends Command
 {
 	public CommandListDecks()
 	{
-		super("listdecks", null, new String[] {"/listdecks"}, true);
+		super("listdecks", true);
+		setDescription("Lists all of the available decks.");
 	}
 	
 	@Override

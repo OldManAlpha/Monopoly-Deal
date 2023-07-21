@@ -10,7 +10,10 @@ public class CommandSetDeck extends Command
 {
 	public CommandSetDeck()
 	{
-		super("setdeck", null, new String[] {"/setdeck [Deck Name]"}, true);
+		super("setdeck", true);
+		setUsage("/setdeck [Deck Name]",
+				"Deck Name: The name of the deck to swap to");
+		setDescription("Swaps to another deck.");
 	}
 	
 	@Override

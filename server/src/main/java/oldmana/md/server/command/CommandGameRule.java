@@ -13,8 +13,9 @@ public class CommandGameRule extends Command
 {
 	public CommandGameRule()
 	{
-		super("rules", new String[] {"gamerule", "gamerules", "rule"}, new String[] {"/rules", "/rules list",
-				"/rules set"}, false);
+		super("rules", false);
+		setAliases("gamerule", "gamerules", "rule");
+		setDescription("A tool that allows you to view and edit game rules.");
 	}
 	
 	@Override

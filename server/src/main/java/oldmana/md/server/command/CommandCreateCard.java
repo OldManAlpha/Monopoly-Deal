@@ -22,11 +22,13 @@ public class CommandCreateCard extends Command
 {
 	public CommandCreateCard()
 	{
-		super("createcard", null, new String[] {"/createcard money [value]",
-				"/createcard action [name]",
-				"/createcard rent [value] [colors...]",
-				"/createcard property [value] [base] [stealable] [property_name] [colors...]",
-				"/createcard type [Internal Name] <Template Name>"}, true);
+		super("createcard", true);
+		setUsage("/createcard",
+				"/createcard action [Name]",
+				"/createcard rent [Value] [Colors...]",
+				"/createcard property [Value] [Base?] [Stealable?] [Property_Name] [Colors...]",
+				"/createcard type [Internal Name] <Template Name>");
+		setDescription("A tool to create new cards.");
 	}
 	
 	@Override

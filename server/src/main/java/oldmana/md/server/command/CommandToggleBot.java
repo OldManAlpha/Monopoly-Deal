@@ -1,16 +1,16 @@
 package oldmana.md.server.command;
 
-import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.Player;
 
 public class CommandToggleBot extends Command
 {
-	private int nextBotID = 1;
-	
 	public CommandToggleBot()
 	{
-		super("togglebot", null, new String[] {"/togglebot <Player ID>"}, true);
+		super("togglebot", true);
+		setUsage("/togglebot [Player ID]",
+				"Player ID: The ID of the player to toggle bot status");
+		setDescription("Toggles whether the player should make bot moves.");
 	}
 	
 	@Override

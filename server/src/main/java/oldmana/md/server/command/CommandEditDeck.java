@@ -18,7 +18,9 @@ public class CommandEditDeck extends Command
 	
 	public CommandEditDeck()
 	{
-		super("editdeck", new String[] {"deckedit", "deckeditor"}, new String[] {"/editdeck"}, true);
+		super("editdeck", true);
+		setAliases("deckedit", "deckeditor");
+		setDescription("A tool to edit the deck and access other tools relating to deck editing.");
 	}
 	
 	@Override

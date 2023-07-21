@@ -7,7 +7,14 @@ public class CommandTransferIndex extends Command
 {
 	public CommandTransferIndex()
 	{
-		super("transferindex", null, new String[] {"/transferindex [From ID] [From Index] [To ID] <To Index> <Time>"}, true);
+		super("transferindex", true);
+		setUsage("/transferindex [From Collection] [From Index] [To Collection] <To Index> <Time>",
+				"From Collection: The collection ID to transfer from",
+				"From Index: The index of the card to transfer",
+				"To Collection: The collection ID to transfer to",
+				"To ID (Optional): The index to transfer the card to",
+				"Time (Optional): The seconds it takes to transfer the card");
+		setDescription("(Advanced) Transfers a card at a specific location to a specific location.");
 	}
 	
 	@Override

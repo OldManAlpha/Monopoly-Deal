@@ -7,7 +7,10 @@ public class CommandCollectionInfo extends Command
 {
 	public CommandCollectionInfo()
 	{
-		super("collectioninfo", null, new String[] {"/collectioninfo [Collection ID]"}, true);
+		super("collectioninfo", true);
+		setUsage("/collectioninfo [Collection ID]",
+				"Collection ID: The ID of the collection to see info on");
+		setDescription("Checks what the type of collection with the provided ID is and displays how many cards are in it.");
 	}
 	
 	@Override

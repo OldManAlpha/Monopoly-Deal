@@ -12,7 +12,10 @@ public class CommandDeleteDeck extends Command
 {
 	public CommandDeleteDeck()
 	{
-		super("deletedeck", null, new String[] {"/deletedeck [Name]"}, true);
+		super("deletedeck", true);
+		setUsage("/deletedeck [Name]",
+				"Name: The name of the deck to delete");
+		setDescription("Deletes the deck with the provided name.");
 	}
 	
 	@Override

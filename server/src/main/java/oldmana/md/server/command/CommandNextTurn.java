@@ -6,7 +6,8 @@ public class CommandNextTurn extends Command
 {
 	public CommandNextTurn()
 	{
-		super("nextturn", null, new String[] {"/nextturn"}, true);
+		super("nextturn", true);
+		setDescription("Immediately ends the current turn and moves on to the next player.");
 	}
 	
 	@Override

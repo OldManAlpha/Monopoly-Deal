@@ -6,7 +6,9 @@ public class CommandStop extends Command
 {
 	public CommandStop()
 	{
-		super("stop", new String[] {"shutdown", "exit"}, new String[] {"/stop"}, true);
+		super("stop", true);
+		setAliases("shutdown", "exit");
+		setDescription("Disconnects all players and shuts down the server.");
 	}
 	
 	@Override

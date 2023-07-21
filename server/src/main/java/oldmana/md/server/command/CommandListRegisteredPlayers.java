@@ -7,7 +7,9 @@ public class CommandListRegisteredPlayers extends Command
 {
 	public CommandListRegisteredPlayers()
 	{
-		super("listregisteredplayers", new String[] {"registeredplayers", "listregistered"}, new String[] {"/listregisteredplayers"}, true);
+		super("listregisteredplayers", true);
+		setAliases("registeredplayers", "listregistered");
+		setDescription("Lists all players that have logged into this server.");
 	}
 	
 	@Override

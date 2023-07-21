@@ -10,7 +10,10 @@ public class CommandBroadcast extends Command
 	
 	public CommandBroadcast()
 	{
-		super("broadcast", null, new String[] {"/broadcast"}, true);
+		super("broadcast", true);
+		setUsage("/broadcast [Message]",
+				"Message: The message to broadcast to players");
+		setDescription("Broadcasts a message to all players.");
 	}
 	
 	@Override
