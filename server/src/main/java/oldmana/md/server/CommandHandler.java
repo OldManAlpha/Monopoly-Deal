@@ -23,7 +23,9 @@ public class CommandHandler
 		registerCommand(new CommandAddBot());
 		registerCommand(new CommandHelp());
 		registerCommand(new CommandEditTools());
+		registerCommand(new CommandEditDeck());
 		registerCommand(new CommandShuffle());
+		registerCommand(new CommandListDecks());
 		registerCommand(new CommandSetDeck());
 		registerCommand(new CommandListCards());
 		registerCommand(new CommandListIDs());
@@ -33,7 +35,6 @@ public class CommandHandler
 		registerCommand(new CommandTransferAll());
 		registerCommand(new CommandTransferIndex());
 		registerCommand(new CommandListPlayers());
-		registerCommand(new CommandListDecks());
 		registerCommand(new CommandListRegisteredPlayers());
 		registerCommand(new CommandSetTurn());
 		registerCommand(new CommandSetMoves());

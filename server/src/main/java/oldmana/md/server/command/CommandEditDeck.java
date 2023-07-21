@@ -16,7 +16,7 @@ public class CommandEditDeck extends Command
 {
 	public static final String CATEGORY = "editdeck";
 	
-	private static final int PAGE_LIMIT = 12;
+	private static final int PAGE_LIMIT = 16;
 	private static final String altColor = ChatColor.toChatColor(new Color(230, 230, 255));
 	
 	public CommandEditDeck()

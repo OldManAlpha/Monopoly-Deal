@@ -4,7 +4,6 @@ import oldmana.md.common.playerui.ChatAlignment;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.MessageBuilder;
-import oldmana.md.server.Player;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,7 +12,7 @@ public class CommandHelp extends Command
 {
 	public static final String CATEGORY = "help";
 	
-	private static final int PAGE_LIMIT = 6;
+	private static final int PAGE_LIMIT = 10;
 	
 	public CommandHelp()
 	{
