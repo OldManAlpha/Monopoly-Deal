@@ -1,5 +1,6 @@
 package oldmana.md.server.command;
 
+import oldmana.md.common.playerui.ChatAlignment;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.MessageBuilder;
@@ -11,6 +12,8 @@ import oldmana.md.server.rules.GameRules;
 
 public class CommandGameRule extends Command
 {
+	public static final String CATEGORY = "gamerule";
+	
 	public CommandGameRule()
 	{
 		super("rules", false);
@@ -32,8 +35,8 @@ public class CommandGameRule extends Command
 				return;
 			}
 			gameRules.reloadRules();
-			clearMessages(sender, "gamerule");
-			clearMessages(sender, "ruleTypeUsage");
+			sender.clearMessages(CATEGORY);
+			sender.clearMessages(GameRuleEditor.CATEGORY_USAGE);
 			sender.sendMessage(ChatColor.LIGHT_GREEN + "Reloaded the game rules.");
 			if (sender instanceof Player)
 			{
@@ -53,7 +56,8 @@ public class CommandGameRule extends Command
 				.root(root)
 				.command(getName())
 				.args(args)
-				.applySender(() -> sendApplyRulesButton(sender)));
+				.applySender(() -> sendApplyRulesButton(sender))
+				.category(CATEGORY));
 	}
 	
 	private void sendApplyRulesButton(CommandSender sender)
@@ -62,19 +66,9 @@ public class CommandGameRule extends Command
 		{
 			return;
 		}
-		MessageBuilder mb = new MessageBuilder();
-		mb.setCategory("gamerule");
-		mb.add("                                  ");
+		MessageBuilder mb = new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY);
 		mb.startHoverText("Apply the changed rules");
 		mb.addCommand(ChatColor.LINK + "[Apply Rules]", "rules reload");
 		sender.sendMessage(mb.build());
-	}
-	
-	private void clearMessages(CommandSender sender, String category)
-	{
-		if (sender instanceof Player)
-		{
-			((Player) sender).clearMessages(category);
-		}
 	}
 }

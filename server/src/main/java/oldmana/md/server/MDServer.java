@@ -45,7 +45,7 @@ import oldmana.md.common.net.packet.server.PacketKick;
 import oldmana.md.common.net.packet.server.PacketPlaySound;
 import oldmana.md.common.net.packet.server.PacketSoundData;
 import oldmana.md.common.net.packet.server.PacketStatus;
-import oldmana.md.common.net.packet.universal.PacketChat;
+import oldmana.md.common.net.packet.server.PacketMessage;
 import oldmana.md.common.net.packet.universal.PacketKeepConnected;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.action.*;
@@ -71,7 +71,7 @@ public class MDServer
 {
 	private static MDServer instance;
 	
-	public static final String VERSION = "0.7";
+	public static final String VERSION = "0.7.1 Dev";
 	
 	private ScheduledExecutorService serverThread;
 	private Executor syncExecutor = task -> getScheduler().scheduleTask(task);
@@ -1001,7 +1001,7 @@ public class MDServer
 	
 	public void broadcastMessage(String message, boolean printConsole)
 	{
-		broadcastPacket(new PacketChat(MessageBuilder.fromSimple(message)));
+		broadcastPacket(new PacketMessage(MessageBuilder.fromSimple(message)));
 		if (printConsole)
 		{
 			System.out.println(ChatColor.stripFormatting(message));
@@ -1010,7 +1010,7 @@ public class MDServer
 	
 	public void broadcastMessage(String message, Player exception, boolean printConsole)
 	{
-		broadcastPacket(new PacketChat(MessageBuilder.fromSimple(message)), exception);
+		broadcastPacket(new PacketMessage(MessageBuilder.fromSimple(message)), exception);
 		if (printConsole)
 		{
 			System.out.println(ChatColor.stripFormatting(message));

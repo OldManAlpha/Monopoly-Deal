@@ -1,19 +1,21 @@
-package oldmana.md.common.net.packet.universal;
+package oldmana.md.common.net.packet.server;
 
 import oldmana.md.common.net.api.packet.Packet;
 import oldmana.md.common.Message;
+import oldmana.md.common.playerui.ChatAlignment;
 import oldmana.md.common.util.JSONCompressionUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class PacketChat extends Packet
+public class PacketMessage extends Packet
 {
 	public byte[] encodedJsonMsg;
+	public byte alignment;
 	public String category = "";
 	
-	public PacketChat() {}
+	public PacketMessage() {}
 	
-	public PacketChat(String json)
+	public PacketMessage(String json)
 	{
 		try
 		{
@@ -23,16 +25,18 @@ public class PacketChat extends Packet
 		{
 			throw new RuntimeException(e);
 		}
+		alignment = (byte) ChatAlignment.LEFT.ordinal();
 	}
 	
-	public PacketChat(JSONArray json)
+	public PacketMessage(JSONArray json)
 	{
 		this(json.toString());
 	}
 	
-	public PacketChat(Message message)
+	public PacketMessage(Message message)
 	{
 		this(message.getMessage());
+		alignment = (byte) message.getAlignment().ordinal();
 		if (message.getCategory() != null)
 		{
 			category = message.getCategory();
@@ -41,7 +45,12 @@ public class PacketChat extends Packet
 	
 	public Message getMessage()
 	{
-		return "".equals(category) ? new Message(getDecodedJSON()) : new Message(getDecodedJSON(), category);
+		return new Message(getDecodedJSON(), getAlignment(), "".equals(category) ? null : category);
+	}
+	
+	public ChatAlignment getAlignment()
+	{
+		return ChatAlignment.values()[alignment];
 	}
 	
 	public JSONArray getDecodedJSON()
@@ -57,12 +66,12 @@ public class PacketChat extends Packet
 		}
 	}
 	
-	public static PacketChat ofSimpleString(String msg)
+	public static PacketMessage ofSimpleString(String msg)
 	{
 		JSONObject obj = new JSONObject();
 		obj.put("txt", msg);
 		JSONArray array = new JSONArray();
 		array.put(obj);
-		return new PacketChat(array);
+		return new PacketMessage(array);
 	}
 }

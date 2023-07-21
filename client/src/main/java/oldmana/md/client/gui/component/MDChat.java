@@ -27,9 +27,10 @@ import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
 import oldmana.md.common.Message;
+import oldmana.md.common.net.packet.client.PacketChat;
+import oldmana.md.common.playerui.ChatAlignment;
 import oldmana.md.common.util.ColorUtil;
 import oldmana.md.common.net.packet.client.action.PacketActionClickLink;
-import oldmana.md.common.net.packet.universal.PacketChat;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -83,7 +84,10 @@ public class MDChat extends MDComponent
 			}
 			if (update)
 			{
-				updateGraphics();
+				if (!chatOpen)
+				{
+					updateGraphics();
+				}
 			}
 			else
 			{
@@ -149,7 +153,7 @@ public class MDChat extends MDComponent
 				{
 					if (typed.length() > 0)
 					{
-						getClient().sendPacket(PacketChat.ofSimpleString(typed.toString()));
+						getClient().sendPacket(new PacketChat(typed.toString()));
 						if (history.isEmpty() || !history.get(0).equals(typed.toString()))
 						{
 							history.add(0, typed.toString());
@@ -180,6 +184,7 @@ public class MDChat extends MDComponent
 					if (historyPos >= 0)
 					{
 						typed = new StringBuilder(history.get(historyPos));
+						typeOffset = 0;
 					}
 				}
 				else if (event.getKeyCode() == KeyEvent.VK_DOWN)
@@ -193,6 +198,7 @@ public class MDChat extends MDComponent
 					{
 						typed = new StringBuilder(history.get(historyPos));
 					}
+					typeOffset = 0;
 				}
 				else if (event.getKeyCode() == KeyEvent.VK_ESCAPE)
 				{
@@ -234,7 +240,7 @@ public class MDChat extends MDComponent
 					}
 					if (seg.cmd != null)
 					{
-						getClient().sendPacket(PacketChat.ofSimpleString("/" + seg.cmd));
+						getClient().sendPacket(new PacketChat("/" + seg.cmd));
 					}
 					if (seg.fillCmd != null)
 					{
@@ -311,6 +317,11 @@ public class MDChat extends MDComponent
 		{
 			scroll += m.getLineCount();
 		}
+		final int MAX_MESSAGES = 5000;
+		if (messages.size() > MAX_MESSAGES)
+		{
+			messages.remove(messages.size() - 1);
+		}
 		updateGraphics();
 		tickMessages = true;
 	}
@@ -374,6 +385,7 @@ public class MDChat extends MDComponent
 		return chatOpen;
 	}
 	
+	// TODO: Optimize this by caching lines
 	public List<ChatLine> getVisibleLines()
 	{
 		List<ChatLine> lines = new ArrayList<ChatLine>(getMaxChatHistoryLines());
@@ -387,7 +399,7 @@ public class MDChat extends MDComponent
 			{
 				for (int index = -pos - 1 ; index >= 0 ; index--)
 				{
-					lines.add(new ChatLine(m.getLineAt(index), m.getDisplayTime()));
+					lines.add(new ChatLine(m.getLineAt(index), m.getAlignment(), m.getDisplayTime()));
 					if (--linesLeft == 0)
 					{
 						break;
@@ -410,20 +422,9 @@ public class MDChat extends MDComponent
 		int curY = getChatHistoryHeight();
 		for (int i = 0 ; i < lines.size() ; i++)
 		{
-			List<TextSegment> segments = lines.get(i).getSegments();
 			if (y < curY && y >= curY - interval)
 			{
-				int curX = getChatHistoryXOffset();
-				for (int e = 0 ; e < segments.size() ; e++)
-				{
-					int width = segments.get(e).getWidth();
-					if (x >= curX && x < curX + width)
-					{
-						return segments.get(e);
-					}
-					curX += width;
-				}
-				break;
+				return lines.get(i).getSegmentAt(x);
 			}
 			curY -= interval;
 		}
@@ -459,7 +460,7 @@ public class MDChat extends MDComponent
 	
 	public int getMaxChatHistoryLines()
 	{
-		return 16;
+		return 20;
 	}
 	
 	@Override
@@ -483,6 +484,10 @@ public class MDChat extends MDComponent
 		for (int i = 0 ; i < lines.size() ; i++)
 		{
 			ChatLine line = lines.get(i);
+			if (!chatOpen && line.getDisplayTime() == 0) // Don't draw line if it's not visible
+			{
+				continue;
+			}
 			double opacity = 1;
 			if (!chatOpen)
 			{
@@ -490,26 +495,40 @@ public class MDChat extends MDComponent
 			}
 			int pos = -(i - maxLines + 1);
 			// Draw Transparent Text Area
-			g.setColor(new Color(0, 0, 0, (int) (60 * opacity)));
+			g.setColor(new Color(0, 0, 0, (int) ((chatOpen ? 60 : 40) * opacity)));
 			g.fillRect(xOffset, interval * pos, offsetWidth, interval);
 			
-			int width = 0;
+			int drawPos = line.getStartOffset();
 			for (TextSegment seg : line.getSegments())
 			{
 				Color c = seg.getColor();
+				Color shadow = new Color(20, 20, 20, (int) (c.getAlpha() * opacity));
+				Color textColor = new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (c.getAlpha() * opacity));
+				int shadowOffset = Math.max(scale(1.5), 1);
+				
+				// Draw underline
+				if (seg.isUnderline())
+				{
+					g.setColor(shadow);
+					g.fillRect(drawPos + scale(2) + shadowOffset, (interval * (pos + 1)) - scale(5) + shadowOffset,
+							seg.getWidth(), scale(3));
+					g.setColor(textColor);
+					g.fillRect(drawPos + scale(2), (interval * (pos + 1)) - scale(5), seg.getWidth(), scale(3));
+				}
+				
 				// Draw Text Shadow
-				g.setColor(new Color(20, 20, 20, (int) (c.getAlpha() * opacity)));
-				TextPainter tp = new TextPainter(seg.getText(), f, new Rectangle(xOffset + width + scale(2) + Math.max(scale(1.5), 1), interval * pos + 
-						Math.max(scale(1.5), 1), offsetWidth, interval));
+				g.setColor(shadow);
+				TextPainter tp = new TextPainter(seg.getText(), f, new Rectangle(drawPos + scale(2) + shadowOffset, interval * pos +
+						shadowOffset, offsetWidth, interval));
 				tp.setVerticalAlignment(Alignment.CENTER);
 				tp.paint(g);
 				
 				// Draw Text
-				g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (c.getAlpha() * opacity)));
-				tp = new TextPainter(seg.getText(), f, new Rectangle(xOffset + width + scale(2), interval * pos, offsetWidth, interval));
+				g.setColor(textColor);
+				tp = new TextPainter(seg.getText(), f, new Rectangle(drawPos + scale(2), interval * pos, offsetWidth, interval));
 				tp.setVerticalAlignment(Alignment.CENTER);
 				tp.paint(g);
-				width += seg.getWidth();
+				drawPos += seg.getWidth();
 			}
 		}
 		
@@ -589,6 +608,14 @@ public class MDChat extends MDComponent
 		updateGraphics();
 	}
 	
+	public void recalculateLines()
+	{
+		for (ChatMessage message : messages)
+		{
+			message.calculateLines();
+		}
+	}
+	
 	/**Used for debug purposes only
 	 * 
 	 * @param msg
@@ -609,17 +636,14 @@ public class MDChat extends MDComponent
 		private List<List<TextSegment>> lines = new ArrayList<List<TextSegment>>();
 		private int displayTime = 6000;
 		
-		private String category;
+		private ChatAlignment alignment;
 		
-		public ChatMessage(String text)
-		{
-			this.text = text;
-			calculateLines();
-		}
+		private String category;
 		
 		public ChatMessage(Message message)
 		{
 			this.message = message;
+			this.alignment = message.getAlignment();
 			this.category = message.getCategory();
 			calculateLines();
 		}
@@ -647,6 +671,11 @@ public class MDChat extends MDComponent
 		public int getDisplayTime()
 		{
 			return displayTime;
+		}
+		
+		public ChatAlignment getAlignment()
+		{
+			return alignment;
 		}
 		
 		public boolean hasCategory()
@@ -699,6 +728,10 @@ public class MDChat extends MDComponent
 					}
 					segment.setHoverText(hoverText);
 				}
+				if (json.has("underline"))
+				{
+					segment.setUnderline(json.getBoolean("underline"));
+				}
 				segments.add(segment);
 			}
 			return segments;
@@ -706,6 +739,8 @@ public class MDChat extends MDComponent
 		
 		public void calculateLines()
 		{
+			lines.clear();
+			
 			List<TextSegment> segments = calculateSegments();
 			
 			String wholeText = "";
@@ -714,7 +749,7 @@ public class MDChat extends MDComponent
 				wholeText += seg.getText();
 			}
 			List<String> wholeSplit = GraphicsUtils.splitString(wholeText, getFont(), getChatHistoryWidth());
-			System.out.println(wholeSplit);
+			//System.out.println(wholeSplit);
 			ListIterator<TextSegment> it = segments.listIterator();
 			for (String str : wholeSplit)
 			{
@@ -759,6 +794,10 @@ public class MDChat extends MDComponent
 					lines.add(lineSegments);
 				}
 			}
+			if (lines.isEmpty()) // Zero-character message, need to manually add a line
+			{
+				lines.add(new ArrayList<TextSegment>());
+			}
 		}
 	}
 	
@@ -770,6 +809,7 @@ public class MDChat extends MDComponent
 		private String cmd;
 		private String fillCmd;
 		private List<String> hoverText;
+		private boolean underline;
 		
 		public TextSegment(String text, TextSegment context)
 		{
@@ -779,6 +819,7 @@ public class MDChat extends MDComponent
 			this.cmd = context.cmd;
 			this.fillCmd = context.fillCmd;
 			this.hoverText = context.hoverText;
+			this.underline = context.underline;
 		}
 		
 		public TextSegment(String text, Color color)
@@ -847,6 +888,16 @@ public class MDChat extends MDComponent
 			this.hoverText = hoverText;
 		}
 		
+		public boolean isUnderline()
+		{
+			return underline;
+		}
+		
+		public void setUnderline(boolean underline)
+		{
+			this.underline = underline;
+		}
+		
 		public boolean isClickable()
 		{
 			return linkID > -1 || cmd != null || fillCmd != null;
@@ -864,20 +915,58 @@ public class MDChat extends MDComponent
 		}
 	}
 	
-	public static class ChatLine
+	public class ChatLine
 	{
 		private List<TextSegment> segments;
+		private ChatAlignment alignment;
 		private int displayTime;
 		
-		public ChatLine(List<TextSegment> segments, int displayTime)
+		public ChatLine(List<TextSegment> segments, ChatAlignment alignment, int displayTime)
 		{
 			this.segments = segments;
+			this.alignment = alignment;
 			this.displayTime = displayTime;
+		}
+		
+		public TextSegment getSegmentAt(int x)
+		{
+			int curX = getStartOffset();
+			for (int e = 0 ; e < segments.size() ; e++)
+			{
+				int width = segments.get(e).getWidth();
+				if (x >= curX && x < curX + width)
+				{
+					return segments.get(e);
+				}
+				curX += width;
+			}
+			return null;
+		}
+		
+		public int getStartOffset()
+		{
+			switch (alignment)
+			{
+				case LEFT: return getChatHistoryXOffset();
+				case CENTER: return (getChatHistoryWidth() - getWidth()) / 2 + (scale(10) / 2);
+				case RIGHT: return getChatHistoryWidth() - getWidth();
+			}
+			return 0;
 		}
 		
 		public List<TextSegment> getSegments()
 		{
 			return segments;
+		}
+		
+		public int getWidth()
+		{
+			int width = 0;
+			for (TextSegment segment : segments)
+			{
+				width += segment.getWidth();
+			}
+			return width;
 		}
 		
 		public int getDisplayTime()

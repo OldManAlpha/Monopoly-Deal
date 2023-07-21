@@ -9,7 +9,7 @@ import oldmana.md.common.net.packet.universal.*;
 
 public class NetHandler
 {
-	public static int PROTOCOL_VERSION = 21;
+	public static int PROTOCOL_VERSION = 22;
 	
 	private static Class<? extends Packet>[] packets = new Class[]
 	{
@@ -29,12 +29,12 @@ public class NetHandler
 		PacketQuit.class,
 		
 		// Client <-> Server
-		PacketChat.class,
 		PacketKeepConnected.class,
 		
 		// ^ Ideally common protocol among future versions ^
 		
 		// Server -> Client
+		PacketMessage.class,
 		PacketPropertyColors.class,
 		PacketCardCollectionData.class,
 		PacketCardData.class,
@@ -70,6 +70,7 @@ public class NetHandler
 		PacketSetAwaitingResponse.class,
 		
 		// Client -> Server
+		PacketChat.class,
 		PacketActionAccept.class,
 		PacketActionDraw.class,
 		PacketActionEndTurn.class,

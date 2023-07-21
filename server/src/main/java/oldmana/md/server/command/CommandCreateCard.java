@@ -1,6 +1,7 @@
 package oldmana.md.server.command;
 
 import oldmana.md.common.Message;
+import oldmana.md.common.playerui.ChatAlignment;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.MDServer;
@@ -20,6 +21,8 @@ import java.util.List;
 
 public class CommandCreateCard extends Command
 {
+	public static final String CATEGORY_LIST = "cardlist";
+	
 	public CommandCreateCard()
 	{
 		super("createcard", true);
@@ -36,11 +39,8 @@ public class CommandCreateCard extends Command
 	{
 		if (args.length == 0)
 		{
-			if (sender instanceof Player)
-			{
-				((Player) sender).clearMessages("cardlist");
-			}
-			sender.sendMessage(ChatColor.LIGHT_RED + "List of registered cards:", "cardlist");
+			sender.clearMessages(CATEGORY_LIST);
+			sender.sendMessage(ChatColor.LIGHT_RED + "Registered Card List", ChatAlignment.CENTER, CATEGORY_LIST);
 			List<CardType<?>> cards = CardRegistry.getRegisteredCards();
 			for (CardType<?> type : cards)
 			{
@@ -53,7 +53,7 @@ public class CommandCreateCard extends Command
 					}
 				}
 			}
-			sender.sendMessage(new MessageBuilder().setCategory("cardlist").add("                    ")
+			sender.sendMessage(new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY_LIST)
 					.addCommand(ChatColor.LINK + "[Go To Deck Editor]", "editdeck").build());
 			if (sender instanceof Player)
 			{
@@ -67,7 +67,7 @@ public class CommandCreateCard extends Command
 		{
 			card = createFromType(sender, args);
 			sender.sendMessage("Created card " + ChatColor.UTILITY + card.getName() + ChatColor.WHITE +
-					" with ID "+ card.getID(), true);
+					" with ID "+ card.getID(), ChatAlignment.CENTER, true);
 		}
 		else if (args[0].equalsIgnoreCase("typeToDeck")) // Special subcommand used for when clicking from the catalogue
 		{
@@ -84,7 +84,8 @@ public class CommandCreateCard extends Command
 				CardTemplate template = CardType.MONEY.getDefaultTemplate();
 				template.put("value", value);
 				card = CardType.MONEY.createCard(template);
-				sender.sendMessage("Created money card with value " + card.getValue() + "M with ID " + card.getID(), true);
+				sender.sendMessage("Created money card with value " + card.getValue() + "M with ID " + card.getID(),
+						ChatAlignment.CENTER, true);
 			}
 		}
 		else if (args[0].equalsIgnoreCase("action"))
@@ -109,7 +110,7 @@ public class CommandCreateCard extends Command
 					return;
 				}
 				sender.sendMessage("Created action card " + ChatColor.UTILITY + card.getName() + ChatColor.WHITE +
-						" with ID "+ card.getID(), true);
+						" with ID "+ card.getID(), ChatAlignment.CENTER, true);
 			}
 			catch (Exception e)
 			{
@@ -131,7 +132,7 @@ public class CommandCreateCard extends Command
 				colors[i - 2] = Byte.parseByte(args[i]);
 			}
 			card = CardActionRent.create(value, PropertyColor.fromIDs(colors).toArray(new PropertyColor[0]));
-			sender.sendMessage("Created rent card with ID " + card.getID(), true);
+			sender.sendMessage("Created rent card with ID " + card.getID(), ChatAlignment.CENTER, true);
 		}
 		else if (args[0].equalsIgnoreCase("property"))
 		{
@@ -150,7 +151,7 @@ public class CommandCreateCard extends Command
 				colors[i - 5] = Byte.parseByte(args[i]);
 			}
 			card = CardProperty.create(value, name, base, stealable, PropertyColor.fromIDs(colors).toArray(new PropertyColor[0]));
-			sender.sendMessage("Created property card with ID " + card.getID(), true);
+			sender.sendMessage("Created property card with ID " + card.getID(), ChatAlignment.CENTER, true);
 		}
 		if (card != null && sender instanceof Player)
 		{
@@ -170,7 +171,7 @@ public class CommandCreateCard extends Command
 	
 	public Message getMessage(CardType<?> type)
 	{
-		MessageBuilder mb = new MessageBuilder().setCategory("cardlist");
+		MessageBuilder mb = new MessageBuilder().setCategory(CATEGORY_LIST);
 		mb.add("- " + ChatColor.LIGHT_YELLOW + type.getFriendlyName());
 		List<String> aliases = type.getAliases();
 		if (aliases.size() > 0)
@@ -198,7 +199,7 @@ public class CommandCreateCard extends Command
 	public Message getMessage(RegisteredCardTemplate rct)
 	{
 		CardTemplate template = rct.getTemplate();
-		MessageBuilder mb = new MessageBuilder().setCategory("cardlist");
+		MessageBuilder mb = new MessageBuilder().setCategory(CATEGORY_LIST);
 		mb.add("  - " + ChatColor.LIGHT_ORANGE + rct.getName());
 		List<String> aliases = rct.getAliases();
 		if (aliases.size() > 0)
@@ -224,7 +225,7 @@ public class CommandCreateCard extends Command
 	
 	public static void sendTransferLinks(Player player, Card card)
 	{
-		MessageBuilder mb = new MessageBuilder();
+		MessageBuilder mb = new MessageBuilder(ChatAlignment.CENTER);
 		mb.addCommand(ChatColor.LINK + "[Transfer To Hand]",
 				"transfercard " + card.getID() + " " + player.getHand().getID());
 		mb.add("        ");

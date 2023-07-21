@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import oldmana.md.common.Message;
+import oldmana.md.common.playerui.ChatAlignment;
 import oldmana.md.server.playerui.ChatLinkHandler.ChatLink;
 import oldmana.md.server.playerui.ChatLinkHandler.ChatLinkListener;
 import org.json.JSONArray;
@@ -22,6 +23,8 @@ public class MessageBuilder
 	private String cmd;
 	private String fillCmd;
 	private List<String> currentHoverText;
+	private boolean underline;
+	private ChatAlignment alignment = ChatAlignment.LEFT;
 	private String category;
 	
 	public MessageBuilder() {}
@@ -34,6 +37,11 @@ public class MessageBuilder
 	public MessageBuilder(ChatColor color)
 	{
 		setColor(color);
+	}
+	
+	public MessageBuilder(ChatAlignment alignment)
+	{
+		setAlignment(alignment);
 	}
 	
 	private void finalizeSegment()
@@ -62,6 +70,10 @@ public class MessageBuilder
 			{
 				segment.put("hover", currentHoverText);
 			}
+			if (underline)
+			{
+				segment.put("underline", underline);
+			}
 			message.put(segment);
 			currentText = new StringBuilder();
 		}
@@ -74,7 +86,7 @@ public class MessageBuilder
 	public Message build()
 	{
 		finalizeSegment();
-		return new Message(message, category);
+		return new Message(message, alignment, category);
 	}
 	
 	public String getUnformattedMessage()
@@ -196,6 +208,20 @@ public class MessageBuilder
 		return this;
 	}
 	
+	public MessageBuilder startUnderline()
+	{
+		finalizeSegment();
+		underline = true;
+		return this;
+	}
+	
+	public MessageBuilder endUnderline()
+	{
+		finalizeSegment();
+		underline = false;
+		return this;
+	}
+	
 	public MessageBuilder startCommand(String cmd)
 	{
 		finalizeSegment();
@@ -231,6 +257,12 @@ public class MessageBuilder
 		cmd = null;
 		fillCmd = null;
 		currentHoverText = null;
+		return this;
+	}
+	
+	public MessageBuilder setAlignment(ChatAlignment alignment)
+	{
+		this.alignment = alignment;
 		return this;
 	}
 	

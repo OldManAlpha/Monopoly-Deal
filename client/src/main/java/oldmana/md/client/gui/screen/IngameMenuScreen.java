@@ -154,6 +154,8 @@ public class IngameMenuScreen extends MDComponent
 			
 			getClient().getGameState().updateUI();
 			revalidate();
+			
+			getClient().getTableScreen().getChat().recalculateLines();
 		});
 		add(enlargeUI);
 		
@@ -169,6 +171,8 @@ public class IngameMenuScreen extends MDComponent
 			
 			getClient().getGameState().updateUI();
 			revalidate();
+			
+			getClient().getTableScreen().getChat().recalculateLines();
 		});
 		add(shrinkUI);
 		

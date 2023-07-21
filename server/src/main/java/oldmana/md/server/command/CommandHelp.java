@@ -1,5 +1,6 @@
 package oldmana.md.server.command;
 
+import oldmana.md.common.playerui.ChatAlignment;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.MessageBuilder;
@@ -10,6 +11,8 @@ import java.util.stream.Collectors;
 
 public class CommandHelp extends Command
 {
+	public static final String CATEGORY = "help";
+	
 	private static final int PAGE_LIMIT = 6;
 	
 	public CommandHelp()
@@ -26,10 +29,8 @@ public class CommandHelp extends Command
 	{
 		if (args.length == 0 || verifyInt(args[0]))
 		{
-			if (sender instanceof Player)
-			{
-				((Player) sender).clearMessages("help");
-			}
+			sender.clearMessages(CATEGORY);
+			
 			List<Command> cmds = getServer().getCommandHandler().getCommands().stream()
 					.filter(cmd -> cmd.checkPermission(sender))
 					.collect(Collectors.toList());
@@ -38,40 +39,31 @@ public class CommandHelp extends Command
 			page = Math.max(page, 0);
 			page = Math.min(page, maxPage);
 			
-			sender.sendMessage(ChatColor.LIGHT_GREEN + "---- Commands ----", "help");
+			sender.sendMessage("", CATEGORY);
+			sender.sendMessage(new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY).startUnderline()
+					.add(ChatColor.LIGHT_GREEN + "Commands Help").build());
 			int bound = Math.min((page + 1) * PAGE_LIMIT, cmds.size());
 			for (int i = page * PAGE_LIMIT ; i < bound ; i++)
 			{
 				cmds.get(i).sendInfo(sender);
 			}
-			MessageBuilder mb = new MessageBuilder("    ").setCategory("help");
+			MessageBuilder mb = new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY);
 			mb.addCommand(ChatColor.LINK + "[Prev]", "help " + (page - 1));
 			mb.add(ChatColor.LIGHT_ORANGE + "    Page " + (page + 1) + " of " + (maxPage + 1) + "    ");
 			mb.addCommand(ChatColor.LINK + "[Next]", "help " + (page + 1));
 			sender.sendMessage(mb.build());
-			
-			/*
-			sender.sendMessage("List of all available commands:");
-			for (Command cmd : getServer().getCommandHandler().getCommands())
-			{
-				if (cmd.checkPermission(sender))
-				{
-					cmd.sendInfo(sender);
-				}
-			}
-			 */
 			return;
 		}
 		
 		Command cmd = getServer().getCommandHandler().findCommand(args[0]);
 		if (cmd == null)
 		{
-			sender.sendMessage(ChatColor.PREFIX_ALERT + "Command not found.");
+			sender.sendMessage(ChatColor.PREFIX_ALERT + "Could not find command '" + args[0] + "'.");
 			return;
 		}
 		if (!cmd.checkPermission(sender))
 		{
-			sender.sendMessage("Insufficient permissions.");
+			sendInsufficientPermissions(sender);
 			return;
 		}
 		

@@ -1,5 +1,6 @@
 package oldmana.md.server.command;
 
+import oldmana.md.common.playerui.ChatAlignment;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.MessageBuilder;
@@ -22,6 +23,8 @@ import static oldmana.md.server.card.CardAttributes.*;
  */
 public class CommandBuildProperty extends Command
 {
+	public static final String CATEGORY = "propbuilder";
+	
 	private Map<Player, CardTemplate> builds = new WeakHashMap<Player, CardTemplate>();
 	
 	public CommandBuildProperty()
@@ -47,36 +50,38 @@ public class CommandBuildProperty extends Command
 		}
 		CardTemplate template = builds.get(player);
 		
-		player.clearMessages("propbuilder");
+		player.clearMessages(CATEGORY);
 		
+		player.sendMessage("", CATEGORY);
 		if (args.length == 0)
 		{
-			player.sendMessage(ChatColor.LIGHT_RED + "Property Builder", "propbuilder");
-			MessageBuilder mb = new MessageBuilder().setCategory("propbuilder");
+			sender.sendMessage(new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY).startUnderline()
+					.add(ChatColor.LIGHT_RED + "Property Builder").build());
+			MessageBuilder mb = new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY);
 			mb.add(formatEntry("Name") + template.getString(NAME) + " ");
 			mb.addFillCommand(ChatColor.LINK + "[Edit]", "buildproperty name ");
 			player.sendMessage(mb.build());
 			
-			mb = new MessageBuilder().setCategory("propbuilder");
+			mb = new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY);
 			mb.add(formatEntry("Value") + template.getInt(VALUE) + " ");
 			mb.addFillCommand(ChatColor.LINK + "[Edit]", "buildproperty value ");
 			player.sendMessage(mb.build());
 			
-			mb = new MessageBuilder().setCategory("propbuilder");
+			mb = new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY);
 			mb.add(formatEntry("Colors") + Arrays.stream(template.getColorArray(CardProperty.COLORS))
 					.reduce("", (s, c) -> s + (!s.equals("") ? ChatColor.FAINTLY_GRAY + " | " : "") +
 							ChatColor.toChatColor(c.getColor()) + c.getName(), (s1, s2) -> s1 + " | " + s2) + " ");
 			mb.addCommand(ChatColor.LINK + "[Edit]", "buildproperty colors");
 			player.sendMessage(mb.build());
 			
-			mb = new MessageBuilder().setCategory("propbuilder");
+			mb = new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY);
 			mb.add(formatEntry("Description") + Arrays.stream(template.getStringArray(DESCRIPTION))
 					.reduce("", (s, c) -> s + (!s.equals("") ? " | " : "") + c, (s1, s2) -> s1 + " | " + s2) + " ");
 			mb.addFillCommand(ChatColor.LINK + "[Edit]", "buildproperty description ");
 			player.sendMessage(mb.build());
 			
 			boolean base = template.getBoolean(CardProperty.BASE);
-			mb = new MessageBuilder().setCategory("propbuilder");
+			mb = new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY);
 			mb.startHoverText("If a property is a base, it can be used as a foundation of a color. The only card in " +
 					"vanilla Monopoly Deal that is not a base is the 10-Color Property Wild Card.");
 			mb.add(formatEntry("Base") + ValueType.BOOLEAN.toDisplay(base) + " ");
@@ -85,15 +90,14 @@ public class CommandBuildProperty extends Command
 			player.sendMessage(mb.build());
 			
 			boolean stealable = template.getBoolean(CardProperty.STEALABLE);
-			mb = new MessageBuilder().setCategory("propbuilder");
+			mb = new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY);
 			mb.startHoverText("If a property is stealable, it can be targeted by Sly Deals and Forced Deals.");
 			mb.add(formatEntry("Stealable") + ValueType.BOOLEAN.toDisplay(stealable) + " ");
 			mb.endHoverText();
 			mb.addCommand(ChatColor.LINK + "[Toggle]", "buildproperty stealable " + !stealable);
 			player.sendMessage(mb.build());
 			
-			mb = new MessageBuilder().setCategory("propbuilder");
-			mb.add("         ");
+			mb = new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY);
 			mb.addCommand(ChatColor.LINK + "[Create]", "buildproperty create");
 			mb.add("         ");
 			mb.addCommand(ChatColor.LIGHT_GREEN + "[Add To Deck]", "buildproperty createToDeck");
@@ -133,9 +137,11 @@ public class CommandBuildProperty extends Command
 		}
 		else if (args[0].equalsIgnoreCase("colors"))
 		{
-			MessageBuilder mb = new MessageBuilder().setCategory("propbuilder");
+			player.sendMessage("", CATEGORY);
 			List<PropertyColor> colors = template.getColorList(CardProperty.COLORS);
-			player.sendMessage(ChatColor.LIGHT_RED + "Choose Property Colors (" + colors.size() + " selected)", "propbuilder");
+			player.sendMessage(ChatColor.LIGHT_RED + "Choose Property Colors (" + colors.size() + " selected)",
+					ChatAlignment.CENTER, CATEGORY);
+			MessageBuilder mb = new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY);
 			for (PropertyColor color : PropertyColor.getAllColors())
 			{
 				boolean hasColor = colors.contains(color);
@@ -147,7 +153,7 @@ public class CommandBuildProperty extends Command
 				mb.add(" ");
 			}
 			player.sendMessage(mb.build());
-			player.sendMessage(new MessageBuilder().setCategory("propbuilder").add("                ")
+			player.sendMessage(new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY)
 					.addCommand(ChatColor.LINK + "[Back]", "buildproperty").build());
 		}
 		else if (args[0].equalsIgnoreCase("addcolor"))
@@ -186,7 +192,7 @@ public class CommandBuildProperty extends Command
 		else if (args[0].equalsIgnoreCase("import"))
 		{
 			builds.put(player, Card.getCard(parseInt(args[1])).getTemplate().clone());
-			player.clearMessages("editdeck");
+			player.clearMessages(CommandEditDeck.CATEGORY);
 			executeCommand(player, new String[0]);
 		}
 		else if (args[0].equalsIgnoreCase("create"))
@@ -195,7 +201,7 @@ public class CommandBuildProperty extends Command
 			builds.remove(player);
 			
 			sender.sendMessage("Created property " + ChatColor.UTILITY + card.getName() + ChatColor.WHITE +
-					" with ID "+ card.getID(), true);
+					" with ID "+ card.getID(), ChatAlignment.CENTER, true);
 			CommandCreateCard.sendTransferLinks(player, card);
 		}
 		else if (args[0].equalsIgnoreCase("createToDeck"))
@@ -205,7 +211,7 @@ public class CommandBuildProperty extends Command
 			builds.remove(player);
 			
 			sender.sendMessage("Created property " + ChatColor.UTILITY + card.getName() + ChatColor.WHITE +
-					" with ID "+ card.getID(), true);
+					" with ID "+ card.getID(), ChatAlignment.CENTER, true);
 			player.executeCommand("editdeck");
 		}
 	}

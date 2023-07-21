@@ -1,5 +1,6 @@
 package oldmana.md.server.command;
 
+import oldmana.md.common.playerui.ChatAlignment;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.MessageBuilder;
@@ -13,6 +14,8 @@ import java.util.List;
 
 public class CommandEditDeck extends Command
 {
+	public static final String CATEGORY = "editdeck";
+	
 	private static final int PAGE_LIMIT = 12;
 	private static final String altColor = ChatColor.toChatColor(new Color(230, 230, 255));
 	
@@ -28,7 +31,7 @@ public class CommandEditDeck extends Command
 	{
 		if (sender instanceof Player)
 		{
-			((Player) sender).clearMessages("editdeck");
+			sender.clearMessages(CATEGORY);
 			((Player) sender).setChatOpen(true);
 		}
 		
@@ -55,7 +58,9 @@ public class CommandEditDeck extends Command
 			}
 		}
 		
-		sender.sendMessage(ChatColor.LIGHT_RED + "           Deck Editor", "editdeck");
+		sender.sendMessage("", CATEGORY);
+		sender.sendMessage(new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY).startUnderline()
+				.add(ChatColor.LIGHT_RED + "Deck Editor").build());
 		
 		List<Card> cards = getServer().getDeck().getCards(true);
 		cards.sort(Comparator.comparing(Card::getName));
@@ -68,7 +73,7 @@ public class CommandEditDeck extends Command
 		for (int i = page * PAGE_LIMIT ; i < bound ; i++)
 		{
 			Card card = cards.get(i);
-			MessageBuilder mb = new MessageBuilder().setCategory("editdeck");
+			MessageBuilder mb = new MessageBuilder().setCategory(CATEGORY);
 			mb.startHoverText("Remove card from deck");
 			mb.addCommand(ChatColor.LIGHT_RED + "[-]", "editdeck remove " + cards.get(i).getID() + " " + page);
 			mb.endHoverText();
@@ -90,13 +95,13 @@ public class CommandEditDeck extends Command
 			sender.sendMessage(mb.build());
 			
 		}
-		MessageBuilder mb = new MessageBuilder("    ").setCategory("editdeck");
+		MessageBuilder mb = new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY);
 		mb.addCommand(ChatColor.LINK + "[Prev]", "editdeck page " + (page - 1));
 		mb.add(ChatColor.LIGHT_ORANGE + "    Page " + (page + 1) + " of " + (maxPage + 1) + "    ");
 		mb.addCommand(ChatColor.LINK + "[Next]", "editdeck page " + (page + 1));
 		sender.sendMessage(mb.build());
 		
-		mb = new MessageBuilder().setCategory("editdeck");
+		mb = new MessageBuilder(ChatAlignment.CENTER).setCategory(CATEGORY);
 		mb.startHoverText("Create new cards");
 		mb.addCommand(ChatColor.LINK + "[Create Card]", "createcard");
 		mb.endHoverText();

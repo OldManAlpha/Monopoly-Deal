@@ -1,9 +1,11 @@
 package oldmana.md.server.command;
 
+import oldmana.md.common.playerui.ChatAlignment;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.MessageBuilder;
+import oldmana.md.server.Player;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -89,7 +91,8 @@ public abstract class Command
 	
 	public void sendUsage(CommandSender sender)
 	{
-		sender.sendMessage(ChatColor.LIGHT_GREEN + "---- Usage of " + ChatColor.LIGHT_YELLOW + getName() + ChatColor.LIGHT_GREEN + " ----");
+		sender.sendMessage("");
+		sender.sendMessage(ChatColor.LIGHT_GREEN + "Usage of " + ChatColor.LIGHT_YELLOW + getName(), ChatAlignment.CENTER);
 		for (String str : usage)
 		{
 			sender.sendMessage(new MessageBuilder()
@@ -110,6 +113,11 @@ public abstract class Command
 				.startHoverText("Click for more info")
 				.addCommand(ChatColor.LIGHT_YELLOW + "/" + getName() + ChatColor.WHITE + ": " +
 						ChatColor.UTILITY + getDescription(), "help " + getName()).build());
+	}
+	
+	public void sendInsufficientPermissions(CommandSender sender)
+	{
+		sender.sendMessage(ChatColor.PREFIX_ALERT + ChatColor.LIGHT_RED + "Insufficient permissions.");
 	}
 	
 	protected boolean verifyInt(String str)

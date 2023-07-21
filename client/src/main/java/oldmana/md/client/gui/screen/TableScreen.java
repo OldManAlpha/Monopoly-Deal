@@ -377,8 +377,16 @@ public class TableScreen extends JLayeredPane
 				menu.setFontSize(16);
 			}
 			
-			chat.setSize(scale(650), scale(450));
-			chat.setLocation(scale(50), getHeight() - scale(650));
+			chat.setSize(scale(750), scale(550));
+			int chatX = scale(80);
+			if (getHeight() > chat.getHeight())
+			{
+				chat.setLocationCenterY(chatX, getHeight() / 2);
+			}
+			else
+			{
+				chat.setLocation(chatX, getHeight() - chat.getHeight());
+			}
 			
 			version.setLocation(scale(5), getHeight() - scale(20));
 			version.setSize(sidebarSize, scale(15));

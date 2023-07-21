@@ -14,8 +14,8 @@ import oldmana.md.common.net.NetHandler;
 import oldmana.md.common.net.packet.client.*;
 import oldmana.md.common.net.packet.client.action.*;
 import oldmana.md.common.net.packet.server.PacketServerInfo;
-import oldmana.md.common.net.packet.universal.PacketChat;
 import oldmana.md.common.net.packet.universal.PacketKeepConnected;
+import oldmana.md.server.ChatColor;
 import oldmana.md.server.card.play.argument.CardArgument;
 import oldmana.md.server.card.play.PlayArguments;
 import oldmana.md.server.playerui.ChatLinkHandler.ChatLink;
@@ -526,7 +526,8 @@ public class NetServerHandler extends NetHandler
 	
 	public void handleChat(Player player, PacketChat packet)
 	{
-		String msg = packet.getMessage().getUnformattedMessage();
+		String msg = packet.message;
+		msg = msg.replace(ChatColor.SPECIAL_CHAR, '?'); // Don't allow players to send colored messages
 		if (msg.startsWith("/"))
 		{
 			player.executeCommand(msg.substring(1));

@@ -93,12 +93,12 @@ public class CommandHandler
 		}
 		if (cmd == null)
 		{
-			sender.sendMessage(ChatColor.PREFIX_ALERT + "Command not found.");
+			sender.sendMessage(ChatColor.PREFIX_ALERT + ChatColor.LIGHT_RED + "Command not found.");
 			return;
 		}
 		if (!cmd.checkPermission(sender))
 		{
-			sender.sendMessage(ChatColor.PREFIX_ALERT + "Insufficient permissions.");
+			cmd.sendInsufficientPermissions(sender);
 			return;
 		}
 		String[] args = Arrays.copyOfRange(split, 1, split.length);

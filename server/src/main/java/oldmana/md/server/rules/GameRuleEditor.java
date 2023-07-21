@@ -1,5 +1,6 @@
 package oldmana.md.server.rules;
 
+import oldmana.md.common.playerui.ChatAlignment;
 import oldmana.md.server.ChatColor;
 import oldmana.md.server.CommandSender;
 import oldmana.md.server.MDServer;
@@ -15,6 +16,8 @@ import java.util.List;
 
 public class GameRuleEditor
 {
+	public static final String CATEGORY_USAGE = "ruleTypeUsage";
+	
 	public static class GameRuleEditorParams
 	{
 		public CommandSender sender;
@@ -22,6 +25,7 @@ public class GameRuleEditor
 		public String command;
 		public String[] args;
 		public Runnable applySender;
+		public String category;
 		
 		public GameRuleEditorParams() {}
 		
@@ -54,6 +58,12 @@ public class GameRuleEditor
 			this.applySender = applySender;
 			return this;
 		}
+		
+		public GameRuleEditorParams category(String category)
+		{
+			this.category = category;
+			return this;
+		}
 	}
 	
 	public static void handleCommand(GameRuleEditorParams params)
@@ -80,7 +90,8 @@ public class GameRuleEditor
 		String command = params.command;
 		String[] args = params.args;
 		String path = args.length >= 2 ? args[1] : null;
-		clearMessages(sender, "gamerule");
+		String category = params.category;
+		sender.clearMessages(category);
 		GameRule listedRule = path != null ? root.traverse(path) : root;
 		
 		if (listedRule.getRuleStruct() instanceof RuleStructOption)
@@ -92,36 +103,35 @@ public class GameRuleEditor
 				displayPath += ChatColor.YELLOW + element + ChatColor.FAINTLY_GRAY + ">";
 			}
 			displayPath = displayPath.substring(0, displayPath.length() - 1);
-			sender.sendMessage(ChatColor.LIGHT_RED + "Options for " + displayPath, "gamerule");
+			sender.sendMessage(ChatColor.LIGHT_RED + "Options for " + displayPath, ChatAlignment.CENTER, category);
 			RuleStructOption rs = (RuleStructOption) listedRule.getRuleStruct();
 			rs.getChoices().forEach((key, choice) ->
 			{
-				MessageBuilder mb = new MessageBuilder();
-				mb.setCategory("gamerule");
+				MessageBuilder mb = new MessageBuilder(ChatAlignment.CENTER).setCategory(category);
 				mb.startHoverText(choice.getDescription());
 				mb.addCommand(ChatColor.WHITE + "> " + ChatColor.LIGHT_GREEN + choice.getName(),
 						command + " set " + rs.getPath() + " " + key);
 				sender.sendMessage(mb.build());
 			});
-			sendBackButton(sender, listedRule.getRuleStruct().getObjectParent(), command);
+			sendBackButton(sender, listedRule.getRuleStruct().getObjectParent(), command, category);
 			return;
 		}
 		
-		sender.sendMessage(" ", "gamerule");
+		sender.sendMessage("", category);
 		if (listedRule == root)
 		{
-			sender.sendMessage(ChatColor.LIGHT_RED + "Game Rules", "gamerule");
+			sender.sendMessage(new MessageBuilder(ChatAlignment.CENTER).setCategory(category).startUnderline()
+					.add(ChatColor.LIGHT_RED + "Game Rules").build());
 		}
 		else
 		{
 			sender.sendMessage(ChatColor.LIGHT_RED + "Game Rules for " + ChatColor.YELLOW +
-					listedRule.getRuleStruct().getName(), "gamerule");
+					listedRule.getRuleStruct().getName(), ChatAlignment.CENTER, category);
 		}
 		listedRule.getView().forEach((key, rule) ->
 		{
 			RuleStruct rs = rule.getRuleStruct();
-			MessageBuilder mb = new MessageBuilder();
-			mb.setCategory("gamerule");
+			MessageBuilder mb = new MessageBuilder(ChatAlignment.CENTER).setCategory(category);
 			mb.addHover(ChatColor.LIGHT_YELLOW + rs.getName(), rs.getDescription());
 			mb.add(ChatColor.WHITE + ": " + ChatColor.LIGHT_ORANGE);
 			if (rs instanceof RuleStructKey)
@@ -165,7 +175,7 @@ public class GameRuleEditor
 		
 		if (listedRule.getRuleStruct().hasParent())
 		{
-			sendBackButton(sender, listedRule.getRuleStruct().getObjectParent(), command);
+			sendBackButton(sender, listedRule.getRuleStruct().getObjectParent(), command, category);
 		}
 		else
 		{
@@ -195,7 +205,7 @@ public class GameRuleEditor
 		{
 			return;
 		}
-		clearMessages(sender, "ruleTypeUsage");
+		sender.clearMessages(CATEGORY_USAGE);
 		GameRule rule = root.traverse(path);
 		String prevValue = rule.getRuleStruct() instanceof RuleStructKey ? rule.getValueAsRule().getDisplayValue() : rule.getDisplayValue();
 		rule.setValue(rawValue);
@@ -226,20 +236,18 @@ public class GameRuleEditor
 		GameRule rule = root.traverse(path);
 		if (rule.getRuleStruct() instanceof RuleStructKey)
 		{
-			clearMessages(sender, "ruleTypeUsage");
+			sender.clearMessages(CATEGORY_USAGE);
 			List<String> usage = ((RuleStructValue<?>) rule.getValueAsRule().getRuleStruct()).getValueType().getUsage();
 			for (String line : usage)
 			{
-				sender.sendMessage(line, "ruleTypeUsage");
+				sender.sendMessage(line, CATEGORY_USAGE);
 			}
 		}
 	}
 	
-	private static void sendBackButton(CommandSender sender, RuleStruct to, String command)
+	private static void sendBackButton(CommandSender sender, RuleStruct to, String command, String category)
 	{
-		MessageBuilder mb = new MessageBuilder();
-		mb.setCategory("gamerule");
-		mb.add("                                  ");
+		MessageBuilder mb = new MessageBuilder(ChatAlignment.CENTER).setCategory(category);
 		mb.startHoverText("Go back to the previous page");
 		mb.addCommand(ChatColor.LINK + "[Go Back]", command + " list " + to.getPath());
 		sender.sendMessage(mb.build());
@@ -264,14 +272,6 @@ public class GameRuleEditor
 		mb.startCommand(command + " list " + rs.getPath());
 		mb.add(ChatColor.LIGHT_GREEN + "[List]" + ChatColor.WHITE);
 		mb.endSpecial();
-	}
-	
-	private static void clearMessages(CommandSender sender, String category)
-	{
-		if (sender instanceof Player)
-		{
-			((Player) sender).clearMessages(category);
-		}
 	}
 	
 	private static MDServer getServer()

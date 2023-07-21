@@ -558,7 +558,7 @@ public class NetClientHandler extends NetHandler
 		client.timeSincePing = 0;
 	}
 	
-	public void handleChat(PacketChat packet)
+	public void handleChat(PacketMessage packet)
 	{
 		client.getTableScreen().getChat().addMessage(packet.getMessage());
 	}

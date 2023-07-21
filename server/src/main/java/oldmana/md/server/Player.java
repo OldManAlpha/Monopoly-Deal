@@ -26,7 +26,8 @@ import oldmana.md.common.net.packet.server.PacketRefresh;
 import oldmana.md.common.net.packet.server.PacketStatus;
 import oldmana.md.common.net.packet.server.PacketUndoCardStatus;
 import oldmana.md.common.net.packet.server.actionstate.PacketActionStatePlayerTurn.TurnState;
-import oldmana.md.common.net.packet.universal.PacketChat;
+import oldmana.md.common.net.packet.server.PacketMessage;
+import oldmana.md.common.playerui.ChatAlignment;
 import oldmana.md.server.event.EventListener;
 import oldmana.md.server.event.player.PlayerPreDrawEvent;
 import oldmana.md.server.history.UndoableAction;
@@ -1007,7 +1008,7 @@ public class Player implements CommandSender
 	@Override
 	public void sendMessage(String message)
 	{
-		sendPacket(new PacketChat(MessageBuilder.fromSimple(message)));
+		sendPacket(new PacketMessage(MessageBuilder.fromSimple(message)));
 	}
 	
 	@Override
@@ -1015,15 +1016,33 @@ public class Player implements CommandSender
 	{
 		Message simpleMessage = MessageBuilder.fromSimple(message);
 		simpleMessage.setCategory(category);
-		sendPacket(new PacketChat(simpleMessage));
+		sendPacket(new PacketMessage(simpleMessage));
+	}
+	
+	@Override
+	public void sendMessage(String message, ChatAlignment alignment)
+	{
+		Message simpleMessage = MessageBuilder.fromSimple(message);
+		simpleMessage.setAlignment(alignment);
+		sendPacket(new PacketMessage(simpleMessage));
+	}
+	
+	@Override
+	public void sendMessage(String message, ChatAlignment alignment, String category)
+	{
+		Message simpleMessage = MessageBuilder.fromSimple(message);
+		simpleMessage.setAlignment(alignment);
+		simpleMessage.setCategory(category);
+		sendPacket(new PacketMessage(simpleMessage));
 	}
 	
 	@Override
 	public void sendMessage(Message message)
 	{
-		sendPacket(new PacketChat(message));
+		sendPacket(new PacketMessage(message));
 	}
 	
+	@Override
 	public void clearMessages(String category)
 	{
 		sendPacket(new PacketRemoveMessageCategory(category));

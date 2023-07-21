@@ -1,6 +1,6 @@
 package oldmana.md.server;
 
-import oldmana.md.common.Message;
+import oldmana.md.common.playerui.ChatAlignment;
 
 public class Console implements CommandSender
 {
@@ -12,6 +12,18 @@ public class Console implements CommandSender
 	
 	@Override
 	public void sendMessage(String message, String category)
+	{
+		sendMessage(message);
+	}
+	
+	@Override
+	public void sendMessage(String message, ChatAlignment alignment)
+	{
+		sendMessage(message);
+	}
+	
+	@Override
+	public void sendMessage(String message, ChatAlignment alignment, String category)
 	{
 		sendMessage(message);
 	}

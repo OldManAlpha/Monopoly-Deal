@@ -30,6 +30,8 @@ public enum ChatColor
 	BLACK(Color.BLACK),
 	LINK(new Color(173, 216, 230));
 	
+	public static final char SPECIAL_CHAR = '§';
+	
 	public static final String PREFIX_ALERT = "[" + ChatColor.RED + "!" + ChatColor.WHITE + "] ";
 	
 	private final Color color;
@@ -62,14 +64,14 @@ public enum ChatColor
 		ByteBuffer buffer = ByteBuffer.allocate(4);
 		buffer.putInt(color.getRGB());
 		buffer.position(0);
-		return "§1" + buffer.getChar() + buffer.getChar();
+		return SPECIAL_CHAR + "1" + buffer.getChar() + buffer.getChar();
 	}
 	
 	public static String stripColors(String str)
 	{
 		StringBuilder sb = new StringBuilder(str);
 		int index;
-		while ((index = sb.indexOf("§1")) != -1)
+		while ((index = sb.indexOf(SPECIAL_CHAR + "1")) != -1)
 		{
 			sb.replace(index, index + 4, "");
 		}
@@ -80,7 +82,7 @@ public enum ChatColor
 	{
 		StringBuilder sb = new StringBuilder(str);
 		int index;
-		while ((index = sb.indexOf("§2")) != -1)
+		while ((index = sb.indexOf(SPECIAL_CHAR + "2")) != -1)
 		{
 			sb.replace(index, index + 5, "");
 		}
