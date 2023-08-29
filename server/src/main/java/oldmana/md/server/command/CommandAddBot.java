@@ -24,7 +24,7 @@ public class CommandAddBot extends Command
 		Player bot = new Player(args.length > 0 ? getFullStringArgument(args, 0) : "Bot " + nextBotID++);
 		getServer().addPlayer(bot);
 		getServer().getEventManager().callEvent(new PlayerJoinedEvent(bot));
-		sender.sendMessage("Created bot '" + bot.getName() + "' (ID: " + bot.getID() + ")");
+		sender.sendMessage("Created bot '" + bot.getName() + "' (ID: " + bot.getID() + ")", true);
 		if (!(getServer().getDeck().getDeckStack() instanceof VanillaDeck))
 		{
 			sender.sendMessage(ChatColor.PREFIX_ALERT + "Warning: Bots may not function well and cause high resource " +

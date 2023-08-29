@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -83,10 +84,9 @@ public class MDServer
 	private ServerConfig config;
 	private PlayerRegistry playerRegistry;
 	
-	private final List<Client> newClients = new ArrayList<Client>();
+	private final List<Client> newClients = new CopyOnWriteArrayList<Client>();
 	
-	private List<Player> players = new ArrayList<Player>();
-	private Set<Player> cachedPlayers = new HashSet<Player>();
+	private final List<Player> players = new CopyOnWriteArrayList<Player>();
 	
 	private GameState gameState;
 	
@@ -307,28 +307,19 @@ public class MDServer
 	{
 		try
 		{
-			synchronized (newClients)
+			// Process connecting client packets
+			for (Client client : newClients)
 			{
-				if (!newClients.isEmpty())
+				if (!client.isConnected())
 				{
-					for (Client client : new ArrayList<Client>(newClients))
-					{
-						if (!client.isConnected())
-						{
-							continue;
-						}
-						netHandler.processPackets(client, null);
-					}
+					removeClient(client);
+					continue;
 				}
+				netHandler.processPackets(client, null);
 			}
 			
-			// Process packets
-			if (!cachedPlayers.containsAll(players) || cachedPlayers.size() != players.size())
-			{
-				cachedPlayers.clear();
-				cachedPlayers.addAll(players);
-			}
-			for (Player player : cachedPlayers)
+			// Process player packets
+			for (Player player : players)
 			{
 				if (!player.isConnected())
 				{
@@ -661,18 +652,12 @@ public class MDServer
 	
 	public void addClient(Client client)
 	{
-		synchronized (newClients)
-		{
-			newClients.add(client);
-		}
+		newClients.add(client);
 	}
 	
 	public void removeClient(Client client)
 	{
-		synchronized (newClients)
-		{
-			newClients.remove(client);
-		}
+		newClients.remove(client);
 	}
 	
 	public void disconnectClient(Client client)

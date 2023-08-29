@@ -86,7 +86,7 @@ public class NetServerHandler extends NetHandler
 				{
 					packetHandlers.get(packet.getClass()).invoke(this, player, packet);
 				}
-				catch (Exception e)
+				catch (Exception | Error e)
 				{
 					e.printStackTrace();
 				}

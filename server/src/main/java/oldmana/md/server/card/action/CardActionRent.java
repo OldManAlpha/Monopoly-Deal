@@ -40,12 +40,7 @@ public class CardActionRent extends CardAction
 	
 	private List<PropertyColor> colors;
 	
-	private RentType rentType = RentType.UNSPECIFIED;
-	
-	public RentType getRentType()
-	{
-		return rentType;
-	}
+	private RentChargeTarget rentChargeTarget = RentChargeTarget.DEFAULT;
 	
 	@Override
 	public void applyTemplate(CardTemplate template)
@@ -56,13 +51,26 @@ public class CardActionRent extends CardAction
 		setName(name.equals(DEFAULT_NAME) ? getName(colors) : name); // If it's the default name, dynamically set the name
 		if (template.has(CHARGES_ALL))
 		{
-			rentType = template.getBoolean(CHARGES_ALL) ? RentType.ALL : RentType.SINGLE;
+			Object val = template.getObject(CHARGES_ALL);
+			if (val instanceof String && val.equals("default"))
+			{
+				rentChargeTarget = RentChargeTarget.DEFAULT;
+			}
+			else
+			{
+				rentChargeTarget = template.getBoolean(CHARGES_ALL) ? RentChargeTarget.ALL : RentChargeTarget.SINGLE;
+			}
 		}
 	}
 	
 	public List<PropertyColor> getRentColors()
 	{
 		return colors;
+	}
+	
+	public RentChargeTarget getChargeTarget()
+	{
+		return rentChargeTarget;
 	}
 	
 	@Override
@@ -86,7 +94,7 @@ public class CardActionRent extends CardAction
 		
 		int rent = (int) Math.round(currentRent);
 		GameRules rules = getServer().getGameRules();
-		if (getRentType() == RentType.ALL || getServer().getPlayerCount() <= 2 || (getRentType() == RentType.UNSPECIFIED &&
+		if (getChargeTarget() == RentChargeTarget.ALL || getServer().getPlayerCount() <= 2 || (getChargeTarget() == RentChargeTarget.DEFAULT &&
 				(colors.size() <= 2 && rules.doesTwoColorRentChargeAll()) ||
 				(colors.size() > 2 && rules.doesMultiColorRentChargeAll())))
 		{
@@ -135,7 +143,7 @@ public class CardActionRent extends CardAction
 	@Override
 	public String toString()
 	{
-		String str = "CardActionRent (RentType: " + rentType.name() + ") (" + colors.size() + " Color" +
+		String str = "CardActionRent (RentType: " + rentChargeTarget.name() + ") (" + colors.size() + " Color" +
 				(colors.size() != 1 ? "s" : "") + ": ";
 		for (PropertyColor color : colors)
 		{
@@ -256,10 +264,10 @@ public class CardActionRent extends CardAction
 	/**
 	 * The rent type specifies how many players can be charged by a rent card.
 	 */
-	public enum RentType
+	public enum RentChargeTarget
 	{
 		/** Fall back to the game rules for direction. */
-		UNSPECIFIED,
+		DEFAULT,
 		/** Charge one player rent, regardless of game rules. */
 		SINGLE,
 		/** Charge all players rent, regardless of game rules. */
@@ -271,6 +279,9 @@ public class CardActionRent extends CardAction
 		double modifyRent(int baseRent, double currentRent);
 	}
 	
+	/**
+	 * Indicates that the rent modifier is being consumed by a rent card.
+	 */
 	public static class ConsumeRentModifierArgument implements PlayArgument
 	{
 		private CardActionRent card;

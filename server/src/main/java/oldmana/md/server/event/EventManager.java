@@ -10,7 +10,8 @@ import java.util.Map.Entry;
 public class EventManager
 {
 	// Mappings: EventListener -> (Event Class -> List of Methods)
-	private Map<EventListener, Map<Class<? extends Event>, List<Method>>> listenerMap = new HashMap<EventListener, Map<Class<? extends Event>, List<Method>>>();
+	private Map<EventListener, Map<Class<? extends Event>, List<Method>>> listenerMap =
+			new HashMap<EventListener, Map<Class<? extends Event>, List<Method>>>();
 	
 	public void registerEvents(EventListener listener)
 	{
@@ -41,29 +42,31 @@ public class EventManager
 	
 	public void callEvent(Event event)
 	{
-		Map<EventListener, Map<Class<? extends Event>, List<Method>>> listenerMap = new HashMap<EventListener, Map<Class<? extends Event>,
-				List<Method>>>(this.listenerMap);
+		Map<EventListener, Map<Class<? extends Event>, List<Method>>> listenerMap =
+				new HashMap<EventListener, Map<Class<? extends Event>, List<Method>>>(this.listenerMap);
 		for (EventPriority priority : EventPriority.values())
 		{
 			for (Entry<EventListener, Map<Class<? extends Event>, List<Method>>> listener : listenerMap.entrySet())
 			{
 				Map<Class<? extends Event>, List<Method>> eventMap = listener.getValue();
-				if (eventMap.containsKey(event.getClass()))
+				if (!eventMap.containsKey(event.getClass()))
 				{
-					for (Method m : eventMap.get(event.getClass()))
+					continue;
+				}
+				for (Method m : eventMap.get(event.getClass()))
+				{
+					if (m.getAnnotation(EventHandler.class).priority() != priority)
 					{
-						if (m.getAnnotation(EventHandler.class).priority() == priority)
-						{
-							try
-							{
-								m.setAccessible(true);
-								m.invoke(listener.getKey(), event);
-							}
-							catch (Exception | Error e)
-							{
-								e.printStackTrace();
-							}
-						}
+						continue;
+					}
+					try
+					{
+						m.setAccessible(true);
+						m.invoke(listener.getKey(), event);
+					}
+					catch (Exception | Error e)
+					{
+						e.printStackTrace();
 					}
 				}
 			}

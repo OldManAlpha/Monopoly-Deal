@@ -152,7 +152,7 @@ public abstract class CardCollection implements Iterable<Card>
 	
 	public void transferCard(Card card, CardCollection to, int index, CardAnimationType anim, boolean flash)
 	{
-		transferCard(card, to, index, getDefaultTransferTime(anim), anim, flash);
+		transferCard(card, to, index, anim.getDefaultTime(), anim, flash);
 	}
 	
 	public void transferCard(Card card, CardCollection to, int index, double time, CardAnimationType anim)
@@ -220,21 +220,6 @@ public abstract class CardCollection implements Iterable<Card>
 			packet = new PacketMoveUnknownCard(getID(), to.getID(), time, anim.getID());
 		}
 		return packet;
-	}
-	
-	public double getDefaultTransferTime()
-	{
-		return getDefaultTransferTime(CardAnimationType.NORMAL);
-	}
-	
-	public double getDefaultTransferTime(CardAnimationType anim)
-	{
-		switch (anim)
-		{
-			case NORMAL: return 1;
-			case IMPORTANT: return 3;
-			default: return 1;
-		}
 	}
 	
 	public void setOwner(Player player)

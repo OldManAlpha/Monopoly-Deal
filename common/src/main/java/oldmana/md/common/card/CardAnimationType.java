@@ -5,8 +5,8 @@ import java.util.Map;
 
 public enum CardAnimationType
 {
-	NORMAL("Normal"),
-	IMPORTANT("Important");
+	NORMAL("Normal", 1),
+	IMPORTANT("Important", 3);
 	
 	private static final Map<String, CardAnimationType> jsonMap = new HashMap<String, CardAnimationType>();
 	static
@@ -18,10 +18,12 @@ public enum CardAnimationType
 	}
 	
 	private final String jsonName;
+	private final double defaultTime;
 	
-	CardAnimationType(String jsonName)
+	CardAnimationType(String jsonName, double defaultTime)
 	{
 		this.jsonName = jsonName;
+		this.defaultTime = defaultTime;
 	}
 	
 	public int getID()
@@ -37,6 +39,11 @@ public enum CardAnimationType
 	public static CardAnimationType fromJson(String jsonName)
 	{
 		return jsonMap.get(jsonName);
+	}
+	
+	public double getDefaultTime()
+	{
+		return defaultTime;
 	}
 	
 	public static CardAnimationType fromID(int id)
