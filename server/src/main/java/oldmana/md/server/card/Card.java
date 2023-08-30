@@ -14,6 +14,7 @@ import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.play.PlayArgument;
 import oldmana.md.server.card.play.argument.BankArgument;
+import oldmana.md.server.card.play.argument.ConsumeModifierArgument;
 import oldmana.md.server.card.play.argument.DiscardArgument;
 import oldmana.md.server.card.play.argument.IgnoreCanPlayArgument;
 import oldmana.md.server.card.play.argument.SilentPlayArgument;
@@ -450,7 +451,8 @@ public abstract class Card
 			}
 			
 			// This card cannot be played and isn't attempted to be banked, so nothing happens
-			if (!args.hasArgument(IgnoreCanPlayArgument.class) && !args.hasArgument(BankArgument.class) && !canPlayNow())
+			if (!canPlayNow() && !args.hasAnyArgument(ConsumeModifierArgument.class,
+					IgnoreCanPlayArgument.class, BankArgument.class))
 			{
 				return;
 			}
@@ -589,7 +591,7 @@ public abstract class Card
 	 */
 	protected void playStageConsumeMoves(Player player, PlayArguments args)
 	{
-		if (player.hasTurn())
+		if (player.hasTurn() && !isModifyingPlay(args))
 		{
 			getServer().getGameState().decrementMoves(getMoveCost());
 		}
@@ -637,7 +639,10 @@ public abstract class Card
 	 */
 	protected void playStageMoveCard(Player player, PlayArguments args)
 	{
-		transfer(getServer().getDiscardPile(), getPlayAnimation());
+		if (!isModifyingPlay(args))
+		{
+			transfer(getServer().getDiscardPile(), getPlayAnimation());
+		}
 	}
 	
 	/**
@@ -646,13 +651,18 @@ public abstract class Card
 	 */
 	protected void logPlay(Player player, PlayArguments args, String msg)
 	{
-		if (!args.hasArgument(SilentPlayArgument.class))
+		if (!args.hasArgument(SilentPlayArgument.class) && !isModifyingPlay(args))
 		{
 			System.out.println(msg);
 		}
 	}
 	
 	/* END OF CARD PLAY STAGES */
+	
+	protected boolean isModifyingPlay(PlayArguments args)
+	{
+		return this instanceof ModifierCard && !args.hasArgument(ConsumeModifierArgument.class);
+	}
 	
 	/**
 	 * Check whether the player is able to play this card, disregarding the current action state.

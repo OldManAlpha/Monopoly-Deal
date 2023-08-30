@@ -108,6 +108,40 @@ public class PlayArguments
 		return false;
 	}
 	
+	@SafeVarargs
+	public final boolean hasAnyArgument(Class<? extends PlayArgument>... types)
+	{
+		for (PlayArgument argument : arguments)
+		{
+			for (Class<? extends PlayArgument> type : types)
+			{
+				if (argument.getClass() == type)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	@SafeVarargs
+	public final boolean hasAllArguments(Class<? extends PlayArgument>... types)
+	{
+		ArgIter:
+		for (PlayArgument argument : arguments)
+		{
+			for (Class<? extends PlayArgument> type : types)
+			{
+				if (argument.getClass() == type)
+				{
+					continue ArgIter;
+				}
+			}
+			return false;
+		}
+		return true;
+	}
+	
 	public boolean isEmpty()
 	{
 		return arguments.isEmpty();

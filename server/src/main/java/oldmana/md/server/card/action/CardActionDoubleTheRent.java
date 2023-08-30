@@ -9,8 +9,8 @@ import oldmana.md.server.card.play.argument.CardArgument;
 import oldmana.md.server.card.play.PlayArguments;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.CardType;
-import oldmana.md.server.card.action.CardActionRent.ConsumeRentModifierArgument;
 import oldmana.md.server.card.action.CardActionRent.RentModifierCard;
+import oldmana.md.server.card.play.argument.ConsumeModifierArgument;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,15 +29,19 @@ public class CardActionDoubleTheRent extends CardAction implements RentModifierC
 	@Override
 	public void doPlay(Player player, PlayArguments args)
 	{
-		if (args.hasArgument(ConsumeRentModifierArgument.class))
+		if (args.hasArgument(ConsumeModifierArgument.class))
 		{
 			return; // This is being consumed, so we're not performing the card logic
 		}
 		List<Card> selected = args.getArguments(CardArgument.class).stream()
-				.map(CardArgument::getCard).collect(Collectors.toList());
+				.map(CardArgument::getCard)
+				.collect(Collectors.toList());
 		selected.add(this);
 		boolean canPlayMoreModifiers = getServer().getGameRules().isMultipleRentModifiersAllowed();
-		int currentMoveCost = selected.stream().reduce(0, (cur, card) -> cur + card.getMoveCost(), Integer::sum);
+		int currentMoveCost = selected.stream()
+				.mapToInt(Card::getMoveCost)
+				.reduce(Integer::sum)
+				.getAsInt();
 		List<Card> options = new ArrayList<Card>();
 		for (Card card : player.getHand())
 		{
@@ -59,35 +63,6 @@ public class CardActionDoubleTheRent extends CardAction implements RentModifierC
 		{
 			player.sendMessage(ChatColor.PREFIX_ALERT + "You don't have enough moves to play that with another card.");
 			player.resendActionState();
-		}
-	}
-	
-	/** This is overridden, so we can only decrement moves when it's being consumed. **/
-	@Override
-	protected void playStageConsumeMoves(Player player, PlayArguments args)
-	{
-		if (args.hasArgument(ConsumeRentModifierArgument.class))
-		{
-			super.playStageConsumeMoves(player, args);
-		}
-	}
-	
-	/** This is overridden, so we can only put it in the discard pile when it's being consumed. **/
-	@Override
-	protected void playStageMoveCard(Player player, PlayArguments args)
-	{
-		if (args.hasArgument(ConsumeRentModifierArgument.class))
-		{
-			super.playStageMoveCard(player, args);
-		}
-	}
-	
-	@Override
-	protected void logPlay(Player player, PlayArguments args, String msg)
-	{
-		if (args.hasArgument(ConsumeRentModifierArgument.class))
-		{
-			super.logPlay(player, args, msg);
 		}
 	}
 	

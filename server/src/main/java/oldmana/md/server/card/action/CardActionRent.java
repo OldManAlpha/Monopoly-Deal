@@ -5,9 +5,9 @@ import oldmana.md.common.net.packet.server.PacketCardActionRentData;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardAction;
-import oldmana.md.server.card.play.PlayArgument;
+import oldmana.md.server.card.ModifierCard;
 import oldmana.md.server.card.play.argument.CardArgument;
-import oldmana.md.server.card.play.argument.IgnoreCanPlayArgument;
+import oldmana.md.server.card.play.argument.ConsumeModifierArgument;
 import oldmana.md.server.card.play.PlayArguments;
 import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.CardTemplate;
@@ -86,10 +86,7 @@ public class CardActionRent extends CardAction
 		for (RentModifierCard modifier : modifiers)
 		{
 			currentRent = modifier.modifyRent(baseRent, currentRent);
-		}
-		for (RentModifierCard modifier : modifiers)
-		{
-			((Card) modifier).play(new ConsumeRentModifierArgument(this), IgnoreCanPlayArgument.INSTANCE);
+			((Card) modifier).play(new ConsumeModifierArgument(this));
 		}
 		
 		int rent = (int) Math.round(currentRent);
@@ -143,7 +140,7 @@ public class CardActionRent extends CardAction
 	@Override
 	public String toString()
 	{
-		String str = "CardActionRent (RentType: " + rentChargeTarget.name() + ") (" + colors.size() + " Color" +
+		String str = getClass().getSimpleName() + " (RentType: " + rentChargeTarget.name() + ") (" + colors.size() + " Color" +
 				(colors.size() != 1 ? "s" : "") + ": ";
 		for (PropertyColor color : colors)
 		{
@@ -274,26 +271,17 @@ public class CardActionRent extends CardAction
 		ALL
 	}
 	
-	public interface RentModifierCard
-	{
-		double modifyRent(int baseRent, double currentRent);
-	}
-	
 	/**
-	 * Indicates that the rent modifier is being consumed by a rent card.
+	 * Cards implementing this interface are indicated to be modifiers for rent cards.
 	 */
-	public static class ConsumeRentModifierArgument implements PlayArgument
+	public interface RentModifierCard extends ModifierCard
 	{
-		private CardActionRent card;
-		
-		public ConsumeRentModifierArgument(CardActionRent card)
-		{
-			this.card = card;
-		}
-		
-		public CardActionRent getCard()
-		{
-			return card;
-		}
+		/**
+		 * Modifies the rent value when playing a rent card. The final rent will be rounded to the nearest integer.
+		 * @param baseRent The original rent without any modifiers
+		 * @param currentRent The current rent that may have been modified by other modifiers
+		 * @return The rent with this modifier applied
+		 */
+		double modifyRent(int baseRent, double currentRent);
 	}
 }
