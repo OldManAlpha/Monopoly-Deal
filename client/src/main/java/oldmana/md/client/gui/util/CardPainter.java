@@ -559,23 +559,12 @@ public class CardPainter
 				tp.setVerticalAlignment(Alignment.CENTER);
 				tp.paint(g);
 			}
-			
-			if (MDClient.getInstance().isDebugEnabled())
-			{
-				g.setColor(Color.GRAY);
-				GraphicsUtils.drawDebug(g, "ID: " + card.getID(), scale(10), getWidth(), getHeight());
-				/*
-				g.setColor(Color.GRAY);
-				g.fillRect(scale(20), scale(8), scale(20), scale(16));
-				g.setColor(Color.BLACK);
-				Font font = new Font(getFont().getFontName(), Font.PLAIN, scale(8));
-				g.setFont(font);
-				TextPainter id = new TextPainter("ID: " + card.getID(), font, new Rectangle(scale(20), scale(8), scale(20), scale(16)));
-				id.setHorizontalAlignment(Alignment.CENTER);
-				id.setVerticalAlignment(Alignment.CENTER);
-				id.paint(g);
-				*/
-			}
+		}
+		
+		if (MDClient.getInstance().isDebugEnabled())
+		{
+			g.setColor(Color.GRAY);
+			GraphicsUtils.drawDebug(g, "ID: " + card.getID(), scale(10), getWidth(), getHeight());
 		}
 	}
 	
