@@ -4,24 +4,15 @@ import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardProperty;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
-public enum DiscardOrderPolicy
+public enum DiscardOrderPolicy implements JsonEnum
 {
 	MONEY_ACTION_FIRST("MoneyActionFirst", card -> !(card instanceof CardProperty)),
 	PROPERTY_FIRST("PropertyFirst", card -> card instanceof CardProperty),
 	ANY("Any", card -> true);
 	
-	private static final Map<String, DiscardOrderPolicy> jsonMap = new HashMap<String, DiscardOrderPolicy>();
-	static
-	{
-		for (DiscardOrderPolicy type : values())
-		{
-			jsonMap.put(type.getJsonName(), type);
-		}
-	}
+	private static final JsonEnumMapper<DiscardOrderPolicy> map = new JsonEnumMapper<DiscardOrderPolicy>(DiscardOrderPolicy.class);
 	
 	private final String jsonName;
 	private final Function<Card, Boolean> discardEvaluator;
@@ -30,11 +21,6 @@ public enum DiscardOrderPolicy
 	{
 		this.jsonName = jsonName;
 		this.discardEvaluator = discardEvaluator;
-	}
-	
-	public String getJsonName()
-	{
-		return jsonName;
 	}
 	
 	public boolean canDiscard(Card card)
@@ -47,9 +33,15 @@ public enum DiscardOrderPolicy
 		return cards.stream().noneMatch(card -> discardEvaluator.apply(card));
 	}
 	
+	@Override
+	public String getJsonName()
+	{
+		return jsonName;
+	}
+	
 	public static DiscardOrderPolicy fromJson(String jsonName)
 	{
-		return jsonMap.get(jsonName);
+		return map.fromJson(jsonName);
 	}
 	
 	@Override

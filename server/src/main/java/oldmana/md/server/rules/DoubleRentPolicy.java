@@ -1,22 +1,13 @@
 package oldmana.md.server.rules;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.BiFunction;
 
-public enum DoubleRentPolicy
+public enum DoubleRentPolicy implements JsonEnum
 {
 	ADD("Add", Double::sum),
 	MULTIPLY("Multiply", (baseRent, currentRent) -> currentRent * 2);
 	
-	private static final Map<String, DoubleRentPolicy> jsonMap = new HashMap<String, DoubleRentPolicy>();
-	static
-	{
-		for (DoubleRentPolicy type : values())
-		{
-			jsonMap.put(type.getJsonName(), type);
-		}
-	}
+	private static final JsonEnumMapper<DoubleRentPolicy> map = new JsonEnumMapper<DoubleRentPolicy>(DoubleRentPolicy.class);
 	
 	private final String jsonName;
 	private final BiFunction<Integer, Double, Double> doubleFunction;
@@ -27,6 +18,7 @@ public enum DoubleRentPolicy
 		this.doubleFunction = doubleFunction;
 	}
 	
+	@Override
 	public String getJsonName()
 	{
 		return jsonName;
@@ -39,7 +31,7 @@ public enum DoubleRentPolicy
 	
 	public static DoubleRentPolicy fromJson(String jsonName)
 	{
-		return jsonMap.get(jsonName);
+		return map.fromJson(jsonName);
 	}
 	
 	@Override
