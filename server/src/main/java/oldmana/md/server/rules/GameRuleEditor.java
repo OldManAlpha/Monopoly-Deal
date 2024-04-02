@@ -7,12 +7,14 @@ import oldmana.md.server.MDServer;
 import oldmana.md.server.MessageBuilder;
 import oldmana.md.server.Player;
 import oldmana.md.server.rules.struct.RuleStruct;
+import oldmana.md.server.rules.struct.RuleStructArray;
 import oldmana.md.server.rules.struct.RuleStructKey;
 import oldmana.md.server.rules.struct.RuleStructObject;
 import oldmana.md.server.rules.struct.RuleStructOption;
 import oldmana.md.server.rules.struct.RuleStructValue;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GameRuleEditor
 {
@@ -97,12 +99,9 @@ public class GameRuleEditor
 		if (listedRule.getRuleStruct() instanceof RuleStructOption)
 		{
 			List<String> displayPathList = listedRule.getRuleStruct().getDisplayPathList();
-			String displayPath = "";
-			for (String element : displayPathList)
-			{
-				displayPath += ChatColor.YELLOW + element + ChatColor.FAINTLY_GRAY + ">";
-			}
-			displayPath = displayPath.substring(0, displayPath.length() - 1);
+			String displayPath = displayPathList.stream()
+					.map(s -> ChatColor.YELLOW + s)
+					.collect(Collectors.joining(ChatColor.FAINTLY_GRAY + ">"));
 			sender.sendMessage(ChatColor.LIGHT_RED + "Options for " + displayPath, ChatAlignment.CENTER, category);
 			RuleStructOption rs = (RuleStructOption) listedRule.getRuleStruct();
 			rs.getChoices().forEach((key, choice) ->
@@ -169,6 +168,11 @@ public class GameRuleEditor
 					mb.addCommand(ChatColor.UTILITY + "[Choose Option]", command + " list " + rs.getPath());
 					mb.endHoverText();
 				}
+			}
+			else if (rs instanceof RuleStructArray)
+			{
+				List<Integer> array = rule.getArray(Integer.class);
+				mb.add(ChatColor.LIGHT_ORANGE.toString() + array.toString());
 			}
 			sender.sendMessage(mb.build());
 		});

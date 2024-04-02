@@ -1,6 +1,7 @@
 package oldmana.md.server.rules.struct;
 
 import oldmana.md.server.rules.GameRule;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -15,7 +16,47 @@ import java.util.stream.Collectors;
 public class RuleStructOption extends RuleStructNamed implements JsonParsable
 {
 	private Map<String, RuleStruct> choices = new HashMap<String, RuleStruct>();
+	private Object defaultChoice;
 	private String defaultChoiceName;
+	
+	@Override
+	public JSONObject toJSONSchema()
+	{
+		JSONObject obj = super.toJSONSchema();
+		obj.put("type", "option");
+		JSONArray choices = new JSONArray();
+		this.choices.forEach((name, choice) ->
+		{
+			JSONObject choiceObj = new JSONObject();
+			choiceObj.put("choice", name);
+			choiceObj.put("item", choice.toJSONSchema());
+			choices.put(choiceObj);
+		});
+		obj.put("choices", choices);
+		obj.put("defaultChoice", defaultChoiceName);
+		return obj;
+	}
+	
+	@Override
+	public void loadSchema(JSONObject obj)
+	{
+		super.loadSchema(obj);
+		JSONArray choices = obj.getJSONArray("choices");
+		for (JSONObject choiceObj : choices.getBackingList(JSONObject.class))
+		{
+			String name = choiceObj.getString("choice");
+			JSONObject itemObj = choiceObj.getJSONObject("item");
+			RuleStruct choice = RuleStruct.createSchemaObject(itemObj);
+			if (choice instanceof RuleStructNamed)
+			{
+				((RuleStructNamed) choice).setJsonName(name);
+			}
+			choice.loadSchema(itemObj);
+			choice.setParent(this);
+		}
+		defaultChoice = obj.get("defaultChoice");
+		defaultChoiceName = defaultChoice.toString();
+	}
 	
 	@Override
 	public GameRule generateDefaults()
@@ -91,7 +132,15 @@ public class RuleStructOption extends RuleStructNamed implements JsonParsable
 	
 	public List<String> getChoiceNames()
 	{
-		return choices.values().stream().map(RuleStruct::getName).collect(Collectors.toList());
+		return choices.values().stream()
+				.map(RuleStruct::getName)
+				.collect(Collectors.toList());
+	}
+	
+	public GameRule getChoice(GameRule rule)
+	{
+		Object value = rule.getValue();
+		return value instanceof GameRule ? (GameRule) value : ((Map<String, GameRule>) value).values().iterator().next();
 	}
 	
 	public RuleStruct getDefaultChoice()

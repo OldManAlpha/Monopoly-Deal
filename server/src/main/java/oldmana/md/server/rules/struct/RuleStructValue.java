@@ -2,6 +2,9 @@ package oldmana.md.server.rules.struct;
 
 import oldmana.md.server.rules.GameRule;
 import oldmana.md.server.rules.ValueType;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 /**
  * A primitive value.
@@ -12,11 +15,35 @@ public class RuleStructValue<T> extends RuleStruct implements JsonValue<T>, Json
 	private ValueType<T> valueType;
 	private T defaultValue;
 	
+	public RuleStructValue() {}
+	
 	private RuleStructValue(T defaultValue)
 	{
 		valueType = (ValueType<T>) ValueType.getByClass(defaultValue.getClass());
 		this.defaultValue = defaultValue;
 		setName("Value");
+		setDescription(new ArrayList<String>());
+	}
+	
+	/**
+	 * Right now, this is only called by arrays
+	 */
+	@Override
+	public JSONObject toJSONSchema()
+	{
+		JSONObject obj = super.toJSONSchema();
+		obj.put("type", "arrayValue");
+		obj.put("valueType", valueType.getJsonName());
+		obj.put("defaultValue", defaultValue);
+		return obj;
+	}
+	
+	@Override
+	public void loadSchema(JSONObject obj)
+	{
+		super.loadSchema(obj);
+		defaultValue = (T) obj.get("defaultValue");
+		valueType = (ValueType<T>) ValueType.getByClass(defaultValue.getClass());
 	}
 	
 	@Override

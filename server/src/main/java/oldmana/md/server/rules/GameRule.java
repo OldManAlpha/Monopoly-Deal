@@ -1,11 +1,14 @@
 package oldmana.md.server.rules;
 
 import oldmana.md.server.rules.struct.*;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class GameRule
 {
@@ -120,6 +123,21 @@ public class GameRule
 		return (boolean) getDeepValue();
 	}
 	
+	/**
+	 * Returns a list of either objects or values.
+	 */
+	public List<GameRule> getArray()
+	{
+		return ((JSONArray) getValue()).getBackingList(GameRule.class);
+	}
+	
+	public <T> List<T> getArray(Class<T> type)
+	{
+		return getArray().stream()
+				.map(v -> (T) v.getValue())
+				.collect(Collectors.toList());
+	}
+	
 	public String getDisplayValue()
 	{
 		return rule.getDisplayValue(this);
@@ -163,7 +181,7 @@ public class GameRule
 	 */
 	public GameRule getChoice()
 	{
-		return value instanceof GameRule ? (GameRule) value : ((Map<String, GameRule>) value).values().iterator().next();
+		return ((RuleStructOption) rule).getChoice(this);
 	}
 	
 	/**

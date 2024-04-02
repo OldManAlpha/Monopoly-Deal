@@ -14,6 +14,32 @@ public class RuleStructObject extends RuleStructNamed
 	private Map<String, RuleStruct> children = new HashMap<String, RuleStruct>();
 	
 	@Override
+	public JSONObject toJSONSchema()
+	{
+		JSONObject obj = super.toJSONSchema();
+		obj.put("type", "object");
+		JSONObject children = new JSONObject();
+		this.children.forEach((name, child) -> children.put(name, child.toJSONSchema()));
+		obj.put("children", children);
+		return obj;
+	}
+	
+	@Override
+	public void loadSchema(JSONObject obj)
+	{
+		super.loadSchema(obj);
+		JSONObject children = obj.getJSONObject("children");
+		for (String childName : children.keySet())
+		{
+			JSONObject childObj = children.getJSONObject(childName);
+			RuleStructNamed childSchema = (RuleStructNamed) RuleStruct.createSchemaObject(childObj);
+			childSchema.setJsonName(childName);
+			childSchema.loadSchema(childObj);
+			childSchema.setParent(this);
+		}
+	}
+	
+	@Override
 	public GameRule generateDefaults()
 	{
 		Map<String, GameRule> rules = new HashMap<String, GameRule>();

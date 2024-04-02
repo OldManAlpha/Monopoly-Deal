@@ -2,6 +2,7 @@ package oldmana.md.server.rules.struct;
 
 import oldmana.md.server.rules.GameRule;
 import oldmana.md.server.rules.ValueType;
+import org.json.JSONObject;
 
 import java.util.Arrays;
 
@@ -10,11 +11,33 @@ public class RuleStructFixedValue<T> extends RuleStruct implements JsonValue<T>
 	private ValueType<T> valueType;
 	private T value;
 	
-	private RuleStructFixedValue(T value)
+	protected RuleStructFixedValue()
+	{
+		setName("Value");
+	}
+	
+	protected RuleStructFixedValue(T value)
 	{
 		valueType = (ValueType<T>) ValueType.getByClass(value.getClass());
 		this.value = value;
 		setName("Value");
+	}
+	
+	@Override
+	public JSONObject toJSONSchema()
+	{
+		JSONObject obj = super.toJSONSchema();
+		obj.put("type", "fixedValue");
+		obj.put("value", value);
+		return obj;
+	}
+	
+	@Override
+	public void loadSchema(JSONObject obj)
+	{
+		super.loadSchema(obj);
+		value = (T) obj.get("value");
+		valueType = (ValueType<T>) ValueType.getByClass(value.getClass());
 	}
 	
 	@Override

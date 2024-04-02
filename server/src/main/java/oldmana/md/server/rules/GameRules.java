@@ -6,6 +6,7 @@ import oldmana.md.server.MDServer;
 import oldmana.md.server.event.rule.GameRulesApplyEvent;
 import oldmana.md.server.event.rule.GameRulesReloadedEvent;
 import oldmana.md.server.rules.struct.*;
+import oldmana.md.server.rules.struct.RuleStructArray.RuleArrayBuilder;
 import oldmana.md.server.rules.struct.RuleStructKey.RuleKeyBuilder;
 import oldmana.md.server.rules.struct.RuleStructObject.RuleObjectBuilder;
 import oldmana.md.server.rules.struct.RuleStructOption.RuleOptionBuilder;
@@ -44,6 +45,20 @@ public class GameRules
 			.name("Root Rule")
 			.description("The root of the rules.")
 			.register();
+		
+		/*
+		RuleStructArray testArray = RuleArrayBuilder.from(rootRuleStruct)
+				.jsonName("testArray")
+				.name("Test Array")
+				.description("A test array")
+				.register();
+		
+		{
+			RuleStructValue<Integer> testValue = RuleStructValue.of(testArray, 1);
+		}
+		 */
+		
+		
 		
 		RuleStruct cardRules = RuleObjectBuilder.from(rootRuleStruct)
 				.jsonName("cardRules")

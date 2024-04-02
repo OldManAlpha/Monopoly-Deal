@@ -257,6 +257,11 @@ public class JSONArray implements Iterable<Object> {
         return myArrayList;
     }
     
+    public <T> List<T> getBackingList(Class<T> type)
+    {
+        return (List<T>) myArrayList;
+    }
+    
     /**
      * Sorts the backing ArrayList.
      * @param sorter The sorter to use

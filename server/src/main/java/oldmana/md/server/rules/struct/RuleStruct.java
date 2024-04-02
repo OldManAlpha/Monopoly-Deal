@@ -1,6 +1,7 @@
 package oldmana.md.server.rules.struct;
 
 import oldmana.md.server.rules.GameRule;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -126,6 +127,42 @@ public abstract class RuleStruct
 	public abstract Object toJSON(GameRule rule);
 	
 	public abstract String getDisplayValue(GameRule rule);
+	
+	public JSONObject toJSONSchema()
+	{
+		JSONObject obj = new JSONObject();
+		obj.put("name", getName());
+		obj.put("description", getDescription());
+		if (isReducible())
+		{
+			obj.put("reducible", true);
+		}
+		return obj;
+	}
+	
+	public void loadSchema(JSONObject obj)
+	{
+		setName(obj.getString("name"));
+		setDescription(obj.getJSONArray("description").toStringList());
+		if (obj.has("reducible"))
+		{
+			setReducible(obj.getBoolean("reducible"));
+		}
+	}
+	
+	public static RuleStruct createSchemaObject(JSONObject obj)
+	{
+		switch (obj.getString("type"))
+		{
+			case "object": return new RuleStructObject();
+			case "array": return new RuleStructArray();
+			case "option": return new RuleStructOption();
+			case "value": return new RuleStructKey();
+			case "arrayValue": return new RuleStructValue<>();
+			case "fixedValue": return new RuleStructFixedValue<Object>();
+		}
+		return null;
+	}
 	
 	public static class RuleBuilder<RS extends RuleStruct, B extends RuleBuilder>
 	{

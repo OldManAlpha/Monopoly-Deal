@@ -1,6 +1,7 @@
 package oldmana.md.server.rules.struct;
 
 import oldmana.md.server.rules.GameRule;
+import org.json.JSONObject;
 
 /**
  * A key which has a primitive value.
@@ -8,6 +9,23 @@ import oldmana.md.server.rules.GameRule;
 public class RuleStructKey extends RuleStructNamed implements JsonParsable
 {
 	private RuleStructValue<?> child;
+	
+	@Override
+	public JSONObject toJSONSchema()
+	{
+		JSONObject obj = super.toJSONSchema();
+		obj.put("type", "value");
+		obj.put("valueType", child.getValueType().getJsonName());
+		obj.put("defaultValue", child.getDefaultValue());
+		return obj;
+	}
+	
+	@Override
+	public void loadSchema(JSONObject obj)
+	{
+		super.loadSchema(obj);
+		addChild(RuleStructValue.of(this, obj.get("defaultValue")));
+	}
 	
 	public RuleStructValue<?> getChild()
 	{
