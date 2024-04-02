@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -685,17 +684,22 @@ public class MDServer
 	
 	public void kickPlayer(Player player, String reason)
 	{
+		player.setRemoved();
 		player.sendPacket(new PacketKick(reason));
 		if (player.getClient() != null)
 		{
 			player.closeConnection();
 		}
 		Deck deck = getDeck();
-		for (Card card : player.getAllCards())
+		List<Card> cards = player.getAllCards();
+		for (Card card : cards)
 		{
 			card.transfer(deck, -1, 0.25);
 		}
-		deck.shuffle();
+		if (!cards.isEmpty())
+		{
+			deck.shuffle();
+		}
 		GameState gs = getGameState();
 		if (gs.getActivePlayer() == player)
 		{
@@ -949,6 +953,7 @@ public class MDServer
 			{
 				player.sendPacket(new PacketStatus("Downloading sound " + i + "/" + sounds.size() + ".."));
 				player.sendPacket(new PacketSoundData(sound.getName(), sound.getData(), sound.getHash()));
+				break;
 			}
 			i++;
 		}

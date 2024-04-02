@@ -87,6 +87,8 @@ public class Player implements CommandSender
 	private boolean bot;
 	private PlayerAI ai;
 	
+	private boolean removed = false;
+	
 	public Player(Client client, UUID uuid, String name, boolean op)
 	{
 		setClient(client);
@@ -578,7 +580,7 @@ public class Player implements CommandSender
 	 */
 	public void checkEmptyHand()
 	{
-		if (getHand().getCardCount() == 0)
+		if (getHand().getCardCount() == 0 && !removed)
 		{
 			DrawExtraCardsPolicy policy = getServer().getGameRules().getDrawExtraCardsPolicy();
 			if (policy == DrawExtraCardsPolicy.IMMEDIATELY || (policy == DrawExtraCardsPolicy.IMMEDIATELY_AFTER_ACTION
@@ -1118,6 +1120,11 @@ public class Player implements CommandSender
 	public void playSound(String sound, boolean queued)
 	{
 		sendPacket(new PacketPlaySound(sound, queued));
+	}
+	
+	protected void setRemoved()
+	{
+		removed = true;
 	}
 	
 	/**
