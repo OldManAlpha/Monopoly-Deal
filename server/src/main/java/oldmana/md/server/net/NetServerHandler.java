@@ -257,7 +257,6 @@ public class NetServerHandler extends NetHandler
 	
 	public void handleDraw(Player player, PacketActionDraw packet)
 	{
-		ActionState state = server.getGameState().getActionState();
 		if (player.canDraw())
 		{
 			player.draw();
@@ -413,7 +412,6 @@ public class NetServerHandler extends NetHandler
 		ActionState state = server.getGameState().getActionState();
 		if (state instanceof ActionStateTargetPlayerMonopoly)
 		{
-			player.clearUndoableActions();
 			((ActionStateTargetPlayerMonopoly) state).onSetSelected((PropertySet) CardCollection.getByID(packet.id));
 		}
 		else

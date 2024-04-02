@@ -146,7 +146,7 @@ public class BasicAI extends PlayerAI
 		{
 			total += Math.min(p.getTotalMonetaryAssets(), rent);
 		}
-		return total / ((getServer().getPlayerCount() - 1) * rent);
+		return total / (getOpponents().size() * rent);
 	}
 	
 	private double getSingleRentEffectiveness(int rent)
@@ -529,7 +529,7 @@ public class BasicAI extends PlayerAI
 		Collections.shuffle(targets);
 		// Sort by net color gain
 		targets.sort((Comparator.<CardProperty>comparingInt(target -> target.getColors().size())).reversed());
-		return targets.size() > 0 ? targets.get(0) : null;
+		return !targets.isEmpty() ? targets.get(0) : null;
 	}
 	
 	public CardTrade getBestCardTrade()
@@ -557,7 +557,7 @@ public class BasicAI extends PlayerAI
 		Collections.shuffle(targets);
 		// Sort by net color gain
 		targets.sort(Comparator.comparingInt(trade -> trade.give.getColors().size() - trade.take.getColors().size()));
-		return targets.size() > 0 ? targets.get(0) : null;
+		return !targets.isEmpty() ? targets.get(0) : null;
 	}
 	
 	public static class CardTrade

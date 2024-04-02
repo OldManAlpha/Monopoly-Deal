@@ -117,7 +117,7 @@ public class ModLoader
 			if (!ServerMod.class.isAssignableFrom(mainClass))
 			{
 				System.out.println("Error loading " + jarFile.getName() + ": " + mainClassPath +
-						" is not an instance of MDMod!");
+						" is not an instance of ServerMod!");
 				return null;
 			}
 			ServerMod mod = (ServerMod) mainClass.newInstance();

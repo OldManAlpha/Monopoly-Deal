@@ -1,5 +1,7 @@
 package oldmana.md.client;
 
+import oldmana.md.common.net.packet.client.PacketSoundCache;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -222,6 +224,20 @@ public class SoundSystem
 	public static Map<String, Sound> getSounds()
 	{
 		return sounds;
+	}
+	
+	public static PacketSoundCache getSoundsPacket()
+	{
+		List<Sound> sounds = new ArrayList<Sound>(SoundSystem.getSounds().values());
+		String[] soundNames = new String[sounds.size()];
+		int[] soundHashes = new int[sounds.size()];
+		for (int i = 0 ; i < sounds.size() ; i++)
+		{
+			Sound sound = sounds.get(i);
+			soundNames[i] = sound.getName();
+			soundHashes[i] = sound.getHash();
+		}
+		return new PacketSoundCache(soundNames, soundHashes);
 	}
 	
 	public static class Sound

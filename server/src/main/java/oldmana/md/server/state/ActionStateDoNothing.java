@@ -1,19 +1,14 @@
 package oldmana.md.server.state;
 
-import oldmana.md.common.net.api.packet.Packet;
-import oldmana.md.common.net.packet.server.actionstate.PacketActionStateBasic;
-import oldmana.md.common.net.packet.server.actionstate.PacketActionStateBasic.BasicActionState;
-
-public class ActionStateDoNothing extends ActionState
+/**
+ * Used for when the game is not running.
+ */
+public class ActionStateDoNothing extends ActionStateIdle
 {
-	public ActionStateDoNothing()
-	{
-		super(null);
-	}
+	public ActionStateDoNothing() {}
 	
 	public ActionStateDoNothing(String status)
 	{
-		this();
 		setStatus(status);
 	}
 	
@@ -22,17 +17,4 @@ public class ActionStateDoNothing extends ActionState
 	{
 		return false;
 	}
-	
-	@Override
-	public boolean isFinished()
-	{
-		return false;
-	}
-
-	@Override
-	public Packet constructPacket()
-	{
-		return new PacketActionStateBasic(-1, BasicActionState.DO_NOTHING, 0);
-	}
-
 }

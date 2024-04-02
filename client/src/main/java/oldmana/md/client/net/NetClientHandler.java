@@ -9,7 +9,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +20,6 @@ import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.EventQueue.EventTask;
 import oldmana.md.client.SoundSystem;
-import oldmana.md.client.SoundSystem.Sound;
 import oldmana.md.client.Settings;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.Card.CardDescription;
@@ -164,16 +162,7 @@ public class NetClientHandler extends NetHandler
 	public void handleHandshake(PacketHandshake packet)
 	{
 		client.createThePlayer(packet.id, packet.name);
-		List<Sound> sounds = new ArrayList<Sound>(SoundSystem.getSounds().values());
-		String[] soundNames = new String[sounds.size()];
-		int[] soundHashes = new int[sounds.size()];
-		for (int i = 0 ; i < sounds.size() ; i++)
-		{
-			Sound sound = sounds.get(i);
-			soundNames[i] = sound.getName();
-			soundHashes[i] = sound.getHash();
-		}
-		client.sendPacket(new PacketSoundCache(soundNames, soundHashes));
+		client.sendPacket(SoundSystem.getSoundsPacket());
 	}
 	
 	public void handleRefresh(PacketRefresh packet)
@@ -471,17 +460,15 @@ public class NetClientHandler extends NetHandler
 		client.getGameState().setActionState(new ActionStateRent(client.getPlayerByID(packet.renter), charges));
 	}
 	
+	@Queued
 	public void handleDestroyCardCollection(PacketDestroyCardCollection packet)
 	{
 		CardCollection collection = CardCollection.getCardCollection(packet.id);
 		if (collection instanceof PropertySet)
 		{
-			queueTask(() ->
-			{
-				Player player = collection.getOwner();
-				player.destroyPropertySet((PropertySet) collection);
-				player.getUI().getPropertySets().repaint();
-			});
+			Player player = collection.getOwner();
+			player.destroyPropertySet((PropertySet) collection);
+			player.getUI().getPropertySets().repaint();
 		}
 	}
 	
@@ -566,6 +553,7 @@ public class NetClientHandler extends NetHandler
 	public void handleSoundData(PacketSoundData packet)
 	{
 		SoundSystem.addSound(packet.name, packet.data, packet.hash);
+		client.sendPacket(SoundSystem.getSoundsPacket());
 	}
 	
 	public void handlePlaySound(PacketPlaySound packet)

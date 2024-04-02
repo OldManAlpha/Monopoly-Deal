@@ -108,6 +108,25 @@ public class Deck extends CardCollection
 		}
 	}
 	
+	/**
+	 * Get the top card, reshuffling if needed. This usually should only be used if it is intended to immediately
+	 * move the card somewhere.
+	 * @return The top card in the deck
+	 */
+	public Card drawCard()
+	{
+		if (isEmpty())
+		{
+			reshuffle();
+			if (isEmpty())
+			{
+				return null;
+			}
+			return drawCard();
+		}
+		return getCards().get(0);
+	}
+	
 	public Card drawCard(Player player)
 	{
 		return drawCard(player, 1);
@@ -115,29 +134,19 @@ public class Deck extends CardCollection
 	
 	public Card drawCard(Player player, double time)
 	{
-		if (getCardCount() > 0)
+		if (isEmpty())
 		{
-			Card card = getCards().get(0);
-			transferCard(card, player.getHand(), 0, time);
-			return card;
-		}
-		else
-		{
-			List<Card> cards = getServer().getDiscardPile().getCards(true);
-			Collections.reverse(cards);
-			for (Card card : cards)
-			{
-				card.transfer(this, 0, 0.25);
-			}
-			shuffle();
-			getServer().getEventManager().callEvent(new DeckReshuffledEvent(this));
-			if (getCardCount() == 0)
+			reshuffle();
+			if (isEmpty())
 			{
 				System.out.println("Deck and discard pile are out of cards! " + player.getName() + " cannot draw a card.");
 				return null;
 			}
 			return drawCard(player, time);
 		}
+		Card card = getCards().get(0);
+		transferCard(card, player.getHand(), 0, time);
+		return card;
 	}
 	
 	public List<Card> drawCards(Player player, int amount)
@@ -167,6 +176,21 @@ public class Deck extends CardCollection
 	public void insertCardRandomly(Card card, double time)
 	{
 		card.transfer(this, rand.nextInt(getCardCount()), time);
+	}
+	
+	/**
+	 * Moves all cards from the discard pile into the deck and shuffles.
+	 */
+	public void reshuffle()
+	{
+		List<Card> cards = getServer().getDiscardPile().getCards(true);
+		Collections.reverse(cards);
+		for (Card card : cards)
+		{
+			card.transfer(this, 0, 0.25);
+		}
+		shuffle();
+		getServer().getEventManager().callEvent(new DeckReshuffledEvent(this));
 	}
 	
 	@Override

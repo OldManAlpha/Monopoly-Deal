@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import oldmana.md.common.net.api.packet.Packet;
 import oldmana.md.common.net.packet.server.actionstate.PacketActionStateRent;
+import oldmana.md.common.state.TargetState;
 import oldmana.md.server.Player;
 import oldmana.md.server.card.Card;
 import oldmana.md.server.card.CardProperty;
@@ -149,6 +150,16 @@ public class ActionStateRent extends ActionState
 				setAccepted(target, true);
 			}
 		}
+	}
+	
+	@Override
+	public void setTargetState(Player player, TargetState state)
+	{
+		if (state == TargetState.NOT_TARGETED)
+		{
+			charges.remove(player);
+		}
+		super.setTargetState(player, state);
 	}
 	
 	public int getPlayerRent(Player player)

@@ -174,7 +174,7 @@ public class CommandCreateCard extends Command
 		MessageBuilder mb = new MessageBuilder().setCategory(CATEGORY_LIST);
 		mb.add("- " + ChatColor.LIGHT_YELLOW + type.getFriendlyName());
 		List<String> aliases = type.getAliases();
-		if (aliases.size() > 0)
+		if (!aliases.isEmpty())
 		{
 			mb.add(ChatColor.FAINTLY_GRAY + " (" + aliases.get(0));
 			if (aliases.size() > 1)
@@ -185,6 +185,11 @@ public class CommandCreateCard extends Command
 				}
 			}
 			mb.add(")");
+		}
+		if (type.getAssociatedMod() != null)
+		{
+			mb.add(" ").addHover(ChatColor.LIGHT_RED + "(" + type.getAssociatedMod().getName() + ")",
+					"This card was added by the mod " + type.getAssociatedMod().getName());
 		}
 		if (type.isVisible())
 		{

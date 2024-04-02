@@ -142,7 +142,6 @@ public class GameState
 		}
 		gameRunning = true;
 		clean = false;
-		server.getEventManager().callEvent(new GameStartEvent());
 		for (int i = 0 ; i < server.getGameRules().getCardsDealt() ; i++)
 		{
 			for (Player player : server.getPlayers())
@@ -151,6 +150,7 @@ public class GameState
 			}
 		}
 		nextTurn();
+		server.getEventManager().callEvent(new GameStartEvent());
 	}
 	
 	public void endGame()
@@ -171,10 +171,10 @@ public class GameState
 		{
 			player.clearStatusEffects();
 		}
-		states.clear();
+		clearActionStates();
 		removeTurnState();
 		addActionState(new ActionStateDoNothing(status));
-		System.out.println("Game Ended: " + (status.equals("") ? "Reset" : status));
+		System.out.println("Game Ended: " + (status.isEmpty() ? "Reset" : status));
 	}
 	
 	/**
@@ -286,8 +286,8 @@ public class GameState
 			return;
 		}
 		
-		states.clear();
 		turnState = turnOrder.nextTurn();
+		clearActionStates();
 		player = getActivePlayer();
 		
 		System.out.println("New Turn: " + player.getName() + " (ID: " + player.getID() + ")");
@@ -299,7 +299,7 @@ public class GameState
 	
 	public void setTurn(Player player, boolean draw)
 	{
-		states.clear();
+		clearActionStates();
 		turnState = turnOrder.setTurn(player);
 		if (!draw)
 		{
@@ -319,7 +319,7 @@ public class GameState
 	
 	public int getMovesRemaining()
 	{
-		return getTurnState().getMoves();
+		return getTurnState() != null ? getTurnState().getMoves() : 0;
 	}
 	
 	public void incrementMoves()
@@ -398,6 +398,7 @@ public class GameState
 		{
 			states.removeIf(s -> !s.isImportant());
 			states.addFirst(state);
+			state.onAdd();
 			checkCurrentState();
 		}
 	}
@@ -419,6 +420,7 @@ public class GameState
 		{
 			states.removeIf(s -> !s.isImportant());
 			states.add(state);
+			state.onAdd();
 			checkCurrentState();
 		}
 	}
@@ -446,6 +448,7 @@ public class GameState
 		{
 			throw new IllegalArgumentException("Old state does not exist!");
 		}
+		oldState.onRemove();
 		states.remove(index);
 		if (index == 0)
 		{
@@ -458,6 +461,7 @@ public class GameState
 			if (!event.isCancelled())
 			{
 				states.add(index, newState);
+				newState.onAdd();
 			}
 		}
 		checkCurrentState();
@@ -465,12 +469,17 @@ public class GameState
 	
 	public void removeActionState(ActionState state)
 	{
+		state.onRemove();
 		states.remove(state);
 		checkCurrentState();
 	}
 	
 	public void clearActionStates()
 	{
+		for (ActionState state : states)
+		{
+			state.onRemove();
+		}
 		states.clear();
 		checkCurrentState();
 	}
@@ -494,6 +503,10 @@ public class GameState
 				server.broadcastPacket(new PacketActionStateBasic(-1, BasicActionState.NO_STATE, 0));
 			}
 			broadcastStatus();
+			if (lastSentState != null && states.contains(lastSentState))
+			{
+				lastSentState.onUnfocus();
+			}
 			ActionState lastState = lastSentState;
 			lastSentState = state;
 			setStateChanged();
@@ -505,6 +518,10 @@ public class GameState
 				{
 					player.checkEmptyHand();
 				}
+			}
+			if (state != null)
+			{
+				state.onFocus();
 			}
 		}
 		return true;

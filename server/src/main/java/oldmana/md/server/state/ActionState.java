@@ -101,7 +101,22 @@ public abstract class ActionState
 		}
 	}
 	
+	// Events
+	
 	public void onUndo(UndoableAction action) {}
+	
+	public void onAdd() {}
+	
+	public void onFocus() {}
+	
+	public void onUnfocus() {}
+	
+	/**
+	 * Called right before removal of this state.
+	 */
+	public void onRemove() {}
+	
+	// End Events
 	
 	public Player getActionOwner()
 	{

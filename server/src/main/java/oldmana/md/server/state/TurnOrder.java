@@ -46,6 +46,17 @@ public class TurnOrder
 		broadcastOrder();
 	}
 	
+	public void setOrder(List<Player> newOrder)
+	{
+		if (!newOrder.containsAll(order) || !order.containsAll(newOrder))
+		{
+			throw new IllegalArgumentException("The order must contain all the same players that are in the game!");
+		}
+		order.clear();
+		order.addAll(newOrder);
+		broadcastOrder();
+	}
+	
 	public Player getActivePlayer()
 	{
 		return active;
