@@ -6,7 +6,6 @@ import oldmana.md.server.MDServer;
 import oldmana.md.server.event.rule.GameRulesApplyEvent;
 import oldmana.md.server.event.rule.GameRulesReloadedEvent;
 import oldmana.md.server.rules.struct.*;
-import oldmana.md.server.rules.struct.RuleStructArray.RuleArrayBuilder;
 import oldmana.md.server.rules.struct.RuleStructKey.RuleKeyBuilder;
 import oldmana.md.server.rules.struct.RuleStructObject.RuleObjectBuilder;
 import oldmana.md.server.rules.struct.RuleStructOption.RuleOptionBuilder;
@@ -37,6 +36,7 @@ public class GameRules
 	private DiscardOrderPolicy discardOrderPolicy = DiscardOrderPolicy.MONEY_ACTION_FIRST;
 	private boolean canBankActionCards = true;
 	private boolean canBankPropertyCards = false;
+	private boolean isBankValueVisible = false;
 	
 	public GameRules()
 	{
@@ -273,6 +273,13 @@ public class GameRules
 					.description("If enabled, players can play property cards from their hand into their bank.")
 					.defaultValue(false)
 					.register();
+			
+			RuleKeyBuilder.from(bankRules)
+					.jsonName("canSeeValue")
+					.name("Visible Value")
+					.description("If enabled, the total value of all players' banks will be visible.")
+					.defaultValue(false)
+					.register();
 		}
 		
 		RuleStruct modRules = RuleObjectBuilder.from(rootRuleStruct)
@@ -375,6 +382,11 @@ public class GameRules
 		return canBankPropertyCards;
 	}
 	
+	public boolean isBankValueVisible()
+	{
+		return isBankValueVisible;
+	}
+	
 	public GameRule getRootRule()
 	{
 		return rootRule;
@@ -453,6 +465,7 @@ public class GameRules
 		GameRule bankRules = getRule("bankRules");
 		canBankActionCards = bankRules.getSubrule("canBankActionCards").getBoolean();
 		canBankPropertyCards = bankRules.getSubrule("canBankPropertyCards").getBoolean();
+		isBankValueVisible = bankRules.getSubrule("canSeeValue").getBoolean();
 		if (getServer() != null)
 		{
 			getServer().getEventManager().callEvent(new GameRulesApplyEvent(rootRule));
@@ -465,6 +478,7 @@ public class GameRules
 		rules.put("maxCardsInHand", maxCardsInHand);
 		rules.put("maxMoves", movesPerTurn);
 		rules.put("canDiscardEarly", canDiscardEarly);
+		rules.put("bankValueVisible", isBankValueVisible);
 		return new PacketGameRules(rules);
 	}
 	

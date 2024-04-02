@@ -631,6 +631,10 @@ public class NetClientHandler extends NetHandler
 	{
 		client.getRules().applyGameRules(packet.getGameRules());
 		client.getTableScreen().getMoves().updateVisibleMaxMoves();
+		for (Player p : client.getAllPlayers())
+		{
+			p.getBank().getUI().updateGraphics();
+		}
 	}
 	
 	public void handleOpenChat(PacketSetChatOpen packet)

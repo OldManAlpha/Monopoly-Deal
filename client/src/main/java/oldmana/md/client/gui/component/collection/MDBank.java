@@ -56,6 +56,11 @@ public class MDBank extends MDCardCollection
 		addMouseMotionListener(listener);
 	}
 	
+	public int getVisibleValue()
+	{
+		return ((Bank) getCollection()).getTotalValue() - (isCardIncoming() ? getModifiedCard().getValue() : 0);
+	}
+	
 	public void setHovered(Card card)
 	{
 		if (hovered != card)
@@ -107,7 +112,8 @@ public class MDBank extends MDCardCollection
 		}
 		g.setColor(textColor);
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		TextPainter tp = new TextPainter("BANK", GraphicsUtils.getBoldMDFont(scale(18)), new Rectangle(0, scale(1), getWidth() - scale(5), scale(20)));
+		TextPainter tp = new TextPainter((getClient().getRules().isBankValueVisible() ? getVisibleValue() + "M  |  " : "") + "BANK",
+				GraphicsUtils.getBoldMDFont(scale(18)), new Rectangle(0, scale(1), getWidth() - scale(5), scale(20)));
 		tp.setHorizontalAlignment(Alignment.RIGHT);
 		tp.setVerticalAlignment(Alignment.CENTER);
 		tp.paint(g);
@@ -115,12 +121,9 @@ public class MDBank extends MDCardCollection
 		
 		if (!bank.isEmpty())
 		{
-			//g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			//g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-			//g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-			
 			paintCards(g);
 		}
+		
 		if (getClient().isDebugEnabled())
 		{
 			debug.setColor(Color.GREEN);
