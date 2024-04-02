@@ -534,7 +534,7 @@ public abstract class Card
 	 */
 	protected void playStageDiscard(Player player, PlayArguments args)
 	{
-		transfer(getServer().getDiscardPile());
+		getServer().getGameRules().getDiscardLocationPolicy().discard(this);
 		getServer().getGameState().updateTurnState();
 		getServer().getEventManager().callEvent(new CardDiscardEvent(player, this));
 		logPlay(player, args, player.getName() + " discards " + getName());

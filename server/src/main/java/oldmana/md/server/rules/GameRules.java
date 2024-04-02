@@ -34,6 +34,7 @@ public class GameRules
 	private int extraCardsDrawn = 5;
 	private boolean canDiscardEarly = false;
 	private DiscardOrderPolicy discardOrderPolicy = DiscardOrderPolicy.MONEY_ACTION_FIRST;
+	private DiscardLocationPolicy discardLocationPolicy = DiscardLocationPolicy.TOP_OF_DISCARD;
 	private boolean canBankActionCards = true;
 	private boolean canBankPropertyCards = false;
 	private boolean isBankValueVisible = false;
@@ -252,6 +253,16 @@ public class GameRules
 					.addChoice("Any", "Discard Anything", "Discard any card of choice.")
 					.defaultChoice("MoneyActionFirst")
 					.register();
+			
+			RuleOptionBuilder.from(discardRules)
+					.jsonName("discardLocation")
+					.name("Discard Location")
+					.description("Where cards go when discarded.")
+					.addChoice("TopOfDiscard", "Top Of Discard Pile", "Cards are discarded to the top of the discard pile.")
+					.addChoice("BottomOfDeck", "Bottom Of Deck", "Cards are discarded to the bottom of the deck.")
+					.addChoice("RandomlyInDeck", "Randomly In Deck", "Cards are discarded to a random location in the deck.")
+					.defaultChoice("TopOfDiscard")
+					.register();
 		}
 		
 		RuleStruct bankRules = RuleObjectBuilder.from(rootRuleStruct)
@@ -372,6 +383,11 @@ public class GameRules
 		return discardOrderPolicy;
 	}
 	
+	public DiscardLocationPolicy getDiscardLocationPolicy()
+	{
+		return discardLocationPolicy;
+	}
+	
 	public boolean canBankActionCards()
 	{
 		return canBankActionCards;
@@ -462,6 +478,7 @@ public class GameRules
 		GameRule discardRules = getRule("discardRules");
 		canDiscardEarly = discardRules.getSubrule("canDiscardEarly").getBoolean();
 		discardOrderPolicy = DiscardOrderPolicy.fromJson(discardRules.getSubrule("discardOrder").getString());
+		discardLocationPolicy = DiscardLocationPolicy.fromJson(discardRules.getSubrule("discardLocation").getString());
 		GameRule bankRules = getRule("bankRules");
 		canBankActionCards = bankRules.getSubrule("canBankActionCards").getBoolean();
 		canBankPropertyCards = bankRules.getSubrule("canBankPropertyCards").getBoolean();
