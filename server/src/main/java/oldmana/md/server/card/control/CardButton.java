@@ -131,7 +131,7 @@ public class CardButton
 	 */
 	public boolean evaluate()
 	{
-		return evaluate(card.getOwner());
+		return card.getOwner() != null && evaluate(card.getOwner());
 	}
 	
 	/**

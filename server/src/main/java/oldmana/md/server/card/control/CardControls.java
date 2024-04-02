@@ -166,6 +166,11 @@ public class CardControls
 	
 	public void sendButtons()
 	{
+		if (card.getOwner() == null)
+		{
+			return;
+		}
+		
 		List<CardButton> buttons = getEnabledButtons();
 		
 		String[] text = new String[buttons.size()];
