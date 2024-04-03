@@ -12,7 +12,7 @@ import oldmana.md.server.card.play.PlayArguments;
 import oldmana.md.server.card.PropertyColor;
 import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.history.UndoableAction;
-import oldmana.md.server.history.MultiUndoableAction;
+import oldmana.md.server.history.BasicUndoableAction;
 import oldmana.md.server.card.CardType;
 import oldmana.md.server.rules.GameRules;
 import oldmana.md.server.state.ActionStateRent;
@@ -115,7 +115,7 @@ public class CardActionRent extends CardAction
 					.collect(Collectors.toCollection(ArrayList::new));
 			cards.add(0, this);
 			int moveCost = cards.stream().reduce(0, (moves, card) -> moves + card.getMoveCost(), Integer::sum);
-			player.addUndoableAction(new MultiUndoableAction(cards, player, moveCost));
+			player.addUndoableAction(new BasicUndoableAction(cards, player, moveCost));
 		}
 	}
 	
