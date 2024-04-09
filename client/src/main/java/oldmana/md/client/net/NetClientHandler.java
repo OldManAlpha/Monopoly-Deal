@@ -260,7 +260,18 @@ public class NetClientHandler extends NetHandler
 	
 	public void handleCardBuildingData(PacketCardBuildingData packet)
 	{
-		CardBuilding card = new CardBuilding(packet.id, packet.value, packet.name, packet.tier, packet.rentAddition);
+		CardBuilding card;
+		if ((card = (CardBuilding) Card.getCard(packet.id)) != null)
+		{
+			card.setValue(packet.value);
+			card.setName(packet.name);
+			card.setTier(packet.tier);
+			card.setRentAddition(packet.rentAddition);
+		}
+		else
+		{
+			card = new CardBuilding(packet.id, packet.value, packet.name, packet.tier, packet.rentAddition);
+		}
 		card.setDisplayName(packet.displayName);
 		card.setFontSize(packet.fontSize);
 		card.setDisplayOffsetY(packet.displayOffsetY);

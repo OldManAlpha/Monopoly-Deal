@@ -17,8 +17,18 @@ public class CardBuilding extends Card
 		return tier;
 	}
 	
+	public void setTier(int tier)
+	{
+		this.tier = tier;
+	}
+	
 	public int getRentAddition()
 	{
 		return rentAddition;
+	}
+	
+	public void setRentAddition(int rentAddition)
+	{
+		this.rentAddition = rentAddition;
 	}
 }
