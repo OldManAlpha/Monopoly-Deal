@@ -89,6 +89,12 @@ public class MainMenuScreen extends MDComponent
 		play.setFontSize(30);
 		play.setListener(() ->
 		{
+			if (nameField.getText().isEmpty())
+			{
+				status.setText("Name required");
+				return;
+			}
+			
 			status.setText("Starting internal server...");
 			status.paintImmediately(status.getVisibleRect());
 			
