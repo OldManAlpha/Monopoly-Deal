@@ -18,7 +18,6 @@ import oldmana.md.server.mod.ServerMod;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -456,7 +455,7 @@ public class CardType<T extends Card>
 	{
 		T card = createCardRaw(template);
 		getServer().getVoidCollection().addCard(card);
-		getServer().broadcastPacket(card.getCardDataPacket());
+		card.broadcastCard();
 		return card;
 	}
 	
@@ -475,7 +474,7 @@ public class CardType<T extends Card>
 		T card = createCardRaw(template);
 		constructor.accept(card);
 		getServer().getVoidCollection().addCard(card);
-		getServer().broadcastPacket(card.getCardDataPacket());
+		card.broadcastCard();
 		return card;
 	}
 	

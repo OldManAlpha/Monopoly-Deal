@@ -192,14 +192,8 @@ public class NetClientHandler extends NetHandler
 	
 	public void handleCardData(PacketCardData packet)
 	{
-		Card card;
-		if ((card = Card.getCard(packet.id)) != null)
-		{
-			card.setValue(packet.value);
-			card.setName(packet.name);
-			card.clearGraphicsCache();
-		}
-		else
+		Card card = Card.getCard(packet.id);
+		if (card == null)
 		{
 			if (packet.type == 0)
 			{
@@ -209,76 +203,112 @@ public class NetClientHandler extends NetHandler
 			{
 				card = new CardMoney(packet.id, packet.value, packet.name);
 			}
+			card.setDisplayName(packet.displayName);
+			card.setFontSize(packet.fontSize);
+			card.setDisplayOffsetY(packet.displayOffsetY);
+			card.setDescription(CardDescription.getDescriptionByID(packet.description));
+			card.setOuterColor(new Color(packet.outerColor));
+			card.setInnerColor(new Color(packet.innerColor));
+			return;
 		}
-		card.setDisplayName(packet.displayName);
-		card.setFontSize(packet.fontSize);
-		card.setDisplayOffsetY(packet.displayOffsetY);
-		card.setDescription(CardDescription.getDescriptionByID(packet.description));
-		card.setOuterColor(new Color(packet.outerColor));
-		card.setInnerColor(new Color(packet.innerColor));
+		Card c = card;
+		queueTask(() ->
+		{
+			c.setValue(packet.value);
+			c.setName(packet.name);
+			c.setDisplayName(packet.displayName);
+			c.setFontSize(packet.fontSize);
+			c.setDisplayOffsetY(packet.displayOffsetY);
+			c.setDescription(CardDescription.getDescriptionByID(packet.description));
+			c.setOuterColor(new Color(packet.outerColor));
+			c.setInnerColor(new Color(packet.innerColor));
+			c.clearGraphicsCache();
+		});
 	}
 	
 	public void handleCardActionRentData(PacketCardActionRentData packet)
 	{
-		CardActionRent card;
-		if ((card = (CardActionRent) Card.getCard(packet.id)) != null)
-		{
-			card.setValue(packet.value);
-			card.setName(packet.name);
-			card.clearGraphicsCache();
-		}
-		else
+		CardActionRent card = (CardActionRent) Card.getCard(packet.id);
+		if (card == null)
 		{
 			card = new CardActionRent(packet.id, packet.value, packet.name);
+			card.setRentColors(PropertyColor.fromIDs(packet.colors).toArray(new PropertyColor[packet.colors.length]));
+			card.setDescription(CardDescription.getDescriptionByID(packet.description));
+			card.setOuterColor(new Color(packet.outerColor));
+			card.setInnerColor(new Color(packet.innerColor));
+			return;
 		}
-		card.setRentColors(PropertyColor.fromIDs(packet.colors).toArray(new PropertyColor[packet.colors.length]));
-		card.setDescription(CardDescription.getDescriptionByID(packet.description));
-		card.setOuterColor(new Color(packet.outerColor));
-		card.setInnerColor(new Color(packet.innerColor));
+		
+		CardActionRent c = card;
+		queueTask(() ->
+		{
+			c.setValue(packet.value);
+			c.setName(packet.name);
+			c.setRentColors(PropertyColor.fromIDs(packet.colors).toArray(new PropertyColor[packet.colors.length]));
+			c.setDescription(CardDescription.getDescriptionByID(packet.description));
+			c.setOuterColor(new Color(packet.outerColor));
+			c.setInnerColor(new Color(packet.innerColor));
+			c.clearGraphicsCache();
+		});
 	}
 	
 	public void handleCardPropertyData(PacketCardPropertyData packet)
 	{
-		CardProperty card;
-		if ((card = (CardProperty) Card.getCard(packet.id)) != null)
-		{
-			card.setValue(packet.value);
-			card.setName(packet.name);
-			card.setBase(packet.base);
-			card.setStealable(packet.stealable);
-			card.clearGraphicsCache();
-		}
-		else
+		CardProperty card = (CardProperty) Card.getCard(packet.id);
+		if (card == null)
 		{
 			card = new CardProperty(packet.id, PropertyColor.fromIDs(packet.colors), packet.base, packet.stealable, packet.value, packet.name);
+			card.setDescription(CardDescription.getDescriptionByID(packet.description));
+			card.setOuterColor(new Color(packet.outerColor));
+			card.setInnerColor(new Color(packet.innerColor));
+			return;
 		}
-		card.setColors(PropertyColor.fromIDs(packet.colors));
-		card.setDescription(CardDescription.getDescriptionByID(packet.description));
-		card.setOuterColor(new Color(packet.outerColor));
-		card.setInnerColor(new Color(packet.innerColor));
+		
+		CardProperty c = card;
+		queueTask(() ->
+		{
+			c.setValue(packet.value);
+			c.setName(packet.name);
+			c.setBase(packet.base);
+			c.setStealable(packet.stealable);
+			c.setColors(PropertyColor.fromIDs(packet.colors));
+			c.setDescription(CardDescription.getDescriptionByID(packet.description));
+			c.setOuterColor(new Color(packet.outerColor));
+			c.setInnerColor(new Color(packet.innerColor));
+			c.clearGraphicsCache();
+		});
 	}
 	
 	public void handleCardBuildingData(PacketCardBuildingData packet)
 	{
-		CardBuilding card;
-		if ((card = (CardBuilding) Card.getCard(packet.id)) != null)
-		{
-			card.setValue(packet.value);
-			card.setName(packet.name);
-			card.setTier(packet.tier);
-			card.setRentAddition(packet.rentAddition);
-		}
-		else
+		CardBuilding card = (CardBuilding) Card.getCard(packet.id);
+		if (card == null)
 		{
 			card = new CardBuilding(packet.id, packet.value, packet.name, packet.tier, packet.rentAddition);
+			card.setDisplayName(packet.displayName);
+			card.setFontSize(packet.fontSize);
+			card.setDisplayOffsetY(packet.displayOffsetY);
+			card.setDescription(CardDescription.getDescriptionByID(packet.description));
+			card.setOuterColor(new Color(packet.outerColor));
+			card.setInnerColor(new Color(packet.innerColor));
+			return;
 		}
-		card.setDisplayName(packet.displayName);
-		card.setFontSize(packet.fontSize);
-		card.setDisplayOffsetY(packet.displayOffsetY);
-		card.setDescription(CardDescription.getDescriptionByID(packet.description));
-		card.setOuterColor(new Color(packet.outerColor));
-		card.setInnerColor(new Color(packet.innerColor));
-		card.clearGraphicsCache();
+		
+		CardBuilding c = card;
+		queueTask(() ->
+		{
+			c.setValue(packet.value);
+			c.setName(packet.name);
+			c.setTier(packet.tier);
+			c.setRentAddition(packet.rentAddition);
+			c.setDisplayName(packet.displayName);
+			c.setFontSize(packet.fontSize);
+			c.setDisplayOffsetY(packet.displayOffsetY);
+			c.setDescription(CardDescription.getDescriptionByID(packet.description));
+			c.setOuterColor(new Color(packet.outerColor));
+			c.setInnerColor(new Color(packet.innerColor));
+			c.clearGraphicsCache();
+		});
 	}
 	
 	public void handlePlayerInfo(PacketPlayerInfo packet)

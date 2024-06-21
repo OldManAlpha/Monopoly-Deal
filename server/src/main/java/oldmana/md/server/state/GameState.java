@@ -222,6 +222,10 @@ public class GameState
 			{
 				putCardAway(card, 0.15);
 			}
+			if (!card.getTemplate().equals(card.getSoftTemplate()))
+			{
+				card.reapplyTemplate();
+			}
 		}
 		
 		deck.shuffle();

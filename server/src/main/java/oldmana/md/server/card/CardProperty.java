@@ -30,9 +30,9 @@ public class CardProperty extends Card
 	private boolean stealable;
 	
 	@Override
-	public void applyTemplate(CardTemplate template)
+	public void applyTemplate(CardTemplate template, boolean soft)
 	{
-		super.applyTemplate(template);
+		super.applyTemplate(template, soft);
 		if (!template.has(INNER_COLOR))
 		{
 			setInnerColor(Color.WHITE);

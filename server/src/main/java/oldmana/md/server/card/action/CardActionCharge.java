@@ -24,9 +24,9 @@ public class CardActionCharge extends CardAction
 	private int charge;
 	
 	@Override
-	public void applyTemplate(CardTemplate template)
+	public void applyTemplate(CardTemplate template, boolean soft)
 	{
-		super.applyTemplate(template);
+		super.applyTemplate(template, soft);
 		chargesAll = template.getBoolean(CHARGES_ALL);
 		charge = template.getInt(CHARGE);
 	}

@@ -43,9 +43,9 @@ public class CardActionRent extends CardAction
 	private RentChargeTarget rentChargeTarget = RentChargeTarget.DEFAULT;
 	
 	@Override
-	public void applyTemplate(CardTemplate template)
+	public void applyTemplate(CardTemplate template, boolean soft)
 	{
-		super.applyTemplate(template);
+		super.applyTemplate(template, soft);
 		this.colors = template.getColorList(COLORS);
 		String name = template.getString(NAME);
 		setName(name.equals(DEFAULT_NAME) ? getName(colors) : name); // If it's the default name, dynamically set the name

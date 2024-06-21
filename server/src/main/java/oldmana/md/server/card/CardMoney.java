@@ -18,9 +18,9 @@ public class CardMoney extends Card
 	private static final String DEFAULT_NAME = "Money";
 	
 	@Override
-	public void applyTemplate(CardTemplate template)
+	public void applyTemplate(CardTemplate template, boolean soft)
 	{
-		super.applyTemplate(template);
+		super.applyTemplate(template, soft);
 		if (template.getString(NAME).equals(DEFAULT_NAME))
 		{
 			// If it's the default name, dynamically set the name

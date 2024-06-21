@@ -23,9 +23,9 @@ public class CardActionBuilding extends CardAction
 	private int rentAddition;
 	
 	@Override
-	public void applyTemplate(CardTemplate template)
+	public void applyTemplate(CardTemplate template, boolean soft)
 	{
-		super.applyTemplate(template);
+		super.applyTemplate(template, soft);
 		tier = template.getInt(TIER);
 		rentAddition = template.getInt(RENT_ADDITION);
 	}

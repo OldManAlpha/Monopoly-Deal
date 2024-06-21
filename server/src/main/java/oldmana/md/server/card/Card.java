@@ -39,6 +39,7 @@ public abstract class Card
 	
 	private CardType<?> type;
 	private CardTemplate template;
+	private CardTemplate softTemplate;
 	
 	private int value;
 	private String name;
@@ -70,9 +71,30 @@ public abstract class Card
 		controls = createControls();
 	}
 	
+	/**
+	 * Applies the attributes of a template to this card and stores a hard and a soft copy of the template.
+	 *
+	 * @param template The template to apply to this card
+	 */
 	public void applyTemplate(CardTemplate template)
 	{
-		this.template = template.clone();
+		applyTemplate(template, false);
+	}
+	
+	/**
+	 * Applies the attributes of a template to this card. If soft, the template will be overwritten by the primary
+	 * template when the game resets.
+	 * @param template The template to apply to this card
+	 * @param soft Whether the template should be softly applied
+	 */
+	public void applyTemplate(CardTemplate template, boolean soft)
+	{
+		if (!soft)
+		{
+			this.template = template.clone();
+		}
+		softTemplate = template.clone();
+		
 		value = template.getInt(VALUE);
 		name = template.getString(NAME);
 		displayName = template.getStringArray(DISPLAY_NAME);
@@ -92,9 +114,32 @@ public abstract class Card
 		moveStage = CardPlayStage.fromJson(template.getString(MOVE_STAGE));
 	}
 	
+	/**
+	 * Reapplies the template, overwriting the soft template, then broadcasts the card to the clients.
+	 */
+	public void reapplyTemplate()
+	{
+		applyTemplate(template);
+		broadcastCard();
+	}
+	
+	/**
+	 * Get the primary template of the card. This template may not necessarily reflect the current attributes of the card.
+	 * @return The primary template
+	 */
 	public CardTemplate getTemplate()
 	{
 		return template;
+	}
+	
+	/**
+	 * Get the soft template of the card. This template is more likely than the primary template to reflect the current
+	 * attributes of the card.
+	 * @return The soft template
+	 */
+	public CardTemplate getSoftTemplate()
+	{
+		return softTemplate;
 	}
 	
 	protected CardControls createControls()
@@ -711,6 +756,14 @@ public abstract class Card
 	}
 	
 	public abstract Packet getCardDataPacket();
+	
+	/**
+	 * Sends this card to all clients.
+	 */
+	public void broadcastCard()
+	{
+		getServer().broadcastPacket(getCardDataPacket());
+	}
 	
 	@Override
 	public String toString()
