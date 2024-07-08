@@ -74,7 +74,7 @@ public class Card
 	
 	public boolean hasOwner()
 	{
-		return collection.getOwner() != null;
+		return collection != null && collection.getOwner() != null;
 	}
 	
 	public void setOwningCollection(CardCollection collection)
@@ -207,6 +207,11 @@ public class Card
 		}
 		graphicsCache.values().forEach(Image::flush);
 		graphicsCache.clear();
+		
+		if (getOwningCollection() != null)
+		{
+			getOwningCollection().getUI().updateGraphics();
+		}
 	}
 	
 	public static BufferedImage getBackGraphics(double scale)

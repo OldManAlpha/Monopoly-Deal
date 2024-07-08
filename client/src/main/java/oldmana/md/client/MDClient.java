@@ -550,6 +550,7 @@ public class MDClient
 			{
 				connection.close();
 			}
+			connection = null;
 		}
 		if (hasIntegratedServer())
 		{

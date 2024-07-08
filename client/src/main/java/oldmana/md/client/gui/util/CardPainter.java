@@ -374,7 +374,7 @@ public class CardPainter
 						g.fillArc(scale(12.5), scale(27.5), scale(35), scale(35), (int) -Math.ceil((angleInc * i) + (multi ? -90 : 180)),
 								(int) -Math.ceil(angleInc));
 					}
-					g.setColor(outerColor);
+					g.setColor(Color.WHITE);
 					g.fillOval(scale(18), scale(33), scale(24), scale(24));
 					g.setColor(new Color(30, 30, 30));
 					Font font = GraphicsUtils.getBoldMDFont(scale(9));
