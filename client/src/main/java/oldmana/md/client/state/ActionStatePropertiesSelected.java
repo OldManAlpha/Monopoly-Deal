@@ -11,6 +11,7 @@ import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.component.MDComponent;
 import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.component.collection.MDCardCollectionBase;
+import oldmana.md.client.gui.component.collection.MDPropertySet;
 import oldmana.md.client.gui.component.large.MDPlayer;
 
 public class ActionStatePropertiesSelected extends ActionState
@@ -49,13 +50,13 @@ public class ActionStatePropertiesSelected extends ActionState
 		{
 			MDCard cardView = new MDCard(card);
 			MDCardCollectionBase collectionUI = card.getOwningCollection().getUI();
-			MDPlayer playerUI = card.getOwner().getUI();
-			cardView.setLocation(collectionUI.getLocationOfRelative(card.getOwningCollection().getIndexOf(card), playerUI));
-			playerUI.add(cardView, 0);
+			MDPropertySet setUI = (MDPropertySet) card.getOwningCollection().getUI();
+			cardView.setLocation(collectionUI.getLocationOf(card.getOwningCollection().getIndexOf(card)));
+			setUI.add(cardView, 0);
 			MDSelection cardSelection = new MDSelection(selectColor);
 			cardSelection.setLocation(cardView.getLocation());
 			cardSelection.setSize(cardView.getSize());
-			playerUI.add(cardSelection, 0);
+			setUI.add(cardSelection, 0);
 			
 			components.add(cardView);
 			components.add(cardSelection);

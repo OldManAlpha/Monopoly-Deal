@@ -12,11 +12,9 @@ import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.action.ActionScreenModifyPropertySet;
 import oldmana.md.client.gui.component.MDCard;
-import oldmana.md.client.gui.component.MDCreateSet;
 import oldmana.md.client.gui.component.MDPlayerPropertySets;
 import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.component.collection.MDPropertySet;
-import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.common.net.packet.client.action.PacketActionChangeSetColor;
 import oldmana.md.common.net.packet.client.action.PacketActionMoveProperty;
 import oldmana.md.common.net.packet.client.action.PacketActionRemoveBuilding;
@@ -32,7 +30,6 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 	private MDSelection selection;
 	
 	private List<PropertySet> setSelects = new ArrayList<PropertySet>();
-	private MDCreateSet createSet;
 	
 	public ActionStateClientModifyPropertySet(PropertySet set)
 	{
@@ -116,11 +113,7 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 		}
 		
 		MDPlayerPropertySets setsUI = getClient().getThePlayer().getUI().getPropertySets();
-		createSet = new MDCreateSet(getClient().getThePlayer());
-		createSet.setLocation(setsUI.getNextPropertySetLocX(), 0);
-		createSet.setSize(GraphicsUtils.getCardWidth(), GraphicsUtils.getCardHeight());
-		setsUI.add(createSet);
-		createSet.addClickListener(() ->
+		setsUI.addCreateSet(() ->
 		{
 			getClient().sendPacket(new PacketActionMoveProperty(cardView.getCard().getID(), -1));
 			getClient().setAwaitingResponse(true);
@@ -140,10 +133,7 @@ public class ActionStateClientModifyPropertySet extends ActionStateClient
 	public void cleanup()
 	{
 		getClient().getTableScreen().removeActionScreen();
-		if (createSet != null)
-		{
-			createSet.getParent().remove(createSet);
-		}
+		getClient().getThePlayer().getUI().getPropertySets().removeCreateSet();
 		for (PropertySet set : setSelects)
 		{
 			((MDPropertySet) set.getUI()).disableSelection();

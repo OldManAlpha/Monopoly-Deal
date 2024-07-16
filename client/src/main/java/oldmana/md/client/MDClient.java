@@ -3,6 +3,7 @@ package oldmana.md.client;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,15 +93,18 @@ public class MDClient
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		try
 		{
-			Font f = Font.createFont(Font.TRUETYPE_FONT, MDClient.class.getResourceAsStream("/oldmana/md/client/gui/font/ITCKabelStd-Bold.otf"));
-			ge.registerFont(f);
-			Font f2 = Font.createFont(Font.TRUETYPE_FONT, MDClient.class.getResourceAsStream("/oldmana/md/client/gui/font/ITCKabelStd-Book.otf"));
-			ge.registerFont(f2);
+			String[] fontNames = new String[] {"ITCKabelStd-Bold.otf", "ITCKabelStd-Book.otf"};
+			for (String fontName : fontNames)
+			{
+				try (InputStream is = MDClient.class.getResourceAsStream("/oldmana/md/client/gui/font/" + fontName))
+				{
+					ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, is));
+				}
+			}
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
-			throw new RuntimeException("Could not load fonts");
+			throw new RuntimeException("Could not load fonts", e);
 		}
 		
 		scheduler = new Scheduler();

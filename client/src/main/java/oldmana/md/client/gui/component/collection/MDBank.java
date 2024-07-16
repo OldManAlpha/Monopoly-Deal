@@ -1,6 +1,7 @@
 package oldmana.md.client.gui.component.collection;
 
 import java.awt.Color;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -83,40 +84,13 @@ public class MDBank extends MDCardCollection
 		Graphics2D g = (Graphics2D) gr;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		Graphics2D debug = (Graphics2D) g.create();
-		g.setColor(Color.DARK_GRAY);
-		Color gray = new Color(150, 150, 150);
-		Color textColor = Color.BLACK;
-		Color outlineColor = new Color(220, 220, 220);
-		if (getModification() == CollectionMod.ADDITION && getCardCount() == 1)
-		{
-			double prog = getVisibleShiftProgress();
-			int progColor = (int) (gray.getRed() - (prog * gray.getRed()));
-			textColor = new Color(progColor, progColor, progColor);
-			outlineColor = new Color(outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), 255 - (int) (prog * 255));
-		}
-		else if (getModification() == CollectionMod.REMOVAL && getCardCount() == 0)
-		{
-			double prog = getVisibleShiftProgress();
-			int progColor = (int) (prog * gray.getRed());
-			textColor = new Color(progColor, progColor, progColor);
-			outlineColor = new Color(outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), (int) (prog * 255));
-		}
-		else if (getCardCount() == 0)
-		{
-			textColor = gray;
-		}
 		if ((getCardCount() == 1 && getModification() == CollectionMod.ADDITION) || getCardCount() == 0)
 		{
+			Color outlineColor = getOutlineColor();
 			g.setColor(outlineColor);
 			g.fillRoundRect(scale(0), scale(20), getWidth(), getHeight() - scale(20), scale(15), scale(15));
 		}
-		g.setColor(textColor);
-		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		TextPainter tp = new TextPainter((getClient().getRules().isBankValueVisible() ? getVisibleValue() + "M  |  " : "") + "BANK",
-				GraphicsUtils.getBoldMDFont(scale(18)), new Rectangle(0, scale(1), getWidth() - scale(5), scale(20)));
-		tp.setHorizontalAlignment(Alignment.RIGHT);
-		tp.setVerticalAlignment(Alignment.CENTER);
-		tp.paint(g);
+		
 		CardCollection bank = getCollection();
 		
 		if (!bank.isEmpty())
@@ -124,11 +98,48 @@ public class MDBank extends MDCardCollection
 			paintCards(g);
 		}
 		
+		if (getClient().getRules().isBankValueVisible())
+		{
+			String valueText = getVisibleValue() + "M";
+			g.setFont(GraphicsUtils.getBoldMDFont(scale(18)));
+			FontMetrics metrics = g.getFontMetrics();
+			int width = metrics.stringWidth(valueText);
+			int height = metrics.getHeight();
+			g.setColor(new Color(120, 120, 120, 120));
+			g.fillRoundRect(getWidth() - width - (scale(3) * 2) - scale(4), scale(20) + scale(4),
+					width + (scale(3) * 2), height, scale(15), scale(15));
+			
+			g.setColor(Color.DARK_GRAY);
+			g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			TextPainter tp = new TextPainter(valueText,
+					GraphicsUtils.getBoldMDFont(scale(18)), new Rectangle(scale(3), scale(20) + scale(3) + scale(4),
+					getWidth() - scale(5) - scale(4), scale(20)));
+			tp.setHorizontalAlignment(Alignment.RIGHT);
+			tp.setVerticalAlignment(Alignment.TOP);
+			tp.paint(g);
+		}
+		
 		if (getClient().isDebugEnabled())
 		{
 			debug.setColor(Color.GREEN);
 			GraphicsUtils.drawDebug(debug, "ID: " + getCollection().getID(), scale(15), getWidth(), getHeight() + scale(25));
 		}
+	}
+	
+	private Color getOutlineColor()
+	{
+		Color outlineColor = new Color(220, 220, 220);
+		if (getModification() == CollectionMod.ADDITION && getCardCount() == 1)
+		{
+			outlineColor = new Color(outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), 255 -
+					(int) (getVisibleShiftProgress() * 255));
+		}
+		else if (getModification() == CollectionMod.REMOVAL && getCardCount() == 0)
+		{
+			outlineColor = new Color(outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(),
+					(int) (getVisibleShiftProgress() * 255));
+		}
+		return outlineColor;
 	}
 	
 	@Override

@@ -1,6 +1,7 @@
 package oldmana.md.client.gui.component.collection;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -14,10 +15,12 @@ import java.util.Map.Entry;
 
 import javax.swing.SwingUtilities;
 
+import oldmana.md.client.MDClient;
 import oldmana.md.client.ThePlayer;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.CardProperty.PropertyColor;
 import oldmana.md.client.card.collection.PropertySet;
+import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.component.MDCardView;
 import oldmana.md.client.gui.component.MDSelection;
 import oldmana.md.client.gui.util.GraphicsUtils;
@@ -25,17 +28,21 @@ import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
 import oldmana.md.client.gui.util.TextPainter.Outline;
 import oldmana.md.client.state.client.ActionStateClientModifyPropertySet;
+import oldmana.md.client.state.client.ActionStateClientDragSetCard;
 
 public class MDPropertySet extends MDCardCollection
 {
 	private MDCardView view;
 	private MDSelection select;
 	private Runnable selectTask;
+	private double hoverPos;
 	
 	public MDPropertySet(PropertySet set)
 	{
 		super(set);
-		addMouseListener(new MDPropertySetListener());
+		MDPropertySetListener listener = new MDPropertySetListener();
+		addMouseListener(listener);
+		addMouseMotionListener(listener);
 		addComponentListener(new ComponentAdapter()
 		{
 			@Override
@@ -97,7 +104,7 @@ public class MDPropertySet extends MDCardCollection
 			@Override
 			public void mouseEntered(MouseEvent event)
 			{
-				onMouseEntered();
+				onMouseEntered(event.getX(), event.getY());
 			}
 			
 			@Override
@@ -125,7 +132,7 @@ public class MDPropertySet extends MDCardCollection
 	
 	public double getInterval(int cardCount)
 	{
-		return (getMaxHeight() - GraphicsUtils.getCardHeight() - (getOutlineWidth() * 2)) / Math.max(2.2, cardCount - 1);
+		return Math.min(scale(19), (getMaxHeight() - GraphicsUtils.getCardHeight() - (getOutlineWidth() * 2)) / Math.max(1, cardCount - 1));
 	}
 	
 	public double getInterval()
@@ -142,7 +149,7 @@ public class MDPropertySet extends MDCardCollection
 		return getParent().getHeight();
 	}
 	
-	public void onMouseEntered()
+	public void onMouseEntered(int x, int y)
 	{
 		onMouseExited();
 		PropertySet set = (PropertySet) getCollection();
@@ -150,6 +157,7 @@ public class MDPropertySet extends MDCardCollection
 		getClient().addTableComponent(view, 95);
 		view.setLocation(SwingUtilities.convertPoint(this, new Point(-(view.getWidth() / 2) + (GraphicsUtils.getCardWidth() / 2), 
 				set.getOwner() instanceof ThePlayer ? scale(-200) : scale(100)), getClient().getTableScreen()));
+		hoverPos = y / (double) getHeight();
 	}
 	
 	public void onMouseExited()
@@ -244,14 +252,81 @@ public class MDPropertySet extends MDCardCollection
 	
 	public class MDPropertySetListener extends MouseAdapter
 	{
+		private ActionStateClientDragSetCard state;
+		private MDCard move;
+		
+		@Override
+		public void mouseDragged(MouseEvent event)
+		{
+			if (move != null)
+			{
+				Point p = SwingUtilities.convertPoint(event.getComponent(), event.getPoint(), MDClient.getInstance().getTableScreen());
+				move.setLocationCentered(p.getX(), p.getY());
+				return;
+			}
+			if (!getClient().canModifySets() || getClient().isInputBlocked() || getCollection().getOwner() != getClient().getThePlayer())
+			{
+				
+				return;
+			}
+			if (move == null)
+			{
+				for (int i = getCardCount() - 1 ; i >= 0  ; i--)
+				{
+					if (getLocationOf(i).getY() < event.getY())
+					{
+						move = new MDCard(getCollection().getCardAt(i))
+						{
+							@Override
+							public void doPaint(Graphics gr)
+							{
+								super.doPaint(gr);
+								gr.setColor(new Color(0, 0, 0, 40));
+								gr.fillRoundRect(0, 0, getWidth(), getHeight(), scale(5), scale(5));
+							}
+						};
+						Point p = SwingUtilities.convertPoint(event.getComponent(), event.getPoint(), MDClient.getInstance().getTableScreen());
+						move.setLocationCentered(p.getX(), p.getY());
+						MDClient.getInstance().addTableComponent(move, 100);
+						
+						getClient().getGameState().setClientActionState(
+								state = new ActionStateClientDragSetCard((PropertySet) getCollection(), move, () ->
+						{
+							state = null;
+							move = null;
+						}));
+						break;
+					}
+				}
+			}
+		}
+		
 		@Override
 		public void mouseReleased(MouseEvent event)
 		{
-			if (getClient().canModifySets() && !getClient().isInputBlocked())
+			if (move != null)
 			{
-				if (getCollection().getOwner() == getClient().getThePlayer())
+				Point loc = SwingUtilities.convertPoint(getClient().getTableScreen(), move.getCenterX(), move.getCenterY(), getParent());
+				Component component = getParent().getComponentAt(loc);
+				if (component == null)
 				{
-					getClient().getGameState().setClientActionState(new ActionStateClientModifyPropertySet((PropertySet) getCollection()));
+					loc = SwingUtilities.convertPoint(getClient().getTableScreen(), move.getCenterX(), move.getCenterY(), getParent().getParent());
+					component = getParent().getParent().getComponentAt(loc);
+				}
+				
+				state.cardDropped(component);
+				
+				MDClient.getInstance().getTableScreen().repaint();
+				return;
+			}
+			if (event.getX() >= 0 && event.getX() < getWidth() && event.getY() >= 0 && event.getY() < getHeight())
+			{
+				if (getClient().canModifySets() && !getClient().isInputBlocked())
+				{
+					if (getCollection().getOwner() == getClient().getThePlayer())
+					{
+						getClient().getGameState().setClientActionState(new ActionStateClientModifyPropertySet((PropertySet) getCollection()));
+					}
 				}
 			}
 		}
@@ -259,7 +334,7 @@ public class MDPropertySet extends MDCardCollection
 		@Override
 		public void mouseEntered(MouseEvent event)
 		{
-			onMouseEntered();
+			onMouseEntered(event.getX(), event.getY());
 		}
 		
 		@Override

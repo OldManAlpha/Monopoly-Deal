@@ -1,6 +1,7 @@
 package oldmana.md.client.gui.component.large;
 
 import oldmana.md.client.Player;
+import oldmana.md.client.gui.AutoScrollable;
 import oldmana.md.client.gui.LayoutAdapter;
 import oldmana.md.client.gui.component.MDComponent;
 
@@ -20,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class MDOpponents extends MDComponent
+public class MDOpponents extends MDComponent implements AutoScrollable
 {
 	private boolean scrollEnabled;
 	private int scrollPos;
@@ -128,6 +129,12 @@ public class MDOpponents extends MDComponent
 	public void setScrollLocked(boolean scrollLock)
 	{
 		this.scrollLock = scrollLock;
+	}
+	
+	@Override
+	public int getScrollNeededToView(MDComponent component)
+	{
+		return getScrollNeededToView(((MDPlayer) component).getPlayer());
 	}
 	
 	public int getScrollPos()

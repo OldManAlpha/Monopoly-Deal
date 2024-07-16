@@ -684,12 +684,18 @@ public class MDServer
 	
 	public void kickPlayer(Player player, String reason)
 	{
+		if (!players.contains(player))
+		{
+			throw new IllegalStateException(player.getDescription() +
+					" cannot be kicked because they're not in the game!");
+		}
 		player.setRemoved();
 		player.sendPacket(new PacketKick(reason));
 		if (player.getClient() != null)
 		{
 			player.closeConnection();
 		}
+		player.clearStatusEffects();
 		Deck deck = getDeck();
 		List<Card> cards = player.getAllCards();
 		for (Card card : cards)

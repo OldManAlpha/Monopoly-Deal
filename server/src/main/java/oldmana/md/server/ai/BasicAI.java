@@ -62,6 +62,10 @@ public class BasicAI extends PlayerAI
 	{
 		super(player);
 		registerDefaultStateHandlers();
+		for (Consumer<BasicAI> hook : hooks)
+		{
+			hook.accept(this);
+		}
 	}
 	
 	private <T extends Card> T getRandomCard(List<T> cards)
@@ -981,6 +985,13 @@ public class BasicAI extends PlayerAI
 	public double getRentThreat(Player player)
 	{
 		return 0;
+	}
+	
+	private static List<Consumer<BasicAI>> hooks = new ArrayList<Consumer<BasicAI>>();
+	
+	public static void hookAI(Consumer<BasicAI> hook)
+	{
+		hooks.add(hook);
 	}
 	
 	public interface BasicStateResponder<T extends ActionState>

@@ -6,10 +6,8 @@ import java.util.List;
 import oldmana.md.client.card.CardButton;
 import oldmana.md.client.card.CardProperty;
 import oldmana.md.client.card.collection.PropertySet;
-import oldmana.md.client.gui.component.MDCreateSet;
 import oldmana.md.client.gui.component.MDPlayerPropertySets;
 import oldmana.md.client.gui.component.collection.MDPropertySet;
-import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.common.net.packet.client.action.PacketActionUseCardButton;
 
 public class ActionStateClientPlayProperty extends ActionStateClient
@@ -19,7 +17,6 @@ public class ActionStateClientPlayProperty extends ActionStateClient
 	
 	private HandCardSelection cardSelection;
 	private List<PropertySet> setSelects = new ArrayList<PropertySet>();
-	private MDCreateSet createSet;
 	
 	public ActionStateClientPlayProperty(CardProperty property, CardButton button)
 	{
@@ -49,12 +46,7 @@ public class ActionStateClientPlayProperty extends ActionStateClient
 		}
 		
 		MDPlayerPropertySets setsUI = getClient().getThePlayer().getUI().getPropertySets();
-		
-		createSet = new MDCreateSet(getClient().getThePlayer());
-		createSet.setLocation(setsUI.getNextPropertySetLocX(), 0);
-		createSet.setSize(GraphicsUtils.getCardWidth(), GraphicsUtils.getCardHeight());
-		setsUI.add(createSet);
-		createSet.addClickListener(() ->
+		setsUI.addCreateSet(() ->
 		{
 			getClient().sendPacket(new PacketActionUseCardButton(property.getID(), button.getID(), -1));
 			getClient().setAwaitingResponse(true);
@@ -67,11 +59,7 @@ public class ActionStateClientPlayProperty extends ActionStateClient
 	public void destroySelections()
 	{
 		cardSelection.destroy();
-		MDPlayerPropertySets setsUI = getClient().getThePlayer().getUI().getPropertySets();
-		if (createSet != null)
-		{
-			setsUI.remove(createSet);
-		}
+		getClient().getThePlayer().getUI().getPropertySets().removeCreateSet();
 		for (PropertySet set : setSelects)
 		{
 			((MDPropertySet) set.getUI()).disableSelection();

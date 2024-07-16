@@ -6,10 +6,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.UUID;
 
 import oldmana.md.common.net.api.packet.Packet;
 import oldmana.md.common.Message;
+import oldmana.md.common.net.packet.server.PacketDestroyInfoPlate;
 import oldmana.md.common.net.packet.server.PacketCardDescription;
 import oldmana.md.common.net.packet.server.PacketDestroyButton;
 import oldmana.md.common.net.packet.server.PacketDestroyCardCollection;
@@ -35,6 +37,7 @@ import oldmana.md.server.event.player.PlayerUndoActionEvent;
 import oldmana.md.server.net.Client;
 import oldmana.md.server.net.NetClient.GracefulDisconnect;
 import oldmana.md.server.playerui.ClientButton;
+import oldmana.md.server.playerui.InfoPlate;
 import oldmana.md.server.playerui.PlayerButton;
 import oldmana.md.server.playerui.PlayerButton.ButtonTag;
 import oldmana.md.server.ai.BasicAI;
@@ -79,6 +82,9 @@ public class Player implements CommandSender
 	
 	private List<ClientButton> clientButtons = new ArrayList<ClientButton>();
 	private Map<Player, List<PlayerButton>> playerButtons = new HashMap<Player, List<PlayerButton>>();
+	
+	private int nextInfoPlateID;
+	private List<InfoPlate> infoPlates = new ArrayList<InfoPlate>();
 	
 	private boolean online = false;
 	private int lastPing;
@@ -811,6 +817,59 @@ public class Player implements CommandSender
 		return all;
 	}
 	
+	public void registerInfoPlate(InfoPlate plate)
+	{
+		infoPlates.add(plate);
+		plate.setId(nextInfoPlateID++);
+		plate.setRegistered(true);
+		plate.send();
+	}
+	
+	public void removeInfoPlate(InfoPlate plate)
+	{
+		infoPlates.remove(plate);
+		plate.setRegistered(false);
+		getServer().broadcastPacket(new PacketDestroyInfoPlate(getID(), plate.getId()));
+	}
+	
+	public InfoPlate getInfoPlate(String tag)
+	{
+		for (InfoPlate plate : infoPlates)
+		{
+			if (Objects.equals(tag, plate.getTag()))
+			{
+				return plate;
+			}
+		}
+		return null;
+	}
+	
+	public List<InfoPlate> getInfoPlates(String tag)
+	{
+		List<InfoPlate> plates = new ArrayList<InfoPlate>();
+		for (InfoPlate plate : infoPlates)
+		{
+			if (Objects.equals(tag, plate.getTag()))
+			{
+				plates.add(plate);
+			}
+		}
+		return plates;
+	}
+	
+	public List<InfoPlate> getInfoPlates()
+	{
+		return infoPlates;
+	}
+	
+	public void sendInfoPlates(Player player)
+	{
+		for (InfoPlate plate : infoPlates)
+		{
+			plate.send(player);
+		}
+	}
+	
 	public void sendCardButtons()
 	{
 		getHand().sendCardButtons();
@@ -1169,6 +1228,7 @@ public class Player implements CommandSender
 			}
 			sendPacket(other.getBank().getCollectionDataPacket());
 			sendPacket(this == other ? other.getHand().getOwnerHandDataPacket() : other.getHand().getCollectionDataPacket());
+			other.sendInfoPlates(this);
 		}
 		sendPacket(getServer().getGameRules().constructPacket());
 		getServer().getGameState().getTurnOrder().sendOrder(this);

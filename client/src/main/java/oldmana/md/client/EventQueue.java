@@ -1,32 +1,38 @@
 package oldmana.md.client;
 
+import java.awt.Container;
 import java.awt.Point;
 import java.util.ArrayDeque;
-import java.util.Queue;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.Bank;
 import oldmana.md.client.card.collection.CardCollection;
 import oldmana.md.client.card.collection.PropertySet;
+import oldmana.md.client.gui.AutoScrollable;
+import oldmana.md.client.gui.component.MDComponent;
 import oldmana.md.client.gui.component.MDMovingCard;
 import oldmana.md.client.gui.component.collection.MDCardCollection;
 import oldmana.md.client.gui.component.collection.MDCardCollectionBase;
-import oldmana.md.client.gui.component.large.MDOpponents;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.ActionStateRent;
 import oldmana.md.common.card.CardAnimationType;
 
-import javax.swing.SwingUtilities;
-
 public class EventQueue
 {
-	private Queue<EventTask> queue = new ArrayDeque<EventTask>();
+	private ArrayDeque<EventTask> queue = new ArrayDeque<EventTask>();
 	private TickingEventTask currentTask;
 	
 	public void addTask(EventTask task)
 	{
 		queue.offer(task);
+	}
+	
+	public void addPriorityTask(EventTask task)
+	{
+		queue.offerFirst(task);
 	}
 	
 	public boolean hasTasks()
@@ -89,9 +95,7 @@ public class EventQueue
 		
 		private MDMovingCard moving;
 		
-		private boolean needsAutoScroll;
-		private int opponentScrollStart;
-		private int opponentScrollEnd;
+		private List<AutoScroll> scrolls = new ArrayList<AutoScroll>();
 		
 		public CardMove(Card card, CardCollection from, CardCollection to, int toPos)
 		{
@@ -117,21 +121,39 @@ public class EventQueue
 				from = card.getOwningCollection();
 			}
 			
-			MDOpponents opponents = MDClient.getInstance().getTableScreen().getOpponents();
-			if (SwingUtilities.isDescendingFrom(from.getUI(), opponents))
+			// Check containers that need to be snapped to the starting position
+			Container prevFromContainer = from.getUI();
+			Container fromContainer = prevFromContainer.getParent();
+			while (fromContainer != null)
 			{
-				opponentScrollStart = opponents.getScrollNeededToView(from.getOwner());
-				opponents.setScrollPos(opponentScrollStart);
+				if (fromContainer instanceof AutoScrollable)
+				{
+					AutoScrollable scrollable = (AutoScrollable) fromContainer;
+					int scrollNeeded = scrollable.getScrollNeededToView((MDComponent) prevFromContainer);
+					scrollable.setScrollPos(scrollNeeded);
+				}
+				prevFromContainer = fromContainer;
+				fromContainer = fromContainer.getParent();
 			}
 			
-			if (SwingUtilities.isDescendingFrom(to.getUI(), opponents))
+			// Check containers that need to be scrolled to the end position
+			Container prevToContainer = to.getUI();
+			Container toContainer = prevToContainer.getParent();
+			while (toContainer != null)
 			{
-				opponentScrollStart = opponents.getScrollPos();
-				opponentScrollEnd = opponents.getScrollNeededToView(to.getOwner());
-				if (opponentScrollStart != opponentScrollEnd)
+				if (toContainer instanceof AutoScrollable)
 				{
-					needsAutoScroll = true;
+					AutoScrollable scrollable = (AutoScrollable) toContainer;
+					int scrollStart = scrollable.getScrollPos();
+					int scrollEnd = scrollable.getScrollNeededToView((MDComponent) prevToContainer);
+					if (scrollStart != scrollEnd)
+					{
+						AutoScroll scroll = new AutoScroll(scrollable, scrollStart, scrollEnd);
+						scrolls.add(scroll);
+					}
 				}
+				prevToContainer = toContainer;
+				toContainer = toContainer.getParent();
 			}
 			
 			if (from.isUnknown())
@@ -195,10 +217,10 @@ public class EventQueue
 		{
 			boolean finished = moving.tickMove();
 			
-			if (needsAutoScroll)
+			double scrollPos = Math.min(1, moving.getCurrentPosition() * 1.5);
+			for (AutoScroll scroll : scrolls)
 			{
-				MDOpponents opponents = MDClient.getInstance().getTableScreen().getOpponents();
-				opponents.setScrollPos((int) (opponentScrollStart + ((opponentScrollEnd - opponentScrollStart) * (Math.min(1, moving.getCurrentPosition() * 1.5)))));
+				scroll.component.setScrollPos((int) (scroll.scrollStart + ((scroll.scrollEnd - scroll.scrollStart) * scrollPos)));
 			}
 			
 			if (finished)
@@ -246,6 +268,20 @@ public class EventQueue
 		public MDMovingCard getComponent()
 		{
 			return moving;
+		}
+		
+		private static class AutoScroll
+		{
+			public AutoScrollable component;
+			public int scrollStart;
+			public int scrollEnd;
+			
+			public AutoScroll(AutoScrollable component, int scrollStart, int scrollEnd)
+			{
+				this.component = component;
+				this.scrollStart = scrollStart;
+				this.scrollEnd = scrollEnd;
+			}
 		}
 	}
 }

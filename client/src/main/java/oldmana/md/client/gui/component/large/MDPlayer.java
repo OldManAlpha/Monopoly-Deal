@@ -13,6 +13,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -21,6 +22,7 @@ import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
 import oldmana.md.client.card.collection.PropertySet;
 import oldmana.md.client.gui.LayoutAdapter;
+import oldmana.md.client.gui.component.MDButton;
 import oldmana.md.client.gui.component.MDComponent;
 import oldmana.md.client.gui.component.MDClientButton;
 import oldmana.md.client.gui.component.MDPlayerPropertySets;
@@ -31,6 +33,8 @@ import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.state.ActionState;
 import oldmana.md.client.state.GameState;
+import oldmana.md.common.playerui.ButtonColorScheme;
+import oldmana.md.common.playerui.InfoPlateBase;
 
 public class MDPlayer extends MDComponent
 {
@@ -43,7 +47,11 @@ public class MDPlayer extends MDComponent
 	
 	private List<MDClientButton> buttons = new ArrayList<MDClientButton>();
 	
+	private List<InfoPlate> infoPlates = new ArrayList<InfoPlate>();
+	
 	private MDPlayerPropertySets propertySets;
+	private MDButton setsScrollBack;
+	private MDButton setsScrollForward;
 	
 	public MDPlayer(Player player)
 	{
@@ -55,6 +63,32 @@ public class MDPlayer extends MDComponent
 			propertySets.addPropertySet((MDPropertySet) set.getUI());
 		}
 		add(propertySets, 0);
+		
+		setsScrollBack = new MDButton("<");
+		setsScrollBack.setColor(ButtonColorScheme.GRAY);
+		setsScrollBack.addClickListener(() ->
+		{
+			propertySets.setScrollPos(Math.max(propertySets.getScrollPos() - propertySets.getInterval(), 0));
+			propertySets.invalidate();
+			updatePropertySetScrollButtons();
+		});
+		setsScrollBack.setVisible(false);
+		add(setsScrollBack);
+		setsScrollForward = new MDButton(">");
+		setsScrollForward.setColor(ButtonColorScheme.GRAY);
+		setsScrollForward.addClickListener(() ->
+		{
+			propertySets.setScrollPos(Math.min(propertySets.getScrollPos() + propertySets.getInterval(), propertySets.getScrollMax()));
+			propertySets.invalidate();
+			updatePropertySetScrollButtons();
+		});
+		setsScrollForward.setVisible(false);
+		add(setsScrollForward);
+	}
+	
+	public Player getPlayer()
+	{
+		return player;
 	}
 	
 	public void addPropertySet(PropertySet set)
@@ -112,6 +146,44 @@ public class MDPlayer extends MDComponent
 			return true;
 		}
 		return false;
+	}
+	
+	public InfoPlate getAndCreateInfoPlate(int id)
+	{
+		InfoPlate plate = getInfoPlate(id);
+		if (plate != null)
+		{
+			return plate;
+		}
+		plate = new InfoPlate();
+		plate.setId(id);
+		infoPlates.add(plate);
+		invalidate();
+		return plate;
+	}
+	
+	public InfoPlate getInfoPlate(int id)
+	{
+		for (InfoPlate plate : infoPlates)
+		{
+			if (plate.getId() == id)
+			{
+				return plate;
+			}
+		}
+		return null;
+	}
+	
+	public void removeInfoPlate(int id)
+	{
+		InfoPlateBase plate = getInfoPlate(id);
+		infoPlates.remove(plate);
+		invalidate();
+	}
+	
+	public void sortInfoPlates()
+	{
+		infoPlates.sort(Comparator.comparingInt(InfoPlateBase::getPriority).reversed());
 	}
 	
 	public void setHand(MDInvisibleHand hand)
@@ -179,6 +251,33 @@ public class MDPlayer extends MDComponent
 		return getColor(2);
 	}
 	
+	public void updatePropertySetScrollButtons()
+	{
+		setsScrollBack.setEnabled(propertySets.getScrollPos() > 0);
+		setsScrollForward.setEnabled(propertySets.getScrollPos() < propertySets.getScrollMax());
+	}
+	
+	private boolean arePlatesExtendingIntoProperties(int setsX)
+	{
+		Font font = GraphicsUtils.getThinMDFont(Font.PLAIN, scale(18));
+		FontMetrics metrics = GraphicsUtils.getFontMetrics(font);
+		int plateInnerPadding = scale(8);
+		int nameWidth = metrics.stringWidth(getNameText());
+		final int platePadding = scale(12);
+		int xPos = nameWidth + plateInnerPadding + platePadding;
+		for (InfoPlateBase plate : infoPlates)
+		{
+			int plateWidth = metrics.stringWidth(plate.getText());
+			xPos += plateWidth + plateInnerPadding + platePadding;
+		}
+		return xPos > setsX;
+	}
+	
+	private String getNameText()
+	{
+		return MDClient.getInstance().isDebugEnabled() ? player.getName() + " (ID: " + player.getID() + ")" : player.getName();
+	}
+	
 	@Override
 	public void doPaint(Graphics gr)
 	{
@@ -196,26 +295,57 @@ public class MDPlayer extends MDComponent
 		Font font = GraphicsUtils.getThinMDFont(Font.PLAIN, scale(18));
 		g.setFont(font);
 		FontMetrics metrics = g.getFontMetrics();
-		String nameText = MDClient.getInstance().isDebugEnabled() ? player.getName() + " (ID: " + player.getID() + ")" : player.getName();
+		String nameText = getNameText();
+		int plateInnerPadding = scale(8);
 		int nameWidth = metrics.stringWidth(nameText);
-		int nameHeight = font.getSize() + 1;
+		int plateHeight = font.getSize() + 1;
 		g.setColor(nameplate);
-		GradientPaint paint = new GradientPaint(0, 0, GraphicsUtils.getLighterColor(nameplate, 1), 0, (float) (nameHeight * 0.6), nameplate);
+		GradientPaint paint = new GradientPaint(0, 0, GraphicsUtils.getLighterColor(nameplate, 1), 0, (float) (plateHeight * 0.6), nameplate);
 		g.setPaint(paint);
-		g.fillRoundRect(0, 0, nameWidth + scale(8), nameHeight + scale(2), scale(10), scale(10));
+		
+		g.fillRoundRect(0, 0, nameWidth + plateInnerPadding, plateHeight + scale(2), scale(10), scale(10));
 		g.setColor(player.isConnected() ? Color.BLACK : Color.RED);
-		TextPainter tp = new TextPainter(nameText, font, new Rectangle(scale(4), scale(3), nameWidth, nameHeight));
+		TextPainter tp = new TextPainter(nameText, font, new Rectangle(scale(4), scale(3), nameWidth, plateHeight));
 		tp.paint(g);
 		g.setColor(border);
-		g.drawRoundRect(0, 0, nameWidth + scale(8), nameHeight + scale(2), scale(10), scale(10));
+		g.drawRoundRect(0, 0, nameWidth + plateInnerPadding, plateHeight + scale(2), scale(10), scale(10));
+		
+		final int platePadding = scale(12);
+		int xPos = nameWidth + plateInnerPadding + platePadding;
+		
+		for (InfoPlateBase plate : infoPlates)
+		{
+			String text = plate.getText();
+			Color textColor = plate.getTextColor() != null ? plate.getTextColor() : Color.BLACK;
+			Color plateColor = plate.getColor() != null ? plate.getColor() : nameplate;
+			Color plateBorderColor = plate.getBorderColor() != null ? plate.getBorderColor() : border;
+			int plateWidth = metrics.stringWidth(text);
+			paint = new GradientPaint(0, 0, GraphicsUtils.getLighterColor(plateColor, 1), 0, (float) (plateHeight * 0.6), plateColor);
+			g.setPaint(paint);
+			g.fillRoundRect(xPos, 0, plateWidth + plateInnerPadding, plateHeight + scale(2), scale(10), scale(10));
+			g.setColor(textColor);
+			tp = new TextPainter(text, font, new Rectangle(xPos + scale(4), scale(3), plateWidth, plateHeight));
+			tp.paint(g);
+			g.setColor(plateBorderColor);
+			g.drawRoundRect(xPos, 0, plateWidth + plateInnerPadding, plateHeight + scale(2), scale(10), scale(10));
+			
+			xPos += plateWidth + plateInnerPadding + platePadding;
+		}
 	}
 	
 	public class PlayerLayout extends LayoutAdapter
 	{
+		private boolean layingOut = false;
+		
 		@Override
 		public void layoutContainer(Container container)
 		{
-			boolean hasButtons = buttons.size() > 0;
+			if (layingOut)
+			{
+				return;
+			}
+			layingOut = true;
+			boolean hasButtons = !buttons.isEmpty();
 			Point bankPos = new Point(scale(20), scale(hasButtons ? 5 : 15));
 			Dimension bankSize = new Dimension(scale(340 + 10), scale(90 + 20));
 			if (hand != null)
@@ -257,10 +387,68 @@ public class MDPlayer extends MDComponent
 				}
 			}
 			
+			int infoPlateSpace = scale(20);
+			int setsHeight = getHeight() - scale(10);
+			int setsY = scale(5);
+			
 			int x = bank == null ? scale(10) : (bank.getX() + bank.getWidth() + scale(20));
-			propertySets.setLocation(x, scale(5));
-			propertySets.setSize(getWidth() - x - scale(5), getHeight() - scale(10));
-			propertySets.update();
+			
+			int width = getWidth() - x - scale(5);
+			
+			int scrollButtonWidth = scale(20);
+			
+			int prevScroll = propertySets.getScrollPos();
+			propertySets.setLocation(x, setsY);
+			propertySets.setSize(width, setsHeight);
+			
+			boolean scrollRequired = propertySets.checkScrollRequired();
+			
+			if (setsScrollBack == null || setsScrollForward == null)
+			{
+				layingOut = false;
+				return;
+			}
+			setsScrollBack.setVisible(scrollRequired);
+			setsScrollForward.setVisible(scrollRequired);
+			if (scrollRequired)
+			{
+				setsScrollBack.setSize(scrollButtonWidth, setsHeight);
+			}
+			
+			if (arePlatesExtendingIntoProperties(x))
+			{
+				setsY += infoPlateSpace;
+				setsHeight -= infoPlateSpace;
+			}
+			
+			if (scrollRequired)
+			{
+				x += setsScrollBack.getWidth();
+				width -= scrollButtonWidth * 2;
+			}
+			
+			propertySets.setLocation(x, setsY);
+			propertySets.setSize(width, setsHeight);
+			propertySets.checkScrollRequired();
+			propertySets.setScrollPos(Math.min(prevScroll, propertySets.getScrollMax()));
+			propertySets.invalidate();
+			if (scrollRequired)
+			{
+				setsScrollBack.setLocation(x - setsScrollBack.getWidth(), setsY);
+				setsScrollBack.setSize(scrollButtonWidth, setsHeight);
+				setsScrollForward.setLocation(Math.max(propertySets.getMaxX(), setsScrollBack.getMaxX() + scale(5)), setsY);
+				setsScrollForward.setSize(scrollButtonWidth, setsHeight);
+			}
+			
+			updatePropertySetScrollButtons();
+			
+			layingOut = false;
+		}
+		
+		@Override
+		public void invalidateLayout(Container c)
+		{
+			layoutContainer(c);
 		}
 		
 		@Override
@@ -273,5 +461,16 @@ public class MDPlayer extends MDComponent
 	public static int getPlayerSize()
 	{
 		return GraphicsUtils.scale(PLAYER_SIZE);
+	}
+	
+	
+	public class InfoPlate extends InfoPlateBase
+	{
+		@Override
+		public void setText(String text)
+		{
+			super.setText(text);
+			invalidate();
+		}
 	}
 }

@@ -170,12 +170,12 @@ public abstract class CardCollection
 	
 	public void transferCardTo(Card card, CardCollection to, int index)
 	{
-		getClient().getEventQueue().addTask(new CardMove(card, this, to, index));
+		getClient().getEventQueue().addPriorityTask(new CardMove(card, this, to, index));
 	}
 	
 	public void transferCardTo(Card card, CardCollection to, int index, double time, CardAnimationType anim)
 	{
-		getClient().getEventQueue().addTask(new CardMove(card, this, to, index, time, anim));
+		getClient().getEventQueue().addPriorityTask(new CardMove(card, this, to, index, time, anim));
 	}
 	
 	public void transferCard(Card card, int index)
@@ -185,7 +185,7 @@ public abstract class CardCollection
 	
 	public void transferCard(Card card, int index, double time, CardAnimationType anim)
 	{
-		getClient().getEventQueue().addTask(new CardMove(card, null, this, index, time, anim));
+		getClient().getEventQueue().addPriorityTask(new CardMove(card, null, this, index, time, anim));
 	}
 	
 	public void setOwner(Player player)

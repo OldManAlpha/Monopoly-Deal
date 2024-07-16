@@ -329,6 +329,11 @@ public class NetServerHandler extends NetHandler
 	
 	public void handleActionMoveProperty(Player player, PacketActionMoveProperty packet)
 	{
+		if (!player.isFocused())
+		{
+			player.resendActionState();
+			return;
+		}
 		Card card = Card.getCard(packet.id);
 		if (card.getOwner() != player || !(card.getOwningCollection() instanceof PropertySet))
 		{
@@ -343,9 +348,19 @@ public class NetServerHandler extends NetHandler
 			player.resendActionState();
 			return;
 		}
+		if (property.isSingleColor())
+		{
+			player.resendActionState();
+			return;
+		}
 		if (packet.setId > -1)
 		{
 			PropertySet set = player.getPropertySet(packet.setId);
+			if (!set.isCompatibleWith(property) || set.isMonopoly())
+			{
+				player.resendActionState();
+				return;
+			}
 			card.transfer(set);
 		}
 		else
@@ -498,7 +513,14 @@ public class NetServerHandler extends NetHandler
 		Card card = Card.getCard(packet.card);
 		if (card instanceof CardActionBuilding && card.getOwner() == player && card.getOwningCollection() instanceof PropertySet)
 		{
+			if (((PropertySet) card.getOwningCollection()).getHighestBuildingTier() != ((CardActionBuilding) card).getTier())
+			{
+				player.resendActionState();
+				player.clearAwaitingResponse();
+				return;
+			}
 			card.transfer(player.getBank());
+			player.clearAwaitingResponse();
 		}
 	}
 	

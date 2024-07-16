@@ -1,6 +1,7 @@
 package oldmana.md.server.state;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -452,8 +453,8 @@ public class GameState
 		{
 			throw new IllegalArgumentException("Old state does not exist!");
 		}
-		oldState.onRemove();
 		states.remove(index);
+		oldState.onRemove();
 		if (index == 0)
 		{
 			addActionState(newState);
@@ -473,18 +474,34 @@ public class GameState
 	
 	public void removeActionState(ActionState state)
 	{
-		state.onRemove();
 		states.remove(state);
+		try
+		{
+			state.onRemove();
+		}
+		catch (Exception e)
+		{
+			System.out.println("Exception while removing state " + state.getClass().getSimpleName());
+			e.printStackTrace();
+		}
 		checkCurrentState();
 	}
 	
 	public void clearActionStates()
 	{
-		for (ActionState state : states)
+		for (ActionState state : new ArrayList<ActionState>(states))
 		{
-			state.onRemove();
+			states.remove(state);
+			try
+			{
+				state.onRemove();
+			}
+			catch (Exception e)
+			{
+				System.out.println("Exception while removing state " + state.getClass().getSimpleName());
+				e.printStackTrace();
+			}
 		}
-		states.clear();
 		checkCurrentState();
 	}
 	

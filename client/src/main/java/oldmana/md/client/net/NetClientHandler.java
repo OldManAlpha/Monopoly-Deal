@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import oldmana.md.client.gui.component.large.MDPlayer.InfoPlate;
 import oldmana.md.common.net.api.packet.Packet;
 import oldmana.md.client.MDClient;
 import oldmana.md.client.Player;
@@ -385,6 +386,7 @@ public class NetClientHandler extends NetHandler
 		}
 	}
 	
+	@Queued
 	public void handlePropertySetData(PacketPropertySetData packet)
 	{
 		Player owner = client.getPlayerByID(packet.owner);
@@ -398,6 +400,7 @@ public class NetClientHandler extends NetHandler
 		client.getTableScreen().getTopbar().setText(packet.text);
 	}
 	
+	@Queued
 	public void handleMoveCard(PacketMoveCard packet)
 	{
 		Card card = Card.getCard(packet.cardId);
@@ -405,6 +408,7 @@ public class NetClientHandler extends NetHandler
 		collection.transferCard(card, packet.index, packet.time, CardAnimationType.fromID(packet.anim));
 	}
 	
+	@Queued
 	public void handleMoveRevealCard(PacketMoveRevealCard packet)
 	{
 		CardCollection from = CardCollection.getCardCollection(packet.from);
@@ -412,6 +416,7 @@ public class NetClientHandler extends NetHandler
 		from.transferCardTo(Card.getCard(packet.cardId), to, packet.index, packet.time, CardAnimationType.fromID(packet.anim));
 	}
 	
+	@Queued
 	public void handleMoveUnknownCard(PacketMoveUnknownCard packet)
 	{
 		CardCollection from = CardCollection.getCardCollection(packet.from);
@@ -635,6 +640,28 @@ public class NetClientHandler extends NetHandler
 				return;
 			}
 		}
+	}
+	
+	@Queued
+	public void handleInfoPlate(PacketInfoPlate packet)
+	{
+		Player player = client.getPlayerByID(packet.player);
+		InfoPlate plate = player.getUI().getAndCreateInfoPlate(packet.id);
+		plate.setPriority(packet.priority);
+		plate.setText(packet.text);
+		plate.setTextColor(packet.textColor);
+		plate.setColor(packet.color);
+		plate.setBorderColor(packet.borderColor);
+		player.getUI().sortInfoPlates();
+		player.getUI().updateGraphics();
+	}
+	
+	@Queued
+	public void handleDestroyInfoPlate(PacketDestroyInfoPlate packet)
+	{
+		Player player = client.getPlayerByID(packet.player);
+		player.getUI().removeInfoPlate(packet.id);
+		player.getUI().updateGraphics();
 	}
 	
 	@Queued
