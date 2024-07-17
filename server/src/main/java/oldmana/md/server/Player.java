@@ -92,6 +92,7 @@ public class Player implements CommandSender
 	
 	private boolean bot;
 	private PlayerAI ai;
+	private InfoPlate botPlate;
 	
 	private boolean removed = false;
 	
@@ -122,7 +123,7 @@ public class Player implements CommandSender
 	public Player(String name)
 	{
 		this(null, UUID.randomUUID(), name, false);
-		bot = true;
+		setBot(true);
 	}
 	
 	public UUID getUUID()
@@ -1147,6 +1148,18 @@ public class Player implements CommandSender
 	
 	public void setBot(boolean bot)
 	{
+		if (this.bot && !bot)
+		{
+			botPlate.remove();
+			botPlate = null;
+		}
+		else if (!this.bot && bot)
+		{
+			botPlate = new InfoPlate(this, "Bot", "bot");
+			botPlate.setPriority(1000);
+			botPlate.setColor(ChatColor.UTILITY.getColor());
+			botPlate.register();
+		}
 		this.bot = bot;
 		updatePlayer();
 	}
