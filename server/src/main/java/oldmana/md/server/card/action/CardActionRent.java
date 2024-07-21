@@ -133,8 +133,8 @@ public class CardActionRent extends CardAction
 		{
 			types[i] = colors.get(i).getID();
 		}
-		return new PacketCardActionRentData(getID(), getName(), getValue(), types, getDescription().getID(),
-				getOuterColor().getRGB(), getInnerColor().getRGB());
+		return new PacketCardActionRentData(getID(), getName(), getValue(), types, getDisplayName(), getFontSize(),
+				getDisplayOffsetY(), getDescription().getID(), getOuterColor().getRGB(), getInnerColor().getRGB());
 	}
 	
 	@Override
@@ -189,6 +189,8 @@ public class CardActionRent extends CardAction
 		dt.put(VALUE, 3);
 		dt.put(NAME, DEFAULT_NAME);
 		dt.putStrings(DISPLAY_NAME, "RENT");
+		dt.put(FONT_SIZE, 9);
+		dt.put(DISPLAY_OFFSET_Y, 2);
 		dt.putStrings(DESCRIPTION, "Charge rent using your placed down properties that match the colors on this Rent card. "
 				+ "Refer to your properties to find the amount of rent you can charge.");
 		dt.putColors(COLORS, PropertyColor.getVanillaColors());

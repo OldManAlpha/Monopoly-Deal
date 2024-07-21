@@ -233,6 +233,9 @@ public class NetClientHandler extends NetHandler
 		if (card == null)
 		{
 			card = new CardActionRent(packet.id, packet.value, packet.name);
+			card.setDisplayName(packet.displayName);
+			card.setFontSize(packet.fontSize);
+			card.setDisplayOffsetY(packet.displayOffsetY);
 			card.setRentColors(PropertyColor.fromIDs(packet.colors).toArray(new PropertyColor[packet.colors.length]));
 			card.setDescription(CardDescription.getDescriptionByID(packet.description));
 			card.setOuterColor(new Color(packet.outerColor));
@@ -245,6 +248,9 @@ public class NetClientHandler extends NetHandler
 		{
 			c.setValue(packet.value);
 			c.setName(packet.name);
+			c.setDisplayName(packet.displayName);
+			c.setFontSize(packet.fontSize);
+			c.setDisplayOffsetY(packet.displayOffsetY);
 			c.setRentColors(PropertyColor.fromIDs(packet.colors).toArray(new PropertyColor[packet.colors.length]));
 			c.setDescription(CardDescription.getDescriptionByID(packet.description));
 			c.setOuterColor(new Color(packet.outerColor));

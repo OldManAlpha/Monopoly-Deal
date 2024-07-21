@@ -9,7 +9,7 @@ import oldmana.md.common.net.packet.universal.*;
 
 public class NetHandler
 {
-	public static int PROTOCOL_VERSION = 23;
+	public static int PROTOCOL_VERSION = 24;
 	
 	private static Class<? extends Packet>[] packets = new Class[]
 	{

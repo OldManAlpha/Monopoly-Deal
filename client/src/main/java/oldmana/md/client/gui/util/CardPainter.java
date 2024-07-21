@@ -143,6 +143,7 @@ public class CardPainter
 		
 		Color outerColor = card.getOuterColor();
 		Color innerColor = card.getInnerColor();
+		Color textColor = new Color(30, 30, 30);
 		// Draw Card Outline
 		g.setColor(Color.BLACK);
 		/*
@@ -233,7 +234,7 @@ public class CardPainter
 			g.fillOval(scale(11), scale(26), scale(38), scale(38));
 			g.setColor(innerColor);
 			g.fillOval(scale(12), scale(27), scale(36), scale(36));
-			g.setColor(new Color(30, 30, 30));
+			g.setColor(textColor);
 			/*
 			for (int i = 0 ; i < scale(1) ; i++)
 			{
@@ -376,34 +377,27 @@ public class CardPainter
 					}
 					g.setColor(Color.WHITE);
 					g.fillOval(scale(18), scale(33), scale(24), scale(24));
-					g.setColor(new Color(30, 30, 30));
-					Font font = GraphicsUtils.getBoldMDFont(scale(9));
-					g.setFont(font);
-					TextPainter tp = new TextPainter("RENT", font, new Rectangle(scale(14) - 1, scale(33) - 1, scale(32) + 1, scale(24) + 1));
-					tp.setHorizontalAlignment(Alignment.CENTER);
-					tp.setVerticalAlignment(Alignment.CENTER);
-					tp.paint(g);
 				}
 				else
 				{
 					g.setColor(Color.WHITE);
 					g.fillOval(scale(12.5), scale(27.5), scale(35), scale(35));
-					g.setColor(new Color(30, 30, 30));
-					Font font = new Font(getFont().getFontName(), Font.BOLD, scale(card.getFontSize()));
-					g.setFont(font);
-					TextPainter tp;
-					if (card.getDisplayName() != null)
-					{
-						tp = new TextPainter(Arrays.asList(card.getDisplayName()), font, new Rectangle(scale(12) - 1, scale(28) - 1 + scale(card.getDisplayOffsetY()), scale(36) + 1, scale(30) + 1), false, false);
-					}
-					else
-					{
-						tp = new TextPainter(card.getName(), font, new Rectangle(scale(12) - 1, scale(28) - 1 + scale(card.getDisplayOffsetY()), scale(36) + 1, scale(30) + 1), false, false);
-					}
-					tp.setHorizontalAlignment(Alignment.CENTER);
-					tp.setVerticalAlignment(Alignment.CENTER);
-					tp.paint(g);
 				}
+				g.setColor(textColor);
+				Font font = new Font(getFont().getFontName(), Font.BOLD, scale(card.getFontSize()));
+				g.setFont(font);
+				TextPainter tp;
+				if (card.getDisplayName() != null)
+				{
+					tp = new TextPainter(Arrays.asList(card.getDisplayName()), font, new Rectangle(scale(12) - 1, scale(28) - 1 + scale(card.getDisplayOffsetY()), scale(36) + 1, scale(30) + 1), false, false);
+				}
+				else
+				{
+					tp = new TextPainter(card.getName(), font, new Rectangle(scale(12) - 1, scale(28) - 1 + scale(card.getDisplayOffsetY()), scale(36) + 1, scale(30) + 1), false, false);
+				}
+				tp.setHorizontalAlignment(Alignment.CENTER);
+				tp.setVerticalAlignment(Alignment.CENTER);
+				tp.paint(g);
 			}
 			else // Draw Property Rent Info
 			{
