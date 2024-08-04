@@ -10,6 +10,7 @@ import oldmana.md.common.state.TargetState;
 import oldmana.md.common.net.packet.server.actionstate.PacketUpdateActionStateTarget;
 import oldmana.md.server.MDServer;
 import oldmana.md.server.Player;
+import oldmana.md.server.event.state.ActionStateTargetStateChangeEvent;
 import oldmana.md.server.history.UndoableAction;
 
 public abstract class ActionState
@@ -135,6 +136,14 @@ public abstract class ActionState
 			getServer().broadcastPacket(new PacketUpdateActionStateTarget(player.getID(), state));
 		}
 		getGameState().setStateChanged();
+		
+		ActionStateTargetStateChangeEvent event = new ActionStateTargetStateChangeEvent(this, player, state);
+		getServer().getEventManager().callEvent(event);
+		if (event.isCancelled())
+		{
+			return;
+		}
+		
 		if (state == TargetState.NOT_TARGETED)
 		{
 			targets.remove(player);
@@ -144,6 +153,15 @@ public abstract class ActionState
 			targets.put(player, state);
 		}
 		checkFinished();
+	}
+	
+	public TargetState getTargetState(Player player)
+	{
+		if (!targets.containsKey(player))
+		{
+			return TargetState.NOT_TARGETED;
+		}
+		return targets.get(player);
 	}
 	
 	public void removeActionTarget(Player player)

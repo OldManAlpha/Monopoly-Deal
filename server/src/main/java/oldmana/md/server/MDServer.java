@@ -27,6 +27,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import oldmana.md.common.util.StreamUtil;
 import oldmana.md.server.ai.AIManager;
@@ -773,6 +774,42 @@ public class MDServer
 		return null;
 	}
 	
+	public List<Player> getPlayersMatching(String start)
+	{
+		return getPlayersMatching(start, Collections.emptyList());
+	}
+	
+	public List<Player> getPlayersMatching(String start, String exclusion)
+	{
+		return getPlayersMatching(start, Collections.singletonList(exclusion));
+	}
+	
+	public List<Player> getPlayersMatching(String start, List<String> exclusions)
+	{
+		return getPlayers().stream()
+				.filter(player -> !exclusions.contains(player.getName()) &&
+						player.getName().toLowerCase().startsWith(start.toLowerCase()))
+				.collect(Collectors.toCollection(ArrayList::new));
+	}
+	
+	public List<String> getPlayerNamesMatching(String start)
+	{
+		return getPlayerNamesMatching(start, Collections.emptyList());
+	}
+	
+	public List<String> getPlayerNamesMatching(String start, String exclusion)
+	{
+		return getPlayerNamesMatching(start, Collections.singletonList(exclusion));
+	}
+	
+	public List<String> getPlayerNamesMatching(String start, List<String> exclusions)
+	{
+		return getPlayers().stream()
+				.map(Player::getName)
+				.filter(name -> !exclusions.contains(name) && name.toLowerCase().startsWith(start.toLowerCase()))
+				.collect(Collectors.toCollection(ArrayList::new));
+	}
+	
 	public GameRules getGameRules()
 	{
 		return rules;
@@ -926,6 +963,13 @@ public class MDServer
 	public Sound getSound(String name)
 	{
 		return sounds.get(name);
+	}
+	
+	public List<String> getSoundNames()
+	{
+		return sounds.values().stream()
+				.map(Sound::getName)
+				.collect(Collectors.toCollection(ArrayList::new));
 	}
 	
 	public void playSound(Sound sound)

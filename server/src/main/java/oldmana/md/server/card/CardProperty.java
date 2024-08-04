@@ -186,7 +186,7 @@ public class CardProperty extends Card
 	 */
 	public static CardProperty create(int value, String name, boolean base, boolean stealable, PropertyColor... colors)
 	{
-		return CardType.PROPERTY.createCard(createTemplate(value, name, base, colors));
+		return CardType.PROPERTY.createCard(createTemplate(value, name, base, stealable, colors));
 	}
 	
 	public static CardTemplate createTemplate(int value, String name, PropertyColor... colors)

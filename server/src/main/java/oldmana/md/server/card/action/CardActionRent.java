@@ -16,6 +16,7 @@ import oldmana.md.server.history.BasicUndoableAction;
 import oldmana.md.server.card.CardType;
 import oldmana.md.server.rules.GameRules;
 import oldmana.md.server.state.ActionStateRent;
+import oldmana.md.server.state.ActionStateRent.RentCauseCard;
 import oldmana.md.server.state.ActionStateTargetPlayer;
 
 import java.util.ArrayList;
@@ -76,6 +77,8 @@ public class CardActionRent extends CardAction
 	@Override
 	public void doPlay(Player player, PlayArguments args)
 	{
+		List<Card> cardsToPlay = new ArrayList<Card>();
+		cardsToPlay.add(this);
 		List<RentModifierCard> modifiers = args.getArguments(CardArgument.class).stream()
 				.map(CardArgument::getCard)
 				.filter(card -> card instanceof RentModifierCard)
@@ -87,6 +90,7 @@ public class CardActionRent extends CardAction
 		{
 			currentRent = modifier.modifyRent(baseRent, currentRent);
 			((Card) modifier).play(new ConsumeModifierArgument(this));
+			cardsToPlay.add((Card) modifier);
 		}
 		
 		int rent = (int) Math.round(currentRent);
@@ -96,11 +100,12 @@ public class CardActionRent extends CardAction
 				(colors.size() > 2 && rules.doesMultiColorRentChargeAll())))
 		{
 			player.clearUndoableActions();
-			getServer().getGameState().addActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player), rent));
+			getServer().getGameState().addActionState(new ActionStateRent(player,
+					getServer().getPlayersExcluding(player), rent, new RentCauseCard(cardsToPlay)));
 		}
 		else
 		{
-			getServer().getGameState().addActionState(new ActionStateTargetRent(player, rent));
+			getServer().getGameState().addActionState(new ActionStateTargetRent(player, rent, this, cardsToPlay));
 		}
 	}
 	
@@ -227,14 +232,19 @@ public class CardActionRent extends CardAction
 		return type;
 	}
 	
-	public class ActionStateTargetRent extends ActionStateTargetPlayer
+	public static class ActionStateTargetRent extends ActionStateTargetPlayer
 	{
 		private int rent;
 		
-		public ActionStateTargetRent(Player player, int rent)
+		private Card rentCard;
+		private List<Card> cards;
+		
+		public ActionStateTargetRent(Player player, int rent, Card rentCard, List<Card> cards)
 		{
 			super(player);
 			this.rent = rent;
+			this.rentCard = rentCard;
+			this.cards = cards;
 			setStatus(player.getName() + " is using a Rent card");
 		}
 		
@@ -247,13 +257,13 @@ public class CardActionRent extends CardAction
 		public void playerSelected(Player player)
 		{
 			getActionOwner().clearUndoableActions();
-			replaceState(new ActionStateRent(getActionOwner(), player, rent));
+			replaceState(new ActionStateRent(getActionOwner(), player, rent, new RentCauseCard(cards)));
 		}
 		
 		@Override
 		public void onUndo(UndoableAction action)
 		{
-			if (action.hasCard(CardActionRent.this))
+			if (action.hasCard(rentCard))
 			{
 				removeState();
 			}

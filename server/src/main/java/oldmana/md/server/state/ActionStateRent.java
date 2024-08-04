@@ -1,6 +1,7 @@
 package oldmana.md.server.state;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import oldmana.md.server.event.state.RentPaymentEvent;
 public class ActionStateRent extends ActionState
 {
 	private Map<Player, Integer> charges = new LinkedHashMap<Player, Integer>();
+	private RentCause cause;
 	
 	private String renterName = "Bank"; // Only used if renter is null
 	
@@ -31,6 +33,12 @@ public class ActionStateRent extends ActionState
 		createStatus();
 	}
 	
+	public ActionStateRent(Player renter, Player rented, int amount, RentCause cause)
+	{
+		this(renter, rented, amount);
+		this.cause = cause;
+	}
+	
 	public ActionStateRent(Player renter, List<Player> rented, int amount)
 	{
 		super(renter, rented);
@@ -39,12 +47,24 @@ public class ActionStateRent extends ActionState
 		createStatus();
 	}
 	
+	public ActionStateRent(Player renter, List<Player> rented, int amount, RentCause cause)
+	{
+		this(renter, rented, amount);
+		this.cause = cause;
+	}
+	
 	public ActionStateRent(Player renter, Map<Player, Integer> rented)
 	{
 		super(renter, new ArrayList<Player>(rented.keySet()));
 		charges = rented;
 		checkBrokePlayers();
 		createStatus();
+	}
+	
+	public ActionStateRent(Player renter, Map<Player, Integer> rented, RentCause cause)
+	{
+		this(renter, rented);
+		this.cause = cause;
 	}
 	
 	public ActionStateRent(String renterName, Player rented, int amount)
@@ -56,6 +76,12 @@ public class ActionStateRent extends ActionState
 		createStatus();
 	}
 	
+	public ActionStateRent(String renterName, Player rented, int amount, RentCause cause)
+	{
+		this(renterName, rented, amount);
+		this.cause = cause;
+	}
+	
 	public ActionStateRent(String renterName, List<Player> rented, int amount)
 	{
 		super(null, rented);
@@ -65,6 +91,12 @@ public class ActionStateRent extends ActionState
 		createStatus();
 	}
 	
+	public ActionStateRent(String renterName, List<Player> rented, int amount, RentCause cause)
+	{
+		this(renterName, rented, amount);
+		this.cause = cause;
+	}
+	
 	public ActionStateRent(String renterName, Map<Player, Integer> rented)
 	{
 		super(null, new ArrayList<Player>(rented.keySet()));
@@ -72,6 +104,12 @@ public class ActionStateRent extends ActionState
 		charges = rented;
 		checkBrokePlayers();
 		createStatus();
+	}
+	
+	public ActionStateRent(String renterName, Map<Player, Integer> rented, RentCause cause)
+	{
+		this(renterName, rented);
+		this.cause = cause;
 	}
 	
 	public void createStatus()
@@ -172,6 +210,11 @@ public class ActionStateRent extends ActionState
 		charges.put(player, charge);
 	}
 	
+	public RentCause getCause()
+	{
+		return cause;
+	}
+	
 	public void playerPaid(Player player, List<Card> cards)
 	{
 		Player renter = getActionOwner();
@@ -226,5 +269,27 @@ public class ActionStateRent extends ActionState
 			amounts[i] = rents.get(i);
 		}
 		return new PacketActionStateRent(getActionOwner() != null ? getActionOwner().getID() : -1, rented, amounts);
+	}
+	
+	public interface RentCause {}
+	
+	public static class RentCauseCard implements RentCause
+	{
+		private List<Card> cards;
+		
+		public RentCauseCard(Card... cards)
+		{
+			this.cards = Arrays.asList(cards);
+		}
+		
+		public RentCauseCard(List<Card> cards)
+		{
+			this.cards = new ArrayList<Card>(cards);
+		}
+		
+		public List<Card> getCards()
+		{
+			return cards;
+		}
 	}
 }

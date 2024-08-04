@@ -27,6 +27,21 @@ public class MessageBuilder
 	private ChatAlignment alignment = ChatAlignment.LEFT;
 	private String category;
 	
+	public MessageBuilder(MessageBuilder mb)
+	{
+		message = new JSONArray(mb.message.toList());
+		
+		currentText = new StringBuilder(mb.currentText);
+		currentColor = mb.currentColor;
+		link = mb.link;
+		cmd = mb.cmd;
+		fillCmd = mb.fillCmd;
+		currentHoverText = mb.currentHoverText != null ? new ArrayList<String>(mb.currentHoverText) : null;
+		underline = mb.underline;
+		alignment = mb.alignment;
+		category = mb.category;
+	}
+	
 	public MessageBuilder() {}
 	
 	public MessageBuilder(String str)
@@ -269,6 +284,13 @@ public class MessageBuilder
 	public MessageBuilder setCategory(String category)
 	{
 		this.category = category;
+		return this;
+	}
+	
+	public MessageBuilder addMessageBuilder(MessageBuilder mb)
+	{
+		finalizeSegment();
+		message.putAll(mb.message);
 		return this;
 	}
 	

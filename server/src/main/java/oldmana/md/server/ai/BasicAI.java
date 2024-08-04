@@ -263,7 +263,7 @@ public class BasicAI extends PlayerAI
 		return false;
 	}
 	
-	private boolean playJSN(ActionState state)
+	public boolean playJSN(ActionState state)
 	{
 		Player player = getPlayer();
 		
@@ -277,7 +277,7 @@ public class BasicAI extends PlayerAI
 		return false;
 	}
 	
-	private void dumbActionStateOwner(ActionState state)
+	public void dumbActionStateOwner(ActionState state)
 	{
 		Player player = getPlayer();
 		if (state.getNumberOfRefused() > 0)
@@ -289,7 +289,7 @@ public class BasicAI extends PlayerAI
 		}
 	}
 	
-	private void dumbActionStateReply(ActionState state)
+	public void dumbActionStateReply(ActionState state)
 	{
 		Player player = getPlayer();
 		if (state.getTargetPlayer() == player && !state.isRefused(player))

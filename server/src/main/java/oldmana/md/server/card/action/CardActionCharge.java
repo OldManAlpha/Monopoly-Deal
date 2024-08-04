@@ -7,6 +7,7 @@ import oldmana.md.server.card.CardTemplate;
 import oldmana.md.server.card.CardType;
 import oldmana.md.server.history.UndoableAction;
 import oldmana.md.server.state.ActionStateRent;
+import oldmana.md.server.state.ActionStateRent.RentCauseCard;
 import oldmana.md.server.state.ActionStateTargetPlayer;
 
 import static oldmana.md.server.card.CardAttributes.*;
@@ -37,7 +38,8 @@ public class CardActionCharge extends CardAction
 		if (chargesAll || getServer().getPlayerCount() <= 2)
 		{
 			player.clearUndoableActions();
-			getServer().getGameState().addActionState(new ActionStateRent(player, getServer().getPlayersExcluding(player), charge));
+			getServer().getGameState().addActionState(new ActionStateRent(player,
+					getServer().getPlayersExcluding(player), charge, new RentCauseCard(this)));
 		}
 		else
 		{
@@ -103,7 +105,7 @@ public class CardActionCharge extends CardAction
 		public void playerSelected(Player player)
 		{
 			getActionOwner().clearUndoableActions();
-			replaceState(new ActionStateRent(getActionOwner(), player, getCharge()));
+			replaceState(new ActionStateRent(getActionOwner(), player, getCharge(), new RentCauseCard(card)));
 		}
 		
 		@Override
