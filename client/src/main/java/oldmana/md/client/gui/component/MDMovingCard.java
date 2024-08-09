@@ -358,7 +358,10 @@ public class MDMovingCard extends MDComponent
 		LinearGradientPaint paint = new LinearGradientPaint(widthPos, heightPos, widthPos + (width / 4), heightPos + (height / 4),
 				new float[] {0F, 0.45F, 0.55F, 1F}, new java.awt.Color[] {transparent, shine, shine, transparent});
 		g.setPaint(paint);
+		Composite prevComposite = g.getComposite();
+		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP));
 		g.fillRect(-(width / 4), -(height / 4), width, height);
+		g.setComposite(prevComposite);
 	}
 	
 	public CompletableFuture<Image> renderFrame(double rotation, double shineProg, int frame)
@@ -397,7 +400,11 @@ public class MDMovingCard extends MDComponent
 			final double radius = width / 2D;
 			final double back = height / 20D;
 			
-			double angle = Math.toRadians(degrees - (start != null ? 180 : 0));
+			if (degrees > 180)
+			{
+				degrees -= 180;
+			}
+			double angle = Math.toRadians(degrees);
 			
 			trans.setUlx(radius - Math.sin(angle) * radius);
 			trans.setUly(0 - Math.cos(angle) * back);

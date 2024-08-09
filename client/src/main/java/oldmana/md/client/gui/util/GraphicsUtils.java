@@ -8,11 +8,16 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.Transparency;
 import java.awt.event.MouseEvent;
+import java.awt.image.AreaAveragingScaleFilter;
 import java.awt.image.BufferedImage;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageProducer;
 import java.awt.image.VolatileImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,6 +81,100 @@ public class GraphicsUtils
 	{
 		return new BufferedImage(image.getColorModel(),
 				image.copyData(image.getRaster().createCompatibleWritableRaster()), image.isAlphaPremultiplied(), null);
+	}
+	
+	/**
+	 * For better quality images that don't cost a ton of CPU time. Still not the best quality.
+	 */
+	public static BufferedImage scaleImage(BufferedImage img, int targetWidth, int targetHeight, boolean higherQuality)
+	{
+		// functionality not supported in java 1.4
+		int transparency = Transparency.OPAQUE;
+		try
+		{
+			transparency = img.getTransparency();
+		}
+		catch (Exception e) {}
+		int type = (transparency == Transparency.OPAQUE) ? BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB;
+		
+		BufferedImage ret = img;
+		int w, h;
+		if (higherQuality)
+		{
+			// Use multi-step technique: start with original size, then
+			// scale down in multiple passes with drawImage()
+			// until the target size is reached
+			w = img.getWidth();
+			h = img.getHeight();
+		}
+		else
+		{
+			// Use one-step technique: scale directly from original
+			// size to target size with a single drawImage() call
+			w = targetWidth;
+			h = targetHeight;
+		}
+		
+		do
+		{
+			if (higherQuality && w > targetWidth)
+			{
+				w = (int) Math.round(w * 0.5);
+				if (w < targetWidth)
+				{
+					w = targetWidth;
+				}
+			}
+			
+			if (higherQuality && h > targetHeight)
+			{
+				h = (int) Math.round(h * 0.5);
+				if (h < targetHeight)
+				{
+					h = targetHeight;
+				}
+			}
+			
+			BufferedImage tmp = new BufferedImage(w, h, type);
+			Graphics2D g2 = tmp.createGraphics();
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+			
+			g2.drawImage(ret, 0, 0, w, h, null);
+			g2.dispose();
+			
+			ret = tmp;
+		}
+		while (w != targetWidth || h != targetHeight);
+		
+		return ret;
+	}
+	
+	/**
+	 * Scales an image with very high quality, and high cost.
+	 */
+	public static BufferedImage scaleImageQuality(BufferedImage image, int drawingWidth, int drawingHeight)
+	{
+		int origWidth = image.getWidth();
+		int origHeight = image.getHeight();
+		
+		double widthScale = drawingWidth / (double) origWidth;
+		double heightScale = drawingHeight / (double) origHeight;
+		double scale = Math.min(widthScale, heightScale);
+		
+		int width = (int) (origWidth * scale);
+		int height = (int) (origHeight * scale);
+		
+		BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = resizedImage.createGraphics();
+		
+		ImageProducer prod = new FilteredImageSource(image.getSource(), new AreaAveragingScaleFilter(width, height));
+		Image img = Toolkit.getDefaultToolkit().createImage(prod);
+		g.drawImage(img, 0, 0, null);
+		g.dispose();
+		
+		return resizedImage;
 	}
 	
 	public static VolatileImage createVolatileImage(int width, int height)

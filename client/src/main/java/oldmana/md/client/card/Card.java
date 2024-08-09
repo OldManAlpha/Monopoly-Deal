@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ public class Card
 	private BufferedImage graphics;
 	private Map<Double, BufferedImage> graphicsCache = new HashMap<Double, BufferedImage>();
 	
+	private static BufferedImage backGraphics;
 	private static Map<Double, BufferedImage> backGraphicsCache = new HashMap<Double, BufferedImage>();
 	
 	public Card(int id, int value, String name)
@@ -179,8 +181,8 @@ public class Card
 		{
 			return graphicsCache.get(scale);
 		}
-		int width = (int) (60 * scale);//(int) Math.round(MDCard.CARD_SIZE.width * scale);
-		int height = (int) (90 * scale);//(int) Math.round(MDCard.CARD_SIZE.height * scale);
+		int width = (int) (MDCard.CARD_SIZE.width * scale);//(int) Math.round(MDCard.CARD_SIZE.width * scale);
+		int height = (int) (MDCard.CARD_SIZE.height * scale);//(int) Math.round(MDCard.CARD_SIZE.height * scale);
 		if (graphics == null)
 		{
 			graphics = GraphicsUtils.createImage(60 * 8, 90 * 8);
@@ -189,10 +191,16 @@ public class Card
 			cp.paint(g);
 			g.dispose();
 		}
-		Image img = graphics.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+		Image img = GraphicsUtils.scaleImageQuality(graphics, width, height);
 		BufferedImage buffer = GraphicsUtils.createImage(width, height);
-		Graphics g = buffer.createGraphics();
+		Graphics2D g = buffer.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		g.drawImage(img, 0, 0, null);
+		// Draw Card Outline
+		g.setColor(Color.GRAY);
+		g.drawRoundRect(0, 0, width - 1, height - 1, (width / 6), (width / 6));
 		g.dispose();
 		graphicsCache.put(scale, buffer);
 		return getGraphics(scale);
@@ -216,18 +224,32 @@ public class Card
 	
 	public static BufferedImage getBackGraphics(double scale)
 	{
-		int width = (int) Math.round(MDCard.CARD_SIZE.width * scale);
-		int height = (int) Math.round(MDCard.CARD_SIZE.height * scale);
 		if (backGraphicsCache.containsKey(scale))
 		{
 			return backGraphicsCache.get(scale);
 		}
-		BufferedImage img = GraphicsUtils.createImage(width, height);
-		CardPainter cp = new CardPainter(null, scale);
-		Graphics2D g = img.createGraphics();
-		cp.paint(g);
+		int width = (int) Math.round(MDCard.CARD_SIZE.width * scale);
+		int height = (int) Math.round(MDCard.CARD_SIZE.height * scale);
+		if (backGraphics == null)
+		{
+			backGraphics = GraphicsUtils.createImage(60 * 8, 90 * 8);
+			CardPainter cp = new CardPainter(null, 8);
+			Graphics g = backGraphics.createGraphics();
+			cp.paint(g);
+			g.dispose();
+		}
+		Image img = GraphicsUtils.scaleImageQuality(backGraphics, width, height);
+		BufferedImage buffer = GraphicsUtils.createImage(width, height);
+		Graphics2D g = buffer.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g.drawImage(img, 0, 0, null);
+		// Draw Card Outline
+		g.setColor(Color.GRAY);
+		g.drawRoundRect(0, 0, width - 1, height - 1, (width / 6), (width / 6));
 		g.dispose();
-		backGraphicsCache.put(scale, img);
+		backGraphicsCache.put(scale, buffer);
 		return getBackGraphics(scale);
 	}
 	

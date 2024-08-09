@@ -4,8 +4,12 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,6 +25,8 @@ import oldmana.md.client.gui.component.MDCard;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
 import oldmana.md.client.gui.util.TextPainter.Outline;
 
+import javax.imageio.ImageIO;
+
 /**
  * You'd think you're at Olive Garden with how much spaghetti is here.
  */
@@ -28,6 +34,25 @@ public class CardPainter
 {
 	private Card card;
 	private double scale;
+	
+	public static BufferedImage backGraphic;
+	
+	static
+	{
+		File cardBackFile = new File(MDClient.getInstance().getDataFolder(), "textures" + File.separator + "cardback.png");
+		if (cardBackFile.exists() && !cardBackFile.isDirectory())
+		{
+			try
+			{
+				backGraphic = ImageIO.read(cardBackFile);
+			}
+			catch (IOException e)
+			{
+				System.out.println("Failed to load card back");
+				e.printStackTrace();
+			}
+		}
+	}
 	
 	public CardPainter(Card card, double scale)
 	{
@@ -97,7 +122,7 @@ public class CardPainter
 	}
 	
 	
-	// TODO: The card scaling is a bit of a failure and needs rethinking or just needs to be removed. This only supports 8x scaled cards unless it's a card back.
+	// TODO: The card scaling is a bit of a failure and needs rethinking or just needs to be removed. This only supports 8x scaled cards.
 	public void paint(Graphics gr)
 	{
 		boolean money = card instanceof CardMoney;
@@ -126,13 +151,19 @@ public class CardPainter
 		{
 			// Draw White
 			g.setColor(Color.WHITE);
-			g.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, getWidth() / 6, getWidth() / 6);
-			// Draw Card Outline
-			g.setColor(Color.BLACK);
-			g.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, getWidth() / 6, getWidth() / 6);
+			g.fillRoundRect(0, 0, getWidth(), getHeight(), (getWidth() / 6) + scale(2), (getWidth() / 6) + scale(2));
+			
+			// Draw red back
 			g.setColor(new Color(239, 15, 20));
-			//g.fillRoundRect(scale(4), scale(4), getWidth() - scale(8) - 1, getHeight() - scale(8) - 1, getWidth() / 6, getWidth() / 6);
 			g.fillRect(scale(5), scale(5), getWidth() - (scale(5) * 2), getHeight() - (scale(5) * 2));
+			
+			// Draw back graphics if present
+			if (backGraphic != null)
+			{
+				Image img = backGraphic.getScaledInstance(getWidth() - (scale(5) * 2), getHeight() - (scale(5) * 2), BufferedImage.SCALE_SMOOTH);
+				g.drawImage(img, scale(5), scale(5), null);
+			}
+			
 			// Draw Inner Outline
 			g.setColor(Color.BLACK);
 			//g.drawRoundRect(scale(4), scale(4), getWidth() - scale(8) - 1, getHeight() - scale(8) - 1, getWidth() / 6, getWidth() / 6);
@@ -144,20 +175,11 @@ public class CardPainter
 		Color outerColor = card.getOuterColor();
 		Color innerColor = card.getInnerColor();
 		Color textColor = new Color(30, 30, 30);
-		// Draw Card Outline
-		g.setColor(Color.BLACK);
-		/*
-		for (int i = 0 ; i < 1 + (scale(1) / 4) ; i++)
-		{
-			g.drawRoundRect(0 + i, 0 + i, getWidth() - 1 - (i * 2), getHeight() - 1 - (i * 2), getWidth() / 6, getWidth() / 6);
-		}
-		*/
-		g.fillRoundRect(0, 0, getWidth(), getHeight(), getWidth() / 6, getWidth() / 6);
+		
 		// Draw White
 		g.setColor(outerColor);
-		//int outlineSize = 1 + (scale(1) / 4);
-		int outlineSize = Math.max(1, scale(0.5));
-		g.fillRoundRect(outlineSize, outlineSize, getWidth() - (outlineSize * 2), getHeight() - (outlineSize * 2), (getWidth() / 6) - (outlineSize * 2), (getWidth() / 6) - (outlineSize * 2));
+		g.fillRoundRect(0, 0, getWidth(), getHeight(), (getWidth() / 6) + scale(2), (getWidth() / 6) + scale(2));
+		
 		// Draw Value Color
 		//if (!property)
 		{

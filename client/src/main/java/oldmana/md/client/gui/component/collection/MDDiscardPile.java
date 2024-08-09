@@ -169,15 +169,15 @@ public class MDDiscardPile extends MDCardCollection
 		{
 			if (getCollection().getCardCount() - (isCardIncoming() ? 1 : 0) > 0)
 			{
-				g.setColor(Color.DARK_GRAY);
-				g.fillRoundRect(scale(60), 0, scale(60) + (int) Math.floor(getMainPileCardCount() * (0.3 * GraphicsUtils.SCALE)), scale(180), scale(20), scale(20));
+				MDDeck.drawCardStack(g, scale(60), 0, scale(60) + (int) Math.floor(getMainPileCardCount() *
+						(0.3 * GraphicsUtils.SCALE)));
 				g.drawImage(getMainPileFace().getGraphics(getScale() * getCardScale()), 0, 0, null);
 				if (scrollPos > 0)
 				{
 					if (getCurrentCardCount() > getCurrentCardCount() - scrollPos + (animDuration > 0 && animDir ? 1 : 0))
 					{
-						g.fillRoundRect(scale(60), scale(186), scale(60) + (int) Math.floor(getOtherPileCardCount() * (0.3 * GraphicsUtils.SCALE)), 
-								scale(180), scale(20), scale(20));
+						MDDeck.drawCardStack(g, scale(60), scale(186), scale(60) +
+								(int) Math.floor(getOtherPileCardCount() * (0.3 * GraphicsUtils.SCALE)));
 						g.drawImage(getOtherPileFace().getGraphics(getScale() * getCardScale()), 0, scale(186), null);
 					}
 				}

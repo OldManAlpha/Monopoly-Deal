@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.LinearGradientPaint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -18,7 +19,6 @@ import oldmana.md.client.Scheduler;
 import oldmana.md.client.card.Card;
 import oldmana.md.client.card.collection.Deck;
 import oldmana.md.client.gui.component.MDSelection;
-import oldmana.md.client.gui.util.CardPainter;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
@@ -129,9 +129,7 @@ public class MDDeck extends MDCardCollectionUnknown
 			if (cardCount > 0 && !(cardCount <= 2 && animProgress > 0))
 			{
 				g.translate(0, scale(10));
-				g.setColor(Color.DARK_GRAY);
-				g.fillRoundRect(scale(60), 0, scale(60) + (int) Math.floor(cardCount * (0.3 * GraphicsUtils.SCALE)), 
-						scale(180), scale(20), scale(20));
+				drawCardStack(g, scale(60), 0, scale(60) + (int) Math.floor(cardCount * (0.3 * GraphicsUtils.SCALE)));
 				g.drawImage(Card.getBackGraphics(GraphicsUtils.SCALE * 2), 0, 0, null);
 			}
 			else
@@ -164,8 +162,14 @@ public class MDDeck extends MDCardCollectionUnknown
 					g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 					g2.rotate(Math.toRadians(animProgress * 0.026 * (i == 2 ? 0.3 : 1)), 0, GraphicsUtils.getCardHeight(2) + scale(10));
 					g2.translate(0, scale(10));
-					CardPainter cp = new CardPainter(null, GraphicsUtils.SCALE * 2);
-					cp.paint(g2);
+					g2.drawImage(Card.getBackGraphics(GraphicsUtils.SCALE * 2), 0, 0, null);
+					int width = GraphicsUtils.getCardWidth(2);
+					int height = GraphicsUtils.getCardHeight(2);
+					g2.setColor(Color.LIGHT_GRAY);
+					g2.drawRoundRect(0, 0, width, height, width / 6, height / 6);
+					g2.setColor(Color.WHITE);
+					g2.drawRoundRect(1, 1, width - 2, height - 2, (width / 6) - 2, (height / 6) - 2);
+					g2.dispose();
 					g.translate(0, scale(-10));
 					g.drawImage(img, 0, 0, null);
 					g.translate(0, scale(10));
@@ -173,10 +177,7 @@ public class MDDeck extends MDCardCollectionUnknown
 			}
 			else if (cardCount <= 8 && cardCount > 0)
 			{
-				//g.setColor(new Color(240, 240, 240));
-				//g.fillRoundRect(GraphicsUtils.getCardWidth(0.4), GraphicsUtils.getCardHeight(1) - scale(10), GraphicsUtils.getCardWidth(1.2), scale(20), scale(8), scale(8));
 				g.setColor(Color.BLACK);
-				//g.drawRoundRect(GraphicsUtils.getCardWidth(0.4), GraphicsUtils.getCardHeight(1) - scale(10), GraphicsUtils.getCardWidth(1.2), scale(20), scale(8), scale(8));
 				
 				Font font = GraphicsUtils.getBoldMDFont(Font.PLAIN, scale(20));
 				g.setFont(font);
@@ -235,5 +236,16 @@ public class MDDeck extends MDCardCollectionUnknown
 				updateGraphics();
 			}
 		}
+	}
+	
+	public static void drawCardStack(Graphics2D g, int x, int y, int width)
+	{
+		Color stack = new Color(80, 80, 80);
+		Color shine = new Color(140, 140, 140);
+		LinearGradientPaint paint = new LinearGradientPaint(0, y, 0, GraphicsUtils.getCardHeight(2) + y,
+				new float[] {0, 0.025F, 0.05F, 0.95F, 0.975F, 1F},
+				new Color[] {stack, shine, stack, stack, shine, stack});
+		g.setPaint(paint);
+		g.fillRoundRect(x, y, width, GraphicsUtils.scale(180), GraphicsUtils.scale(20), GraphicsUtils.scale(20));
 	}
 }

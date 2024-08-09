@@ -134,7 +134,7 @@ public class MDMoves extends MDComponent
 		g.setColor(Color.DARK_GRAY);
 		for (int i = 0 ; i < visibleMaxMoves - 1 ; i++)
 		{
-			int linePos = (int) (turnWidth * (i + 1));
+			int linePos = (int) Math.ceil(turnWidth * (i + 1));
 			g.drawLine(linePos, 0, linePos, getHeight());
 		}
 		

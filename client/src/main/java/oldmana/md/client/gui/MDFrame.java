@@ -26,6 +26,7 @@ import oldmana.md.client.MDClient;
 import oldmana.md.client.gui.screen.FirstRunScreen;
 import oldmana.md.client.gui.screen.MainMenuScreen;
 import oldmana.md.client.gui.screen.TableScreen;
+import oldmana.md.client.gui.util.CardPainter;
 import oldmana.md.client.gui.util.GraphicsUtils;
 import oldmana.md.client.gui.util.TextPainter;
 import oldmana.md.client.gui.util.TextPainter.Alignment;
@@ -159,6 +160,8 @@ public class MDFrame extends JFrame
 		// Draw Red
 		g.setColor(new Color(239, 15, 20));
 		g.fillRect(width / 12, width / 12, width - ((width / 12) * 2) - 1, height - ((width / 12) * 2) - 1);
+		//g.drawImage(CardPainter.backGraphic.getScaledInstance(width, height, BufferedImage.SCALE_SMOOTH), width / 12,
+		// width / 12, width - ((width / 12) * 2) - 1, height - ((width / 12) * 2) - 1, null);
 	}
 	
 	private void drawAlert(Graphics2D g, int width, int height)
